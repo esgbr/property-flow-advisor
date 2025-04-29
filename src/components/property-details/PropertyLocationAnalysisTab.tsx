@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { 
   Card, 
@@ -11,6 +10,7 @@ import { Progress } from '@/components/ui/progress';
 import { MapPin, Map, Building, ChartBar, ChartLine, DollarSign } from 'lucide-react';
 import { Property } from '@/interfaces/property';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
+import PropertyMap from './PropertyMap';
 
 interface PropertyLocationAnalysisTabProps {
   property: Property;
@@ -361,13 +361,7 @@ const PropertyLocationAnalysisTab = ({ property }: PropertyLocationAnalysisTabPr
           <CardTitle>Location Map</CardTitle>
         </CardHeader>
         <CardContent className="pt-0">
-          <div className="bg-muted rounded-lg flex items-center justify-center h-[400px]">
-            <div className="text-center">
-              <Map className="h-12 w-12 text-muted-foreground mx-auto mb-2" />
-              <p className="text-muted-foreground">Interactive map would be displayed here</p>
-              <p className="text-xs text-muted-foreground mt-1">{property.address}, {property.city}, {property.country}</p>
-            </div>
-          </div>
+          <PropertyMap property={property} />
         </CardContent>
       </Card>
     </div>
