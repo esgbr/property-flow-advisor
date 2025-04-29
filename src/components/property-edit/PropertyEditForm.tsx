@@ -1,4 +1,5 @@
-import React from 'react';
+
+import React, { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { Property } from '@/interfaces/property';
@@ -21,6 +22,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { toast } from '@/components/ui/use-toast';
+import { MapPinCheck } from 'lucide-react';
 
 interface PropertyEditFormProps {
   property: Property;
@@ -29,6 +31,10 @@ interface PropertyEditFormProps {
 
 const PropertyEditForm = ({ property, onSave }: PropertyEditFormProps) => {
   const navigate = useNavigate();
+  const addressInputRef = useRef<HTMLTextAreaElement>(null);
+  const [addressVerified, setAddressVerified] = useState<boolean>(false);
+  const [autocompleteLoaded, setAutocompleteLoaded] = useState<boolean>(false);
+  
   const form = useForm({
     defaultValues: {
       title: property.title,
@@ -43,6 +49,89 @@ const PropertyEditForm = ({ property, onSave }: PropertyEditFormProps) => {
       status: property.status
     }
   });
+
+  // Load Google Maps API script
+  useEffect(() => {
+    if (!document.querySelector('script[src*="maps.googleapis.com/maps/api"]')) {
+      const script = document.createElement('script');
+      script.src = `https://maps.googleapis.com/maps/api/js?key=&libraries=places`;
+      script.async = true;
+      script.defer = true;
+      
+      script.onload = () => {
+        setAutocompleteLoaded(true);
+      };
+      
+      document.head.appendChild(script);
+    } else if (window.google && window.google.maps) {
+      setAutocompleteLoaded(true);
+    }
+    
+    return () => {
+      // Clean up if needed
+    };
+  }, []);
+
+  // Initialize Google Maps Autocomplete when the API is loaded
+  useEffect(() => {
+    if (autocompleteLoaded && addressInputRef.current) {
+      const autocomplete = new window.google.maps.places.Autocomplete(addressInputRef.current, {
+        types: ['address'],
+      });
+      
+      autocomplete.addListener('place_changed', () => {
+        const place = autocomplete.getPlace();
+        
+        if (place.address_components) {
+          // Get address components
+          let streetNumber = '';
+          let route = '';
+          let city = '';
+          let zipCode = '';
+          let country = '';
+          
+          for (const component of place.address_components) {
+            const componentType = component.types[0];
+            
+            switch (componentType) {
+              case 'street_number':
+                streetNumber = component.long_name;
+                break;
+              case 'route':
+                route = component.long_name;
+                break;
+              case 'locality':
+                city = component.long_name;
+                break;
+              case 'postal_code':
+                zipCode = component.long_name;
+                break;
+              case 'country':
+                country = component.long_name;
+                break;
+            }
+          }
+          
+          // Format the full address
+          const formattedAddress = `${streetNumber} ${route}`.trim();
+          
+          // Update form values
+          form.setValue('address', formattedAddress);
+          form.setValue('city', city);
+          form.setValue('zipCode', zipCode);
+          form.setValue('country', country);
+          
+          setAddressVerified(true);
+          
+          toast({
+            title: "Address verified",
+            description: "The address has been verified and updated with Google Maps data.",
+            duration: 3000,
+          });
+        }
+      });
+    }
+  }, [autocompleteLoaded, form]);
 
   const onSubmit = (values: any) => {
     // This would normally save to a database
@@ -106,10 +195,27 @@ const PropertyEditForm = ({ property, onSave }: PropertyEditFormProps) => {
             name="address"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Address</FormLabel>
+                <FormLabel className="flex items-center gap-1">
+                  Address
+                  {addressVerified && <MapPinCheck className="h-4 w-4 text-green-500" title="Address verified" />}
+                </FormLabel>
                 <FormControl>
-                  <Textarea placeholder="Enter address" {...field} />
+                  <div className="relative">
+                    <Textarea 
+                      placeholder="Start typing to get address suggestions..." 
+                      {...field} 
+                      ref={addressInputRef}
+                    />
+                    {!autocompleteLoaded && (
+                      <div className="absolute inset-0 bg-background/50 flex items-center justify-center rounded-md">
+                        <p className="text-sm text-muted-foreground">Loading address suggestions...</p>
+                      </div>
+                    )}
+                  </div>
                 </FormControl>
+                <p className="text-xs text-muted-foreground">
+                  Start typing to get address suggestions from Google Maps
+                </p>
                 <FormMessage />
               </FormItem>
             )}
@@ -262,5 +368,31 @@ const PropertyEditForm = ({ property, onSave }: PropertyEditFormProps) => {
     </Form>
   );
 };
+
+// Add type definition for the global Google Maps objects
+declare global {
+  interface Window {
+    google: {
+      maps: {
+        places: {
+          Autocomplete: new (
+            input: HTMLElement,
+            options?: { types: string[] }
+          ) => {
+            addListener: (event: string, callback: () => void) => void;
+            getPlace: () => {
+              address_components?: {
+                long_name: string;
+                short_name: string;
+                types: string[];
+              }[];
+              formatted_address?: string;
+            };
+          };
+        };
+      };
+    };
+  }
+}
 
 export default PropertyEditForm;
