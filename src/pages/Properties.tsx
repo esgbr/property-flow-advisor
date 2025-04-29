@@ -1,6 +1,7 @@
 
 import React from 'react';
 import { Button } from '@/components/ui/button';
+import { Link } from 'react-router-dom';
 import {
   Card,
   CardContent,
@@ -71,8 +72,10 @@ const Properties = () => {
               </div>
             </CardContent>
             <CardFooter className="flex justify-between">
-              <Button variant="outline" size="sm">
-                <FileText className="mr-2 h-4 w-4" /> Details
+              <Button variant="outline" size="sm" asChild>
+                <Link to={`/property/${property.id}`}>
+                  <FileText className="mr-2 h-4 w-4" /> Details
+                </Link>
               </Button>
               <Button variant="default" size="sm">
                 Analyze
