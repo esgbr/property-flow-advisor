@@ -1,5 +1,6 @@
 
 import React from 'react';
+import { Link } from 'react-router-dom';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { sampleProperties } from '@/data/sampleData';
 import { FileText, Calculator, Calendar, Wrench } from 'lucide-react';
@@ -72,7 +73,11 @@ const Dashboard = () => {
           <CardContent>
             <div className="space-y-4">
               {sampleProperties.slice(0, 3).map((property) => (
-                <div key={property.id} className="flex items-center space-x-4">
+                <Link 
+                  to={`/property/${property.id}`} 
+                  key={property.id} 
+                  className="flex items-center space-x-4 p-2 rounded-md hover:bg-muted transition-colors"
+                >
                   <div className="w-16 h-16 rounded overflow-hidden">
                     {property.imageUrl && (
                       <img 
@@ -97,7 +102,7 @@ const Dashboard = () => {
                       {property.status.replace('_', ' ')}
                     </span>
                   </div>
-                </div>
+                </Link>
               ))}
             </div>
           </CardContent>
@@ -109,18 +114,18 @@ const Dashboard = () => {
           </CardHeader>
           <CardContent>
             <div className="space-y-2">
-              <a href="/properties/add" className="block p-3 rounded-lg hover:bg-muted transition-colors">
+              <Link to="/properties" className="block p-3 rounded-lg hover:bg-muted transition-colors">
                 <div className="font-medium">Add New Property</div>
                 <div className="text-sm text-muted-foreground">Track a new investment opportunity</div>
-              </a>
-              <a href="/calculators" className="block p-3 rounded-lg hover:bg-muted transition-colors">
+              </Link>
+              <Link to="/calculators" className="block p-3 rounded-lg hover:bg-muted transition-colors">
                 <div className="font-medium">Financial Calculator</div>
                 <div className="text-sm text-muted-foreground">Run investment calculations</div>
-              </a>
-              <a href="/schedule" className="block p-3 rounded-lg hover:bg-muted transition-colors">
+              </Link>
+              <Link to="/schedule" className="block p-3 rounded-lg hover:bg-muted transition-colors">
                 <div className="font-medium">Schedule Appointments</div>
                 <div className="text-sm text-muted-foreground">Manage your property viewings</div>
-              </a>
+              </Link>
             </div>
           </CardContent>
         </Card>
