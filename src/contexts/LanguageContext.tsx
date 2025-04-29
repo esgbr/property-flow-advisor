@@ -35,6 +35,12 @@ const translations: Record<Language, Record<string, string>> = {
     spanish: 'Spanish',
     french: 'French',
     italian: 'Italian',
+    settings: 'Settings',
+    settingsDescription: 'Customize your application preferences',
+    languageDescription: 'Change the display language',
+    currentLanguage: 'Current Language',
+    selectLanguage: 'Select your preferred language',
+    mainNavigation: 'Main Navigation',
     // Weitere Übersetzungen hier hinzufügen
   },
   de: {
@@ -59,6 +65,12 @@ const translations: Record<Language, Record<string, string>> = {
     spanish: 'Spanisch',
     french: 'Französisch',
     italian: 'Italienisch',
+    settings: 'Einstellungen',
+    settingsDescription: 'Passen Sie Ihre Anwendungseinstellungen an',
+    languageDescription: 'Ändern Sie die Anzeigesprache',
+    currentLanguage: 'Aktuelle Sprache',
+    selectLanguage: 'Wählen Sie Ihre bevorzugte Sprache',
+    mainNavigation: 'Hauptnavigation',
     // Weitere Übersetzungen hier hinzufügen
   },
   es: {
@@ -83,6 +95,12 @@ const translations: Record<Language, Record<string, string>> = {
     spanish: 'Español',
     french: 'Francés',
     italian: 'Italiano',
+    settings: 'Configuración',
+    settingsDescription: 'Personaliza tus preferencias de aplicación',
+    languageDescription: 'Cambiar el idioma de visualización',
+    currentLanguage: 'Idioma actual',
+    selectLanguage: 'Selecciona tu idioma preferido',
+    mainNavigation: 'Navegación principal',
     // Weitere Übersetzungen hier hinzufügen
   },
   fr: {
@@ -107,6 +125,12 @@ const translations: Record<Language, Record<string, string>> = {
     spanish: 'Espagnol',
     french: 'Français',
     italian: 'Italien',
+    settings: 'Paramètres',
+    settingsDescription: 'Personnalisez vos préférences d\'application',
+    languageDescription: 'Changer la langue d\'affichage',
+    currentLanguage: 'Langue actuelle',
+    selectLanguage: 'Sélectionnez votre langue préférée',
+    mainNavigation: 'Navigation principale',
     // Weitere Übersetzungen hier hinzufügen
   },
   it: {
@@ -131,6 +155,12 @@ const translations: Record<Language, Record<string, string>> = {
     spanish: 'Spagnolo',
     french: 'Francese',
     italian: 'Italiano',
+    settings: 'Impostazioni',
+    settingsDescription: 'Personalizza le preferenze dell\'applicazione',
+    languageDescription: 'Cambia la lingua di visualizzazione',
+    currentLanguage: 'Lingua attuale',
+    selectLanguage: 'Seleziona la tua lingua preferita',
+    mainNavigation: 'Navigazione principale',
     // Weitere Übersetzungen hier hinzufügen
   },
 };

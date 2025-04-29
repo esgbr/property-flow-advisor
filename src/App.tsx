@@ -12,6 +12,7 @@ import Calculators from "./pages/Calculators";
 import Schedule from "./pages/Schedule";
 import Refurbishment from "./pages/Refurbishment";
 import Decision from "./pages/Decision";
+import Settings from "./pages/Settings";
 import NotFound from "./pages/NotFound";
 import { LanguageProvider } from "./contexts/LanguageContext";
 import { AppLockProvider } from "./contexts/AppLockContext";
@@ -35,6 +36,7 @@ const App = () => (
                 <Route path="schedule" element={<Schedule />} />
                 <Route path="refurbishment" element={<Refurbishment />} />
                 <Route path="decision" element={<Decision />} />
+                <Route path="settings" element={<Settings />} />
               </Route>
               <Route path="*" element={<NotFound />} />
             </Routes>

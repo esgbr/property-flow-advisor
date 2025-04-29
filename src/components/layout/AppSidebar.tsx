@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { NavLink } from 'react-router-dom';
-import { Home, FileText, Calculator, Calendar, Wrench, Check } from 'lucide-react';
+import { Home, FileText, Calculator, Calendar, Wrench, Check, Settings } from 'lucide-react';
 import {
   Sidebar,
   SidebarContent,
@@ -14,41 +14,49 @@ import {
   SidebarMenuItem,
   SidebarTrigger
 } from '@/components/ui/sidebar';
-
-const menuItems = [
-  {
-    title: 'Dashboard',
-    icon: Home,
-    path: '/'
-  },
-  {
-    title: 'Properties',
-    icon: FileText,
-    path: '/properties'
-  },
-  {
-    title: 'Calculators',
-    icon: Calculator,
-    path: '/calculators'
-  },
-  {
-    title: 'Schedule',
-    icon: Calendar,
-    path: '/schedule'
-  },
-  {
-    title: 'Refurbishment',
-    icon: Wrench,
-    path: '/refurbishment'
-  },
-  {
-    title: 'Purchase Decision',
-    icon: Check,
-    path: '/decision'
-  }
-];
+import { useLanguage } from '@/contexts/LanguageContext';
 
 const AppSidebar = () => {
+  const { t } = useLanguage();
+
+  const menuItems = [
+    {
+      title: t('dashboard'),
+      icon: Home,
+      path: '/'
+    },
+    {
+      title: t('properties'),
+      icon: FileText,
+      path: '/properties'
+    },
+    {
+      title: t('calculators'),
+      icon: Calculator,
+      path: '/calculators'
+    },
+    {
+      title: t('schedule'),
+      icon: Calendar,
+      path: '/schedule'
+    },
+    {
+      title: t('refurbishment'),
+      icon: Wrench,
+      path: '/refurbishment'
+    },
+    {
+      title: t('decision'),
+      icon: Check,
+      path: '/decision'
+    },
+    {
+      title: t('settings'),
+      icon: Settings,
+      path: '/settings'
+    }
+  ];
+
   return (
     <Sidebar>
       <SidebarHeader>
@@ -59,7 +67,7 @@ const AppSidebar = () => {
       </SidebarHeader>
       <SidebarContent>
         <SidebarGroup>
-          <SidebarGroupLabel>Main Navigation</SidebarGroupLabel>
+          <SidebarGroupLabel>{t('mainNavigation')}</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
               {menuItems.map((item) => (

@@ -8,7 +8,6 @@ import {
   CardContent 
 } from '@/components/ui/card';
 import { useLanguage } from '@/contexts/LanguageContext';
-import LanguageSwitcher from '@/components/LanguageSwitcher';
 import AppLockSettings from '@/components/AppLockSettings';
 
 const PropertyScheduleTab = () => {
@@ -18,10 +17,7 @@ const PropertyScheduleTab = () => {
     <div className="space-y-8">
       <Card>
         <CardHeader>
-          <div className="flex justify-between items-center">
-            <CardTitle>{t('schedule')}</CardTitle>
-            <LanguageSwitcher />
-          </div>
+          <CardTitle>{t('schedule')}</CardTitle>
           <CardDescription>{t('propertyDetails')}</CardDescription>
         </CardHeader>
         <CardContent>
