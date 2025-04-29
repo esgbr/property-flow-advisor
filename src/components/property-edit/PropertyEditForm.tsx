@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
@@ -25,9 +24,10 @@ import { toast } from '@/components/ui/use-toast';
 
 interface PropertyEditFormProps {
   property: Property;
+  onSave: (updatedProperty: Partial<Property>) => void;
 }
 
-const PropertyEditForm = ({ property }: PropertyEditFormProps) => {
+const PropertyEditForm = ({ property, onSave }: PropertyEditFormProps) => {
   const navigate = useNavigate();
   const form = useForm({
     defaultValues: {
@@ -48,10 +48,8 @@ const PropertyEditForm = ({ property }: PropertyEditFormProps) => {
     // This would normally save to a database
     console.log('Form values:', values);
     
-    toast({
-      title: 'Property updated',
-      description: 'Your property details have been updated successfully.'
-    });
+    // Pass the updated values to the onSave callback
+    onSave(values);
     
     navigate(`/property/${property.id}`);
   };

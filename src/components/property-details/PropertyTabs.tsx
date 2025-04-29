@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { Property } from '@/interfaces/property';
 import PropertyDetailsTab from './PropertyDetailsTab';
@@ -14,8 +14,16 @@ interface PropertyTabsProps {
 }
 
 const PropertyTabs = ({ property }: PropertyTabsProps) => {
+  // Force tab refresh when property changes
+  const [key, setKey] = React.useState(0);
+  
+  useEffect(() => {
+    // When property changes (especially address), refresh the components
+    setKey(prev => prev + 1);
+  }, [property.address, property.city, property.country, property.zipCode]);
+
   return (
-    <Tabs defaultValue="details">
+    <Tabs defaultValue="details" key={key}>
       <TabsList>
         <TabsTrigger value="details">Property Details</TabsTrigger>
         <TabsTrigger value="financial">Financial Analysis</TabsTrigger>
