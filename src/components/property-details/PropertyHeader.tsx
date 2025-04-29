@@ -28,7 +28,9 @@ const PropertyHeader = ({ property }: PropertyHeaderProps) => {
           {property.status.replace('_', ' ')}
         </Badge>
       </div>
-      <Button variant="default">Edit Property</Button>
+      <Button variant="default" asChild>
+        <Link to={`/property/${property.id}/edit`}>Edit Property</Link>
+      </Button>
     </div>
   );
 };
