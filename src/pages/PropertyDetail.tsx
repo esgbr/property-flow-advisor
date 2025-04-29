@@ -48,7 +48,7 @@ const PropertyDetail = () => {
           <Badge variant={
             property.status === 'analyzing' ? 'default' :
             property.status === 'negotiating' ? 'secondary' :
-            property.status === 'owned' ? 'success' : 'outline'
+            property.status === 'owned' ? 'outline' : 'outline'
           }>
             {property.status.replace('_', ' ')}
           </Badge>
@@ -94,15 +94,15 @@ const PropertyDetail = () => {
                 </div>
                 <div className="space-y-1">
                   <p className="text-sm font-medium text-muted-foreground">Expected Rent</p>
-                  <p className="text-xl font-semibold">€{property.expectedRent?.toLocaleString() || 'N/A'}/month</p>
+                  <p className="text-xl font-semibold">€{property.financials?.expectedRent?.toLocaleString() || 'N/A'}/month</p>
                 </div>
                 <div className="space-y-1">
                   <p className="text-sm font-medium text-muted-foreground">Gross Yield</p>
-                  <p className="text-xl font-semibold">{property.grossYield || 'N/A'}%</p>
+                  <p className="text-xl font-semibold">{property.financials?.grossRentalYield || 'N/A'}%</p>
                 </div>
                 <div className="space-y-1">
                   <p className="text-sm font-medium text-muted-foreground">Monthly Cashflow</p>
-                  <p className="text-xl font-semibold">€{property.cashflow?.toLocaleString() || 'N/A'}</p>
+                  <p className="text-xl font-semibold">€{property.financials?.monthlyCashFlow?.toLocaleString() || 'N/A'}</p>
                 </div>
               </div>
             </div>
@@ -200,7 +200,7 @@ const PropertyDetail = () => {
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                 <div className="space-y-1">
                   <p className="text-sm text-muted-foreground">Property Type</p>
-                  <p>{property.propertyType || 'Apartment'}</p>
+                  <p>{property.propertyType}</p>
                 </div>
                 <div className="space-y-1">
                   <p className="text-sm text-muted-foreground">Year Built</p>
@@ -212,7 +212,7 @@ const PropertyDetail = () => {
                 </div>
                 <div className="space-y-1">
                   <p className="text-sm text-muted-foreground">Bedrooms</p>
-                  <p>{property.bedrooms || '2'}</p>
+                  <p>{property.rooms || '2'}</p>
                 </div>
                 <div className="space-y-1">
                   <p className="text-sm text-muted-foreground">Bathrooms</p>
