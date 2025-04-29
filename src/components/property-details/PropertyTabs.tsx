@@ -7,6 +7,7 @@ import PropertyFinancialTab from './PropertyFinancialTab';
 import PropertyScheduleTab from './PropertyScheduleTab';
 import PropertyRefurbishmentTab from './PropertyRefurbishmentTab';
 import PropertyDocumentsTab from './PropertyDocumentsTab';
+import PropertyLocationAnalysisTab from './PropertyLocationAnalysisTab';
 
 interface PropertyTabsProps {
   property: Property;
@@ -18,6 +19,7 @@ const PropertyTabs = ({ property }: PropertyTabsProps) => {
       <TabsList>
         <TabsTrigger value="details">Property Details</TabsTrigger>
         <TabsTrigger value="financial">Financial Analysis</TabsTrigger>
+        <TabsTrigger value="location">Location Analysis</TabsTrigger>
         <TabsTrigger value="schedule">Schedule</TabsTrigger>
         <TabsTrigger value="refurbishment">Refurbishment</TabsTrigger>
         <TabsTrigger value="documents">Documents</TabsTrigger>
@@ -28,6 +30,10 @@ const PropertyTabs = ({ property }: PropertyTabsProps) => {
       
       <TabsContent value="financial" className="mt-4">
         <PropertyFinancialTab />
+      </TabsContent>
+      
+      <TabsContent value="location" className="mt-4">
+        <PropertyLocationAnalysisTab property={property} />
       </TabsContent>
       
       <TabsContent value="schedule" className="mt-4">

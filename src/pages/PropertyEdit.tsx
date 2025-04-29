@@ -1,13 +1,15 @@
 
 import React from 'react';
-import { useParams, Link } from 'react-router-dom';
+import { useParams, Link, useNavigate } from 'react-router-dom';
 import { sampleProperties } from '@/data/sampleData';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft } from 'lucide-react';
 import PropertyEditForm from '@/components/property-edit/PropertyEditForm';
+import { toast } from '@/components/ui/use-toast';
 
 const PropertyEdit = () => {
   const { id } = useParams();
+  const navigate = useNavigate();
   const property = sampleProperties.find(p => p.id === id);
 
   if (!property) {
@@ -26,6 +28,14 @@ const PropertyEdit = () => {
     );
   }
 
+  const handleSave = () => {
+    toast({
+      title: "Property Updated",
+      description: "Property information has been successfully updated.",
+    });
+    navigate(`/property/${id}`);
+  };
+
   return (
     <div className="space-y-6 animate-fade-in">
       <div className="flex items-center gap-2">
@@ -37,7 +47,7 @@ const PropertyEdit = () => {
         <h1 className="text-2xl font-bold">Edit {property.title}</h1>
       </div>
 
-      <PropertyEditForm property={property} />
+      <PropertyEditForm property={property} onSave={handleSave} />
     </div>
   );
 };
