@@ -13,29 +13,35 @@ import Schedule from "./pages/Schedule";
 import Refurbishment from "./pages/Refurbishment";
 import Decision from "./pages/Decision";
 import NotFound from "./pages/NotFound";
+import { LanguageProvider } from "./contexts/LanguageContext";
+import { AppLockProvider } from "./contexts/AppLockContext";
 
 const queryClient = new QueryClient();
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
-    <TooltipProvider>
-      <Toaster />
-      <Sonner />
-      <BrowserRouter>
-        <Routes>
-          <Route path="/" element={<MainLayout />}>
-            <Route index element={<Dashboard />} />
-            <Route path="properties" element={<Properties />} />
-            <Route path="property/:id" element={<PropertyDetail />} />
-            <Route path="calculators" element={<Calculators />} />
-            <Route path="schedule" element={<Schedule />} />
-            <Route path="refurbishment" element={<Refurbishment />} />
-            <Route path="decision" element={<Decision />} />
-          </Route>
-          <Route path="*" element={<NotFound />} />
-        </Routes>
-      </BrowserRouter>
-    </TooltipProvider>
+    <LanguageProvider>
+      <AppLockProvider>
+        <TooltipProvider>
+          <Toaster />
+          <Sonner />
+          <BrowserRouter>
+            <Routes>
+              <Route path="/" element={<MainLayout />}>
+                <Route index element={<Dashboard />} />
+                <Route path="properties" element={<Properties />} />
+                <Route path="property/:id" element={<PropertyDetail />} />
+                <Route path="calculators" element={<Calculators />} />
+                <Route path="schedule" element={<Schedule />} />
+                <Route path="refurbishment" element={<Refurbishment />} />
+                <Route path="decision" element={<Decision />} />
+              </Route>
+              <Route path="*" element={<NotFound />} />
+            </Routes>
+          </BrowserRouter>
+        </TooltipProvider>
+      </AppLockProvider>
+    </LanguageProvider>
   </QueryClientProvider>
 );
 

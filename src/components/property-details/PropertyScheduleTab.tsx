@@ -7,18 +7,30 @@ import {
   CardDescription, 
   CardContent 
 } from '@/components/ui/card';
+import { useLanguage } from '@/contexts/LanguageContext';
+import LanguageSwitcher from '@/components/LanguageSwitcher';
+import AppLockSettings from '@/components/AppLockSettings';
 
 const PropertyScheduleTab = () => {
+  const { t } = useLanguage();
+
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>Schedule</CardTitle>
-        <CardDescription>Important dates and appointments</CardDescription>
-      </CardHeader>
-      <CardContent>
-        <p className="text-muted-foreground">Schedule and appointments will be displayed here.</p>
-      </CardContent>
-    </Card>
+    <div className="space-y-8">
+      <Card>
+        <CardHeader>
+          <div className="flex justify-between items-center">
+            <CardTitle>{t('schedule')}</CardTitle>
+            <LanguageSwitcher />
+          </div>
+          <CardDescription>{t('propertyDetails')}</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <p className="text-muted-foreground">Schedule and appointments will be displayed here.</p>
+        </CardContent>
+      </Card>
+      
+      <AppLockSettings />
+    </div>
   );
 };
 
