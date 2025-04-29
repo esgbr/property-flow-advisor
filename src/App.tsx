@@ -8,6 +8,7 @@ import MainLayout from "./components/layout/MainLayout";
 import Dashboard from "./pages/Dashboard";
 import Properties from "./pages/Properties";
 import PropertyDetail from "./pages/PropertyDetail";
+import PropertyEdit from "./pages/PropertyEdit";
 import Calculators from "./pages/Calculators";
 import Schedule from "./pages/Schedule";
 import Refurbishment from "./pages/Refurbishment";
@@ -32,6 +33,7 @@ const App = () => (
                 <Route index element={<Dashboard />} />
                 <Route path="properties" element={<Properties />} />
                 <Route path="property/:id" element={<PropertyDetail />} />
+                <Route path="property/:id/edit" element={<PropertyEdit />} />
                 <Route path="calculators" element={<Calculators />} />
                 <Route path="schedule" element={<Schedule />} />
                 <Route path="refurbishment" element={<Refurbishment />} />
