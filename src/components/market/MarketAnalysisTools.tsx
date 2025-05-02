@@ -1,11 +1,10 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { 
   ArrowUpRight, BarChart3, Building, Calendar, ChartBar, LineChart, 
-  Map, MapPin, Search, TrendingDown, TrendingUp 
+  Map, MapPin, Search, TrendingDown, TrendingUp, Info 
 } from 'lucide-react';
 import { useToast } from '@/components/ui/use-toast';
 import { Badge } from '@/components/ui/badge';
@@ -150,7 +149,7 @@ const MarketAnalysisTools: React.FC = () => {
     e.preventDefault();
     toast({
       title: t('marketAnalysisUpdated'),
-      description: t('marketDataUpdatedForLocation', { location: searchLocation || t('allLocations') })
+      description: t('marketDataUpdatedForLocation')
     });
     // In a real application, this would trigger an API call to get real market data
   };

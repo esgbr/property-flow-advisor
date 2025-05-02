@@ -1,3 +1,4 @@
+
 import React, { createContext, useState, useContext, ReactNode, useEffect } from 'react';
 
 type Language = 'en' | 'de' | 'es' | 'fr' | 'it';
@@ -86,9 +87,10 @@ const translations: Record<Language, Record<string, string>> = {
     getPersonalizedLearningRecommendations: 'Get personalized learning recommendations',
     welcomeBack: 'Welcome Back',
     welcomeBackMessage: 'Good to see you again',
-    beginner: 'Beginner',
-    intermediate: 'Intermediate',
-    expert: 'Expert',
+    // Removing duplicate keys - these are already defined above
+    // beginner: 'Beginner',
+    // intermediate: 'Intermediate',
+    // expert: 'Expert',
   },
   de: {
     dashboard: 'Dashboard',
@@ -163,9 +165,10 @@ const translations: Record<Language, Record<string, string>> = {
     getPersonalizedLearningRecommendations: 'Erhalte personalisierte Lernempfehlungen',
     welcomeBack: 'Willkommen zurück',
     welcomeBackMessage: 'Schön, dich wiederzusehen',
-    beginner: 'Anfänger',
-    intermediate: 'Fortgeschritten',
-    expert: 'Experte',
+    // Removing duplicate keys
+    // beginner: 'Anfänger',
+    // intermediate: 'Fortgeschritten',
+    // expert: 'Experte',
   },
   es: {
     dashboard: 'Tablero',
@@ -240,9 +243,10 @@ const translations: Record<Language, Record<string, string>> = {
     getPersonalizedLearningRecommendations: 'Obtén recomendaciones de aprendizaje personalizadas',
     welcomeBack: 'Bienvenido de nuevo',
     welcomeBackMessage: 'Es bueno verte de nuevo',
-    beginner: 'Principiante',
-    intermediate: 'Intermedio',
-    expert: 'Experto',
+    // Removing duplicate keys
+    // beginner: 'Principiante',
+    // intermediate: 'Intermedio',
+    // expert: 'Experto',
   },
   fr: {
     dashboard: 'Tableau de bord',
@@ -317,9 +321,10 @@ const translations: Record<Language, Record<string, string>> = {
     getPersonalizedLearningRecommendations: 'Obtenez des recommandations d\'apprentissage personnalisées',
     welcomeBack: 'Bon retour',
     welcomeBackMessage: 'C\'est bon de vous revoir',
-    beginner: 'Débutant',
-    intermediate: 'Intermédiaire',
-    expert: 'Expert',
+    // Removing duplicate keys
+    // beginner: 'Débutant',
+    // intermediate: 'Intermédiaire',
+    // expert: 'Expert',
   },
   it: {
     dashboard: 'Dashboard',
@@ -394,9 +399,10 @@ const translations: Record<Language, Record<string, string>> = {
     getPersonalizedLearningRecommendations: 'Ottieni consigli personalizzati per l\'apprendimento',
     welcomeBack: 'Bentornato',
     welcomeBackMessage: 'È bello rivederti',
-    beginner: 'Principiante',
-    intermediate: 'Intermedio',
-    expert: 'Esperto',
+    // Removing duplicate keys
+    // beginner: 'Principiante',
+    // intermediate: 'Intermedio',
+    // expert: 'Esperto',
   },
 };
 

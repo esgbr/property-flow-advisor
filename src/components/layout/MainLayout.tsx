@@ -42,7 +42,7 @@ const MainLayout = () => {
 
   // Welcome back notification for returning users
   useEffect(() => {
-    if (preferences.name && !preferences.isFirstVisit && !preferences.todayWelcomed) {
+    if (preferences.name && preferences.todayWelcomed === undefined) {
       const now = new Date();
       toast({
         title: t('welcomeBack'),
