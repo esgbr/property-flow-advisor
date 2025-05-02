@@ -16,11 +16,6 @@ import { Card } from '@/components/ui/card';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 
-// Define interfaces for the components that need props
-interface CurrencyProps {
-  currencySymbol: string;
-}
-
 const InvestorDashboard: React.FC = () => {
   const { t, language } = useLanguage();
   const { preferences, updatePreferences } = useUserPreferences();
@@ -133,7 +128,7 @@ const InvestorDashboard: React.FC = () => {
         )}
 
         <TabsContent value="portfolio" className="mt-6">
-          <PortfolioDashboard currencySymbol={getCurrencySymbol()} />
+          <PortfolioDashboard />
         </TabsContent>
 
         <TabsContent value="market" className="mt-6">
@@ -141,11 +136,11 @@ const InvestorDashboard: React.FC = () => {
         </TabsContent>
 
         <TabsContent value="financing" className="mt-6">
-          <MortgageCalculator currencySymbol={getCurrencySymbol()} />
+          <MortgageCalculator />
         </TabsContent>
 
         <TabsContent value="tax" className="mt-6">
-          <TaxPlanner currencySymbol={getCurrencySymbol()} />
+          <TaxPlanner />
         </TabsContent>
 
         <TabsContent value="duediligence" className="mt-6">
