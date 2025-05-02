@@ -11,6 +11,15 @@ interface UserPreferences {
   preferredPropertyTypes: string[];
   analyticsConsent: boolean;
   notificationsEnabled: boolean;
+  calendarIntegration: {
+    google: boolean;
+    outlook: boolean;
+    apple: boolean;
+  };
+  educationProgress: {
+    completedModules: string[];
+    lastAccessedDate: string | null;
+  };
 }
 
 interface UserPreferencesContextType {
@@ -30,6 +39,15 @@ const defaultPreferences: UserPreferences = {
   preferredPropertyTypes: [],
   analyticsConsent: false,
   notificationsEnabled: true,
+  calendarIntegration: {
+    google: false,
+    outlook: false,
+    apple: false
+  },
+  educationProgress: {
+    completedModules: [],
+    lastAccessedDate: null
+  }
 };
 
 const UserPreferencesContext = createContext<UserPreferencesContextType | undefined>(undefined);

@@ -8,7 +8,7 @@ import {
   CardContent,
   CardFooter
 } from '@/components/ui/card';
-import { Settings as SettingsIcon, UserCheck, RefreshCw, Bell, Shield, BarChart } from 'lucide-react';
+import { Settings as SettingsIcon, UserCheck, RefreshCw, Bell, Shield, BarChart, Calendar } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import LanguageSwitcher from '@/components/LanguageSwitcher';
 import AppLockSettings from '@/components/AppLockSettings';
@@ -19,6 +19,7 @@ import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
 import { toast } from '@/components/ui/use-toast';
 import { useUserPreferences } from '@/contexts/UserPreferencesContext';
+import AIAssistant from '@/components/ai/AIAssistant';
 
 const Settings = () => {
   const { t } = useLanguage();
@@ -33,6 +34,17 @@ const Settings = () => {
     });
   };
 
+  const handleExperienceLevelChange = (value: string) => {
+    // Convert string to valid experienceLevel type
+    const level = value as "beginner" | "intermediate" | "expert";
+    updatePreferences({ experienceLevel: level });
+    
+    toast({
+      title: t('experienceLevelUpdated'),
+      description: t('yourExperienceLevelHasBeenUpdated'),
+    });
+  };
+
   return (
     <div className="space-y-6 animate-fade-in">
       <div className="flex justify-between items-center">
@@ -43,6 +55,7 @@ const Settings = () => {
           </h1>
           <p className="text-muted-foreground">{t('settingsDescription')}</p>
         </div>
+        <AIAssistant variant="icon" title={t('settingsAssistant')} description={t('helpWithSettings')} />
       </div>
 
       <Tabs defaultValue="general">
@@ -51,6 +64,7 @@ const Settings = () => {
           <TabsTrigger value="security">{t('security')}</TabsTrigger>
           <TabsTrigger value="preferences">{t('preferences')}</TabsTrigger>
           <TabsTrigger value="analytics">{t('analytics')}</TabsTrigger>
+          <TabsTrigger value="integration">{t('integrations')}</TabsTrigger>
         </TabsList>
         
         <TabsContent value="general" className="grid gap-6 md:grid-cols-2">
@@ -83,7 +97,7 @@ const Settings = () => {
                     id="beginner" 
                     name="experience" 
                     checked={preferences.experienceLevel === 'beginner'} 
-                    onChange={() => updatePreferences({ experienceLevel: 'beginner' })}
+                    onChange={() => handleExperienceLevelChange('beginner')}
                   />
                   <Label htmlFor="beginner">{t('beginner')}</Label>
                 </div>
@@ -93,7 +107,7 @@ const Settings = () => {
                     id="intermediate" 
                     name="experience" 
                     checked={preferences.experienceLevel === 'intermediate'} 
-                    onChange={() => updatePreferences({ experienceLevel: 'intermediate' })} 
+                    onChange={() => handleExperienceLevelChange('intermediate')} 
                   />
                   <Label htmlFor="intermediate">{t('intermediate')}</Label>
                 </div>
@@ -103,7 +117,7 @@ const Settings = () => {
                     id="expert" 
                     name="experience" 
                     checked={preferences.experienceLevel === 'expert'} 
-                    onChange={() => updatePreferences({ experienceLevel: 'expert' })}
+                    onChange={() => handleExperienceLevelChange('expert')}
                   />
                   <Label htmlFor="expert">{t('expert')}</Label>
                 </div>
@@ -231,6 +245,77 @@ const Settings = () => {
               <div className="space-y-2">
                 <h3 className="font-medium">{t('dataPolicies')}</h3>
                 <p className="text-sm text-muted-foreground">{t('dataPoliciesDescription')}</p>
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+        
+        <TabsContent value="integration" className="grid gap-6 md:grid-cols-2">
+          <Card>
+            <CardHeader>
+              <CardTitle>
+                <Calendar className="inline-block mr-2 h-5 w-5" />
+                {t('calendarIntegration')}
+              </CardTitle>
+              <CardDescription>{t('connectToYourCalendar')}</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="flex items-center space-x-2 justify-between">
+                <div>
+                  <Label htmlFor="google-calendar">{t('googleCalendar')}</Label>
+                  <p className="text-sm text-muted-foreground">{t('syncWithGoogleCalendar')}</p>
+                </div>
+                <Button variant="outline" size="sm">
+                  {t('connect')}
+                </Button>
+              </div>
+              <Separator />
+              <div className="flex items-center space-x-2 justify-between">
+                <div>
+                  <Label htmlFor="outlook-calendar">{t('outlookCalendar')}</Label>
+                  <p className="text-sm text-muted-foreground">{t('syncWithOutlookCalendar')}</p>
+                </div>
+                <Button variant="outline" size="sm">
+                  {t('connect')}
+                </Button>
+              </div>
+              <Separator />
+              <div className="flex items-center space-x-2 justify-between">
+                <div>
+                  <Label htmlFor="apple-calendar">{t('appleCalendar')}</Label>
+                  <p className="text-sm text-muted-foreground">{t('syncWithAppleCalendar')}</p>
+                </div>
+                <Button variant="outline" size="sm">
+                  {t('connect')}
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+          
+          <Card>
+            <CardHeader>
+              <CardTitle>{t('otherIntegrations')}</CardTitle>
+              <CardDescription>{t('connectToThirdPartyServices')}</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="flex items-center space-x-2 justify-between">
+                <div>
+                  <p className="font-medium">Google Drive</p>
+                  <p className="text-sm text-muted-foreground">{t('storeDocumentsInGoogleDrive')}</p>
+                </div>
+                <Button variant="outline" size="sm">
+                  {t('connect')}
+                </Button>
+              </div>
+              <Separator />
+              <div className="flex items-center space-x-2 justify-between">
+                <div>
+                  <p className="font-medium">Dropbox</p>
+                  <p className="text-sm text-muted-foreground">{t('storeDocumentsInDropbox')}</p>
+                </div>
+                <Button variant="outline" size="sm">
+                  {t('connect')}
+                </Button>
               </div>
             </CardContent>
           </Card>

@@ -8,6 +8,7 @@ import { useAppLock } from '@/contexts/AppLockContext';
 import AppLockScreen from '@/components/AppLockScreen';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { useUserPreferences } from '@/contexts/UserPreferencesContext';
+import FeedbackModal from '@/components/feedback/FeedbackModal';
 
 const MainLayout = () => {
   const { isLocked, pin } = useAppLock();
@@ -30,6 +31,9 @@ const MainLayout = () => {
               <Outlet />
             </div>
           </main>
+          <div className="fixed bottom-4 right-4">
+            <FeedbackModal variant="icon" size="md" />
+          </div>
         </div>
       </div>
     </SidebarProvider>
