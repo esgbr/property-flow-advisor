@@ -1,99 +1,119 @@
 
 import React from 'react';
-import { NavLink } from 'react-router-dom';
-import { Home, FileText, Calculator, Calendar, Wrench, Check, Settings, GraduationCap } from 'lucide-react';
-import {
-  Sidebar,
-  SidebarContent,
-  SidebarGroup,
-  SidebarGroupContent,
-  SidebarGroupLabel,
-  SidebarHeader,
-  SidebarMenu,
-  SidebarMenuButton,
-  SidebarMenuItem,
-  SidebarTrigger
-} from '@/components/ui/sidebar';
+import { Link, useLocation } from 'react-router-dom';
+import { Sidebar, SidebarContent } from '@/components/ui/sidebar';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { 
+  BarChart3, Book, Building, Calculator, Calendar, FileText, Home, 
+  LayoutDashboard, LineChart, Map, Settings2, Star, School, Building2
+} from 'lucide-react';
+import { cn } from '@/lib/utils';
+import { useUserPreferences } from '@/contexts/UserPreferencesContext';
 
 const AppSidebar = () => {
   const { t } = useLanguage();
+  const location = useLocation();
+  const { preferences } = useUserPreferences();
 
-  const menuItems = [
+  // Define navigation items
+  const navigationItems = [
     {
-      title: t('dashboard'),
-      icon: Home,
-      path: '/'
+      name: t('dashboard'),
+      href: '/dashboard',
+      icon: <LayoutDashboard className="h-5 w-5" />,
     },
     {
-      title: t('properties'),
-      icon: FileText,
-      path: '/properties'
+      name: t('investorDashboard'),
+      href: '/investor-dashboard',
+      icon: <Building2 className="h-5 w-5" />,
+      new: true,
     },
     {
-      title: t('calculators'),
-      icon: Calculator,
-      path: '/calculators'
+      name: t('properties'),
+      href: '/properties',
+      icon: <Building className="h-5 w-5" />,
     },
     {
-      title: t('schedule'),
-      icon: Calendar,
-      path: '/schedule'
+      name: t('calculators'),
+      href: '/calculators',
+      icon: <Calculator className="h-5 w-5" />,
     },
     {
-      title: t('refurbishment'),
-      icon: Wrench,
-      path: '/refurbishment'
+      name: t('schedule'),
+      href: '/schedule',
+      icon: <Calendar className="h-5 w-5" />,
     },
     {
-      title: t('decision'),
-      icon: Check,
-      path: '/decision'
+      name: t('decision'),
+      href: '/decision',
+      icon: <LineChart className="h-5 w-5" />,
     },
     {
-      title: t('education'),
-      icon: GraduationCap,
-      path: '/education'
+      name: t('refurbishment'),
+      href: '/refurbishment',
+      icon: <Home className="h-5 w-5" />,
     },
     {
-      title: t('settings'),
-      icon: Settings,
-      path: '/settings'
-    }
+      name: t('rewards'),
+      href: '/rewards',
+      icon: <Star className="h-5 w-5" />,
+    },
+    {
+      name: t('education'),
+      href: '/education',
+      icon: <School className="h-5 w-5" />,
+    },
+    {
+      name: t('settings'),
+      href: '/settings',
+      icon: <Settings2 className="h-5 w-5" />,
+    },
   ];
 
   return (
     <Sidebar>
-      <SidebarHeader>
+      <div className="flex flex-col h-full py-4">
         <div className="px-3 py-2">
-          <h1 className="text-xl font-bold text-sidebar-foreground">PropertyFlow</h1>
-          <p className="text-xs text-sidebar-foreground/70">Investor Platform</p>
+          <Link to="/" className="flex items-center mb-10">
+            <Building className="h-8 w-8 text-primary" />
+            <span className="text-xl font-bold ml-2">PropertyFlow</span>
+          </Link>
+          <div className="space-y-1">
+            {navigationItems.map((item) => (
+              <Link
+                key={item.href}
+                to={item.href}
+                className={cn(
+                  "flex items-center py-2 px-3 rounded-md group transition-colors",
+                  location.pathname === item.href
+                    ? "bg-primary text-primary-foreground"
+                    : "hover:bg-muted"
+                )}
+              >
+                {item.icon}
+                <span className="ml-3 flex-1">{item.name}</span>
+                {item.new && (
+                  <span className="bg-primary/10 text-primary text-xs px-1.5 py-0.5 rounded-full">
+                    {t('new')}
+                  </span>
+                )}
+              </Link>
+            ))}
+          </div>
         </div>
-      </SidebarHeader>
-      <SidebarContent>
-        <SidebarGroup>
-          <SidebarGroupLabel>{t('mainNavigation')}</SidebarGroupLabel>
-          <SidebarGroupContent>
-            <SidebarMenu>
-              {menuItems.map((item) => (
-                <SidebarMenuItem key={item.title}>
-                  <SidebarMenuButton asChild>
-                    <NavLink 
-                      to={item.path}
-                      className={({ isActive }) => isActive ? 'bg-sidebar-accent text-sidebar-accent-foreground' : ''}
-                    >
-                      <item.icon className="w-5 h-5" />
-                      <span>{item.title}</span>
-                    </NavLink>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-              ))}
-            </SidebarMenu>
-          </SidebarGroupContent>
-        </SidebarGroup>
-      </SidebarContent>
-      <div className="mt-auto p-4 border-t border-sidebar-border">
-        <SidebarTrigger />
+        <div className="mt-auto px-3">
+          {preferences.name && (
+            <div className="border-t pt-4 flex items-center">
+              <div className="h-8 w-8 bg-primary/10 text-primary rounded-full flex items-center justify-center">
+                {preferences.name.charAt(0).toUpperCase()}
+              </div>
+              <div className="ml-3">
+                <div className="text-sm font-medium">{preferences.name}</div>
+                <div className="text-xs text-muted-foreground capitalize">{preferences.experienceLevel}</div>
+              </div>
+            </div>
+          )}
+        </div>
       </div>
     </Sidebar>
   );

@@ -7,6 +7,7 @@ import { Label } from '@/components/ui/label';
 import { useToast } from '@/components/ui/use-toast';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { Check, ChevronRight } from 'lucide-react';
+import { Input } from '@/components/ui/input';
 
 interface OnboardingStep {
   id: string;
@@ -16,24 +17,29 @@ interface OnboardingStep {
 }
 
 export interface OnboardingData {
+  name?: string;
   experienceLevel: 'beginner' | 'intermediate' | 'expert';
   investmentGoals: string[];
   preferredPropertyTypes: string[];
+  interests: string[];
 }
 
 interface OnboardingFlowProps {
   onComplete: (data: OnboardingData) => void;
   onSkip: () => void;
+  initialData?: Partial<OnboardingData>;
 }
 
-export const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ onComplete, onSkip }) => {
+export const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ onComplete, onSkip, initialData }) => {
   const { t } = useLanguage();
   const { toast } = useToast();
   const [currentStep, setCurrentStep] = useState(0);
   const [data, setData] = useState<OnboardingData>({
-    experienceLevel: 'beginner',
-    investmentGoals: [],
-    preferredPropertyTypes: []
+    name: initialData?.name || '',
+    experienceLevel: initialData?.experienceLevel || 'beginner',
+    investmentGoals: initialData?.investmentGoals || [],
+    preferredPropertyTypes: initialData?.preferredPropertyTypes || [],
+    interests: initialData?.interests || []
   });
 
   // Define the onboarding steps
@@ -46,6 +52,16 @@ export const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ onComplete, onSk
         <div className="flex flex-col items-center text-center space-y-4">
           <h3 className="text-xl font-medium">{t('welcomeToPropertyFlowAdvisor')}</h3>
           <p className="text-muted-foreground">{t('yourPersonalRealEstateInvestmentCompanion')}</p>
+          <div className="w-full">
+            <Label htmlFor="name">{t('yourName')}</Label>
+            <Input
+              id="name"
+              placeholder={t('enterYourName')}
+              value={data.name}
+              onChange={(e) => setData({ ...data, name: e.target.value })}
+              className="mt-1"
+            />
+          </div>
         </div>
       )
     },
@@ -129,6 +145,36 @@ export const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ onComplete, onSk
                 }}
               />
               <Label htmlFor={type} className="cursor-pointer">{t(type)}</Label>
+            </div>
+          ))}
+        </div>
+      )
+    },
+    {
+      id: 'interests',
+      title: t('yourInterests'),
+      description: t('whatTopicsInterestYou'),
+      component: (
+        <div className="space-y-4">
+          {['market-analysis', 'property-management', 'financing', 'tax-strategies', 'renovation', 'legal'].map((interest) => (
+            <div key={interest} className="flex items-center space-x-2">
+              <input 
+                type="checkbox" 
+                id={interest} 
+                className="checkbox"
+                checked={data.interests.includes(interest)}
+                onChange={(e) => {
+                  if (e.target.checked) {
+                    setData({ ...data, interests: [...data.interests, interest] });
+                  } else {
+                    setData({ 
+                      ...data, 
+                      interests: data.interests.filter(i => i !== interest) 
+                    });
+                  }
+                }}
+              />
+              <Label htmlFor={interest} className="cursor-pointer">{t(interest)}</Label>
             </div>
           ))}
         </div>

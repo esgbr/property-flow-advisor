@@ -1,71 +1,63 @@
 
-import { Toaster } from "@/components/ui/toaster";
-import { Toaster as Sonner } from "@/components/ui/sonner";
-import { TooltipProvider } from "@/components/ui/tooltip";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
-import MainLayout from "./components/layout/MainLayout";
-import Dashboard from "./pages/Dashboard";
-import Properties from "./pages/Properties";
-import PropertyDetail from "./pages/PropertyDetail";
-import PropertyEdit from "./pages/PropertyEdit";
-import Calculators from "./pages/Calculators";
-import Schedule from "./pages/Schedule";
-import Refurbishment from "./pages/Refurbishment";
-import Decision from "./pages/Decision";
-import Education from "./pages/Education";
-import Settings from "./pages/Settings";
-import NotFound from "./pages/NotFound";
-import { LanguageProvider } from "./contexts/LanguageContext";
-import { AppLockProvider } from "./contexts/AppLockContext";
-import { UserPreferencesProvider } from "./contexts/UserPreferencesContext";
-import { RewardsProvider } from "./contexts/RewardsContext";
-import WelcomeModal from "./components/welcome/WelcomeModal";
-import Rewards from "./pages/Rewards";
+import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
+import { Toaster } from '@/components/ui/sonner';
+import { ThemeProvider } from '@/components/theme-provider';
+import { UserPreferencesProvider } from './contexts/UserPreferencesContext';
+import { LanguageProvider } from './contexts/LanguageContext';
+import { AppLockProvider } from './contexts/AppLockContext';
+import { RewardsProvider } from './contexts/RewardsContext';
+import MainLayout from './components/layout/MainLayout';
 
-const queryClient = new QueryClient({
-  defaultOptions: {
-    queries: {
-      retry: 1,
-      refetchOnWindowFocus: false,
-    },
-  },
-});
+import Dashboard from './pages/Dashboard';
+import Properties from './pages/Properties';
+import PropertyDetail from './pages/PropertyDetail';
+import PropertyEdit from './pages/PropertyEdit';
+import Calculators from './pages/Calculators';
+import Schedule from './pages/Schedule';
+import Decision from './pages/Decision';
+import Refurbishment from './pages/Refurbishment';
+import Rewards from './pages/Rewards';
+import Education from './pages/Education';
+import Settings from './pages/Settings';
+import NotFound from './pages/NotFound';
+import InvestorDashboard from './pages/InvestorDashboard';
 
-const App = () => (
-  <QueryClientProvider client={queryClient}>
-    <LanguageProvider>
-      <UserPreferencesProvider>
-        <RewardsProvider>
+import { Toaster as SonnerToaster } from "@/components/ui/sonner";
+import Index from './pages/Index';
+
+export default function App() {
+  return (
+    <ThemeProvider defaultTheme="light" storageKey="ui-theme">
+      <LanguageProvider>
+        <UserPreferencesProvider>
           <AppLockProvider>
-            <TooltipProvider>
-              <Toaster />
-              <Sonner />
-              <BrowserRouter>
-                <WelcomeModal />
+            <RewardsProvider>
+              <Router>
                 <Routes>
-                  <Route path="/" element={<MainLayout />}>
-                    <Route index element={<Dashboard />} />
-                    <Route path="properties" element={<Properties />} />
-                    <Route path="property/:id" element={<PropertyDetail />} />
-                    <Route path="property/:id/edit" element={<PropertyEdit />} />
-                    <Route path="calculators" element={<Calculators />} />
-                    <Route path="schedule" element={<Schedule />} />
-                    <Route path="refurbishment" element={<Refurbishment />} />
-                    <Route path="decision" element={<Decision />} />
-                    <Route path="education" element={<Education />} />
-                    <Route path="settings" element={<Settings />} />
-                    <Route path="rewards" element={<Rewards />} />
+                  <Route path="/" element={<Index />} />
+                  <Route element={<MainLayout />}>
+                    <Route path="/dashboard" element={<Dashboard />} />
+                    <Route path="/properties" element={<Properties />} />
+                    <Route path="/properties/:id" element={<PropertyDetail />} />
+                    <Route path="/properties/:id/edit" element={<PropertyEdit />} />
+                    <Route path="/calculators" element={<Calculators />} />
+                    <Route path="/schedule" element={<Schedule />} />
+                    <Route path="/decision" element={<Decision />} />
+                    <Route path="/refurbishment" element={<Refurbishment />} />
+                    <Route path="/rewards" element={<Rewards />} />
+                    <Route path="/education" element={<Education />} />
+                    <Route path="/settings" element={<Settings />} />
+                    <Route path="/investor-dashboard" element={<InvestorDashboard />} />
+                    <Route path="*" element={<NotFound />} />
                   </Route>
-                  <Route path="*" element={<NotFound />} />
                 </Routes>
-              </BrowserRouter>
-            </TooltipProvider>
+              </Router>
+              <Toaster />
+              <SonnerToaster />
+            </RewardsProvider>
           </AppLockProvider>
-        </RewardsProvider>
-      </UserPreferencesProvider>
-    </LanguageProvider>
-  </QueryClientProvider>
-);
-
-export default App;
+        </UserPreferencesProvider>
+      </LanguageProvider>
+    </ThemeProvider>
+  );
+}

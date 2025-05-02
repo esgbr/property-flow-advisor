@@ -20,6 +20,22 @@ interface UserPreferences {
     completedModules: string[];
     lastAccessedDate: string | null;
   };
+  // Add new properties for tracking user activity and profile
+  name: string;
+  interests: string[];
+  visitedPages: string[];
+  lastVisitedPage: string;
+  lastActive: string;
+  todayWelcomed: string;
+  // Portfolio tracking
+  savedProperties: string[];
+  watchlist: string[];
+  // Settings synchronization
+  dataSync: {
+    enabled: boolean;
+    lastSyncDate: string | null;
+    devices: string[];
+  };
 }
 
 interface UserPreferencesContextType {
@@ -47,6 +63,19 @@ const defaultPreferences: UserPreferences = {
   educationProgress: {
     completedModules: [],
     lastAccessedDate: null
+  },
+  name: '',
+  interests: [],
+  visitedPages: [],
+  lastVisitedPage: '',
+  lastActive: new Date().toISOString(),
+  todayWelcomed: '',
+  savedProperties: [],
+  watchlist: [],
+  dataSync: {
+    enabled: true,
+    lastSyncDate: null,
+    devices: []
   }
 };
 
@@ -94,10 +123,12 @@ export const UserPreferencesProvider: React.FC<{ children: React.ReactNode }> = 
 
   const saveOnboardingData = (data: OnboardingData) => {
     updatePreferences({
+      name: data.name || '',
       onboardingCompleted: true,
       experienceLevel: data.experienceLevel,
-      investmentGoals: data.investmentGoals,
-      preferredPropertyTypes: data.preferredPropertyTypes,
+      investmentGoals: data.investmentGoals || [],
+      preferredPropertyTypes: data.preferredPropertyTypes || [],
+      interests: data.interests || []
     });
     
     localStorage.setItem('firstVisit', 'false');

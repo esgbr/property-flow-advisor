@@ -42,11 +42,13 @@ const WelcomeModal = () => {
       <DialogContent className="p-0 max-w-screen-md">
         <OnboardingFlow 
           onComplete={handleComplete} 
-          onSkip={handleSkip} 
+          onSkip={handleSkip}
           initialData={preferences ? {
             name: preferences.name || '',
             experienceLevel: preferences.experienceLevel,
-            interests: preferences.interests || []
+            interests: preferences.interests || [],
+            investmentGoals: preferences.investmentGoals || [],
+            preferredPropertyTypes: preferences.preferredPropertyTypes || []
           } : undefined}
         />
       </DialogContent>
