@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { NavLink } from 'react-router-dom';
-import { Home, FileText, Calculator, Calendar, Wrench, Check, Settings } from 'lucide-react';
+import { Home, FileText, Calculator, Calendar, Wrench, Check, Settings, GraduationCap } from 'lucide-react';
 import {
   Sidebar,
   SidebarContent,
@@ -49,6 +49,11 @@ const AppSidebar = () => {
       title: t('decision'),
       icon: Check,
       path: '/decision'
+    },
+    {
+      title: t('education'),
+      icon: GraduationCap,
+      path: '/education'
     },
     {
       title: t('settings'),

@@ -13,6 +13,7 @@ import Calculators from "./pages/Calculators";
 import Schedule from "./pages/Schedule";
 import Refurbishment from "./pages/Refurbishment";
 import Decision from "./pages/Decision";
+import Education from "./pages/Education";
 import Settings from "./pages/Settings";
 import NotFound from "./pages/NotFound";
 import { LanguageProvider } from "./contexts/LanguageContext";
@@ -38,6 +39,7 @@ const App = () => (
                 <Route path="schedule" element={<Schedule />} />
                 <Route path="refurbishment" element={<Refurbishment />} />
                 <Route path="decision" element={<Decision />} />
+                <Route path="education" element={<Education />} />
                 <Route path="settings" element={<Settings />} />
               </Route>
               <Route path="*" element={<NotFound />} />

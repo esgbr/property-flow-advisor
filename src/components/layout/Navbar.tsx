@@ -11,12 +11,21 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { BellIcon, UserIcon } from 'lucide-react';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { useLanguage } from '@/contexts/LanguageContext';
+import { Link } from 'react-router-dom';
+import LanguageSwitcher from '@/components/LanguageSwitcher';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 const Navbar = () => {
+  const { t } = useLanguage();
+  const isMobile = useIsMobile();
+
   return (
     <header className="border-b bg-card">
-      <div className="flex h-16 items-center px-6">
-        <div className="ml-auto flex items-center space-x-4">
+      <div className="flex h-16 items-center px-4 sm:px-6">
+        <div className="ml-auto flex items-center space-x-2 sm:space-x-4">
+          {!isMobile && <LanguageSwitcher />}
+          
           <Button variant="ghost" size="icon">
             <BellIcon className="h-5 w-5" />
           </Button>
@@ -40,14 +49,16 @@ const Navbar = () => {
               </DropdownMenuLabel>
               <DropdownMenuSeparator />
               <DropdownMenuItem>
-                Profile
+                {t('settings')}
               </DropdownMenuItem>
-              <DropdownMenuItem>
-                Settings
-              </DropdownMenuItem>
+              {isMobile && (
+                <DropdownMenuItem>
+                  <LanguageSwitcher />
+                </DropdownMenuItem>
+              )}
               <DropdownMenuSeparator />
               <DropdownMenuItem>
-                Log out
+                {t('lock')}
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
