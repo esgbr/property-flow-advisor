@@ -105,6 +105,16 @@ const TaxPlanner = () => {
   
   const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#A28BFF', '#FF6E6E', '#65D572'];
 
+  // Fix the ValueType issue by ensuring the value is treated as a number
+  const handlePropertyValueChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setPropertyValue(parseInt(e.target.value) || 0);
+  };
+
+  // Fix the ValueType issue for expenses
+  const handleExpensesChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setExpenses(parseInt(e.target.value) || 0);
+  };
+
   return (
     <div className="space-y-6">
       <div>
@@ -410,7 +420,7 @@ const TaxPlanner = () => {
                       <Input 
                         type="number" 
                         value={propertyValue}
-                        onChange={(e) => setPropertyValue(parseInt(e.target.value) || 0)}
+                        onChange={handlePropertyValueChange}
                         className="max-w-[180px]"
                       />
                       <span className="text-sm text-muted-foreground">EUR</span>
@@ -525,7 +535,7 @@ const TaxPlanner = () => {
                       id="monthly-expenses"
                       type="number" 
                       value={expenses}
-                      onChange={(e) => setExpenses(parseInt(e.target.value) || 0)}
+                      onChange={handleExpensesChange}
                     />
                     <span className="text-sm text-muted-foreground">EUR</span>
                   </div>

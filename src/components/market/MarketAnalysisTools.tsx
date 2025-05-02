@@ -302,7 +302,7 @@ const MarketAnalysisTools: React.FC = () => {
                       <XAxis dataKey="month" />
                       <YAxis />
                       <RechartsTooltip 
-                        formatter={(value: number) => [`Index: ${value}`, ""]}
+                        formatter={(value) => `Index: ${value}`}
                       />
                       <Legend />
                       <Line 
