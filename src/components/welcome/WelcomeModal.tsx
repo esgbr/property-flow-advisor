@@ -5,7 +5,7 @@ import OnboardingFlow, { OnboardingData } from '@/components/onboarding/Onboardi
 import { useUserPreferences } from '@/contexts/UserPreferencesContext';
 
 const WelcomeModal = () => {
-  const { isFirstVisit, setIsFirstVisit, saveOnboardingData } = useUserPreferences();
+  const { isFirstVisit, setIsFirstVisit, saveOnboardingData, preferences } = useUserPreferences();
   const [open, setOpen] = useState(false);
 
   useEffect(() => {
@@ -21,7 +21,13 @@ const WelcomeModal = () => {
   }, [isFirstVisit]);
 
   const handleComplete = (data: OnboardingData) => {
-    saveOnboardingData(data);
+    // Sync user data across platform
+    const updatedData = {
+      ...data,
+      lastUpdated: new Date().toISOString(),
+    };
+    
+    saveOnboardingData(updatedData);
     setOpen(false);
   };
 
@@ -34,7 +40,15 @@ const WelcomeModal = () => {
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogContent className="p-0 max-w-screen-md">
-        <OnboardingFlow onComplete={handleComplete} onSkip={handleSkip} />
+        <OnboardingFlow 
+          onComplete={handleComplete} 
+          onSkip={handleSkip} 
+          initialData={preferences ? {
+            name: preferences.name || '',
+            experienceLevel: preferences.experienceLevel,
+            interests: preferences.interests || []
+          } : undefined}
+        />
       </DialogContent>
     </Dialog>
   );

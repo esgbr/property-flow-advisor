@@ -5,46 +5,77 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
+  DropdownMenuLabel,
+  DropdownMenuSeparator
 } from '@/components/ui/dropdown-menu';
 import { Button } from '@/components/ui/button';
 import { useLanguage } from '@/contexts/LanguageContext';
-import { Globe } from 'lucide-react';
+import { Languages } from 'lucide-react';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { Badge } from '@/components/ui/badge';
+import { useToast } from '@/components/ui/use-toast';
 
 const LanguageSwitcher = () => {
   const { language, setLanguage, t } = useLanguage();
   const isMobile = useIsMobile();
+  const { toast } = useToast();
 
   const languages = [
-    { code: 'en', name: t('english') },
-    { code: 'de', name: t('german') },
-    { code: 'es', name: t('spanish') },
-    { code: 'fr', name: t('french') },
-    { code: 'it', name: t('italian') },
+    { code: 'en', name: 'English', flag: '🇬🇧' },
+    { code: 'de', name: 'Deutsch', flag: '🇩🇪' },
+    { code: 'es', name: 'Español', flag: '🇪🇸' },
+    { code: 'fr', name: 'Français', flag: '🇫🇷' },
+    { code: 'it', name: 'Italiano', flag: '🇮🇹' },
   ];
+  
+  const handleLanguageChange = (langCode: string) => {
+    setLanguage(langCode as any);
+    
+    // Notify user about language change
+    toast({
+      title: t('languageChanged'),
+      description: `${t('displayLanguageChangedTo')} ${languages.find(l => l.code === langCode)?.name}`,
+    });
+  };
+
+  const currentLanguage = languages.find(lang => lang.code === language);
 
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <Button variant="outline" size="sm" className="flex items-center gap-1">
           {isMobile ? (
-            <Globe className="h-4 w-4" />
+            <>
+              <Languages className="h-4 w-4" />
+              <span className="sr-only">{t('language')}</span>
+            </>
           ) : (
             <>
-              <Globe className="h-4 w-4 mr-1" />
-              {t('language')}: {language.toUpperCase()}
+              <Languages className="h-4 w-4 mr-1" />
+              <span>{currentLanguage?.flag}</span>
+              <span className="ml-1">{currentLanguage?.name}</span>
             </>
           )}
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="end">
+      <DropdownMenuContent align="end" className="w-48">
+        <DropdownMenuLabel>{t('selectLanguage')}</DropdownMenuLabel>
+        <DropdownMenuSeparator />
         {languages.map((lang) => (
           <DropdownMenuItem
             key={lang.code}
-            onClick={() => setLanguage(lang.code as any)}
-            className={language === lang.code ? 'bg-accent' : ''}
+            onClick={() => handleLanguageChange(lang.code)}
+            className="flex items-center justify-between cursor-pointer"
           >
-            {lang.name}
+            <div className="flex items-center gap-2">
+              <span>{lang.flag}</span>
+              <span>{lang.name}</span>
+            </div>
+            {language === lang.code && (
+              <Badge variant="outline" className="ml-2 bg-primary text-primary-foreground">
+                {t('active')}
+              </Badge>
+            )}
           </DropdownMenuItem>
         ))}
       </DropdownMenuContent>
