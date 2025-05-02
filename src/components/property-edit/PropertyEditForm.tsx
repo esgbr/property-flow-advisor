@@ -197,7 +197,11 @@ const PropertyEditForm = ({ property, onSave }: PropertyEditFormProps) => {
               <FormItem>
                 <FormLabel className="flex items-center gap-1">
                   Address
-                  {addressVerified && <MapPinCheck className="h-4 w-4 text-green-500" title="Address verified" />}
+                  {addressVerified && (
+                    <div className="flex items-center" aria-label="Address verified">
+                      <MapPinCheck className="h-4 w-4 text-green-500" />
+                    </div>
+                  )}
                 </FormLabel>
                 <FormControl>
                   <div className="relative">
@@ -372,26 +376,8 @@ const PropertyEditForm = ({ property, onSave }: PropertyEditFormProps) => {
 // Add type definition for the global Google Maps objects
 declare global {
   interface Window {
-    google: {
-      maps: {
-        places: {
-          Autocomplete: new (
-            input: HTMLElement,
-            options?: { types: string[] }
-          ) => {
-            addListener: (event: string, callback: () => void) => void;
-            getPlace: () => {
-              address_components?: {
-                long_name: string;
-                short_name: string;
-                types: string[];
-              }[];
-              formatted_address?: string;
-            };
-          };
-        };
-      };
-    };
+    google: any;
+    initMap: () => void;
   }
 }
 
