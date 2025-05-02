@@ -1,11 +1,11 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { 
   ArrowUpRight, BarChart3, Building, Calendar, ChartBar, LineChart, 
-  Map, MapPin, Search, TrendingDown, TrendingUp, Info, Calculator 
+  Map, MapPin, Search, TrendingDown, TrendingUp, Info, Calculator,
+  Check, CheckCircle, CheckSquare
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';

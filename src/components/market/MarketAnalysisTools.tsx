@@ -21,7 +21,7 @@ import {
   XAxis, 
   YAxis, 
   CartesianGrid, 
-  Tooltip, 
+  Tooltip as RechartsTooltip, 
   ResponsiveContainer,
   Legend
 } from 'recharts';
@@ -301,7 +301,7 @@ const MarketAnalysisTools: React.FC = () => {
                       <CartesianGrid strokeDasharray="3 3" />
                       <XAxis dataKey="month" />
                       <YAxis />
-                      <Tooltip 
+                      <RechartsTooltip 
                         formatter={(value: number) => [`Index: ${value}`, ""]}
                       />
                       <Legend />
@@ -402,7 +402,7 @@ const MarketAnalysisTools: React.FC = () => {
                     >
                       <XAxis dataKey="year" />
                       <YAxis />
-                      <Tooltip />
+                      <RechartsTooltip />
                       <Line 
                         type="monotone" 
                         dataKey="interestRate" 
@@ -457,7 +457,7 @@ const MarketAnalysisTools: React.FC = () => {
                           <CartesianGrid strokeDasharray="3 3" />
                           <XAxis dataKey="type" />
                           <YAxis />
-                          <Tooltip formatter={(value) => [`€${value}`, t('averageRent')]} />
+                          <RechartsTooltip formatter={(value) => [`€${value}`, t('averageRent')]} />
                           <Bar dataKey="rent" fill="#8884d8" />
                         </RechartsBarChart>
                       </ResponsiveContainer>
@@ -597,7 +597,7 @@ const MarketAnalysisTools: React.FC = () => {
                       <CartesianGrid strokeDasharray="3 3" />
                       <XAxis dataKey="name" />
                       <YAxis />
-                      <Tooltip />
+                      <RechartsTooltip />
                       <Legend />
                       <Bar dataKey="rentGrowth" name={t('rentGrowth')} fill="#8884d8" />
                       <Bar dataKey="priceGrowth" name={t('priceGrowth')} fill="#82ca9d" />
@@ -635,7 +635,7 @@ const MarketAnalysisTools: React.FC = () => {
                       <CartesianGrid strokeDasharray="3 3" />
                       <XAxis dataKey="name" />
                       <YAxis />
-                      <Tooltip />
+                      <RechartsTooltip />
                       <Legend />
                       <Bar dataKey="inventory" name={t('inventory')} fill="#8884d8" />
                       <Bar dataKey="demand" name={t('demand')} fill="#82ca9d" />
