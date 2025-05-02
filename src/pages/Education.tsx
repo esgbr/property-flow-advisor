@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
@@ -384,12 +383,14 @@ const educationContent: EducationLevel = {
   }
 };
 
+type ExperienceLevel = 'beginner' | 'intermediate' | 'expert';
+
 const Education = () => {
   const { t } = useLanguage();
   const isMobile = useIsMobile();
   const { preferences } = useUserPreferences();
   const { toast } = useToast();
-  const [level, setLevel] = useState(preferences.experienceLevel || 'beginner');
+  const [level, setLevel] = useState<ExperienceLevel>(preferences.experienceLevel || 'beginner');
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedFilters, setSelectedFilters] = useState<string[]>([]);
   const [savedItems, setSavedItems] = useState<number[]>([]);
@@ -485,6 +486,14 @@ const Education = () => {
     }
   };
 
+  // Fix for the type issue - create a handler that properly handles the type conversion
+  const handleLevelChange = (value: string) => {
+    // Ensure we only set valid values by checking if it's one of our allowed levels
+    if (value === 'beginner' || value === 'intermediate' || value === 'expert') {
+      setLevel(value);
+    }
+  };
+
   return (
     <div className="space-y-6 animate-fade-in">
       <div className="flex justify-between items-center">
@@ -506,7 +515,7 @@ const Education = () => {
       </div>
 
       {/* Education Level Tabs */}
-      <Tabs defaultValue={level} onValueChange={setLevel} className="w-full">
+      <Tabs defaultValue={level} onValueChange={handleLevelChange} className="w-full">
         <TabsList className={`grid w-full ${isMobile ? 'grid-cols-3' : 'grid-cols-3 max-w-md'}`}>
           <TabsTrigger value="beginner">{t('beginner')}</TabsTrigger>
           <TabsTrigger value="intermediate">{t('intermediate')}</TabsTrigger>
