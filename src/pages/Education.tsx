@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
@@ -949,4 +950,144 @@ const Education = () => {
                     <CardContent>
                       {filteredItems.length > 0 ? (
                         <ul className="space-y-3">
-                          {filteredItems.map((item: EducationItem) =>
+                          {filteredItems.map((item: EducationItem) => (
+                            <li 
+                              key={item.id} 
+                              className="flex items-center justify-between hover:bg-muted/50 p-2 rounded-md cursor-pointer"
+                              onClick={() => handleItemClick(item)}
+                            >
+                              <div className="flex items-center gap-2">
+                                {completedItems.includes(item.id) ? (
+                                  <CheckSquare className="h-4 w-4 text-green-500" />
+                                ) : (
+                                  <div className="w-4 h-4 rounded border border-gray-300" />
+                                )}
+                                <span className={completedItems.includes(item.id) ? "line-through text-muted-foreground" : ""}>
+                                  {item.title}
+                                </span>
+                                {item.isNew && (
+                                  <Badge variant="outline" className="ml-2 bg-blue-50 text-blue-700 border-blue-200">
+                                    {t('new')}
+                                  </Badge>
+                                )}
+                                {item.isPopular && (
+                                  <Badge variant="outline" className="ml-2 bg-amber-50 text-amber-700 border-amber-200">
+                                    {t('popular')}
+                                  </Badge>
+                                )}
+                              </div>
+                              <div className="flex items-center gap-2">
+                                <span className="text-xs text-muted-foreground">{item.readTime}min</span>
+                                <Button
+                                  variant="ghost"
+                                  size="icon"
+                                  className="h-8 w-8"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleSaveItem(item.id);
+                                  }}
+                                >
+                                  <Bookmark className={`h-4 w-4 ${savedItems.includes(item.id) ? 'fill-current' : ''}`} />
+                                </Button>
+                              </div>
+                            </li>
+                          ))}
+                        </ul>
+                      ) : (
+                        <p className="text-center text-muted-foreground py-2">{t('noCategoryContent')}</p>
+                      )}
+                    </CardContent>
+                  </Card>
+                );
+              })}
+            </div>
+          </TabsContent>
+        ))}
+      </Tabs>
+
+      {/* Detail Dialog */}
+      <Dialog open={openDialog} onOpenChange={setOpenDialog}>
+        {selectedItem && (
+          <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
+            <DialogHeader>
+              <DialogTitle className="text-xl flex items-center justify-between">
+                {selectedItem.title}
+                {selectedItem.hasCertificate && (
+                  <Badge variant="outline" className="ml-2 bg-amber-50 text-amber-700 border-amber-200 flex items-center">
+                    <Award className="h-3.5 w-3.5 mr-1" />
+                    {t('certificateEligible')}
+                  </Badge>
+                )}
+              </DialogTitle>
+              <DialogDescription>
+                <div className="flex flex-wrap gap-2 mt-2 mb-4">
+                  <Badge variant={selectedItem.difficulty === 'easy' ? 'outline' : (selectedItem.difficulty === 'medium' ? 'secondary' : 'destructive')}>
+                    {t(selectedItem.difficulty || 'easy')}
+                  </Badge>
+                  <Badge variant="outline" className="flex items-center">
+                    <span>{t('timeToComplete')}: {selectedItem.readTime} {t('minRead')}</span>
+                  </Badge>
+                  {selectedItem.tags?.map(tag => (
+                    <Badge key={tag} variant="outline">{tag}</Badge>
+                  ))}
+                </div>
+                <p className="text-base text-foreground my-4">{selectedItem.description}</p>
+                
+                {selectedItem.sections && (
+                  <div className="space-y-6 mt-8">
+                    {selectedItem.sections.map((section, index) => (
+                      <div key={index} className="space-y-2">
+                        <h3 className="text-lg font-semibold">{section.title}</h3>
+                        <p className="text-muted-foreground">{section.content}</p>
+                        {section.videoUrl && (
+                          <div className="aspect-video bg-muted rounded-md mt-2 flex items-center justify-center">
+                            {/* Video placeholder */}
+                            <div className="text-center">
+                              <Button variant="outline">Play Video</Button>
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </DialogDescription>
+            </DialogHeader>
+
+            <div className="flex flex-wrap gap-2 mt-6">
+              {selectedItem.hasResources && (
+                <Button variant="outline" size="sm" className="flex items-center">
+                  <DownloadCloud className="mr-2 h-4 w-4" /> 
+                  {t('downloadResources')}
+                </Button>
+              )}
+              
+              <Button variant="outline" size="sm" className="flex items-center" onClick={() => handleSaveItem(selectedItem.id)}>
+                <Bookmark className={`mr-2 h-4 w-4 ${savedItems.includes(selectedItem.id) ? 'fill-current' : ''}`} />
+                {savedItems.includes(selectedItem.id) ? 'Saved' : t('readLater')}
+              </Button>
+              
+              <Button variant="outline" size="sm" className="flex items-center">
+                <Share2 className="mr-2 h-4 w-4" /> 
+                {t('shareProgress')}
+              </Button>
+            </div>
+            
+            <DialogFooter className="flex-col sm:flex-row gap-2 mt-4">
+              {selectedItem.hasQuiz && (
+                <Button variant="outline">
+                  {t('takeQuiz')}
+                </Button>
+              )}
+              <Button onClick={() => handleMarkComplete(selectedItem.id)}>
+                {completedItems.includes(selectedItem.id) ? 'Mark as Incomplete' : t('markAsComplete')}
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        )}
+      </Dialog>
+    </div>
+  );
+};
+
+export default Education;
