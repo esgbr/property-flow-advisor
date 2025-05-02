@@ -1,8 +1,8 @@
 
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useLanguage } from '@/contexts/LanguageContext';
-import { Building, Calculator, ClipboardCheck, FileText, Receipt, Search } from 'lucide-react';
+import { Building, Calculator, ClipboardCheck, FileText, Receipt, Search, NotebookPen, TrendingUp, AlertTriangle } from 'lucide-react';
 import { useUserPreferences } from '@/contexts/UserPreferencesContext';
 import PortfolioDashboard from '@/components/portfolio/PortfolioDashboard';
 import MortgageCalculator from '@/components/financing/MortgageCalculator';
@@ -11,12 +11,18 @@ import MarketAnalysisTools from '@/components/market/MarketAnalysisTools';
 import DueDiligenceChecklist from '@/components/due-diligence/DueDiligenceChecklist';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
+import { useIsMobile } from '@/hooks/use-mobile';
+import { Card } from '@/components/ui/card';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { Button } from '@/components/ui/button';
 
 const InvestorDashboard: React.FC = () => {
-  const { t } = useLanguage();
-  const { preferences } = useUserPreferences();
+  const { t, language } = useLanguage();
+  const { preferences, updatePreferences } = useUserPreferences();
   const location = useLocation();
   const navigate = useNavigate();
+  const isMobile = useIsMobile();
+  const [showWelcomeBack, setShowWelcomeBack] = useState(false);
   
   // Parse the query parameters to determine active tab
   const searchParams = new URLSearchParams(location.search);
@@ -27,19 +33,49 @@ const InvestorDashboard: React.FC = () => {
     navigate(`/investor-dashboard?tab=${value}`, { replace: true });
   };
 
-  // Track page view
+  // Track page view and show welcome message if first visit
   useEffect(() => {
     console.log('Investor Dashboard viewed:', defaultTab);
+    
     // Welcome user if first visit to this dashboard
     if (preferences.name && !preferences.visitedInvestorDashboard) {
-      toast.success(`Welcome to the Investor Dashboard, ${preferences.name}!`, {
-        description: "Access comprehensive investment tools and analysis."
+      toast.success(`${t('welcome')} ${t('toThe')} ${t('investorDashboard')}, ${preferences.name}!`, {
+        description: t('accessComprehensiveInvestmentTools')
       });
+      
+      // Mark as visited
+      updatePreferences({ visitedInvestorDashboard: true });
+    } else if (preferences.name && !showWelcomeBack) {
+      // Show welcome back message for returning users
+      setShowWelcomeBack(true);
     }
   }, [defaultTab, preferences.name, preferences.visitedInvestorDashboard]);
 
+  // Currency formatter based on user language
+  const getCurrencySymbol = () => {
+    switch (language) {
+      case 'de':
+      case 'fr':
+      case 'it':
+      case 'es':
+        return '€';
+      default:
+        return '$';
+    }
+  };
+
   return (
     <div className="space-y-6 animate-fade-in">
+      {showWelcomeBack && (
+        <Alert className="bg-primary/10 border-primary/20">
+          <TrendingUp className="h-4 w-4" />
+          <AlertTitle>{t('welcomeBack')}, {preferences.name}!</AlertTitle>
+          <AlertDescription>
+            {t('continueMakingSmartInvestments')}
+          </AlertDescription>
+        </Alert>
+      )}
+
       <div>
         <h1 className="text-3xl font-bold">
           {t('investorDashboard')}
@@ -53,31 +89,46 @@ const InvestorDashboard: React.FC = () => {
       </div>
 
       <Tabs defaultValue={defaultTab} value={defaultTab} onValueChange={handleTabChange} className="w-full">
-        <TabsList className="grid w-full md:w-auto md:inline-grid grid-cols-2 sm:grid-cols-5">
-          <TabsTrigger value="portfolio">
+        <TabsList className={`grid w-full ${isMobile ? 'grid-cols-3 gap-1 mb-2' : 'md:w-auto md:inline-grid grid-cols-5'}`}>
+          <TabsTrigger value="portfolio" className={isMobile ? "text-xs px-1" : ""}>
             <Building className="h-4 w-4 mr-2" />
-            {t('portfolio')}
+            {!isMobile && t('portfolio')}
+            {isMobile && <span className="sr-only">{t('portfolio')}</span>}
           </TabsTrigger>
-          <TabsTrigger value="market">
+          <TabsTrigger value="market" className={isMobile ? "text-xs px-1" : ""}>
             <Search className="h-4 w-4 mr-2" />
-            {t('marketAnalysis')}
+            {!isMobile && t('marketAnalysis')}
+            {isMobile && <span className="sr-only">{t('marketAnalysis')}</span>}
           </TabsTrigger>
-          <TabsTrigger value="financing">
+          <TabsTrigger value="financing" className={isMobile ? "text-xs px-1" : ""}>
             <Calculator className="h-4 w-4 mr-2" />
-            {t('financing')}
+            {!isMobile && t('financing')}
+            {isMobile && <span className="sr-only">{t('financing')}</span>}
           </TabsTrigger>
-          <TabsTrigger value="tax">
+          <TabsTrigger value="tax" className={isMobile ? "text-xs px-1" : ""}>
             <Receipt className="h-4 w-4 mr-2" />
-            {t('taxPlanning')}
+            {!isMobile && t('taxPlanning')}
+            {isMobile && <span className="sr-only">{t('taxPlanning')}</span>}
           </TabsTrigger>
-          <TabsTrigger value="duediligence">
+          <TabsTrigger value="duediligence" className={isMobile ? "text-xs px-1" : ""}>
             <ClipboardCheck className="h-4 w-4 mr-2" />
-            {t('dueDiligence')}
+            {!isMobile && t('dueDiligence')}
+            {isMobile && <span className="sr-only">{t('dueDiligence')}</span>}
           </TabsTrigger>
         </TabsList>
 
+        {isMobile && (
+          <div className="flex overflow-x-auto pb-2 mb-4">
+            {defaultTab === 'portfolio' && <div className="text-sm font-medium">{t('portfolio')}</div>}
+            {defaultTab === 'market' && <div className="text-sm font-medium">{t('marketAnalysis')}</div>}
+            {defaultTab === 'financing' && <div className="text-sm font-medium">{t('financing')}</div>}
+            {defaultTab === 'tax' && <div className="text-sm font-medium">{t('taxPlanning')}</div>}
+            {defaultTab === 'duediligence' && <div className="text-sm font-medium">{t('dueDiligence')}</div>}
+          </div>
+        )}
+
         <TabsContent value="portfolio" className="mt-6">
-          <PortfolioDashboard />
+          <PortfolioDashboard currencySymbol={getCurrencySymbol()} />
         </TabsContent>
 
         <TabsContent value="market" className="mt-6">
@@ -85,11 +136,11 @@ const InvestorDashboard: React.FC = () => {
         </TabsContent>
 
         <TabsContent value="financing" className="mt-6">
-          <MortgageCalculator />
+          <MortgageCalculator currencySymbol={getCurrencySymbol()} />
         </TabsContent>
 
         <TabsContent value="tax" className="mt-6">
-          <TaxPlanner />
+          <TaxPlanner currencySymbol={getCurrencySymbol()} />
         </TabsContent>
 
         <TabsContent value="duediligence" className="mt-6">

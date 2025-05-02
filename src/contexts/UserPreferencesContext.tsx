@@ -27,6 +27,7 @@ interface UserPreferences {
   lastVisitedPage: string;
   lastActive: string;
   todayWelcomed: string;
+  visitedInvestorDashboard: boolean; // Added missing property
   // Portfolio tracking
   savedProperties: string[];
   watchlist: string[];
@@ -70,6 +71,7 @@ const defaultPreferences: UserPreferences = {
   lastVisitedPage: '',
   lastActive: new Date().toISOString(),
   todayWelcomed: '',
+  visitedInvestorDashboard: false, // Added missing property with default value
   savedProperties: [],
   watchlist: [],
   dataSync: {
