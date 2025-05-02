@@ -3,12 +3,14 @@ import React, { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useLanguage } from '@/contexts/LanguageContext';
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, ResponsiveContainer } from 'recharts';
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar, Legend } from 'recharts';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Search, TrendingUp, BuildingIcon, Map } from 'lucide-react';
+import { Search, TrendingUp, BuildingIcon, Map, AlertTriangle, Globe, Download } from 'lucide-react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Progress } from '@/components/ui/progress';
+import { toast } from 'sonner';
+import { Skeleton } from '@/components/ui/skeleton';
 
 // Sample market data
 const marketTrends = [
@@ -34,19 +36,72 @@ const neighborhoodScores = [
   { name: 'Southside', investment: 70, growth: 68, rental: 75 },
 ];
 
+const riskReturnData = [
+  { name: 'Downtown', risk: 65, return: 85 },
+  { name: 'Westside', risk: 45, return: 65 },
+  { name: 'Northside', risk: 50, return: 75 },
+  { name: 'Eastside', risk: 60, return: 70 },
+  { name: 'Southside', risk: 40, return: 60 },
+];
+
 const MarketAnalysisTools: React.FC = () => {
   const { t } = useLanguage();
   const [activeTab, setActiveTab] = useState('trends');
   const [searchLocation, setSearchLocation] = useState('');
   const [selectedPeriod, setSelectedPeriod] = useState('1y');
+  const [isSearching, setIsSearching] = useState(false);
+  const [searchResults, setSearchResults] = useState<string[]>([]);
+  const [showSuggestions, setShowSuggestions] = useState(false);
   
   const handleSearch = () => {
-    console.log('Searching for:', searchLocation);
-    // In a real app, this would trigger an API call to fetch market data
+    if (!searchLocation.trim()) {
+      toast.error("Please enter a location to search");
+      return;
+    }
+    
+    setIsSearching(true);
+    // Simulate API call
+    setTimeout(() => {
+      setIsSearching(false);
+      toast.success("Market data updated for " + searchLocation);
+      // In a real app, we would update the charts with the search results
+    }, 1500);
+  };
+
+  const handleLocationInput = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const query = e.target.value;
+    setSearchLocation(query);
+    
+    if (query.length > 2) {
+      setShowSuggestions(true);
+      // Simulate location suggestions - in a real app this would be an API call
+      const mockSuggestions = [
+        `${query} City Center`, 
+        `${query} Heights`, 
+        `${query} Metro Area`,
+        `${query} Downtown`
+      ];
+      setSearchResults(mockSuggestions);
+    } else {
+      setShowSuggestions(false);
+    }
+  };
+
+  const selectSuggestion = (suggestion: string) => {
+    setSearchLocation(suggestion);
+    setShowSuggestions(false);
+  };
+  
+  const downloadReport = (reportType: string) => {
+    toast.success(`Preparing ${reportType} report for download...`);
+    // In a real app, this would trigger a report download
+    setTimeout(() => {
+      toast.success(`${reportType} report ready`);
+    }, 2000);
   };
   
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 animate-fade-in">
       <div>
         <h1 className="text-3xl font-bold">
           <TrendingUp className="inline-block mr-2 h-8 w-8" />
@@ -55,7 +110,7 @@ const MarketAnalysisTools: React.FC = () => {
         <p className="text-muted-foreground">{t('marketAnalysisDesc')}</p>
       </div>
       
-      <div className="flex items-center space-x-2">
+      <div className="flex flex-col md:flex-row gap-2 items-start md:items-center">
         <div className="relative flex-grow">
           <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
           <Input
@@ -63,17 +118,49 @@ const MarketAnalysisTools: React.FC = () => {
             placeholder="Search by city, zip code, or neighborhood..."
             className="pl-8"
             value={searchLocation}
-            onChange={(e) => setSearchLocation(e.target.value)}
+            onChange={handleLocationInput}
+            onFocus={() => searchLocation.length > 2 && setShowSuggestions(true)}
+            onBlur={() => setTimeout(() => setShowSuggestions(false), 200)}
           />
+          {showSuggestions && searchResults.length > 0 && (
+            <div className="absolute z-10 w-full bg-white dark:bg-gray-800 rounded-md mt-1 shadow-lg border border-gray-200 dark:border-gray-700">
+              <ul>
+                {searchResults.map((suggestion, index) => (
+                  <li 
+                    key={index} 
+                    className="px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer text-sm"
+                    onClick={() => selectSuggestion(suggestion)}
+                  >
+                    {suggestion}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
         </div>
-        <Button onClick={handleSearch}>Search</Button>
+        <Button onClick={handleSearch} disabled={isSearching} className="whitespace-nowrap">
+          {isSearching ? "Searching..." : "Search"}
+        </Button>
+        <Select value={selectedPeriod} onValueChange={setSelectedPeriod}>
+          <SelectTrigger className="w-[150px]">
+            <SelectValue placeholder="Time period" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="1m">Last Month</SelectItem>
+            <SelectItem value="3m">Last 3 Months</SelectItem>
+            <SelectItem value="6m">Last 6 Months</SelectItem>
+            <SelectItem value="1y">Last Year</SelectItem>
+            <SelectItem value="5y">Last 5 Years</SelectItem>
+          </SelectContent>
+        </Select>
       </div>
       
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-        <TabsList className="grid w-full grid-cols-4">
+        <TabsList className="grid w-full grid-cols-2 md:grid-cols-5">
           <TabsTrigger value="trends">Price Trends</TabsTrigger>
           <TabsTrigger value="neighborhoods">Neighborhoods</TabsTrigger>
-          <TabsTrigger value="investment">Investment Opportunity</TabsTrigger>
+          <TabsTrigger value="investment">Risk vs Return</TabsTrigger>
+          <TabsTrigger value="forecast">Forecast</TabsTrigger>
           <TabsTrigger value="reports">Market Reports</TabsTrigger>
         </TabsList>
         
@@ -85,18 +172,6 @@ const MarketAnalysisTools: React.FC = () => {
                   <CardTitle>Market Price Trends</CardTitle>
                   <CardDescription>Average property prices over time</CardDescription>
                 </div>
-                <Select value={selectedPeriod} onValueChange={setSelectedPeriod}>
-                  <SelectTrigger className="w-[180px]">
-                    <SelectValue placeholder="Select Period" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="1m">1 Month</SelectItem>
-                    <SelectItem value="3m">3 Months</SelectItem>
-                    <SelectItem value="6m">6 Months</SelectItem>
-                    <SelectItem value="1y">1 Year</SelectItem>
-                    <SelectItem value="5y">5 Years</SelectItem>
-                  </SelectContent>
-                </Select>
               </div>
             </CardHeader>
             <CardContent>
@@ -106,7 +181,7 @@ const MarketAnalysisTools: React.FC = () => {
                     <CartesianGrid strokeDasharray="3 3" />
                     <XAxis dataKey="month" />
                     <YAxis />
-                    <RechartsTooltip formatter={(value) => `$${value}`} />
+                    <Tooltip formatter={(value) => `$${value}`} />
                     <Line 
                       type="monotone" 
                       dataKey="value" 
@@ -204,43 +279,117 @@ const MarketAnalysisTools: React.FC = () => {
         <TabsContent value="investment" className="space-y-4">
           <Card>
             <CardHeader>
-              <CardTitle>Investment Opportunity Index</CardTitle>
-              <CardDescription>Areas with the highest investment potential</CardDescription>
+              <CardTitle>Risk vs. Return Analysis</CardTitle>
+              <CardDescription>Evaluation of investment risk against potential returns</CardDescription>
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
-                <p>The Investment Opportunity Index evaluates areas based on:</p>
-                <ul className="list-disc pl-5 space-y-1">
-                  <li>Current price vs. historical trends</li>
-                  <li>Rental yield potential</li>
-                  <li>Development projects in the area</li>
-                  <li>Economic growth indicators</li>
-                  <li>Population growth and demographic shifts</li>
-                </ul>
-                
-                <div className="h-[300px] mt-8">
+                <div className="h-[300px]">
                   <ResponsiveContainer width="100%" height="100%">
-                    <LineChart data={[
-                      { index: 0, score: 65 },
-                      { index: 1, score: 75 },
-                      { index: 2, score: 90 },
-                      { index: 3, score: 80 },
-                      { index: 4, score: 85 },
-                    ]}>
+                    <BarChart data={riskReturnData} barGap={8}>
                       <CartesianGrid strokeDasharray="3 3" />
-                      <XAxis dataKey="index" />
-                      <YAxis domain={[0, 100]} />
-                      <RechartsTooltip formatter={(value) => `Index: ${value}`} />
-                      <Line 
-                        type="monotone" 
-                        dataKey="score" 
-                        stroke="#82ca9d" 
-                        strokeWidth={2}
-                        name="Investment Score"
-                      />
-                    </LineChart>
+                      <XAxis dataKey="name" />
+                      <YAxis />
+                      <Tooltip />
+                      <Legend />
+                      <Bar dataKey="risk" fill="#ff8042" name="Risk Factor" />
+                      <Bar dataKey="return" fill="#82ca9d" name="Return Potential" />
+                    </BarChart>
                   </ResponsiveContainer>
                 </div>
+                
+                <div className="rounded-lg border p-4">
+                  <h3 className="text-lg font-medium mb-2">Investment Insights</h3>
+                  <ul className="space-y-1">
+                    <li className="flex items-start">
+                      <div className="h-5 w-5 mr-2 flex-shrink-0 rounded-full bg-green-500"></div>
+                      <span>Downtown shows highest return potential with moderate risk</span>
+                    </li>
+                    <li className="flex items-start">
+                      <div className="h-5 w-5 mr-2 flex-shrink-0 rounded-full bg-amber-500"></div>
+                      <span>Southside offers the best risk-adjusted returns</span>
+                    </li>
+                    <li className="flex items-start">
+                      <div className="h-5 w-5 mr-2 flex-shrink-0 rounded-full bg-red-500"></div>
+                      <span>Eastside currently presents highest risk profile</span>
+                    </li>
+                  </ul>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+        
+        <TabsContent value="forecast" className="space-y-4">
+          <Card>
+            <CardHeader>
+              <CardTitle>Market Forecast</CardTitle>
+              <CardDescription>Price projections for the next 24 months</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="flex items-center justify-center p-4 border border-amber-200 bg-amber-50 dark:bg-amber-950 dark:border-amber-800 rounded-md">
+                <AlertTriangle className="h-5 w-5 text-amber-500 mr-2" />
+                <p className="text-sm text-amber-700 dark:text-amber-300">
+                  Forecasts are based on historical data and current market conditions. Actual results may vary.
+                </p>
+              </div>
+              
+              <div className="h-[300px]">
+                <ResponsiveContainer width="100%" height="100%">
+                  <LineChart
+                    data={[
+                      { month: 'Jan', forecast: 1500, range: [1450, 1550] },
+                      { month: 'Feb', forecast: 1520, range: [1460, 1580] },
+                      { month: 'Mar', forecast: 1550, range: [1480, 1620] },
+                      { month: 'Apr', forecast: 1580, range: [1500, 1660] },
+                      { month: 'May', forecast: 1600, range: [1510, 1690] },
+                      { month: 'Jun', forecast: 1650, range: [1550, 1750] },
+                    ]}
+                  >
+                    <CartesianGrid strokeDasharray="3 3" />
+                    <XAxis dataKey="month" />
+                    <YAxis />
+                    <Tooltip formatter={(value) => `$${value}`} />
+                    <Line
+                      type="monotone"
+                      dataKey="forecast"
+                      stroke="#8884d8"
+                      activeDot={{ r: 8 }}
+                      strokeWidth={2}
+                      name="Price Forecast"
+                    />
+                  </LineChart>
+                </ResponsiveContainer>
+              </div>
+              
+              <div className="grid md:grid-cols-2 gap-4">
+                <Card>
+                  <CardHeader className="pb-2">
+                    <CardTitle className="text-base">Growth Factors</CardTitle>
+                  </CardHeader>
+                  <CardContent className="pt-0">
+                    <ul className="space-y-1 text-sm">
+                      <li>✓ New infrastructure development</li>
+                      <li>✓ Increasing population</li>
+                      <li>✓ Limited housing supply</li>
+                      <li>✓ Strong local economy</li>
+                    </ul>
+                  </CardContent>
+                </Card>
+                
+                <Card>
+                  <CardHeader className="pb-2">
+                    <CardTitle className="text-base">Risk Factors</CardTitle>
+                  </CardHeader>
+                  <CardContent className="pt-0">
+                    <ul className="space-y-1 text-sm">
+                      <li>⚠️ Interest rate uncertainty</li>
+                      <li>⚠️ Regulatory changes</li>
+                      <li>⚠️ Market volatility</li>
+                      <li>⚠️ Economic recession possibility</li>
+                    </ul>
+                  </CardContent>
+                </Card>
               </div>
             </CardContent>
           </Card>
@@ -250,32 +399,52 @@ const MarketAnalysisTools: React.FC = () => {
           <Card>
             <CardHeader>
               <CardTitle>Market Analysis Reports</CardTitle>
-              <CardDescription>In-depth market analysis documents</CardDescription>
+              <CardDescription>Comprehensive market analysis documents</CardDescription>
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
-                <div className="flex justify-between items-center p-3 border rounded-md">
+                <div className="flex justify-between items-center p-3 border rounded-md hover:bg-muted/50 transition-colors">
                   <div className="flex items-center">
                     <BuildingIcon className="h-5 w-5 mr-2 text-muted-foreground" />
-                    <span>Q2 2023 Residential Market Analysis</span>
+                    <span className="font-medium">Q2 2023 Residential Market Analysis</span>
                   </div>
-                  <Button variant="outline" size="sm">Download</Button>
+                  <Button variant="outline" size="sm" onClick={() => downloadReport('Q2 2023 Residential Market')}>
+                    <Download className="h-4 w-4 mr-1" />
+                    Download
+                  </Button>
                 </div>
                 
-                <div className="flex justify-between items-center p-3 border rounded-md">
+                <div className="flex justify-between items-center p-3 border rounded-md hover:bg-muted/50 transition-colors">
                   <div className="flex items-center">
                     <Map className="h-5 w-5 mr-2 text-muted-foreground" />
-                    <span>Downtown Investment Opportunities</span>
+                    <span className="font-medium">Downtown Investment Opportunities</span>
                   </div>
-                  <Button variant="outline" size="sm">Download</Button>
+                  <Button variant="outline" size="sm" onClick={() => downloadReport('Downtown Investment')}>
+                    <Download className="h-4 w-4 mr-1" />
+                    Download
+                  </Button>
                 </div>
                 
-                <div className="flex justify-between items-center p-3 border rounded-md">
+                <div className="flex justify-between items-center p-3 border rounded-md hover:bg-muted/50 transition-colors">
                   <div className="flex items-center">
                     <TrendingUp className="h-5 w-5 mr-2 text-muted-foreground" />
-                    <span>5-Year Market Projection Report</span>
+                    <span className="font-medium">5-Year Market Projection Report</span>
                   </div>
-                  <Button variant="outline" size="sm">Download</Button>
+                  <Button variant="outline" size="sm" onClick={() => downloadReport('5-Year Market Projection')}>
+                    <Download className="h-4 w-4 mr-1" />
+                    Download
+                  </Button>
+                </div>
+                
+                <div className="flex justify-between items-center p-3 border rounded-md hover:bg-muted/50 transition-colors">
+                  <div className="flex items-center">
+                    <Globe className="h-5 w-5 mr-2 text-muted-foreground" />
+                    <span className="font-medium">International Investment Comparison</span>
+                  </div>
+                  <Button variant="outline" size="sm" onClick={() => downloadReport('International Investment')}>
+                    <Download className="h-4 w-4 mr-1" />
+                    Download
+                  </Button>
                 </div>
                 
                 <div className="mt-6">
@@ -283,7 +452,9 @@ const MarketAnalysisTools: React.FC = () => {
                     Need a custom market analysis? Contact our team to request a detailed report
                     tailored to your specific investment criteria.
                   </p>
-                  <Button className="mt-2">Request Custom Report</Button>
+                  <Button className="mt-2" onClick={() => toast.success("Custom report request submitted. Our team will contact you shortly.")}>
+                    Request Custom Report
+                  </Button>
                 </div>
               </div>
             </CardContent>

@@ -1,5 +1,5 @@
 
-import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
+import { BrowserRouter as Router, Route, Routes, Navigate } from 'react-router-dom';
 import { Toaster } from '@/components/ui/sonner';
 import { ThemeProvider } from '@/components/theme-provider';
 import { UserPreferencesProvider } from './contexts/UserPreferencesContext';
@@ -23,7 +23,6 @@ import NotFound from './pages/NotFound';
 import InvestorDashboard from './pages/InvestorDashboard';
 
 import { Toaster as SonnerToaster } from "@/components/ui/sonner";
-import Index from './pages/Index';
 
 export default function App() {
   return (
@@ -34,7 +33,8 @@ export default function App() {
             <RewardsProvider>
               <Router>
                 <Routes>
-                  <Route path="/" element={<Index />} />
+                  {/* Redirect root to dashboard */}
+                  <Route path="/" element={<Navigate to="/dashboard" replace />} />
                   <Route element={<MainLayout />}>
                     <Route path="/dashboard" element={<Dashboard />} />
                     <Route path="/properties" element={<Properties />} />

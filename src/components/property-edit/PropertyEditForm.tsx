@@ -20,9 +20,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { toast } from '@/components/ui/use-toast';
-import { MapPinCheck, MapPin, AlertCircle } from 'lucide-react';
-import { useToast } from '@/components/ui/use-toast';
+import { toast } from 'sonner';
+import { MapPinCheck, MapPin, AlertCircle, Shield } from 'lucide-react';
+import { useToast } from '@/hooks/use-toast';
 
 interface PropertyEditFormProps {
   property: Property;
@@ -36,6 +36,16 @@ const PropertyEditForm = ({ property, onSave }: PropertyEditFormProps) => {
   const [autocompleteLoaded, setAutocompleteLoaded] = useState<boolean>(false);
   const [loadingError, setLoadingError] = useState<string | null>(null);
   const { toast } = useToast();
+  
+  // Security feature - sanitize input
+  const sanitizeInput = (input: string): string => {
+    // Basic sanitization to prevent XSS
+    return input
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#039;');
+  };
   
   const form = useForm({
     defaultValues: {
@@ -52,29 +62,40 @@ const PropertyEditForm = ({ property, onSave }: PropertyEditFormProps) => {
     }
   });
 
-  // Load Google Maps API script with error handling
+  // Load Google Maps API script with error handling and retry mechanism
   useEffect(() => {
-    if (!document.querySelector('script[src*="maps.googleapis.com/maps/api"]')) {
-      const script = document.createElement('script');
-      // Note: In a production app you would use an environment variable for the API key
-      script.src = `https://maps.googleapis.com/maps/api/js?key=AIzaSyB41DRUbKWJHPxaFjMAwdrzWzbVKartNGg&libraries=places`;
-      script.async = true;
-      script.defer = true;
-      
-      script.onload = () => {
+    const loadGoogleMapsAPI = (retryCount = 0) => {
+      if (!document.querySelector('script[src*="maps.googleapis.com/maps/api"]')) {
+        const script = document.createElement('script');
+        // Note: In a production app you would use an environment variable for the API key
+        script.src = `https://maps.googleapis.com/maps/api/js?key=AIzaSyB41DRUbKWJHPxaFjMAwdrzWzbVKartNGg&libraries=places`;
+        script.async = true;
+        script.defer = true;
+        
+        script.onload = () => {
+          setAutocompleteLoaded(true);
+          setLoadingError(null);
+          console.log('Google Maps API loaded successfully');
+        };
+        
+        script.onerror = () => {
+          // Retry loading the script up to 3 times
+          if (retryCount < 3) {
+            setTimeout(() => loadGoogleMapsAPI(retryCount + 1), 1500);
+            console.log(`Retrying Google Maps API load (${retryCount + 1}/3)`);
+          } else {
+            setLoadingError('Failed to load address suggestions. Please enter your address manually.');
+            console.error('Google Maps API failed to load after multiple attempts');
+          }
+        };
+        
+        document.head.appendChild(script);
+      } else if (window.google && window.google.maps) {
         setAutocompleteLoaded(true);
-        setLoadingError(null);
-      };
-      
-      script.onerror = () => {
-        setLoadingError('Failed to load Google Maps API. Address suggestions will not be available.');
-        console.error('Google Maps API failed to load');
-      };
-      
-      document.head.appendChild(script);
-    } else if (window.google && window.google.maps) {
-      setAutocompleteLoaded(true);
-    }
+      }
+    };
+    
+    loadGoogleMapsAPI();
     
     return () => {
       // Clean up if needed
@@ -87,6 +108,7 @@ const PropertyEditForm = ({ property, onSave }: PropertyEditFormProps) => {
       try {
         const autocomplete = new window.google.maps.places.Autocomplete(addressInputRef.current, {
           types: ['address'],
+          fields: ['address_components', 'formatted_address'],
         });
         
         autocomplete.addListener('place_changed', () => {
@@ -123,13 +145,13 @@ const PropertyEditForm = ({ property, onSave }: PropertyEditFormProps) => {
             }
             
             // Format the full address
-            const formattedAddress = `${streetNumber} ${route}`.trim();
+            const formattedAddress = place.formatted_address || `${streetNumber} ${route}`.trim();
             
-            // Update form values
-            form.setValue('address', formattedAddress);
-            form.setValue('city', city);
-            form.setValue('zipCode', zipCode);
-            form.setValue('country', country);
+            // Update form values with sanitized inputs
+            form.setValue('address', sanitizeInput(formattedAddress));
+            form.setValue('city', sanitizeInput(city));
+            form.setValue('zipCode', sanitizeInput(zipCode));
+            form.setValue('country', sanitizeInput(country));
             
             setAddressVerified(true);
             
@@ -148,16 +170,22 @@ const PropertyEditForm = ({ property, onSave }: PropertyEditFormProps) => {
   }, [autocompleteLoaded, form]);
 
   const onSubmit = (values: any) => {
-    // Convert numeric values to ensure proper types
-    const processedValues = {
+    // Sanitize all text inputs
+    const sanitizedValues = {
       ...values,
+      title: sanitizeInput(values.title),
+      address: sanitizeInput(values.address),
+      city: sanitizeInput(values.city),
+      zipCode: sanitizeInput(values.zipCode),
+      country: sanitizeInput(values.country),
+      // Convert numeric values to ensure proper types
       squareMeters: Number(values.squareMeters),
       rooms: Number(values.rooms),
       purchasePrice: Number(values.purchasePrice)
     };
     
     // Pass the updated values to the onSave callback
-    onSave(processedValues);
+    onSave(sanitizedValues);
     
     toast({
       title: "Property Updated",
@@ -170,6 +198,14 @@ const PropertyEditForm = ({ property, onSave }: PropertyEditFormProps) => {
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+        <div className="flex justify-between items-center">
+          <h2 className="text-2xl font-bold">Edit Property Details</h2>
+          <div className="flex items-center text-sm text-muted-foreground">
+            <Shield className="h-4 w-4 mr-1" />
+            Enhanced Security
+          </div>
+        </div>
+
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <FormField
             control={form.control}
