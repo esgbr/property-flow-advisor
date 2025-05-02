@@ -1,21 +1,33 @@
 
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useLanguage } from '@/contexts/LanguageContext';
-import { Building, Calculator, ClipboardCheck, Receipt, Search } from 'lucide-react';
+import { Building, Calculator, ClipboardCheck, FileText, Receipt, Search } from 'lucide-react';
 import { useUserPreferences } from '@/contexts/UserPreferencesContext';
 import PortfolioDashboard from '@/components/portfolio/PortfolioDashboard';
 import MortgageCalculator from '@/components/financing/MortgageCalculator';
 import TaxPlanner from '@/components/tax/TaxPlanner';
 import MarketAnalysisTools from '@/components/market/MarketAnalysisTools';
 import DueDiligenceChecklist from '@/components/due-diligence/DueDiligenceChecklist';
+import { useLocation } from 'react-router-dom';
 
 const InvestorDashboard: React.FC = () => {
   const { t } = useLanguage();
   const { preferences } = useUserPreferences();
+  const location = useLocation();
+  
+  // Parse the query parameters to determine active tab
+  const searchParams = new URLSearchParams(location.search);
+  const defaultTab = searchParams.get('tab') || 'portfolio';
+
+  // Track page view
+  useEffect(() => {
+    // You could add analytics tracking here
+    console.log('Investor Dashboard viewed:', defaultTab);
+  }, [defaultTab]);
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 animate-fade-in">
       <div>
         <h1 className="text-3xl font-bold">
           {t('investorDashboard')}
@@ -28,7 +40,7 @@ const InvestorDashboard: React.FC = () => {
         <p className="text-muted-foreground">{t('completeInvestmentToolsuite')}</p>
       </div>
 
-      <Tabs defaultValue="portfolio" className="w-full">
+      <Tabs defaultValue={defaultTab} className="w-full">
         <TabsList className="grid w-full md:w-auto md:inline-grid grid-cols-2 sm:grid-cols-5">
           <TabsTrigger value="portfolio">
             <Building className="h-4 w-4 mr-2" />

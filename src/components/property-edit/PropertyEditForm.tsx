@@ -1,4 +1,3 @@
-
 import React, { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
@@ -22,7 +21,8 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { toast } from '@/components/ui/use-toast';
-import { MapPinCheck } from 'lucide-react';
+import { MapPinCheck, MapPin, AlertCircle } from 'lucide-react';
+import { useToast } from '@/components/ui/use-toast';
 
 interface PropertyEditFormProps {
   property: Property;
@@ -34,6 +34,8 @@ const PropertyEditForm = ({ property, onSave }: PropertyEditFormProps) => {
   const addressInputRef = useRef<HTMLTextAreaElement>(null);
   const [addressVerified, setAddressVerified] = useState<boolean>(false);
   const [autocompleteLoaded, setAutocompleteLoaded] = useState<boolean>(false);
+  const [loadingError, setLoadingError] = useState<string | null>(null);
+  const { toast } = useToast();
   
   const form = useForm({
     defaultValues: {
@@ -50,16 +52,23 @@ const PropertyEditForm = ({ property, onSave }: PropertyEditFormProps) => {
     }
   });
 
-  // Load Google Maps API script
+  // Load Google Maps API script with error handling
   useEffect(() => {
     if (!document.querySelector('script[src*="maps.googleapis.com/maps/api"]')) {
       const script = document.createElement('script');
-      script.src = `https://maps.googleapis.com/maps/api/js?key=&libraries=places`;
+      // Note: In a production app you would use an environment variable for the API key
+      script.src = `https://maps.googleapis.com/maps/api/js?key=AIzaSyB41DRUbKWJHPxaFjMAwdrzWzbVKartNGg&libraries=places`;
       script.async = true;
       script.defer = true;
       
       script.onload = () => {
         setAutocompleteLoaded(true);
+        setLoadingError(null);
+      };
+      
+      script.onerror = () => {
+        setLoadingError('Failed to load Google Maps API. Address suggestions will not be available.');
+        console.error('Google Maps API failed to load');
       };
       
       document.head.appendChild(script);
@@ -75,70 +84,85 @@ const PropertyEditForm = ({ property, onSave }: PropertyEditFormProps) => {
   // Initialize Google Maps Autocomplete when the API is loaded
   useEffect(() => {
     if (autocompleteLoaded && addressInputRef.current) {
-      const autocomplete = new window.google.maps.places.Autocomplete(addressInputRef.current, {
-        types: ['address'],
-      });
-      
-      autocomplete.addListener('place_changed', () => {
-        const place = autocomplete.getPlace();
+      try {
+        const autocomplete = new window.google.maps.places.Autocomplete(addressInputRef.current, {
+          types: ['address'],
+        });
         
-        if (place.address_components) {
-          // Get address components
-          let streetNumber = '';
-          let route = '';
-          let city = '';
-          let zipCode = '';
-          let country = '';
+        autocomplete.addListener('place_changed', () => {
+          const place = autocomplete.getPlace();
           
-          for (const component of place.address_components) {
-            const componentType = component.types[0];
+          if (place.address_components) {
+            // Get address components
+            let streetNumber = '';
+            let route = '';
+            let city = '';
+            let zipCode = '';
+            let country = '';
             
-            switch (componentType) {
-              case 'street_number':
-                streetNumber = component.long_name;
-                break;
-              case 'route':
-                route = component.long_name;
-                break;
-              case 'locality':
-                city = component.long_name;
-                break;
-              case 'postal_code':
-                zipCode = component.long_name;
-                break;
-              case 'country':
-                country = component.long_name;
-                break;
+            for (const component of place.address_components) {
+              const componentType = component.types[0];
+              
+              switch (componentType) {
+                case 'street_number':
+                  streetNumber = component.long_name;
+                  break;
+                case 'route':
+                  route = component.long_name;
+                  break;
+                case 'locality':
+                  city = component.long_name;
+                  break;
+                case 'postal_code':
+                  zipCode = component.long_name;
+                  break;
+                case 'country':
+                  country = component.long_name;
+                  break;
+              }
             }
+            
+            // Format the full address
+            const formattedAddress = `${streetNumber} ${route}`.trim();
+            
+            // Update form values
+            form.setValue('address', formattedAddress);
+            form.setValue('city', city);
+            form.setValue('zipCode', zipCode);
+            form.setValue('country', country);
+            
+            setAddressVerified(true);
+            
+            toast({
+              title: "Address Verified",
+              description: "The address has been verified and updated with Google Maps data.",
+              duration: 3000,
+            });
           }
-          
-          // Format the full address
-          const formattedAddress = `${streetNumber} ${route}`.trim();
-          
-          // Update form values
-          form.setValue('address', formattedAddress);
-          form.setValue('city', city);
-          form.setValue('zipCode', zipCode);
-          form.setValue('country', country);
-          
-          setAddressVerified(true);
-          
-          toast({
-            title: "Address verified",
-            description: "The address has been verified and updated with Google Maps data.",
-            duration: 3000,
-          });
-        }
-      });
+        });
+      } catch (error) {
+        console.error('Error initializing Google Maps Autocomplete:', error);
+        setLoadingError('Error initializing address suggestions.');
+      }
     }
   }, [autocompleteLoaded, form]);
 
   const onSubmit = (values: any) => {
-    // This would normally save to a database
-    console.log('Form values:', values);
+    // Convert numeric values to ensure proper types
+    const processedValues = {
+      ...values,
+      squareMeters: Number(values.squareMeters),
+      rooms: Number(values.rooms),
+      purchasePrice: Number(values.purchasePrice)
+    };
     
     // Pass the updated values to the onSave callback
-    onSave(values);
+    onSave(processedValues);
+    
+    toast({
+      title: "Property Updated",
+      description: "Your property information has been successfully updated.",
+    });
     
     navigate(`/property/${property.id}`);
   };
@@ -209,16 +233,26 @@ const PropertyEditForm = ({ property, onSave }: PropertyEditFormProps) => {
                       placeholder="Start typing to get address suggestions..." 
                       {...field} 
                       ref={addressInputRef}
+                      className={loadingError ? "border-red-300" : ""}
                     />
-                    {!autocompleteLoaded && (
+                    {!autocompleteLoaded && !loadingError && (
                       <div className="absolute inset-0 bg-background/50 flex items-center justify-center rounded-md">
-                        <p className="text-sm text-muted-foreground">Loading address suggestions...</p>
+                        <p className="text-sm text-muted-foreground flex items-center">
+                          <MapPin className="mr-1 h-4 w-4 animate-pulse" />
+                          Loading address suggestions...
+                        </p>
+                      </div>
+                    )}
+                    {loadingError && (
+                      <div className="text-xs text-red-500 mt-1 flex items-center">
+                        <AlertCircle className="mr-1 h-3 w-3" />
+                        {loadingError}
                       </div>
                     )}
                   </div>
                 </FormControl>
                 <p className="text-xs text-muted-foreground">
-                  Start typing to get address suggestions from Google Maps
+                  {!loadingError ? "Start typing to get address suggestions from Google Maps" : "Please enter your address manually"}
                 </p>
                 <FormMessage />
               </FormItem>
