@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -118,6 +119,11 @@ const TaxPlanner = () => {
   // Fix the ValueType issue for depreciation
   const handleDepreciationChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setDepreciation(Number(e.target.value) || 0);
+  };
+
+  // Fix the ValueType issue for rental income
+  const handleRentalIncomeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setRentalIncome(Number(e.target.value) || 0);
   };
 
   return (
@@ -527,7 +533,7 @@ const TaxPlanner = () => {
                       id="monthly-rent"
                       type="number" 
                       value={rentalIncome}
-                      onChange={(e) => setRentalIncome(parseInt(e.target.value) || 0)}
+                      onChange={handleRentalIncomeChange}
                     />
                     <span className="text-sm text-muted-foreground">EUR</span>
                   </div>

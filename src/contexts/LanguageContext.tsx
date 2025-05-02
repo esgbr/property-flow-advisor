@@ -516,7 +516,9 @@ const educationContent = {
           isPopular: true
         }
       ]
-    }
+    },
+    intermediate: {},
+    expert: {}
   },
   es: {
     beginner: {
@@ -540,7 +542,9 @@ const educationContent = {
           isPopular: true
         }
       ]
-    }
+    },
+    intermediate: {},
+    expert: {}
   },
   fr: {
     beginner: {
@@ -564,7 +568,9 @@ const educationContent = {
           isPopular: true
         }
       ]
-    }
+    },
+    intermediate: {},
+    expert: {}
   },
   it: {
     beginner: {
@@ -588,7 +594,9 @@ const educationContent = {
           isPopular: true
         }
       ]
-    }
+    },
+    intermediate: {},
+    expert: {}
   }
 };
 
@@ -613,7 +621,7 @@ export const LanguageProvider = ({ children }: LanguageProviderProps) => {
   // Get education content in the current language, falling back to English if not available
   const getEducationContent = () => {
     // Make sure we use safe type checking
-    const currentLanguageContent = educationContent[language] || {};
+    const currentLanguageContent = educationContent[language];
     // Use English as fallback for categories not fully translated yet
     const englishContent = educationContent.en;
     
