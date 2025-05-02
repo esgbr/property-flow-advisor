@@ -5,15 +5,33 @@ import {
   CardHeader, 
   CardTitle, 
   CardDescription, 
-  CardContent 
+  CardContent,
+  CardFooter
 } from '@/components/ui/card';
-import { Settings as SettingsIcon } from 'lucide-react';
+import { Settings as SettingsIcon, UserCheck, RefreshCw, Bell, Shield, BarChart } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import LanguageSwitcher from '@/components/LanguageSwitcher';
 import AppLockSettings from '@/components/AppLockSettings';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Switch } from '@/components/ui/switch';
+import { Button } from '@/components/ui/button';
+import { Label } from '@/components/ui/label';
+import { Separator } from '@/components/ui/separator';
+import { toast } from '@/components/ui/use-toast';
+import { useUserPreferences } from '@/contexts/UserPreferencesContext';
 
 const Settings = () => {
   const { t } = useLanguage();
+  const { preferences, updatePreferences, resetOnboarding } = useUserPreferences();
+
+  const handleToggleSetting = (key: keyof typeof preferences) => {
+    updatePreferences({ [key]: !preferences[key as keyof typeof preferences] });
+    
+    toast({
+      title: t('settingUpdated'),
+      description: t('yourPreferencesHaveBeenSaved'),
+    });
+  };
 
   return (
     <div className="space-y-6 animate-fade-in">
@@ -27,25 +45,197 @@ const Settings = () => {
         </div>
       </div>
 
-      <div className="grid gap-6 md:grid-cols-2">
-        <Card>
-          <CardHeader>
-            <CardTitle>{t('language')}</CardTitle>
-            <CardDescription>{t('languageDescription')}</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="font-medium">{t('currentLanguage')}</p>
-                <p className="text-sm text-muted-foreground">{t('selectLanguage')}</p>
-              </div>
-              <LanguageSwitcher />
-            </div>
-          </CardContent>
-        </Card>
+      <Tabs defaultValue="general">
+        <TabsList className="mb-4">
+          <TabsTrigger value="general">{t('general')}</TabsTrigger>
+          <TabsTrigger value="security">{t('security')}</TabsTrigger>
+          <TabsTrigger value="preferences">{t('preferences')}</TabsTrigger>
+          <TabsTrigger value="analytics">{t('analytics')}</TabsTrigger>
+        </TabsList>
         
-        <AppLockSettings />
-      </div>
+        <TabsContent value="general" className="grid gap-6 md:grid-cols-2">
+          <Card>
+            <CardHeader>
+              <CardTitle>{t('language')}</CardTitle>
+              <CardDescription>{t('languageDescription')}</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="font-medium">{t('currentLanguage')}</p>
+                  <p className="text-sm text-muted-foreground">{t('selectLanguage')}</p>
+                </div>
+                <LanguageSwitcher />
+              </div>
+            </CardContent>
+          </Card>
+          
+          <Card>
+            <CardHeader>
+              <CardTitle>{t('experienceLevel')}</CardTitle>
+              <CardDescription>{t('setYourRealEstateExperienceLevel')}</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                <div className="flex items-center space-x-2">
+                  <input 
+                    type="radio" 
+                    id="beginner" 
+                    name="experience" 
+                    checked={preferences.experienceLevel === 'beginner'} 
+                    onChange={() => updatePreferences({ experienceLevel: 'beginner' })}
+                  />
+                  <Label htmlFor="beginner">{t('beginner')}</Label>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <input 
+                    type="radio" 
+                    id="intermediate" 
+                    name="experience" 
+                    checked={preferences.experienceLevel === 'intermediate'} 
+                    onChange={() => updatePreferences({ experienceLevel: 'intermediate' })} 
+                  />
+                  <Label htmlFor="intermediate">{t('intermediate')}</Label>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <input 
+                    type="radio" 
+                    id="expert" 
+                    name="experience" 
+                    checked={preferences.experienceLevel === 'expert'} 
+                    onChange={() => updatePreferences({ experienceLevel: 'expert' })}
+                  />
+                  <Label htmlFor="expert">{t('expert')}</Label>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+        
+        <TabsContent value="security" className="grid gap-6 md:grid-cols-2">
+          <AppLockSettings />
+          
+          <Card>
+            <CardHeader>
+              <CardTitle>
+                <Shield className="inline-block mr-2 h-5 w-5" />
+                {t('securitySettings')}
+              </CardTitle>
+              <CardDescription>{t('advancedSecurityOptions')}</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="flex items-center space-x-2 justify-between">
+                <div>
+                  <Label htmlFor="ddos-protection">{t('ddosProtection')}</Label>
+                  <p className="text-sm text-muted-foreground">{t('enableAdvancedProtection')}</p>
+                </div>
+                <Switch 
+                  id="ddos-protection"
+                  checked={true}
+                  disabled
+                />
+              </div>
+              <Separator />
+              <div className="flex items-center space-x-2 justify-between">
+                <div>
+                  <Label htmlFor="auto-logout">{t('autoLogout')}</Label>
+                  <p className="text-sm text-muted-foreground">{t('automaticallyLogout')}</p>
+                </div>
+                <Switch 
+                  id="auto-logout"
+                  checked={preferences.onboardingCompleted}
+                  onCheckedChange={() => handleToggleSetting('onboardingCompleted')}
+                />
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+        
+        <TabsContent value="preferences" className="grid gap-6 md:grid-cols-2">
+          <Card>
+            <CardHeader>
+              <CardTitle>
+                <UserCheck className="inline-block mr-2 h-5 w-5" />
+                {t('userPreferences')}
+              </CardTitle>
+              <CardDescription>{t('customizeYourExperience')}</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="flex items-center space-x-2 justify-between">
+                <div>
+                  <Label htmlFor="dark-mode">{t('darkMode')}</Label>
+                  <p className="text-sm text-muted-foreground">{t('enableDarkMode')}</p>
+                </div>
+                <Switch 
+                  id="dark-mode" 
+                  checked={preferences.darkMode}
+                  onCheckedChange={() => handleToggleSetting('darkMode')}
+                />
+              </div>
+              <Separator />
+              <div className="flex items-center space-x-2 justify-between">
+                <div>
+                  <Label htmlFor="notifications">{t('notifications')}</Label>
+                  <p className="text-sm text-muted-foreground">{t('enableNotifications')}</p>
+                </div>
+                <Switch 
+                  id="notifications" 
+                  checked={preferences.notificationsEnabled}
+                  onCheckedChange={() => handleToggleSetting('notificationsEnabled')}
+                />
+              </div>
+            </CardContent>
+          </Card>
+          
+          <Card>
+            <CardHeader>
+              <CardTitle>
+                <RefreshCw className="inline-block mr-2 h-5 w-5" />
+                {t('onboardingProcess')}
+              </CardTitle>
+              <CardDescription>{t('resetOnboardingDescription')}</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-2">
+              <p className="text-sm">{t('resetOnboardingExplanation')}</p>
+            </CardContent>
+            <CardFooter>
+              <Button variant="outline" onClick={resetOnboarding}>
+                {t('resetOnboarding')}
+              </Button>
+            </CardFooter>
+          </Card>
+        </TabsContent>
+        
+        <TabsContent value="analytics" className="grid gap-6 md:grid-cols-2">
+          <Card className="md:col-span-2">
+            <CardHeader>
+              <CardTitle>
+                <BarChart className="inline-block mr-2 h-5 w-5" />
+                {t('analyticsSettings')}
+              </CardTitle>
+              <CardDescription>{t('dataCollectionSettings')}</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="flex items-center space-x-2 justify-between">
+                <div>
+                  <Label htmlFor="analytics-consent">{t('analyticsConsent')}</Label>
+                  <p className="text-sm text-muted-foreground">{t('allowAnonymousUsageData')}</p>
+                </div>
+                <Switch 
+                  id="analytics-consent"
+                  checked={preferences.analyticsConsent}
+                  onCheckedChange={() => handleToggleSetting('analyticsConsent')}
+                />
+              </div>
+              <Separator />
+              <div className="space-y-2">
+                <h3 className="font-medium">{t('dataPolicies')}</h3>
+                <p className="text-sm text-muted-foreground">{t('dataPoliciesDescription')}</p>
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+      </Tabs>
     </div>
   );
 };

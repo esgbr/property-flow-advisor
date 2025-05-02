@@ -18,35 +18,47 @@ import Settings from "./pages/Settings";
 import NotFound from "./pages/NotFound";
 import { LanguageProvider } from "./contexts/LanguageContext";
 import { AppLockProvider } from "./contexts/AppLockContext";
+import { UserPreferencesProvider } from "./contexts/UserPreferencesContext";
+import WelcomeModal from "./components/welcome/WelcomeModal";
 
-const queryClient = new QueryClient();
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      retry: 1,
+      refetchOnWindowFocus: false,
+    },
+  },
+});
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <LanguageProvider>
-      <AppLockProvider>
-        <TooltipProvider>
-          <Toaster />
-          <Sonner />
-          <BrowserRouter>
-            <Routes>
-              <Route path="/" element={<MainLayout />}>
-                <Route index element={<Dashboard />} />
-                <Route path="properties" element={<Properties />} />
-                <Route path="property/:id" element={<PropertyDetail />} />
-                <Route path="property/:id/edit" element={<PropertyEdit />} />
-                <Route path="calculators" element={<Calculators />} />
-                <Route path="schedule" element={<Schedule />} />
-                <Route path="refurbishment" element={<Refurbishment />} />
-                <Route path="decision" element={<Decision />} />
-                <Route path="education" element={<Education />} />
-                <Route path="settings" element={<Settings />} />
-              </Route>
-              <Route path="*" element={<NotFound />} />
-            </Routes>
-          </BrowserRouter>
-        </TooltipProvider>
-      </AppLockProvider>
+      <UserPreferencesProvider>
+        <AppLockProvider>
+          <TooltipProvider>
+            <Toaster />
+            <Sonner />
+            <BrowserRouter>
+              <WelcomeModal />
+              <Routes>
+                <Route path="/" element={<MainLayout />}>
+                  <Route index element={<Dashboard />} />
+                  <Route path="properties" element={<Properties />} />
+                  <Route path="property/:id" element={<PropertyDetail />} />
+                  <Route path="property/:id/edit" element={<PropertyEdit />} />
+                  <Route path="calculators" element={<Calculators />} />
+                  <Route path="schedule" element={<Schedule />} />
+                  <Route path="refurbishment" element={<Refurbishment />} />
+                  <Route path="decision" element={<Decision />} />
+                  <Route path="education" element={<Education />} />
+                  <Route path="settings" element={<Settings />} />
+                </Route>
+                <Route path="*" element={<NotFound />} />
+              </Routes>
+            </BrowserRouter>
+          </TooltipProvider>
+        </AppLockProvider>
+      </UserPreferencesProvider>
     </LanguageProvider>
   </QueryClientProvider>
 );

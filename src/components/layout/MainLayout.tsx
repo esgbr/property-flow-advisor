@@ -7,19 +7,21 @@ import Navbar from './Navbar';
 import { useAppLock } from '@/contexts/AppLockContext';
 import AppLockScreen from '@/components/AppLockScreen';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { useUserPreferences } from '@/contexts/UserPreferencesContext';
 
 const MainLayout = () => {
   const { isLocked, pin } = useAppLock();
   const isMobile = useIsMobile();
+  const { preferences } = useUserPreferences();
 
-  // Zeige die Sperrbildschirm-Komponente, wenn die App gesperrt ist und eine PIN eingerichtet wurde
+  // Show the lock screen if the app is locked and a PIN is set
   if (isLocked && pin) {
     return <AppLockScreen />;
   }
 
   return (
     <SidebarProvider>
-      <div className="min-h-screen flex w-full">
+      <div className={`min-h-screen flex w-full ${preferences.darkMode ? 'dark' : ''}`}>
         <AppSidebar />
         <div className="flex flex-col flex-1">
           <Navbar />
