@@ -2,7 +2,21 @@ import React, { useState, useEffect } from 'react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { GraduationCap, BookOpen, Book, BookUser, Bookmark, FileText, Search, Filter, CheckSquare } from 'lucide-react';
+import { 
+  GraduationCap, 
+  BookOpen, 
+  Book, 
+  BookUser, 
+  Bookmark, 
+  FileText, 
+  Search, 
+  Filter, 
+  CheckSquare,
+  ChevronRight,
+  DownloadCloud,
+  Share2,
+  Award
+} from 'lucide-react';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { useUserPreferences } from '@/contexts/UserPreferencesContext';
 import { Button } from '@/components/ui/button';
@@ -16,6 +30,15 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from "@/components/ui/dialog";
+import { Progress } from "@/components/ui/progress";
 import AIAssistant from '@/components/ai/AIAssistant';
 import { useToast } from '@/components/ui/use-toast';
 
@@ -30,6 +53,14 @@ interface EducationItem {
   tags?: string[];
   isNew?: boolean;
   isPopular?: boolean;
+  hasCertificate?: boolean;
+  hasQuiz?: boolean;
+  hasResources?: boolean;
+  sections?: {
+    title: string;
+    content: string;
+    videoUrl?: string;
+  }[];
 }
 
 interface EducationCategory {
@@ -51,7 +82,23 @@ const educationContent: EducationLevel = {
         readTime: 8,
         difficulty: 'easy',
         tags: ['basics', 'markets'],
-        isNew: true
+        isNew: true,
+        hasQuiz: true,
+        sections: [
+          {
+            title: 'Real Estate Market Cycles',
+            content: 'Real estate markets typically follow cyclical patterns that can be broken down into four phases: recovery, expansion, hyper-supply, and recession. Understanding where a market sits within this cycle is crucial for making informed investment decisions.'
+          },
+          {
+            title: 'Supply and Demand Factors',
+            content: 'Property values are heavily influenced by the balance between supply (available properties) and demand (buyer interest). Factors affecting this balance include population growth, employment rates, new construction, and interest rates.'
+          },
+          {
+            title: 'Market Indicators to Watch',
+            content: 'Key indicators for evaluating real estate markets include: days on market (DOM), price-to-rent ratio, months of inventory, median home prices, and absorption rate. Tracking these metrics provides valuable insights into market conditions.'
+          }
+        ],
+        hasResources: true
       },
       { 
         id: 2, 
@@ -59,7 +106,8 @@ const educationContent: EducationLevel = {
         description: 'Overview of different property types for investment.',
         readTime: 5,
         difficulty: 'easy',
-        tags: ['basics', 'properties']
+        tags: ['basics', 'properties'],
+        hasResources: true
       },
       { 
         id: 3, 
@@ -67,7 +115,8 @@ const educationContent: EducationLevel = {
         description: 'Introduction to REITs and how they work.',
         readTime: 7,
         difficulty: 'medium',
-        tags: ['reits', 'passive investing']
+        tags: ['reits', 'passive investing'],
+        hasCertificate: true
       },
       { 
         id: 4, 
@@ -76,7 +125,27 @@ const educationContent: EducationLevel = {
         readTime: 12,
         difficulty: 'medium',
         tags: ['valuation', 'basics'],
-        isPopular: true
+        isPopular: true,
+        hasQuiz: true
+      },
+      { 
+        id: 5, 
+        title: 'Cash Flow Analysis for Beginners', 
+        description: 'Learn how to calculate and analyze cash flow from rental properties.',
+        readTime: 10,
+        difficulty: 'medium',
+        tags: ['cash flow', 'analysis', 'rental'],
+        isNew: true,
+        hasCertificate: true
+      },
+      { 
+        id: 6, 
+        title: 'Risk Management Fundamentals', 
+        description: 'Essential risk management strategies for new real estate investors.',
+        readTime: 8,
+        difficulty: 'easy',
+        tags: ['risk', 'management', 'strategy'],
+        hasQuiz: true
       }
     ],
     financing: [
@@ -91,8 +160,8 @@ const educationContent: EducationLevel = {
       },
       { 
         id: 2, 
-        title: 'Downpayments', 
-        description: 'What you need to know about downpayments.',
+        title: 'Down Payments', 
+        description: 'What you need to know about down payments.',
         readTime: 6,
         difficulty: 'easy',
         tags: ['financing', 'basics']
@@ -104,7 +173,8 @@ const educationContent: EducationLevel = {
         readTime: 15,
         difficulty: 'medium',
         tags: ['loans', 'financing'],
-        isNew: true
+        isNew: true,
+        hasCertificate: true
       },
       { 
         id: 4, 
@@ -113,6 +183,16 @@ const educationContent: EducationLevel = {
         readTime: 8,
         difficulty: 'medium',
         tags: ['interest rates', 'economics']
+      },
+      { 
+        id: 5, 
+        title: 'Pre-Approval Process Explained', 
+        description: 'Step-by-step guide to getting pre-approved for a mortgage.',
+        readTime: 9,
+        difficulty: 'easy',
+        tags: ['pre-approval', 'mortgage', 'process'],
+        isNew: true,
+        hasResources: true
       }
     ],
     taxation: [
@@ -131,7 +211,8 @@ const educationContent: EducationLevel = {
         readTime: 12,
         difficulty: 'medium',
         tags: ['taxes', 'benefits'],
-        isPopular: true
+        isPopular: true,
+        hasQuiz: true
       },
       { 
         id: 3, 
@@ -140,6 +221,16 @@ const educationContent: EducationLevel = {
         readTime: 7,
         difficulty: 'easy',
         tags: ['taxes', 'organization']
+      },
+      { 
+        id: 4, 
+        title: 'Deductible Expenses for Landlords', 
+        description: 'Common tax deductions available to property owners and landlords.',
+        readTime: 11,
+        difficulty: 'medium',
+        tags: ['deductions', 'landlord', 'taxes'],
+        isNew: true,
+        hasCertificate: true
       }
     ],
     legalBasics: [
@@ -159,6 +250,17 @@ const educationContent: EducationLevel = {
         readTime: 8,
         difficulty: 'easy',
         tags: ['legal', 'rights']
+      },
+      { 
+        id: 3, 
+        title: 'Landlord-Tenant Laws', 
+        description: 'Essential legal knowledge for landlords and property managers.',
+        readTime: 13,
+        difficulty: 'medium',
+        tags: ['landlord', 'tenant', 'legal'],
+        isNew: true,
+        hasCertificate: true,
+        hasResources: true
       }
     ]
   },
@@ -171,7 +273,8 @@ const educationContent: EducationLevel = {
         readTime: 15,
         difficulty: 'medium',
         tags: ['analysis', 'trends'],
-        isPopular: true
+        isPopular: true,
+        hasCertificate: true
       },
       { 
         id: 2, 
@@ -216,7 +319,8 @@ const educationContent: EducationLevel = {
         readTime: 25,
         difficulty: 'hard',
         tags: ['creative financing', 'strategy'],
-        isNew: true
+        isNew: true,
+        hasCertificate: true
       }
     ],
     propertyManagement: [
@@ -252,7 +356,8 @@ const educationContent: EducationLevel = {
         readTime: 15,
         difficulty: 'hard',
         tags: ['tenants', 'conflict resolution'],
-        isNew: true
+        isNew: true,
+        hasQuiz: true
       }
     ],
     advancedTaxation: [
@@ -263,7 +368,8 @@ const educationContent: EducationLevel = {
         readTime: 22,
         difficulty: 'hard',
         tags: ['taxes', 'exchanges'],
-        isPopular: true
+        isPopular: true,
+        hasCertificate: true
       },
       { 
         id: 2, 
@@ -284,7 +390,8 @@ const educationContent: EducationLevel = {
         readTime: 25,
         difficulty: 'hard',
         tags: ['commercial', 'advanced'],
-        isPopular: true
+        isPopular: true,
+        hasCertificate: true
       },
       { 
         id: 2, 
@@ -301,7 +408,8 @@ const educationContent: EducationLevel = {
         readTime: 30,
         difficulty: 'hard',
         tags: ['syndication', 'partnerships'],
-        isNew: true
+        isNew: true,
+        hasCertificate: true
       }
     ],
     marketAnalysis: [
@@ -329,7 +437,8 @@ const educationContent: EducationLevel = {
         readTime: 28,
         difficulty: 'hard',
         tags: ['market cycles', 'timing'],
-        isPopular: true
+        isPopular: true,
+        hasCertificate: true
       }
     ],
     legalAspects: [
@@ -348,7 +457,8 @@ const educationContent: EducationLevel = {
         readTime: 30,
         difficulty: 'hard',
         tags: ['international', 'legal'],
-        isNew: true
+        isNew: true,
+        hasCertificate: true
       },
       { 
         id: 3, 
@@ -368,7 +478,8 @@ const educationContent: EducationLevel = {
         readTime: 35,
         difficulty: 'hard',
         tags: ['development', 'land'],
-        isNew: true
+        isNew: true,
+        hasCertificate: true
       },
       { 
         id: 2, 
@@ -388,14 +499,17 @@ type ExperienceLevel = 'beginner' | 'intermediate' | 'expert';
 const Education = () => {
   const { t } = useLanguage();
   const isMobile = useIsMobile();
-  const { preferences } = useUserPreferences();
+  const { preferences, updatePreferences } = useUserPreferences();
   const { toast } = useToast();
   const [level, setLevel] = useState<ExperienceLevel>(preferences.experienceLevel || 'beginner');
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedFilters, setSelectedFilters] = useState<string[]>([]);
   const [savedItems, setSavedItems] = useState<number[]>([]);
-  const [completedItems, setCompletedItems] = useState<number[]>([]);
-
+  const [completedItems, setCompletedItems] = useState<number[]>(preferences.educationProgress?.completedModules?.map(Number) || []);
+  const [selectedItem, setSelectedItem] = useState<EducationItem | null>(null);
+  const [openDialog, setOpenDialog] = useState(false);
+  const [inProgressItems, setInProgressItems] = useState<{id: number, progress: number}[]>([]);
+  
   // Get categories for the selected level
   const categories = Object.keys(educationContent[level as keyof typeof educationContent]);
 
@@ -404,7 +518,19 @@ const Education = () => {
     if (preferences.experienceLevel) {
       setLevel(preferences.experienceLevel);
     }
-  }, [preferences.experienceLevel]);
+    
+    // Load completed items from preferences
+    if (preferences.educationProgress?.completedModules) {
+      setCompletedItems(preferences.educationProgress.completedModules.map(Number));
+    }
+    
+    // Start some items as "in progress" for demo purposes
+    setInProgressItems([
+      { id: 1, progress: 35 },
+      { id: 3, progress: 70 },
+      { id: 5, progress: 20 },
+    ]);
+  }, [preferences.experienceLevel, preferences.educationProgress]);
   
   // Function to map category to icon
   const getCategoryIcon = (category: string) => {
@@ -434,7 +560,9 @@ const Education = () => {
       const matchesFilters = selectedFilters.length === 0 || 
         (item.tags && item.tags.some(tag => selectedFilters.includes(tag))) ||
         (item.isNew && selectedFilters.includes('new')) ||
-        (item.isPopular && selectedFilters.includes('popular'));
+        (item.isPopular && selectedFilters.includes('popular')) ||
+        (item.hasCertificate && selectedFilters.includes('certificate')) ||
+        (item.hasQuiz && selectedFilters.includes('quiz'));
         
       return matchesSearch && matchesFilters;
     });
@@ -476,14 +604,61 @@ const Education = () => {
 
   const handleMarkComplete = (id: number) => {
     if (completedItems.includes(id)) {
-      setCompletedItems(completedItems.filter(itemId => itemId !== id));
+      const newCompletedItems = completedItems.filter(itemId => itemId !== id);
+      setCompletedItems(newCompletedItems);
+      
+      // Update user preferences
+      updatePreferences({
+        educationProgress: {
+          ...preferences.educationProgress,
+          completedModules: newCompletedItems.map(String),
+          lastAccessedDate: new Date().toISOString()
+        }
+      });
     } else {
-      setCompletedItems([...completedItems, id]);
+      const newCompletedItems = [...completedItems, id];
+      setCompletedItems(newCompletedItems);
+      
+      // Update user preferences
+      updatePreferences({
+        educationProgress: {
+          ...preferences.educationProgress,
+          completedModules: newCompletedItems.map(String),
+          lastAccessedDate: new Date().toISOString()
+        }
+      });
+      
       toast({
         title: t('marked as completed'),
         description: t('progress updated'),
       });
+      
+      // Remove from in-progress when completed
+      setInProgressItems(inProgressItems.filter(item => item.id !== id));
     }
+  };
+
+  // Handle item click to open detail view
+  const handleItemClick = (item: EducationItem) => {
+    setSelectedItem(item);
+    setOpenDialog(true);
+    
+    // If not already in progress or completed, add to in-progress
+    if (!inProgressItems.some(progressItem => progressItem.id === item.id) && 
+        !completedItems.includes(item.id)) {
+      setInProgressItems([...inProgressItems, { id: item.id, progress: 0 }]);
+    }
+  };
+
+  const getItemProgress = (id: number): number | null => {
+    const progressItem = inProgressItems.find(item => item.id === id);
+    if (progressItem) {
+      return progressItem.progress;
+    }
+    if (completedItems.includes(id)) {
+      return 100;
+    }
+    return null;
   };
 
   // Fix for the type issue - create a handler that properly handles the type conversion
@@ -492,6 +667,46 @@ const Education = () => {
     if (value === 'beginner' || value === 'intermediate' || value === 'expert') {
       setLevel(value);
     }
+  };
+
+  // Get recommended items based on user preferences and progress
+  const getRecommendedItems = (): EducationItem[] => {
+    let allItems: EducationItem[] = [];
+    
+    // Gather all items from the user's current level
+    Object.values(educationContent[level as keyof typeof educationContent]).forEach(category => {
+      allItems = [...allItems, ...category];
+    });
+    
+    // Filter for items that aren't completed but match user interests
+    const recommended = allItems.filter(item => 
+      !completedItems.includes(item.id) && 
+      ((preferences.interests && item.tags && 
+        item.tags.some(tag => preferences.interests.includes(tag))) ||
+       item.isPopular)
+    );
+    
+    // Limit to 3 recommendations
+    return recommended.slice(0, 3);
+  };
+
+  // Get recently viewed or in-progress content
+  const getInProgressContent = (): EducationItem[] => {
+    const inProgressIds = inProgressItems.map(item => item.id);
+    let result: EducationItem[] = [];
+    
+    // Find the items that match the in-progress IDs
+    Object.values(educationContent).forEach(level => {
+      Object.values(level).forEach(category => {
+        category.forEach(item => {
+          if (inProgressIds.includes(item.id)) {
+            result.push(item);
+          }
+        });
+      });
+    });
+    
+    return result.slice(0, 3);
   };
 
   return (
@@ -521,6 +736,77 @@ const Education = () => {
           <TabsTrigger value="intermediate">{t('intermediate')}</TabsTrigger>
           <TabsTrigger value="expert">{t('expert')}</TabsTrigger>
         </TabsList>
+
+        {/* Recommendations Section */}
+        <div className="mt-6 mb-8">
+          <h2 className="text-xl font-semibold mb-4">{t('recommendedForYou')}</h2>
+          <div className="grid gap-4 md:grid-cols-3">
+            {getRecommendedItems().map(item => (
+              <Card key={`rec-${item.id}`} className="cursor-pointer hover:shadow-md transition-shadow" onClick={() => handleItemClick(item)}>
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-lg flex items-start justify-between">
+                    <span>{item.title}</span>
+                    {item.hasCertificate && (
+                      <Award className="h-5 w-5 text-amber-500" />
+                    )}
+                  </CardTitle>
+                  <CardDescription className="line-clamp-2">{item.description}</CardDescription>
+                </CardHeader>
+                <CardContent className="pt-0">
+                  <div className="flex items-center justify-between text-sm text-muted-foreground mt-2">
+                    <span>{item.readTime} {t('minRead')}</span>
+                    <Badge variant={item.difficulty === 'easy' ? 'outline' : (item.difficulty === 'medium' ? 'secondary' : 'destructive')} className="text-xs">
+                      {t(item.difficulty || 'easy')}
+                    </Badge>
+                  </div>
+                </CardContent>
+                <CardFooter className="pt-0">
+                  <Button variant="outline" size="sm" className="w-full mt-2" onClick={() => handleItemClick(item)}>
+                    {t('startCourse')}
+                  </Button>
+                </CardFooter>
+              </Card>
+            ))}
+          </div>
+        </div>
+
+        {/* Continue Learning Section */}
+        {inProgressItems.length > 0 && (
+          <div className="mb-8">
+            <h2 className="text-xl font-semibold mb-4">{t('continueReading')}</h2>
+            <div className="grid gap-4 md:grid-cols-3">
+              {getInProgressContent().map(item => {
+                const progress = getItemProgress(item.id);
+                return (
+                  <Card key={`prog-${item.id}`} className="cursor-pointer hover:shadow-md transition-shadow" onClick={() => handleItemClick(item)}>
+                    <CardHeader className="pb-2">
+                      <CardTitle className="text-lg">{item.title}</CardTitle>
+                      {progress !== null && (
+                        <div className="w-full mt-2">
+                          <Progress value={progress} className="h-2" />
+                          <p className="text-xs text-right mt-1 text-muted-foreground">{progress}% {t('completed')}</p>
+                        </div>
+                      )}
+                    </CardHeader>
+                    <CardContent className="pt-0">
+                      <div className="flex items-center justify-between text-sm text-muted-foreground mt-2">
+                        <span>{item.readTime} {t('minRead')}</span>
+                        <Badge variant={item.difficulty === 'easy' ? 'outline' : (item.difficulty === 'medium' ? 'secondary' : 'destructive')} className="text-xs">
+                          {t(item.difficulty || 'easy')}
+                        </Badge>
+                      </div>
+                    </CardContent>
+                    <CardFooter className="pt-0">
+                      <Button variant="default" size="sm" className="w-full mt-2">
+                        {t('continueReading')} <ChevronRight className="h-4 w-4 ml-1" />
+                      </Button>
+                    </CardFooter>
+                  </Card>
+                );
+              })}
+            </div>
+          </div>
+        )}
 
         <div className="flex flex-wrap items-center gap-2 mt-4">
           <div className="relative flex-1">
@@ -573,6 +859,32 @@ const Education = () => {
                 }}
               >
                 {t('popularContent')}
+              </DropdownMenuCheckboxItem>
+
+              <DropdownMenuCheckboxItem
+                checked={selectedFilters.includes('certificate')}
+                onCheckedChange={(checked) => {
+                  setSelectedFilters(
+                    checked
+                      ? [...selectedFilters, 'certificate']
+                      : selectedFilters.filter(f => f !== 'certificate')
+                  );
+                }}
+              >
+                {t('certificateEligible')}
+              </DropdownMenuCheckboxItem>
+              
+              <DropdownMenuCheckboxItem
+                checked={selectedFilters.includes('quiz')}
+                onCheckedChange={(checked) => {
+                  setSelectedFilters(
+                    checked
+                      ? [...selectedFilters, 'quiz']
+                      : selectedFilters.filter(f => f !== 'quiz')
+                  );
+                }}
+              >
+                {t('quizAvailable')}
               </DropdownMenuCheckboxItem>
               
               <DropdownMenuSeparator />
@@ -637,103 +949,4 @@ const Education = () => {
                     <CardContent>
                       {filteredItems.length > 0 ? (
                         <ul className="space-y-3">
-                          {filteredItems.map((item: EducationItem) => (
-                            <li key={item.id} className="hover:bg-accent p-3 rounded-md transition-colors">
-                              <div className="flex justify-between items-start mb-1">
-                                <h3 className="font-medium">
-                                  {item.title}
-                                  {item.isNew && <span className="ml-2 text-xs bg-primary/10 text-primary px-2 py-0.5 rounded-full">{t('new')}</span>}
-                                  {item.isPopular && <span className="ml-2 text-xs bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-100 px-2 py-0.5 rounded-full">{t('popular')}</span>}
-                                </h3>
-                                <div className="flex space-x-1">
-                                  <button 
-                                    onClick={() => handleSaveItem(item.id)}
-                                    className={`p-1 rounded-full hover:bg-muted ${savedItems.includes(item.id) ? 'text-primary' : 'text-muted-foreground'}`}
-                                  >
-                                    <Bookmark className="h-4 w-4" />
-                                  </button>
-                                  <button 
-                                    onClick={() => handleMarkComplete(item.id)}
-                                    className={`p-1 rounded-full hover:bg-muted ${completedItems.includes(item.id) ? 'text-green-500' : 'text-muted-foreground'}`}
-                                  >
-                                    <CheckSquare className="h-4 w-4" />
-                                  </button>
-                                </div>
-                              </div>
-                              <p className="text-sm text-muted-foreground">{item.description}</p>
-                              <div className="flex items-center mt-2 text-xs text-muted-foreground">
-                                {item.readTime && (
-                                  <span className="mr-3">{item.readTime} {t('minRead')}</span>
-                                )}
-                                {item.difficulty && (
-                                  <span className={`${
-                                    item.difficulty === 'easy' ? 'text-green-600' :
-                                    item.difficulty === 'medium' ? 'text-amber-600' : 'text-red-600'
-                                  }`}>
-                                    {t(item.difficulty)}
-                                  </span>
-                                )}
-                              </div>
-                              {item.tags && (
-                                <div className="flex flex-wrap gap-1 mt-2">
-                                  {item.tags.map(tag => (
-                                    <Badge key={tag} variant="outline" className="text-xs">
-                                      {tag}
-                                    </Badge>
-                                  ))}
-                                </div>
-                              )}
-                            </li>
-                          ))}
-                        </ul>
-                      ) : (
-                        <div className="text-center py-6 text-muted-foreground">
-                          {searchTerm || selectedFilters.length > 0 ? t('noMatchingContent') : t('noCategoryContent')}
-                        </div>
-                      )}
-                    </CardContent>
-                    {filteredItems.length > 0 && (
-                      <CardFooter>
-                        <Button variant="outline" size="sm" className="w-full">
-                          {t('viewAllInCategory')}
-                        </Button>
-                      </CardFooter>
-                    )}
-                  </Card>
-                );
-              })}
-            </div>
-            
-            {/* Progress summary */}
-            <div className="mt-8">
-              <Card>
-                <CardHeader className="pb-3">
-                  <CardTitle className="text-lg">{t('learningProgress')}</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="flex items-center">
-                    <div className="flex-1 mr-4">
-                      <div className="h-2 w-full bg-muted rounded-full overflow-hidden">
-                        <div 
-                          className="h-full bg-primary" 
-                          style={{ 
-                            width: `${Math.min(100, (completedItems.length / 10) * 100)}%` 
-                          }}
-                        ></div>
-                      </div>
-                    </div>
-                    <div className="text-sm font-medium">
-                      {completedItems.length} / {Object.values(educationContent[level as keyof typeof educationContent]).flat().length} {t('completed')}
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
-          </TabsContent>
-        ))}
-      </Tabs>
-    </div>
-  );
-};
-
-export default Education;
+                          {filteredItems.map((item: EducationItem) =>

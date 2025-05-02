@@ -19,6 +19,8 @@ interface UserPreferences {
   educationProgress: {
     completedModules: string[];
     lastAccessedDate: string | null;
+    certificatesEarned?: string[];
+    quizScores?: Record<string, number>;
   };
   // Add new properties for tracking user activity and profile
   name: string;
@@ -27,7 +29,7 @@ interface UserPreferences {
   lastVisitedPage: string;
   lastActive: string;
   todayWelcomed: string;
-  visitedInvestorDashboard: boolean; // Added missing property
+  visitedInvestorDashboard: boolean;
   // Portfolio tracking
   savedProperties: string[];
   watchlist: string[];
@@ -36,6 +38,12 @@ interface UserPreferences {
     enabled: boolean;
     lastSyncDate: string | null;
     devices: string[];
+  };
+  // Enhanced education preferences
+  learningPreferences?: {
+    preferredLearningStyle: 'visual' | 'reading' | 'interactive' | null;
+    emailNotifications: boolean;
+    reminderFrequency: 'daily' | 'weekly' | 'monthly' | 'none';
   };
 }
 
@@ -63,7 +71,9 @@ const defaultPreferences: UserPreferences = {
   },
   educationProgress: {
     completedModules: [],
-    lastAccessedDate: null
+    lastAccessedDate: null,
+    certificatesEarned: [],
+    quizScores: {}
   },
   name: '',
   interests: [],
@@ -71,13 +81,18 @@ const defaultPreferences: UserPreferences = {
   lastVisitedPage: '',
   lastActive: new Date().toISOString(),
   todayWelcomed: '',
-  visitedInvestorDashboard: false, // Added missing property with default value
+  visitedInvestorDashboard: false,
   savedProperties: [],
   watchlist: [],
   dataSync: {
     enabled: true,
     lastSyncDate: null,
     devices: []
+  },
+  learningPreferences: {
+    preferredLearningStyle: null,
+    emailNotifications: false,
+    reminderFrequency: 'weekly'
   }
 };
 

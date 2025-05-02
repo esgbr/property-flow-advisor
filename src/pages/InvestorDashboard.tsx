@@ -2,7 +2,7 @@
 import React, { useEffect, useState } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useLanguage } from '@/contexts/LanguageContext';
-import { Building, Calculator, ClipboardCheck, FileText, Receipt, Search, NotebookPen, TrendingUp, AlertTriangle } from 'lucide-react';
+import { Building, Calculator, ClipboardCheck, FileText, Receipt, Search, TrendingUp, AlertTriangle } from 'lucide-react';
 import { useUserPreferences } from '@/contexts/UserPreferencesContext';
 import PortfolioDashboard from '@/components/portfolio/PortfolioDashboard';
 import MortgageCalculator from '@/components/financing/MortgageCalculator';
@@ -15,6 +15,11 @@ import { useIsMobile } from '@/hooks/use-mobile';
 import { Card } from '@/components/ui/card';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
+
+// Define interfaces for the components that need props
+interface CurrencyProps {
+  currencySymbol: string;
+}
 
 const InvestorDashboard: React.FC = () => {
   const { t, language } = useLanguage();
