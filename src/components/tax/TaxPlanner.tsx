@@ -107,12 +107,17 @@ const TaxPlanner = () => {
 
   // Fix the ValueType issue by ensuring the value is treated as a number
   const handlePropertyValueChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setPropertyValue(parseInt(e.target.value) || 0);
+    setPropertyValue(Number(e.target.value) || 0);
   };
 
   // Fix the ValueType issue for expenses
   const handleExpensesChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setExpenses(parseInt(e.target.value) || 0);
+    setExpenses(Number(e.target.value) || 0);
+  };
+
+  // Fix the ValueType issue for depreciation
+  const handleDepreciationChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setDepreciation(Number(e.target.value) || 0);
   };
 
   return (
@@ -548,7 +553,7 @@ const TaxPlanner = () => {
                       id="monthly-depreciation"
                       type="number" 
                       value={depreciation}
-                      onChange={(e) => setDepreciation(parseInt(e.target.value) || 0)}
+                      onChange={handleDepreciationChange}
                     />
                     <span className="text-sm text-muted-foreground">EUR</span>
                   </div>
