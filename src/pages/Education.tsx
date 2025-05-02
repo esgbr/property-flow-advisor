@@ -6,8 +6,23 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { GraduationCap, BookOpen, Book, BookUser } from 'lucide-react';
 import { useIsMobile } from '@/hooks/use-mobile';
 
-// Sample education content
-const educationContent = {
+// Define proper types for the education content
+interface EducationItem {
+  id: number;
+  title: string;
+  description: string;
+}
+
+interface EducationCategory {
+  [key: string]: EducationItem[];
+}
+
+interface EducationLevel {
+  [key: string]: EducationCategory;
+}
+
+// Sample education content with proper typing
+const educationContent: EducationLevel = {
   beginner: {
     investmentBasics: [
       { id: 1, title: 'Understanding Real Estate Markets', description: 'Learn the fundamentals of real estate markets and how they function.' },
@@ -98,7 +113,8 @@ const Education = () => {
             
             <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
               {categories.map((category) => {
-                const items = educationContent[lvl as keyof typeof educationContent][category as keyof typeof educationContent[keyof typeof educationContent]];
+                // Fix here: Properly type the items variable
+                const items: EducationItem[] = educationContent[lvl as keyof typeof educationContent][category as keyof typeof educationContent[keyof typeof educationContent]] || [];
                 return (
                   <Card key={category} className="card-hover">
                     <CardHeader className="flex flex-row items-center gap-2">
@@ -110,7 +126,7 @@ const Education = () => {
                     </CardHeader>
                     <CardContent>
                       <ul className="space-y-2">
-                        {items.map((item: any) => (
+                        {items.map((item: EducationItem) => (
                           <li key={item.id} className="hover:bg-accent p-2 rounded-md cursor-pointer transition-colors">
                             <h3 className="font-medium">{item.title}</h3>
                             <p className="text-sm text-muted-foreground">{item.description}</p>
