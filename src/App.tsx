@@ -21,6 +21,7 @@ import Education from './pages/Education';
 import Settings from './pages/Settings';
 import NotFound from './pages/NotFound';
 import InvestorDashboard from './pages/InvestorDashboard';
+import FeaturesDashboard from './pages/FeaturesDashboard';
 
 import { Toaster as SonnerToaster } from "@/components/ui/sonner";
 
@@ -48,6 +49,7 @@ export default function App() {
                     <Route path="/education" element={<Education />} />
                     <Route path="/settings" element={<Settings />} />
                     <Route path="/investor-dashboard" element={<InvestorDashboard />} />
+                    <Route path="/features" element={<FeaturesDashboard />} />
                     <Route path="*" element={<NotFound />} />
                   </Route>
                 </Routes>
