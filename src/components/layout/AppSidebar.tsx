@@ -5,7 +5,7 @@ import { Sidebar, SidebarContent } from '@/components/ui/sidebar';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { 
   BarChart3, Book, Building, Calculator, Calendar, FileText, Home, 
-  LayoutDashboard, LineChart, Map, Settings2, Star, School, Building2, Banknote, RefreshCw
+  LayoutDashboard, LineChart, Map, Settings2, Star, School, Building2, Banknote, RefreshCw, Users
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useUserPreferences } from '@/contexts/UserPreferencesContext';
@@ -47,6 +47,12 @@ const AppSidebar = () => {
       name: "1031 Exchange Tracker",
       href: '/exchange-tracker',
       icon: <RefreshCw className="h-5 w-5" />,
+      new: true,
+    },
+    {
+      name: "Partner Matching",
+      href: '/partner-matching',
+      icon: <Users className="h-5 w-5" />,
       new: true,
     },
     {
