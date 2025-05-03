@@ -8,6 +8,8 @@ interface LanguageContextType {
   setLanguage: (language: Language) => void;
   t: (key: string) => string;
   getEducationContent: () => any;
+  translations: Record<Language, Record<string, string>>;
+  updateTranslations: (newTranslations: Record<string, Record<string, string>>) => void;
 }
 
 const LanguageContext = createContext<LanguageContextType | undefined>(undefined);
@@ -533,9 +535,33 @@ export const LanguageProvider = ({ children }: LanguageProviderProps) => {
       : 'en';
   });
 
+  const [translationsState, setTranslationsState] = useState(translations);
+
+  // Function to update translations
+  const updateTranslations = (newTranslations: Record<string, Record<string, string>>) => {
+    // Deep merge the new translations with the existing ones
+    const updatedTranslations = { ...translationsState };
+    
+    // For each translation category (e.g., 'dashboard', 'properties')
+    for (const category in newTranslations) {
+      if (newTranslations.hasOwnProperty(category)) {
+        // For each language in this category
+        for (const lang in newTranslations[category]) {
+          if (newTranslations[category].hasOwnProperty(lang) && 
+              updatedTranslations.hasOwnProperty(lang as Language)) {
+            // Add or update the translation
+            updatedTranslations[lang as Language][category] = newTranslations[category][lang];
+          }
+        }
+      }
+    }
+    
+    setTranslationsState(updatedTranslations);
+  };
+
   // Translate a key based on the current language
   const t = (key: string): string => {
-    return translations[language][key] || key;
+    return translationsState[language][key] || key;
   };
   
   // Get education content in the current language, falling back to English if not available
@@ -573,7 +599,14 @@ export const LanguageProvider = ({ children }: LanguageProviderProps) => {
   }, [language]);
 
   return (
-    <LanguageContext.Provider value={{ language, setLanguage, t, getEducationContent }}>
+    <LanguageContext.Provider value={{ 
+      language, 
+      setLanguage, 
+      t, 
+      getEducationContent, 
+      translations: translationsState, 
+      updateTranslations 
+    }}>
       {children}
     </LanguageContext.Provider>
   );

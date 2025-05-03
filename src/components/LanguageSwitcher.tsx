@@ -1,4 +1,3 @@
-
 import React, { useEffect } from 'react';
 import {
   DropdownMenu,
@@ -160,7 +159,7 @@ const LanguageSwitcher = () => {
           de: 'Anzeigesprache geändert zu',
           es: 'Idioma de visualización cambiado a',
           fr: 'Langue d\'affichage changée en',
-          it: 'Lingua di visualizzazione cambiata in'
+          it: 'Lingua cambiata in'
         }
       };
       
