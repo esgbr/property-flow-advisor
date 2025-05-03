@@ -28,6 +28,7 @@ import InvestmentPartnerMatching from './pages/InvestmentPartnerMatching';
 import DeutscheImmobilienTools from './pages/DeutscheImmobilienTools';
 import Index from './pages/Index';
 import InvestmentCalculator from './pages/InvestmentCalculator';
+import PortfolioOptimization from './pages/PortfolioOptimization';
 
 import { Toaster as SonnerToaster } from "@/components/ui/sonner";
 
@@ -61,6 +62,7 @@ export default function App() {
                     <Route path="/partner-matching" element={<InvestmentPartnerMatching />} />
                     <Route path="/deutsche-immobilien-tools" element={<DeutscheImmobilienTools />} />
                     <Route path="/investment-calculator" element={<InvestmentCalculator />} />
+                    <Route path="/portfolio-optimization" element={<PortfolioOptimization />} />
                     <Route path="*" element={<NotFound />} />
                   </Route>
                 </Routes>

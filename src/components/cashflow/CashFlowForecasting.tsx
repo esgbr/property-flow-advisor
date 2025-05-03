@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -277,7 +278,7 @@ const CashFlowForecasting: React.FC = () => {
             <Card>
               <CardHeader>
                 <CardTitle>Expense Distribution</CardTitle>
-                <CardDescription>Breakdown of expense categories</CardHeader>
+                <CardDescription>Breakdown of expense categories</CardDescription>
               </CardHeader>
               <CardContent>
                 <div className="flex justify-center">

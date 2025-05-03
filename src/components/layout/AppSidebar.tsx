@@ -6,7 +6,7 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import { 
   BarChart3, Book, Building, Calculator, Calendar, FileText, Home, 
   LayoutDashboard, LineChart, Map, Settings2, Star, School, Building2, Banknote, 
-  RefreshCw, Users, Euro, PieChart, Calculator as CalculatorIcon
+  RefreshCw, Users, Euro, PieChart, Calculator as CalculatorIcon, BarChart
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useUserPreferences } from '@/contexts/UserPreferencesContext';
@@ -48,6 +48,12 @@ const AppSidebar = () => {
       name: "Investment Calculator",
       href: '/investment-calculator',
       icon: <PieChart className="h-5 w-5" />,
+      new: true,
+    },
+    {
+      name: "Portfolio-Optimierung",
+      href: '/portfolio-optimization',
+      icon: <BarChart className="h-5 w-5" />,
       new: true,
     },
     {
