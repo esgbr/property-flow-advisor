@@ -15,7 +15,7 @@ const SearchInput = React.forwardRef<HTMLInputElement, SearchInputProps>(
     const [autocomplete, setAutocomplete] = React.useState<google.maps.places.Autocomplete | null>(null);
     
     React.useEffect(() => {
-      if (!usePlacesAutocomplete || !window.google || !window.google.maps || !window.google.maps.places) {
+      if (!usePlacesAutocomplete || !window.google?.maps?.places) {
         return;
       }
 
@@ -42,10 +42,10 @@ const SearchInput = React.forwardRef<HTMLInputElement, SearchInputProps>(
 
       return () => {
         if (autocomplete) {
-          window.google.maps.event.clearInstanceListeners(autocomplete);
+          google.maps.event.clearInstanceListeners(autocomplete);
         }
       };
-    }, [usePlacesAutocomplete, onLocationSelect]);
+    }, [usePlacesAutocomplete, onLocationSelect, autocomplete]);
 
     return (
       <div className="relative w-full">

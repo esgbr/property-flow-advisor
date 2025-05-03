@@ -1,5 +1,4 @@
-
-import React, { createContext, useState, useContext, ReactNode, useEffect } from 'react';
+import React, { createContext, useState, useContext, ReactNode, useEffect, useCallback } from 'react';
 
 type Language = 'en' | 'de' | 'es' | 'fr' | 'it';
 
@@ -8,7 +7,7 @@ interface LanguageContextType {
   setLanguage: (language: Language) => void;
   t: (key: string) => string;
   getEducationContent: () => any;
-  translations: Record<Language, Record<string, string>>;
+  translations: Record<string, Record<string, string>>;
   updateTranslations: (newTranslations: Record<string, Record<string, string>>) => void;
 }
 
@@ -96,6 +95,26 @@ const translations: Record<Language, Record<string, string>> = {
     takeQuiz: 'Take Quiz',
     markAsComplete: 'Mark as Complete',
     timeToComplete: 'Estimated Time to Complete',
+    // Fix casing issues
+    investmentCalculator: 'Investment Calculator',
+    dashboard: 'Dashboard',
+    properties: 'Properties',
+    calculators: 'Calculators',
+    schedule: 'Schedule',
+    refurbishment: 'Refurbishment',
+    decision: 'Decision',
+    education: 'Education',
+    investorDashboard: 'Investor Dashboard',
+    // Address autocomplete translations
+    startTypingForGoogleMaps: 'Start typing to get address suggestions from Google Maps',
+    enterAddressManually: 'Please enter your address manually',
+    addressVerified: 'Address Verified',
+    addressVerifiedDescription: 'The address has been verified and updated with Google Maps data',
+    googleMapsNotLoaded: 'Google Maps API not loaded. Please check your internet connection.',
+    // Additional translations
+    saveAndContinue: 'Save and Continue',
+    viewFinancials: 'View Financials',
+    editProperty: 'Edit Property',
   },
   de: {
     dashboard: 'Dashboard',
@@ -153,6 +172,26 @@ const translations: Record<Language, Record<string, string>> = {
     legalAspects: 'Rechtliche Aspekte',
     developmentProjects: 'Entwicklungsprojekte',
     marketAnalysis: 'Marktanalyse',
+    // Fix casing issues
+    investmentCalculator: 'Investitionsrechner',
+    dashboard: 'Dashboard',
+    properties: 'Immobilien',
+    calculators: 'Rechner',
+    schedule: 'Zeitplan',
+    refurbishment: 'Sanierung',
+    decision: 'Entscheidung',
+    education: 'Bildung',
+    investorDashboard: 'Investoren-Dashboard',
+    // Address autocomplete translations
+    startTypingForGoogleMaps: 'Beginnen Sie zu tippen, um Adressvorschläge von Google Maps zu erhalten',
+    enterAddressManually: 'Bitte geben Sie Ihre Adresse manuell ein',
+    addressVerified: 'Adresse verifiziert',
+    addressVerifiedDescription: 'Die Adresse wurde verifiziert und mit Google Maps-Daten aktualisiert',
+    googleMapsNotLoaded: 'Google Maps API nicht geladen. Bitte überprüfen Sie Ihre Internetverbindung.',
+    // Additional translations
+    saveAndContinue: 'Speichern und Fortfahren',
+    viewFinancials: 'Finanzdaten anzeigen',
+    editProperty: 'Immobilie bearbeiten',
   },
   es: {
     dashboard: 'Tablero',
@@ -210,6 +249,26 @@ const translations: Record<Language, Record<string, string>> = {
     legalAspects: 'Aspectos Legales',
     developmentProjects: 'Proyectos de Desarrollo',
     marketAnalysis: 'Análisis de Mercado',
+    // Fix casing issues
+    investmentCalculator: 'Calculadora de Inversión',
+    dashboard: 'Tablero',
+    properties: 'Propiedades',
+    calculators: 'Calculadoras',
+    schedule: 'Calendario',
+    refurbishment: 'Renovación',
+    decision: 'Decisión',
+    education: 'Educación',
+    investorDashboard: 'Panel del Inversor',
+    // Address autocomplete translations
+    startTypingForGoogleMaps: 'Comience a escribir para obtener sugerencias de direcciones de Google Maps',
+    enterAddressManually: 'Por favor, ingrese su dirección manualmente',
+    addressVerified: 'Dirección verificada',
+    addressVerifiedDescription: 'La dirección ha sido verificada y actualizada con datos de Google Maps',
+    googleMapsNotLoaded: 'API de Google Maps no cargada. Por favor, verifique su conexión a internet.',
+    // Additional translations
+    saveAndContinue: 'Guardar y Continuar',
+    viewFinancials: 'Ver Finanzas',
+    editProperty: 'Editar Propiedad',
   },
   fr: {
     dashboard: 'Tableau de bord',
@@ -267,6 +326,26 @@ const translations: Record<Language, Record<string, string>> = {
     legalAspects: 'Aspects Juridiques',
     developmentProjects: 'Projets de Développement',
     marketAnalysis: 'Analyse de Marché',
+    // Fix casing issues
+    investmentCalculator: 'Calculateur d\'Investissement',
+    dashboard: 'Tableau de Bord',
+    properties: 'Propriétés',
+    calculators: 'Calculatrices',
+    schedule: 'Calendrier',
+    refurbishment: 'Rénovation',
+    decision: 'Décision',
+    education: 'Éducation',
+    investorDashboard: 'Tableau de Bord de l\'Investisseur',
+    // Address autocomplete translations
+    startTypingForGoogleMaps: 'Commencez à taper pour obtenir des suggestions d\'adresses de Google Maps',
+    enterAddressManually: 'Veuillez saisir votre adresse manuellement',
+    addressVerified: 'Adresse vérifiée',
+    addressVerifiedDescription: 'L\'adresse a été vérifiée et mise à jour avec les données de Google Maps',
+    googleMapsNotLoaded: 'API Google Maps non chargée. Veuillez vérifier votre connexion Internet.',
+    // Additional translations
+    saveAndContinue: 'Enregistrer et Continuer',
+    viewFinancials: 'Voir les Finances',
+    editProperty: 'Modifier la Propriété',
   },
   it: {
     dashboard: 'Dashboard',
@@ -324,7 +403,27 @@ const translations: Record<Language, Record<string, string>> = {
     legalAspects: 'Aspetti Legali',
     developmentProjects: 'Progetti di Sviluppo',
     marketAnalysis: 'Analisi di Mercato',
-  },
+    // Fix casing issues
+    investmentCalculator: 'Calcolatore d\'Investimento',
+    dashboard: 'Dashboard',
+    properties: 'Proprietà',
+    calculators: 'Calcolatrici',
+    schedule: 'Calendario',
+    refurbishment: 'Ristrutturazione',
+    decision: 'Decisione',
+    education: 'Formazione',
+    investorDashboard: 'Dashboard per Investitori',
+    // Address autocomplete translations
+    startTypingForGoogleMaps: 'Inizia a digitare per ottenere suggerimenti di indirizzi da Google Maps',
+    enterAddressManually: 'Inserisci il tuo indirizzo manualmente',
+    addressVerified: 'Indirizzo verificato',
+    addressVerifiedDescription: 'L\'indirizzo è stato verificato e aggiornato con i dati di Google Maps',
+    googleMapsNotLoaded: 'API di Google Maps non caricata. Controlla la tua connessione internet.',
+    // Additional translations
+    saveAndContinue: 'Salva e Continua',
+    viewFinancials: 'Visualizza Finanze',
+    editProperty: 'Modifica Proprietà',
+  }
 };
 
 // Education content that is translated based on selected language
@@ -538,7 +637,7 @@ export const LanguageProvider = ({ children }: LanguageProviderProps) => {
   const [translationsState, setTranslationsState] = useState(translations);
 
   // Function to update translations
-  const updateTranslations = (newTranslations: Record<string, Record<string, string>>) => {
+  const updateTranslations = useCallback((newTranslations: Record<string, Record<string, string>>) => {
     // Deep merge the new translations with the existing ones
     const updatedTranslations = { ...translationsState };
     
@@ -557,7 +656,7 @@ export const LanguageProvider = ({ children }: LanguageProviderProps) => {
     }
     
     setTranslationsState(updatedTranslations);
-  };
+  }, [translationsState]);
 
   // Translate a key based on the current language
   const t = (key: string): string => {
@@ -587,7 +686,7 @@ export const LanguageProvider = ({ children }: LanguageProviderProps) => {
       }
     };
   };
-
+  
   const setLanguage = (newLanguage: Language) => {
     setLanguageState(newLanguage);
     localStorage.setItem('language', newLanguage);
