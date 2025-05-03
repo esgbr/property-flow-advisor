@@ -25,9 +25,8 @@ const PropertyHeader = ({ property }: PropertyHeaderProps) => {
         return 'outline';
       case 'off-market':
       case 'rejected':
-        return 'destructive';
       case 'under_contract':
-        return 'blue';
+        return 'destructive';
       default:
         return 'outline';
     }

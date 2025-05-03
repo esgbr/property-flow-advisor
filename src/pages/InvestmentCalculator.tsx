@@ -120,6 +120,14 @@ const InvestmentCalculator = () => {
   const amortizationData = generateAmortizationData();
   const projectionData = generateProjectionData();
 
+  // Formatter function for currency values in tooltips
+  const formatCurrencyValue = (value: number | string) => {
+    if (typeof value === 'number') {
+      return `€${value.toFixed(2)}`;
+    }
+    return value;
+  };
+
   return (
     <div className="space-y-6 animate-fade-in">
       <div>
@@ -405,7 +413,7 @@ const InvestmentCalculator = () => {
                       <CartesianGrid strokeDasharray="3 3" />
                       <XAxis dataKey="year" label={{ value: 'Year', position: 'insideBottom', offset: -5 }} />
                       <YAxis />
-                      <Tooltip formatter={(value) => `€${value.toFixed(2)}`} />
+                      <Tooltip formatter={(value) => formatCurrencyValue(Number(value))} />
                       <Legend />
                       <Bar dataKey="principalPaid" name="Principal" fill="#8884d8" stackId="a" />
                       <Bar dataKey="interestPaid" name="Interest" fill="#82ca9d" stackId="a" />

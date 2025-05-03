@@ -65,6 +65,7 @@ export interface Property {
     expectedValueIncrease: number;
     expectedRentIncrease: number;
   };
+  dismissedSecurityAlert?: boolean;
 }
 
 export interface Contact {

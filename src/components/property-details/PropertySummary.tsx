@@ -53,7 +53,7 @@ const PropertySummary = ({ property }: PropertySummaryProps) => {
               <p className="text-xl font-semibold">{property.financials?.grossRentalYield || 'N/A'}%</p>
             </div>
             <div className="space-y-1">
-              <p className="text-sm font-medium text-muted-foreground">Monthly Cashflow</p>
+              <p className="text-sm font-medium text-muted-foreground">Monthly Cash Flow</p>
               <p className="text-xl font-semibold">€{property.financials?.monthlyCashFlow?.toLocaleString() || 'N/A'}</p>
             </div>
           </div>
