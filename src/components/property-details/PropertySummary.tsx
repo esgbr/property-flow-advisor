@@ -38,11 +38,11 @@ const PropertySummary = ({ property }: PropertySummaryProps) => {
             </div>
             <div className="space-y-1">
               <p className="text-sm font-medium text-muted-foreground">Size</p>
-              <p className="text-xl font-semibold">{property.squareMeters} m²</p>
+              <p className="text-xl font-semibold">{property.squareMeters || property.size || 0} m²</p>
             </div>
             <div className="space-y-1">
               <p className="text-sm font-medium text-muted-foreground">Price per m²</p>
-              <p className="text-xl font-semibold">€{Math.round(property.purchasePrice / property.squareMeters).toLocaleString()}</p>
+              <p className="text-xl font-semibold">€{Math.round(property.purchasePrice / (property.squareMeters || property.size || 1)).toLocaleString()}</p>
             </div>
             <div className="space-y-1">
               <p className="text-sm font-medium text-muted-foreground">Expected Rent</p>

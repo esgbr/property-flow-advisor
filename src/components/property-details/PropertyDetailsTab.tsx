@@ -16,9 +16,9 @@ const PropertyDetailsTab = ({ property }: PropertyDetailsTabProps) => {
   // These are optional properties that might not exist in the Property interface
   // So we'll use optional values and fallbacks
   const propertyDetails = {
-    yearBuilt: '2010',
+    yearBuilt: property.yearBuilt?.toString() || '2010',
     condition: 'Good',
-    bathrooms: '1',
+    bathrooms: property.bathrooms?.toString() || '1',
     heating: 'Central',
     energyRating: 'C',
     parking: 'Street',
@@ -53,7 +53,7 @@ const PropertyDetailsTab = ({ property }: PropertyDetailsTabProps) => {
             </div>
             <div className="space-y-1">
               <p className="text-sm text-muted-foreground">Bedrooms</p>
-              <p>{property.rooms || '2'}</p>
+              <p>{property.rooms || property.bedrooms || 2}</p>
             </div>
             <div className="space-y-1">
               <p className="text-sm text-muted-foreground">Bathrooms</p>

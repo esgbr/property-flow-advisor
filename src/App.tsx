@@ -46,8 +46,8 @@ export default function App() {
                   <Route element={<MainLayout />}>
                     <Route path="/dashboard" element={<Dashboard />} />
                     <Route path="/properties" element={<Properties />} />
-                    <Route path="/properties/:id" element={<PropertyDetail />} />
-                    <Route path="/properties/:id/edit" element={<PropertyEdit />} />
+                    <Route path="/property/:id" element={<PropertyDetail />} />
+                    <Route path="/property/:id/edit" element={<PropertyEdit />} />
                     <Route path="/calculators" element={<Calculators />} />
                     <Route path="/schedule" element={<Schedule />} />
                     <Route path="/decision" element={<Decision />} />

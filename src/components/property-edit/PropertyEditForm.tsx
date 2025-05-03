@@ -1,3 +1,4 @@
+
 import React, { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
@@ -20,13 +21,26 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { toast } from 'sonner';
 import { MapPinCheck, MapPin, AlertCircle, Shield } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
 interface PropertyEditFormProps {
   property: Property;
   onSave: (updatedProperty: Partial<Property>) => void;
+}
+
+// Define form values type to avoid type errors
+interface FormValues {
+  title: string;
+  address: string;
+  city: string;
+  zipCode: string;
+  country: string;
+  propertyType: string;
+  squareMeters: number;
+  rooms: number;
+  purchasePrice: number;
+  status: string;
 }
 
 const PropertyEditForm = ({ property, onSave }: PropertyEditFormProps) => {
@@ -47,7 +61,7 @@ const PropertyEditForm = ({ property, onSave }: PropertyEditFormProps) => {
       .replace(/'/g, '&#039;');
   };
   
-  const form = useForm({
+  const form = useForm<FormValues>({
     defaultValues: {
       title: property.title,
       address: property.address,
@@ -55,8 +69,8 @@ const PropertyEditForm = ({ property, onSave }: PropertyEditFormProps) => {
       zipCode: property.zipCode,
       country: property.country,
       propertyType: property.propertyType,
-      squareMeters: property.squareMeters,
-      rooms: property.rooms,
+      squareMeters: property.squareMeters || property.size || 0,
+      rooms: property.rooms || property.bedrooms || 0,
       purchasePrice: property.purchasePrice,
       status: property.status
     }
@@ -169,7 +183,7 @@ const PropertyEditForm = ({ property, onSave }: PropertyEditFormProps) => {
     }
   }, [autocompleteLoaded, form]);
 
-  const onSubmit = (values: any) => {
+  const onSubmit = (values: FormValues) => {
     // Sanitize all text inputs
     const sanitizedValues = {
       ...values,
@@ -186,13 +200,6 @@ const PropertyEditForm = ({ property, onSave }: PropertyEditFormProps) => {
     
     // Pass the updated values to the onSave callback
     onSave(sanitizedValues);
-    
-    toast({
-      title: "Property Updated",
-      description: "Your property information has been successfully updated.",
-    });
-    
-    navigate(`/property/${property.id}`);
   };
 
   return (
@@ -419,6 +426,10 @@ const PropertyEditForm = ({ property, onSave }: PropertyEditFormProps) => {
                     <SelectItem value="negotiating">Negotiating</SelectItem>
                     <SelectItem value="under_contract">Under Contract</SelectItem>
                     <SelectItem value="owned">Owned</SelectItem>
+                    <SelectItem value="active">Active</SelectItem>
+                    <SelectItem value="pending">Pending</SelectItem>
+                    <SelectItem value="sold">Sold</SelectItem>
+                    <SelectItem value="off-market">Off-Market</SelectItem>
                     <SelectItem value="rejected">Rejected</SelectItem>
                   </SelectContent>
                 </Select>

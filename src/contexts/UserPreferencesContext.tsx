@@ -1,3 +1,4 @@
+
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { useToast } from '@/components/ui/use-toast';
 import { OnboardingData } from '@/components/onboarding/OnboardingFlow';
@@ -21,7 +22,7 @@ interface UserPreferences {
     certificatesEarned?: string[];
     quizScores?: Record<string, number>;
   };
-  // Add new properties for tracking user activity and profile
+  // User profile and activity tracking
   name: string;
   interests: string[];
   visitedPages: string[];
@@ -38,14 +39,33 @@ interface UserPreferences {
     lastSyncDate: string | null;
     devices: string[];
   };
-  // Enhanced education preferences
+  // Enhanced learning and education preferences
   learningPreferences?: {
     preferredLearningStyle: 'visual' | 'reading' | 'interactive' | null;
     emailNotifications: boolean;
     reminderFrequency: 'daily' | 'weekly' | 'monthly' | 'none';
   };
-  // Security preference
+  // Security features
   dismissedSecurityAlert: boolean;
+  autoLockEnabled?: boolean;
+  autoLockTimeout?: number; // in minutes
+  biometricAuthEnabled?: boolean;
+  // Mobile app preferences
+  mobileNotifications?: {
+    push: boolean;
+    deals: boolean;
+    marketUpdates: boolean;
+    messages: boolean;
+    portfolioAlerts: boolean;
+  };
+  mobileDataSaver?: boolean;
+  // Accessibility options
+  accessibilityOptions?: {
+    highContrast: boolean;
+    largeText: boolean;
+    reduceAnimations: boolean;
+    screenReader: boolean;
+  };
 }
 
 interface UserPreferencesContextType {
@@ -95,7 +115,24 @@ const defaultPreferences: UserPreferences = {
     emailNotifications: false,
     reminderFrequency: 'weekly'
   },
-  dismissedSecurityAlert: false
+  dismissedSecurityAlert: false,
+  autoLockEnabled: false,
+  autoLockTimeout: 15, // 15 minutes default
+  biometricAuthEnabled: false,
+  mobileNotifications: {
+    push: true,
+    deals: true,
+    marketUpdates: true,
+    messages: true,
+    portfolioAlerts: true
+  },
+  mobileDataSaver: false,
+  accessibilityOptions: {
+    highContrast: false,
+    largeText: false,
+    reduceAnimations: false,
+    screenReader: false
+  }
 };
 
 const UserPreferencesContext = createContext<UserPreferencesContextType | undefined>(undefined);
@@ -114,13 +151,71 @@ export const UserPreferencesProvider: React.FC<{ children: React.ReactNode }> = 
     const firstVisitCheck = localStorage.getItem('firstVisit');
 
     if (storedPreferences) {
-      setPreferences(JSON.parse(storedPreferences));
+      try {
+        // Use a try-catch to safely parse JSON and handle potential corruption
+        const parsedPreferences = JSON.parse(storedPreferences);
+        setPreferences(prev => ({ ...prev, ...parsedPreferences }));
+      } catch (error) {
+        console.error('Error parsing stored preferences:', error);
+        // If there's an error parsing, use default preferences
+        setPreferences(defaultPreferences);
+        // Backup corrupted data for potential recovery
+        localStorage.setItem('userPreferencesBackup', storedPreferences);
+        localStorage.setItem('userPreferences', JSON.stringify(defaultPreferences));
+      }
     }
 
     if (firstVisitCheck) {
       setIsFirstVisit(false);
     }
   }, []);
+
+  // Track user activity
+  useEffect(() => {
+    // Update last active timestamp when preferences change
+    setPreferences(prev => ({
+      ...prev,
+      lastActive: new Date().toISOString(),
+    }));
+  }, [preferences.visitedPages]);
+
+  // Auto-lock feature based on idle time
+  useEffect(() => {
+    if (!preferences.autoLockEnabled) return;
+    
+    let idleTimer: number | undefined;
+    
+    const resetTimer = () => {
+      if (idleTimer) window.clearTimeout(idleTimer);
+      
+      idleTimer = window.setTimeout(() => {
+        // Lock application after timeout expires
+        console.log('Auto-lock triggered after inactivity');
+        // This would trigger your app lock functionality
+        toast({
+          title: "Session Auto-Locked",
+          description: "Your session was locked due to inactivity",
+        });
+      }, preferences.autoLockTimeout * 60 * 1000);
+    };
+    
+    // Reset timer on user activity
+    const activities = ['mousedown', 'mousemove', 'keypress', 'scroll', 'touchstart'];
+    activities.forEach(event => {
+      document.addEventListener(event, resetTimer, { passive: true });
+    });
+    
+    // Initialize timer
+    resetTimer();
+    
+    // Cleanup
+    return () => {
+      if (idleTimer) window.clearTimeout(idleTimer);
+      activities.forEach(event => {
+        document.removeEventListener(event, resetTimer);
+      });
+    };
+  }, [preferences.autoLockEnabled, preferences.autoLockTimeout, toast]);
 
   // Save preferences to localStorage whenever they change
   useEffect(() => {

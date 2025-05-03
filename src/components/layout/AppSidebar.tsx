@@ -7,10 +7,23 @@ import {
   BarChart3, Building, Calculator, Calendar, Settings2, Star, 
   School, Building2, Banknote, RefreshCw, Users, Euro, 
   PieChart, BarChart, Globe, LayoutDashboard, Home,
-  LineChart, Shield, FileText, ChevronRight
+  LineChart, Shield, FileText
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useUserPreferences } from '@/contexts/UserPreferencesContext';
+
+// Define navigation item type for better type safety
+interface NavItem {
+  name: string;
+  href: string;
+  icon: React.ReactNode;
+  new?: boolean;
+}
+
+interface NavCategory {
+  title: string;
+  items: NavItem[];
+}
 
 const AppSidebar = () => {
   const { t } = useLanguage();
@@ -18,7 +31,7 @@ const AppSidebar = () => {
   const { preferences } = useUserPreferences();
 
   // Organize navigation items by category for better structure
-  const navigationCategories = [
+  const navigationCategories: NavCategory[] = [
     {
       title: t('mainNavigation'),
       items: [
@@ -144,6 +157,41 @@ const AppSidebar = () => {
     }
   ];
 
+  // Render a nav item
+  const renderNavItem = (item: NavItem) => (
+    <Link
+      key={item.href}
+      to={item.href}
+      className={cn(
+        "flex items-center py-2 px-3 rounded-md group transition-colors",
+        location.pathname === item.href
+          ? "bg-primary text-primary-foreground"
+          : "hover:bg-muted"
+      )}
+      aria-current={location.pathname === item.href ? "page" : undefined}
+    >
+      {item.icon}
+      <span className="ml-3 flex-1">{item.name}</span>
+      {item.new && (
+        <span className="bg-primary/10 text-primary text-xs px-1.5 py-0.5 rounded-full">
+          {t('new')}
+        </span>
+      )}
+    </Link>
+  );
+
+  // Render a category with its items
+  const renderCategory = (category: NavCategory, idx: number) => (
+    <div key={idx} className="mb-6">
+      <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider px-3 mb-2">
+        {category.title}
+      </h3>
+      <div className="space-y-1">
+        {category.items.map(renderNavItem)}
+      </div>
+    </div>
+  );
+
   return (
     <Sidebar>
       <div className="flex flex-col h-full py-4">
@@ -153,36 +201,7 @@ const AppSidebar = () => {
             <span className="text-xl font-bold ml-2">PropertyFlow</span>
           </Link>
           
-          {navigationCategories.map((category, idx) => (
-            <div key={idx} className="mb-6">
-              <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider px-3 mb-2">
-                {category.title}
-              </h3>
-              <div className="space-y-1">
-                {category.items.map((item) => (
-                  <Link
-                    key={item.href}
-                    to={item.href}
-                    className={cn(
-                      "flex items-center py-2 px-3 rounded-md group transition-colors",
-                      location.pathname === item.href
-                        ? "bg-primary text-primary-foreground"
-                        : "hover:bg-muted"
-                    )}
-                    aria-current={location.pathname === item.href ? "page" : undefined}
-                  >
-                    {item.icon}
-                    <span className="ml-3 flex-1">{item.name}</span>
-                    {item.new && (
-                      <span className="bg-primary/10 text-primary text-xs px-1.5 py-0.5 rounded-full">
-                        {t('new')}
-                      </span>
-                    )}
-                  </Link>
-                ))}
-              </div>
-            </div>
-          ))}
+          {navigationCategories.map(renderCategory)}
         </div>
         <div className="mt-auto px-3">
           {preferences.name && (

@@ -11,6 +11,28 @@ interface PropertyHeaderProps {
 }
 
 const PropertyHeader = ({ property }: PropertyHeaderProps) => {
+  // Function to determine badge variant based on status
+  const getBadgeVariant = (status: string) => {
+    switch (status) {
+      case 'active':
+      case 'analyzing':
+        return 'default';
+      case 'pending':
+      case 'negotiating':
+        return 'secondary';
+      case 'sold':
+      case 'owned':
+        return 'outline';
+      case 'off-market':
+      case 'rejected':
+        return 'destructive';
+      case 'under_contract':
+        return 'blue';
+      default:
+        return 'outline';
+    }
+  };
+
   return (
     <div className="flex items-center justify-between">
       <div className="flex items-center gap-2">
@@ -20,11 +42,7 @@ const PropertyHeader = ({ property }: PropertyHeaderProps) => {
           </Link>
         </Button>
         <h1 className="text-2xl font-bold">{property.title}</h1>
-        <Badge variant={
-          property.status === 'analyzing' ? 'default' :
-          property.status === 'negotiating' ? 'secondary' :
-          property.status === 'owned' ? 'outline' : 'outline'
-        }>
+        <Badge variant={getBadgeVariant(property.status)}>
           {property.status.replace('_', ' ')}
         </Badge>
       </div>
