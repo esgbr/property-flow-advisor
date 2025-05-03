@@ -1,16 +1,18 @@
-
 import React, { useState } from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Users, User, Calendar, FileText, Plus, Search, Check, X, AlertCircle, Clock } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Progress } from '@/components/ui/progress';
-import { useToast } from '@/hooks/use-toast';
+import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Switch } from '@/components/ui/switch';
+import { Badge } from '@/components/ui/badge';
+import { Progress } from '@/components/ui/progress';
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { Search, Filter, UserPlus, FileText, CalendarDays, Check, X, AlertTriangle, BellIcon } from 'lucide-react';
+import { toast } from 'sonner';
 
 // Dummy tenant data
 const tenants = [
@@ -103,10 +105,11 @@ const maintenanceRequests = [
   },
 ];
 
-const TenantManagement: React.FC = () => {
-  const [activeTab, setActiveTab] = useState<string>('tenants');
-  const [searchQuery, setSearchQuery] = useState<string>('');
-  const { toast } = useToast();
+const TenantManagement = () => {
+  const [activeTab, setActiveTab] = useState('tenants');
+  const [searchQuery, setSearchQuery] = useState('');
+  const [showTenantDialog, setShowTenantDialog] = useState(false);
+  const [showNotificationDialog, setShowNotificationDialog] = useState(false);
 
   const filteredTenants = tenants.filter(tenant => 
     tenant.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -155,103 +158,150 @@ const TenantManagement: React.FC = () => {
   };
 
   return (
-    <div className="space-y-6">
-      <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-4">
+    <div className="space-y-6 animate-fade-in">
+      <div className="flex flex-col md:flex-row justify-between gap-4 mb-4">
         <div>
-          <h2 className="text-2xl font-bold">Tenant Management System</h2>
-          <p className="text-muted-foreground">Track tenant information, lease agreements, and maintenance requests</p>
+          <h2 className="text-2xl font-bold">Tenant Management</h2>
+          <p className="text-muted-foreground">Oversee tenant interactions and rental activities</p>
         </div>
-        <div className="flex flex-col sm:flex-row gap-2">
+        
+        <div className="flex items-center gap-2">
           <div className="relative">
             <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-            <Input 
-              type="search" 
-              placeholder="Search tenants..." 
-              className="pl-8 w-full" 
+            <Input
+              type="search"
+              placeholder="Search tenants..."
+              className="pl-8 w-full md:w-[200px]"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
             />
           </div>
-          <Button onClick={handleAddTenant}>
-            <Plus className="h-4 w-4 mr-2" />
+          
+          <Button variant="outline" size="icon">
+            <Filter className="h-4 w-4" />
+          </Button>
+          
+          <Button onClick={() => setShowTenantDialog(true)}>
+            <UserPlus className="h-4 w-4 mr-2" />
             Add Tenant
           </Button>
         </div>
       </div>
-
-      <Tabs defaultValue={activeTab} onValueChange={setActiveTab}>
+      
+      <Tabs defaultValue={activeTab} value={activeTab} onValueChange={setActiveTab}>
         <TabsList>
           <TabsTrigger value="tenants">
-            <Users className="h-4 w-4 mr-2" />
+            <UserPlus className="h-4 w-4 mr-2" />
             Tenants
           </TabsTrigger>
           <TabsTrigger value="leases">
             <FileText className="h-4 w-4 mr-2" />
-            Leases & Documents
-          </TabsTrigger>
-          <TabsTrigger value="maintenance">
-            <AlertCircle className="h-4 w-4 mr-2" />
-            Maintenance Requests
+            Leases
           </TabsTrigger>
           <TabsTrigger value="payments">
-            <Calendar className="h-4 w-4 mr-2" />
+            <CalendarDays className="h-4 w-4 mr-2" />
             Payments
+          </TabsTrigger>
+          <TabsTrigger value="applications">
+            <AlertTriangle className="h-4 w-4 mr-2" />
+            Applications
           </TabsTrigger>
         </TabsList>
         
-        <TabsContent value="tenants">
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {filteredTenants.map((tenant) => (
-              <Card key={tenant.id}>
-                <CardHeader className="pb-2">
-                  <div className="flex justify-between">
-                    <div className="flex items-center">
-                      <Avatar className="h-10 w-10 mr-2">
-                        <AvatarImage src={tenant.avatar} />
-                        <AvatarFallback>{tenant.name.split(' ').map(n => n[0]).join('')}</AvatarFallback>
-                      </Avatar>
-                      <div>
-                        <CardTitle className="text-lg">{tenant.name}</CardTitle>
-                        <CardDescription>{tenant.property}</CardDescription>
-                      </div>
-                    </div>
-                    {getStatusBadge(tenant.status)}
-                  </div>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-3">
-                    <div className="flex justify-between items-center text-sm">
-                      <span className="text-muted-foreground">Lease Ends:</span>
-                      <span>{new Date(tenant.leaseEnd).toLocaleDateString()}</span>
-                    </div>
-                    <div className="flex justify-between items-center text-sm">
-                      <span className="text-muted-foreground">Rent Amount:</span>
-                      <span>€{tenant.rentAmount}/month</span>
-                    </div>
-                    <div className="flex justify-between items-center text-sm">
-                      <span className="text-muted-foreground">Payment Status:</span>
-                      {getPaymentStatusBadge(tenant.paymentStatus)}
-                    </div>
-                    <div className="flex justify-between items-center text-sm">
-                      <span className="text-muted-foreground">Contact:</span>
-                      <span className="truncate max-w-[180px]">{tenant.email}</span>
-                    </div>
-                  </div>
-                </CardContent>
-                <CardFooter className="flex justify-between">
-                  <Button variant="outline" size="sm">View Details</Button>
-                  {tenant.paymentStatus !== 'paid' && (
-                    <Button size="sm" onClick={() => handlePaymentReminder(tenant.id)}>
-                      Send Reminder
-                    </Button>
-                  )}
-                </CardFooter>
-              </Card>
-            ))}
+        <TabsContent value="tenants" className="space-y-4">
+          <Card>
+            <CardHeader>
+              <CardTitle>Current Tenants</CardTitle>
+              <CardDescription>Manage your property tenants</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="rounded-md border">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Tenant</TableHead>
+                      <TableHead>Property</TableHead>
+                      <TableHead>Lease End</TableHead>
+                      <TableHead>Status</TableHead>
+                      <TableHead className="text-right">Actions</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {tenants
+                      .filter(tenant => tenant.name.toLowerCase().includes(searchQuery.toLowerCase()) || tenant.property.toLowerCase().includes(searchQuery.toLowerCase()))
+                      .map((tenant) => (
+                        <TableRow key={tenant.id}>
+                          <TableCell>
+                            <div className="flex items-center gap-3">
+                              <Avatar>
+                                <AvatarFallback>{tenant.name.charAt(0)}</AvatarFallback>
+                              </Avatar>
+                              <div>
+                                <div className="font-medium">{tenant.name}</div>
+                                <div className="text-sm text-muted-foreground">{tenant.email}</div>
+                              </div>
+                            </div>
+                          </TableCell>
+                          <TableCell>{tenant.property}</TableCell>
+                          <TableCell>{tenant.leaseEnd}</TableCell>
+                          <TableCell>
+                            <Badge variant={tenant.status === 'Active' ? 'default' : tenant.status === 'Late Payment' ? 'destructive' : 'outline'}>
+                              {tenant.status}
+                            </Badge>
+                          </TableCell>
+                          <TableCell className="text-right">
+                            <Button 
+                              variant="ghost" 
+                              size="sm"
+                              onClick={() => setShowNotificationDialog(true)}
+                            >
+                              <BellIcon className="h-4 w-4 mr-1" />
+                              Notify
+                            </Button>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                  </TableBody>
+                </Table>
+              </div>
+            </CardContent>
+          </Card>
+          
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <Card>
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm font-medium">Occupancy Rate</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold">94%</div>
+                <Progress className="h-2 mt-2" value={94} />
+                <p className="text-xs text-muted-foreground mt-2">15 of 16 units occupied</p>
+              </CardContent>
+            </Card>
+            
+            <Card>
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm font-medium">Upcoming Renewals</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold">3</div>
+                <p className="text-xs text-muted-foreground mt-2">Within the next 30 days</p>
+              </CardContent>
+            </Card>
+            
+            <Card>
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm font-medium">Outstanding Issues</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold">2</div>
+                <p className="text-xs text-muted-foreground mt-2">Maintenance requests pending</p>
+              </CardContent>
+            </Card>
           </div>
         </TabsContent>
         
-        <TabsContent value="leases">
+        <TabsContent value="leases" className="space-y-4">
           <Card>
             <CardHeader>
               <CardTitle>Lease Documents</CardTitle>
@@ -308,81 +358,7 @@ const TenantManagement: React.FC = () => {
           </Card>
         </TabsContent>
         
-        <TabsContent value="maintenance">
-          <Card>
-            <CardHeader>
-              <CardTitle>Maintenance Requests</CardTitle>
-              <CardDescription>Track and manage property maintenance issues</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-6">
-                {maintenanceRequests.map((request) => (
-                  <div key={request.id} className="border rounded-md p-4">
-                    <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-2 mb-4">
-                      <div>
-                        <h3 className="font-medium flex items-center">
-                          {request.id}: {request.issue}
-                          <div className="ml-3">
-                            {getMaintenanceStatusBadge(request.status)}
-                          </div>
-                          <div className="ml-2">
-                            {getPriorityBadge(request.priority)}
-                          </div>
-                        </h3>
-                        <div className="text-sm text-muted-foreground">
-                          {request.tenant} - {request.property}
-                        </div>
-                      </div>
-                      <div className="flex flex-wrap gap-2">
-                        {request.status === 'pending' && (
-                          <Button size="sm">Assign</Button>
-                        )}
-                        {request.status === 'in-progress' && (
-                          <Button size="sm">Mark Complete</Button>
-                        )}
-                        <Button variant="outline" size="sm">View Details</Button>
-                      </div>
-                    </div>
-                    
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
-                      <div>
-                        <div className="text-muted-foreground">Date Submitted</div>
-                        <div>{request.dateSubmitted}</div>
-                      </div>
-                      <div>
-                        <div className="text-muted-foreground">Assigned To</div>
-                        <div>{request.assignedTo || 'Not assigned'}</div>
-                      </div>
-                      {request.status === 'in-progress' && (
-                        <div>
-                          <div className="text-muted-foreground">Progress</div>
-                          <div className="flex items-center">
-                            <Progress value={60} className="h-2 flex-1 mr-2" />
-                            <span>60%</span>
-                          </div>
-                        </div>
-                      )}
-                      {request.status === 'completed' && (
-                        <div>
-                          <div className="text-muted-foreground">Completed Date</div>
-                          <div>{request.completedDate}</div>
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </CardContent>
-            <CardFooter>
-              <Button>
-                <Plus className="h-4 w-4 mr-2" />
-                New Maintenance Request
-              </Button>
-            </CardFooter>
-          </Card>
-        </TabsContent>
-        
-        <TabsContent value="payments">
+        <TabsContent value="payments" className="space-y-4">
           <Card>
             <CardHeader>
               <CardTitle>Rent Payments</CardTitle>
@@ -437,7 +413,7 @@ const TenantManagement: React.FC = () => {
                           {getPaymentStatusBadge(tenant.paymentStatus)}
                           {tenant.paymentStatus !== 'paid' && (
                             <Button variant="ghost" size="sm" className="ml-2" onClick={() => handlePaymentReminder(tenant.id)}>
-                              <Bell className="h-4 w-4" />
+                              <BellIcon className="h-4 w-4" />
                             </Button>
                           )}
                         </div>
@@ -460,7 +436,210 @@ const TenantManagement: React.FC = () => {
             </CardContent>
           </Card>
         </TabsContent>
+        
+        <TabsContent value="applications" className="space-y-4">
+          <Card>
+            <CardHeader>
+              <CardTitle>Property Applications</CardTitle>
+              <CardDescription>Manage property applications and requests</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                  <Card>
+                    <CardHeader>
+                      <CardTitle>Applications</CardTitle>
+                      <CardDescription>View and manage property applications</CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="space-y-4">
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-2">
+                            <span className="text-muted-foreground">Status:</span>
+                            <Badge variant="default">Pending</Badge>
+                          </div>
+                          <Button variant="outline" size="sm">View All</Button>
+                        </div>
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-2">
+                            <span className="text-muted-foreground">Status:</span>
+                            <Badge variant="destructive">Rejected</Badge>
+                          </div>
+                          <Button variant="outline" size="sm">View All</Button>
+                        </div>
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-2">
+                            <span className="text-muted-foreground">Status:</span>
+                            <Badge variant="outline">Accepted</Badge>
+                          </div>
+                          <Button variant="outline" size="sm">View All</Button>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                  
+                  <Card>
+                    <CardHeader>
+                      <CardTitle>Requests</CardTitle>
+                      <CardDescription>View and manage property requests</CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="space-y-4">
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-2">
+                            <span className="text-muted-foreground">Status:</span>
+                            <Badge variant="default">Pending</Badge>
+                          </div>
+                          <Button variant="outline" size="sm">View All</Button>
+                        </div>
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-2">
+                            <span className="text-muted-foreground">Status:</span>
+                            <Badge variant="destructive">Rejected</Badge>
+                          </div>
+                          <Button variant="outline" size="sm">View All</Button>
+                        </div>
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-2">
+                            <span className="text-muted-foreground">Status:</span>
+                            <Badge variant="outline">Accepted</Badge>
+                          </div>
+                          <Button variant="outline" size="sm">View All</Button>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </div>
+                
+                <div className="flex items-center justify-between p-4 border rounded-md">
+                  <div>
+                    <h3 className="font-medium">New Applications</h3>
+                    <p className="text-sm text-muted-foreground">View and manage new property applications</p>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <Switch id="new-applications" defaultChecked />
+                    <Label htmlFor="new-applications">Enabled</Label>
+                  </div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
       </Tabs>
+      
+      {/* Add Tenant Dialog */}
+      <Dialog open={showTenantDialog} onOpenChange={setShowTenantDialog}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Add New Tenant</DialogTitle>
+            <DialogDescription>Enter tenant details to add them to a property</DialogDescription>
+          </DialogHeader>
+          
+          <div className="grid gap-4 py-4">
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="first-name">First name</Label>
+                <Input id="first-name" placeholder="First name" />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="last-name">Last name</Label>
+                <Input id="last-name" placeholder="Last name" />
+              </div>
+            </div>
+            
+            <div className="space-y-2">
+              <Label htmlFor="email">Email</Label>
+              <Input id="email" placeholder="Email address" type="email" />
+            </div>
+            
+            <div className="space-y-2">
+              <Label htmlFor="phone">Phone</Label>
+              <Input id="phone" placeholder="Phone number" type="tel" />
+            </div>
+            
+            <div className="space-y-2">
+              <Label htmlFor="property">Property</Label>
+              <Select>
+                <SelectTrigger>
+                  <SelectValue placeholder="Select property" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="property1">123 Main St, Apt 4B</SelectItem>
+                  <SelectItem value="property2">456 Oak Ave, Unit 7</SelectItem>
+                  <SelectItem value="property3">789 Pine Blvd, Apt 12</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            
+            <div className="space-y-2">
+              <Label htmlFor="lease-start">Lease Start Date</Label>
+              <Input id="lease-start" type="date" />
+            </div>
+            
+            <div className="space-y-2">
+              <Label htmlFor="lease-end">Lease End Date</Label>
+              <Input id="lease-end" type="date" />
+            </div>
+            
+            <div className="flex items-center space-x-2">
+              <Checkbox id="background-check" />
+              <Label htmlFor="background-check">Background check completed</Label>
+            </div>
+          </div>
+          
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowTenantDialog(false)}>Cancel</Button>
+            <Button onClick={() => {
+              toast.success("New tenant added successfully");
+              setShowTenantDialog(false);
+            }}>Add Tenant</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+      
+      {/* Send Notification Dialog */}
+      <Dialog open={showNotificationDialog} onOpenChange={setShowNotificationDialog}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Send Tenant Notification</DialogTitle>
+            <DialogDescription>Send an announcement or reminder to your tenant</DialogDescription>
+          </DialogHeader>
+          
+          <div className="grid gap-4 py-4">
+            <div className="space-y-2">
+              <Label htmlFor="subject">Subject</Label>
+              <Input id="subject" placeholder="Notification subject" />
+            </div>
+            
+            <div className="space-y-2">
+              <Label htmlFor="message">Message</Label>
+              <textarea
+                id="message"
+                className="min-h-[100px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                placeholder="Enter your message here"
+              />
+            </div>
+            
+            <div className="flex items-center space-x-2">
+              <Checkbox id="urgent" />
+              <Label htmlFor="urgent">Mark as urgent</Label>
+            </div>
+            
+            <div className="flex items-center space-x-2">
+              <Checkbox id="sms" />
+              <Label htmlFor="sms">Send SMS notification</Label>
+            </div>
+          </div>
+          
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowNotificationDialog(false)}>Cancel</Button>
+            <Button onClick={() => {
+              toast.success("Notification sent to tenant");
+              setShowNotificationDialog(false);
+            }}>Send Notification</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };

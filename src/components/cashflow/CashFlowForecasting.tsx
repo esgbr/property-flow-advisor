@@ -1,251 +1,360 @@
-
 import React, { useState } from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { LineChart, TrendingUp, ArrowUpDown, Calendar, Settings } from 'lucide-react';
-import { 
-  ResponsiveContainer, LineChart as ReLineChart, Line, 
-  XAxis, YAxis, CartesianGrid, Tooltip, Legend, 
-  AreaChart, Area, BarChart, Bar 
-} from 'recharts';
-import { Button } from '@/components/ui/button';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { useToast } from '@/hooks/use-toast';
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { ArrowUpRight, TrendingUp, AlertTriangle, RefreshCcw, Share2, Download, Filter, BarChart, LineChart as LineChartIcon } from 'lucide-react';
+import { LineChart, Line, BarChart as RechartsBarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, PieChart as RechartsPieChart, Pie, Cell } from 'recharts';
+import { useIsMobile } from '@/hooks/use-mobile';
+import { toast } from 'sonner';
 
-// Historical cash flow data
-const historicalCashFlow = [
-  { month: 'Jan', income: 12500, expenses: 7200, netCashFlow: 5300 },
-  { month: 'Feb', income: 12700, expenses: 7500, netCashFlow: 5200 },
-  { month: 'Mar', income: 12700, expenses: 7800, netCashFlow: 4900 },
-  { month: 'Apr', income: 12900, expenses: 7300, netCashFlow: 5600 },
-  { month: 'May', income: 13100, expenses: 7600, netCashFlow: 5500 },
-  { month: 'Jun', income: 13200, expenses: 7400, netCashFlow: 5800 },
+// Sample data for monthly cash flow
+const monthlyData = [
+  { name: 'Jan', income: 4000, expenses: 2400, cashflow: 1600 },
+  { name: 'Feb', income: 3000, expenses: 1398, cashflow: 1602 },
+  { name: 'Mar', income: 2000, expenses: 9800, cashflow: -7800 },
+  { name: 'Apr', income: 2780, expenses: 3908, cashflow: -1128 },
+  { name: 'May', income: 1890, expenses: 4800, cashflow: -2910 },
+  { name: 'Jun', income: 2390, expenses: 3800, cashflow: -1410 },
+  { name: 'Jul', income: 3490, expenses: 4300, cashflow: -810 },
+  { name: 'Aug', income: 4000, expenses: 2400, cashflow: 1600 },
+  { name: 'Sep', income: 3000, expenses: 1398, cashflow: 1602 },
+  { name: 'Oct', income: 2000, expenses: 9800, cashflow: -7800 },
+  { name: 'Nov', income: 2780, expenses: 3908, cashflow: -1128 },
+  { name: 'Dec', income: 1890, expenses: 4800, cashflow: -2910 },
 ];
 
-// Forecasted cash flow data for next 12 months
-const forecastedCashFlow = [
-  { month: 'Jul', income: 13400, expenses: 7500, netCashFlow: 5900, predictedLow: 5600, predictedHigh: 6200 },
-  { month: 'Aug', income: 13500, expenses: 7600, netCashFlow: 5900, predictedLow: 5500, predictedHigh: 6300 },
-  { month: 'Sep', income: 13700, expenses: 7800, netCashFlow: 5900, predictedLow: 5500, predictedHigh: 6400 },
-  { month: 'Oct', income: 13900, expenses: 8000, netCashFlow: 5900, predictedLow: 5400, predictedHigh: 6500 },
-  { month: 'Nov', income: 14100, expenses: 8100, netCashFlow: 6000, predictedLow: 5500, predictedHigh: 6700 },
-  { month: 'Dec', income: 14300, expenses: 8300, netCashFlow: 6000, predictedLow: 5400, predictedHigh: 6700 },
-  { month: 'Jan', income: 14500, expenses: 8400, netCashFlow: 6100, predictedLow: 5500, predictedHigh: 6800 },
-  { month: 'Feb', income: 14700, expenses: 8500, netCashFlow: 6200, predictedLow: 5600, predictedHigh: 7000 },
-  { month: 'Mar', income: 14900, expenses: 8600, netCashFlow: 6300, predictedLow: 5700, predictedHigh: 7100 },
-  { month: 'Apr', income: 15100, expenses: 8700, netCashFlow: 6400, predictedLow: 5800, predictedHigh: 7200 },
-  { month: 'May', income: 15300, expenses: 8800, netCashFlow: 6500, predictedLow: 5900, predictedHigh: 7300 },
-  { month: 'Jun', income: 15500, expenses: 8900, netCashFlow: 6600, predictedLow: 6000, predictedHigh: 7400 },
+// Sample data for quarterly cash flow
+const quarterlyData = [
+  { name: 'Q1', income: 11000, expenses: 5000, cashflow: 6000 },
+  { name: 'Q2', income: 8000, expenses: 12000, cashflow: -4000 },
+  { name: 'Q3', income: 9000, expenses: 7000, cashflow: 2000 },
+  { name: 'Q4', income: 12000, expenses: 6000, cashflow: 6000 },
 ];
 
-// Scenario data for different interest rate environments
-const scenarios = [
-  { name: 'Current (3.5%)', cashFlow: 6000, totalReturn: 8.5, appreciation: 3.2 },
-  { name: 'Low Rates (2.0%)', cashFlow: 6800, totalReturn: 9.7, appreciation: 3.5 },
-  { name: 'High Rates (5.0%)', cashFlow: 5200, totalReturn: 7.2, appreciation: 2.8 },
-  { name: 'Recession', cashFlow: 4500, totalReturn: 5.1, appreciation: 0.5 },
-  { name: 'Economic Boom', cashFlow: 7200, totalReturn: 12.3, appreciation: 6.5 },
+// Sample data for annual cash flow
+const annualData = [
+  { name: '2023', income: 40000, expenses: 25000, cashflow: 15000 },
+  { name: '2024', income: 45000, expenses: 28000, cashflow: 17000 },
+  { name: '2025', income: 50000, expenses: 30000, cashflow: 20000 },
 ];
 
-const incomeBreakdown = [
-  { name: 'Rental Income', value: 85 },
-  { name: 'Parking Fees', value: 5 },
-  { name: 'Laundry Services', value: 3 },
-  { name: 'Late Fees', value: 2 },
+// Sample data for income distribution
+const incomeDistribution = [
+  { name: 'Rent', value: 70 },
+  { name: 'Other Income', value: 30 },
+];
+
+// Sample data for expense distribution
+const expenseDistribution = [
+  { name: 'Mortgage', value: 40 },
+  { name: 'Maintenance', value: 20 },
+  { name: 'Taxes', value: 15 },
+  { name: 'Insurance', value: 10 },
+  { name: 'Management', value: 10 },
   { name: 'Other', value: 5 },
 ];
 
-const expenseBreakdown = [
-  { name: 'Mortgage', value: 45 },
-  { name: 'Property Tax', value: 15 },
-  { name: 'Insurance', value: 8 },
-  { name: 'Maintenance', value: 12 },
-  { name: 'Management Fees', value: 10 },
-  { name: 'Utilities', value: 7 },
-  { name: 'Other', value: 3 },
-];
-
-const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884d8', '#82ca9d', '#ffc658'];
+// Colors for pie charts
+const COLORS = ['#8884d8', '#82ca9d', '#ffc658', '#ff8042', '#a4de6c', '#d0ed57'];
 
 const CashFlowForecasting: React.FC = () => {
-  const [timeframe, setTimeframe] = useState<string>('12m');
-  const [scenarioMode, setScenarioMode] = useState<string>('current');
-  const { toast } = useToast();
-
-  // Combine historical and forecasted data for full timeline view
-  const combinedData = [...historicalCashFlow, ...forecastedCashFlow];
+  const isMobile = useIsMobile();
+  const [activeTab, setActiveTab] = useState('monthly');
+  const [scenario, setScenario] = useState('baseline');
   
-  const displayData = timeframe === '6m' 
-    ? combinedData.slice(combinedData.length - 6)
-    : timeframe === '12m'
-      ? combinedData.slice(combinedData.length - 12)
-      : combinedData;
-
-  const handleGenerateReport = () => {
-    toast({
-      title: "Generating forecast report",
-      description: "Your cash flow forecast report is being generated. It will be available in the reports section shortly.",
-    });
+  const handleTabChange = (value: string) => {
+    setActiveTab(value);
   };
-
+  
   const handleScenarioChange = (value: string) => {
-    setScenarioMode(value);
-    toast({
-      title: "Scenario updated",
-      description: `Forecasting calculations updated to the "${value}" scenario.`,
-    });
+    setScenario(value);
+  };
+  
+  const calculateROI = (scenario: string) => {
+    let cashOnCash = 10;
+    let capRate = 7;
+    let dcr = 1.5;
+    let grm = 8;
+    let breakEven = 90;
+    
+    if (scenario === 'optimistic') {
+      cashOnCash = 15;
+      capRate = 10;
+      dcr = 1.8;
+      grm = 7;
+      breakEven = 85;
+    } else if (scenario === 'pessimistic') {
+      cashOnCash = 5;
+      capRate = 4;
+      dcr = 1.2;
+      grm = 9;
+      breakEven = 95;
+    }
+    
+    return {
+      cashOnCash,
+      capRate,
+      dcr,
+      grm,
+      breakEven,
+    };
   };
 
   return (
-    <div className="space-y-6">
-      <div className="flex justify-between items-center">
+    <div className="space-y-6 animate-fade-in">
+      <div className="flex flex-col md:flex-row justify-between gap-4 mb-4">
         <div>
-          <h2 className="text-2xl font-bold flex items-center">
-            <TrendingUp className="mr-2 h-6 w-6" />
-            Cash Flow Forecasting
-          </h2>
-          <p className="text-muted-foreground">Project future financial performance based on historical data</p>
+          <h2 className="text-2xl font-bold">Cash Flow Forecasting</h2>
+          <p className="text-muted-foreground">Project future cash flows for your properties</p>
         </div>
-        <div className="flex gap-2">
-          <Select
-            value={timeframe}
-            onValueChange={setTimeframe}
-          >
-            <SelectTrigger className="w-[120px]">
-              <SelectValue placeholder="12 Months" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="6m">6 Months</SelectItem>
-              <SelectItem value="12m">12 Months</SelectItem>
-              <SelectItem value="all">All Data</SelectItem>
-            </SelectContent>
-          </Select>
-          <Button onClick={handleGenerateReport}>
-            <Calendar className="h-4 w-4 mr-2" />
-            Generate Report
+        
+        <div className="flex items-center space-x-2">
+          <Button variant="outline" size="sm" onClick={() => {
+            toast.success("Cash flow data refreshed");
+          }}>
+            <RefreshCcw className="mr-1 h-4 w-4" />
+            Refresh
+          </Button>
+          
+          <Button variant="outline" size="sm" onClick={() => {
+            toast.success("Cash flow report downloaded");
+          }}>
+            <Download className="mr-1 h-4 w-4" />
+            Export
+          </Button>
+          
+          <Button variant="outline" size="sm" onClick={() => {
+            toast.success("Filter applied to cash flow data");
+          }}>
+            <Filter className="mr-1 h-4 w-4" />
+            Filter
           </Button>
         </div>
       </div>
       
-      <div className="grid md:grid-cols-3 gap-6">
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-lg">Monthly Net Cash Flow</CardTitle>
-            <CardDescription>Current and projected monthly cash flow</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="text-3xl font-bold">€{forecastedCashFlow[0].netCashFlow}</div>
-            <p className="text-sm text-green-600 flex items-center mt-1">
-              <TrendingUp className="h-4 w-4 mr-1" />
-              +{((forecastedCashFlow[0].netCashFlow - historicalCashFlow[historicalCashFlow.length-1].netCashFlow) / historicalCashFlow[historicalCashFlow.length-1].netCashFlow * 100).toFixed(1)}% from last month
-            </p>
-            <div className="h-[200px] mt-4">
-              <ResponsiveContainer width="100%" height="100%">
-                <AreaChart data={displayData}>
-                  <defs>
-                    <linearGradient id="colorCashFlow" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="5%" stopColor="#0088FE" stopOpacity={0.8}/>
-                      <stop offset="95%" stopColor="#0088FE" stopOpacity={0}/>
-                    </linearGradient>
-                  </defs>
-                  <XAxis dataKey="month" />
-                  <YAxis />
-                  <Tooltip formatter={(value) => `€${value}`} />
-                  <Area type="monotone" dataKey="netCashFlow" stroke="#0088FE" fillOpacity={1} fill="url(#colorCashFlow)" />
-                </AreaChart>
-              </ResponsiveContainer>
-            </div>
-          </CardContent>
-        </Card>
+      <Tabs value={activeTab} onValueChange={handleTabChange}>
+        <TabsList>
+          <TabsTrigger value="monthly">
+            <BarChart className="h-4 w-4 mr-2" />
+            Monthly
+          </TabsTrigger>
+          <TabsTrigger value="quarterly">
+            <LineChartIcon className="h-4 w-4 mr-2" />
+            Quarterly
+          </TabsTrigger>
+          <TabsTrigger value="annual">
+            <TrendingUp className="h-4 w-4 mr-2" />
+            Annual
+          </TabsTrigger>
+        </TabsList>
         
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-lg">Income vs. Expenses</CardTitle>
-            <CardDescription>Monthly revenue and cost breakdown</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="flex items-center justify-between mb-4">
-              <div>
-                <div className="text-sm text-muted-foreground">Income</div>
-                <div className="text-xl font-bold text-green-600">€{forecastedCashFlow[0].income}</div>
-              </div>
-              <ArrowUpDown className="h-4 w-4 text-muted-foreground mx-2" />
-              <div>
-                <div className="text-sm text-muted-foreground">Expenses</div>
-                <div className="text-xl font-bold text-red-500">€{forecastedCashFlow[0].expenses}</div>
-              </div>
-            </div>
-            <div className="h-[200px]">
-              <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={displayData}>
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="month" />
-                  <YAxis />
-                  <Tooltip formatter={(value) => `€${value}`} />
-                  <Legend />
-                  <Bar dataKey="income" name="Income" fill="#82ca9d" />
-                  <Bar dataKey="expenses" name="Expenses" fill="#ff7373" />
-                </BarChart>
-              </ResponsiveContainer>
-            </div>
-          </CardContent>
-        </Card>
-        
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-lg">Forecast Confidence</CardTitle>
-            <CardDescription>Projected cash flow with confidence intervals</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="text-sm text-muted-foreground mb-2">Forecasted range for next quarter</div>
-            <div className="text-xl font-bold">
-              €{forecastedCashFlow[2].predictedLow} - €{forecastedCashFlow[2].predictedHigh}
-            </div>
-            <div className="h-[200px] mt-4">
-              <ResponsiveContainer width="100%" height="100%">
-                <AreaChart data={forecastedCashFlow}>
-                  <defs>
-                    <linearGradient id="splitColor" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="5%" stopColor="#8884d8" stopOpacity={0.3}/>
-                      <stop offset="95%" stopColor="#8884d8" stopOpacity={0.1}/>
-                    </linearGradient>
-                  </defs>
-                  <XAxis dataKey="month" />
-                  <YAxis />
-                  <Tooltip formatter={(value) => `€${value}`} />
-                  <Area type="monotone" dataKey="predictedHigh" stroke="none" fill="#8884d8" fillOpacity={0.1} />
-                  <Area type="monotone" dataKey="netCashFlow" stroke="#8884d8" fill="url(#splitColor)" />
-                  <Area type="monotone" dataKey="predictedLow" stroke="none" fill="#8884d8" fillOpacity={0.1} />
-                </AreaChart>
-              </ResponsiveContainer>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-      
-      <Card>
-        <CardHeader>
-          <CardTitle>Scenario Analysis</CardTitle>
-          <CardDescription>Compare financial performance in different economic scenarios</CardDescription>
-          <div className="mt-2">
-            <Tabs value={scenarioMode} onValueChange={handleScenarioChange}>
-              <TabsList>
-                <TabsTrigger value="current">Current Rates</TabsTrigger>
-                <TabsTrigger value="low">Low Rates</TabsTrigger>
-                <TabsTrigger value="high">High Rates</TabsTrigger>
-                <TabsTrigger value="recession">Recession</TabsTrigger>
-                <TabsTrigger value="boom">Economic Boom</TabsTrigger>
-              </TabsList>
-            </Tabs>
+        {/* Monthly Cash Flow Forecast */}
+        <TabsContent value="monthly">
+          <div className="grid gap-4 md:grid-cols-3">
+            <Card>
+              <CardHeader>
+                <CardTitle>Scenario Selection</CardTitle>
+                <CardDescription>Select different cash flow scenarios</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  <div className="grid grid-cols-3 gap-2">
+                    <Button 
+                      variant={scenario === 'baseline' ? 'default' : 'outline'} 
+                      onClick={() => handleScenarioChange('baseline')}
+                      className="w-full"
+                    >
+                      Baseline
+                    </Button>
+                    <Button 
+                      variant={scenario === 'optimistic' ? 'default' : 'outline'} 
+                      onClick={() => handleScenarioChange('optimistic')}
+                      className="w-full"
+                    >
+                      Optimistic
+                    </Button>
+                    <Button 
+                      variant={scenario === 'pessimistic' ? 'default' : 'outline'} 
+                      onClick={() => handleScenarioChange('pessimistic')}
+                      className="w-full"
+                    >
+                      Pessimistic
+                    </Button>
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <Label htmlFor="vacancy-rate">Vacancy Rate (%)</Label>
+                    <Input id="vacancy-rate" type="number" defaultValue="5" />
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <Label htmlFor="maintenance-cost">Maintenance Cost (%)</Label>
+                    <Input id="maintenance-cost" type="number" defaultValue="10" />
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <Label htmlFor="rent-increase">Annual Rent Increase (%)</Label>
+                    <Input id="rent-increase" type="number" defaultValue="3" />
+                  </div>
+                  
+                  <Button className="w-full" onClick={() => {
+                    toast.success("Forecast updated with new parameters");
+                  }}>
+                    Update Forecast
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+            
+            <Card className="md:col-span-2">
+              <CardHeader>
+                <CardTitle>Monthly Cash Flow Projection</CardTitle>
+                <CardDescription>Next 12 months cash flow forecast</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <ResponsiveContainer width="100%" height={300}>
+                  <RechartsBarChart
+                    data={monthlyData}
+                    margin={{
+                      top: 5,
+                      right: 30,
+                      left: 20,
+                      bottom: 5,
+                    }}
+                  >
+                    <CartesianGrid strokeDasharray="3 3" />
+                    <XAxis dataKey="name" />
+                    <YAxis />
+                    <Tooltip />
+                    <Legend />
+                    <Bar dataKey="income" fill="#8884d8" name="Income" />
+                    <Bar dataKey="expenses" fill="#82ca9d" name="Expenses" />
+                    <Bar dataKey="cashflow" fill="#ffc658" name="Net Cash Flow" />
+                  </RechartsBarChart>
+                </ResponsiveContainer>
+              </CardContent>
+            </Card>
+            
+            <Card>
+              <CardHeader>
+                <CardTitle>Income Distribution</CardTitle>
+                <CardDescription>Breakdown of income sources</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="flex justify-center">
+                  <ResponsiveContainer width={isMobile ? "100%" : 200} height={200}>
+                    <RechartsPieChart>
+                      <Pie
+                        data={incomeDistribution}
+                        cx="50%"
+                        cy="50%"
+                        labelLine={false}
+                        outerRadius={80}
+                        fill="#8884d8"
+                        dataKey="value"
+                      >
+                        {incomeDistribution.map((entry, index) => (
+                          <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                        ))}
+                      </Pie>
+                      <Tooltip />
+                    </RechartsPieChart>
+                  </ResponsiveContainer>
+                </div>
+                <div className="grid grid-cols-2 gap-2 mt-4">
+                  {incomeDistribution.map((item, index) => (
+                    <div key={index} className="flex items-center">
+                      <div className="w-3 h-3 mr-2" style={{ backgroundColor: COLORS[index % COLORS.length] }} />
+                      <span className="text-xs">{item.name}</span>
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+            
+            <Card>
+              <CardHeader>
+                <CardTitle>Expense Distribution</CardTitle>
+                <CardDescription>Breakdown of expense categories</CardHeader>
+              </CardHeader>
+              <CardContent>
+                <div className="flex justify-center">
+                  <ResponsiveContainer width={isMobile ? "100%" : 200} height={200}>
+                    <RechartsPieChart>
+                      <Pie
+                        data={expenseDistribution}
+                        cx="50%"
+                        cy="50%"
+                        labelLine={false}
+                        outerRadius={80}
+                        fill="#8884d8"
+                        dataKey="value"
+                      >
+                        {expenseDistribution.map((entry, index) => (
+                          <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                        ))}
+                      </Pie>
+                      <Tooltip />
+                    </RechartsPieChart>
+                  </ResponsiveContainer>
+                </div>
+                <div className="grid grid-cols-2 gap-2 mt-4">
+                  {expenseDistribution.map((item, index) => (
+                    <div key={index} className="flex items-center">
+                      <div className="w-3 h-3 mr-2" style={{ backgroundColor: COLORS[index % COLORS.length] }} />
+                      <span className="text-xs">{item.name}</span>
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+            
+            <Card className="md:col-span-1">
+              <CardHeader>
+                <CardTitle>Key Metrics</CardTitle>
+                <CardDescription>Performance indicators</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  <div className="flex justify-between items-center">
+                    <span className="text-sm">Cash on Cash Return</span>
+                    <span className="font-bold text-primary">{calculateROI(scenario).cashOnCash}%</span>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <span className="text-sm">Cap Rate</span>
+                    <span className="font-bold">{calculateROI(scenario).capRate}%</span>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <span className="text-sm">Debt Coverage Ratio</span>
+                    <span className="font-bold">{calculateROI(scenario).dcr}x</span>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <span className="text-sm">Gross Rent Multiplier</span>
+                    <span className="font-bold">{calculateROI(scenario).grm}x</span>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <span className="text-sm">Break Even Ratio</span>
+                    <span className="font-bold">{calculateROI(scenario).breakEven}%</span>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
           </div>
-        </CardHeader>
-        <CardContent>
-          <div className="grid md:grid-cols-2 gap-6">
-            <div className="h-[300px]">
-              <ResponsiveContainer width="100%" height="100%">
-                <BarChart
-                  data={scenarios}
+        </TabsContent>
+        
+        {/* Quarterly Cash Flow Forecast */}
+        <TabsContent value="quarterly">
+          <Card>
+            <CardHeader>
+              <CardTitle>Quarterly Cash Flow Projection</CardTitle>
+              <CardDescription>Cash flow forecast by quarter</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <ResponsiveContainer width="100%" height={300}>
+                <LineChart
+                  data={quarterlyData}
                   margin={{
                     top: 5,
                     right: 30,
@@ -256,20 +365,28 @@ const CashFlowForecasting: React.FC = () => {
                   <CartesianGrid strokeDasharray="3 3" />
                   <XAxis dataKey="name" />
                   <YAxis />
-                  <Tooltip formatter={(value, name) => [
-                    name === 'cashFlow' ? `€${value}` : `${value}%`, 
-                    name === 'cashFlow' ? 'Monthly Cash Flow' : name === 'totalReturn' ? 'Total Return' : 'Appreciation'
-                  ]} />
+                  <Tooltip />
                   <Legend />
-                  <Bar dataKey="cashFlow" name="Monthly Cash Flow" fill="#8884d8" />
-                </BarChart>
+                  <Line type="monotone" dataKey="income" stroke="#8884d8" name="Income" />
+                  <Line type="monotone" dataKey="expenses" stroke="#82ca9d" name="Expenses" />
+                  <Line type="monotone" dataKey="cashflow" stroke="#ffc658" name="Net Cash Flow" />
+                </LineChart>
               </ResponsiveContainer>
-            </div>
-            
-            <div className="h-[300px]">
-              <ResponsiveContainer width="100%" height="100%">
-                <BarChart
-                  data={scenarios}
+            </CardContent>
+          </Card>
+        </TabsContent>
+        
+        {/* Annual Cash Flow Forecast */}
+        <TabsContent value="annual">
+          <Card>
+            <CardHeader>
+              <CardTitle>Annual Cash Flow Projection</CardTitle>
+              <CardDescription>Long-term cash flow forecast</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <ResponsiveContainer width="100%" height={300}>
+                <LineChart
+                  data={annualData}
                   margin={{
                     top: 5,
                     right: 30,
@@ -280,164 +397,17 @@ const CashFlowForecasting: React.FC = () => {
                   <CartesianGrid strokeDasharray="3 3" />
                   <XAxis dataKey="name" />
                   <YAxis />
-                  <Tooltip formatter={(value) => `${value}%`} />
+                  <Tooltip />
                   <Legend />
-                  <Bar dataKey="totalReturn" name="Total Return %" fill="#82ca9d" />
-                  <Bar dataKey="appreciation" name="Appreciation %" fill="#ffc658" />
-                </BarChart>
+                  <Line type="monotone" dataKey="income" stroke="#8884d8" name="Income" />
+                  <Line type="monotone" dataKey="expenses" stroke="#82ca9d" name="Expenses" />
+                  <Line type="monotone" dataKey="cashflow" stroke="#ffc658" name="Net Cash Flow" />
+                </LineChart>
               </ResponsiveContainer>
-            </div>
-          </div>
-          
-          <div className="mt-6 border p-4 rounded-lg">
-            <h3 className="font-medium mb-2">Scenario Impact Analysis</h3>
-            <div className="text-sm text-muted-foreground">
-              {scenarioMode === 'current' && (
-                <>Current interest rates at 3.5% offer balanced cash flow performance with moderate appreciation potential.</>
-              )}
-              {scenarioMode === 'low' && (
-                <>Lower interest rates (2.0%) significantly boost cash flow and increase property values through higher demand.</>
-              )}
-              {scenarioMode === 'high' && (
-                <>Higher interest rates (5.0%) reduce cash flow as financing costs increase, also slowing appreciation.</>
-              )}
-              {scenarioMode === 'recession' && (
-                <>Economic recession threatens rental income stability and property values, reducing both cash flow and appreciation.</>
-              )}
-              {scenarioMode === 'boom' && (
-                <>Economic boom creates strong rental demand and significant property value growth, maximizing returns.</>
-              )}
-            </div>
-            
-            <div className="mt-4 grid grid-cols-3 gap-4">
-              <div>
-                <Badge className={
-                  scenarioMode === 'current' || scenarioMode === 'low' || scenarioMode === 'boom' 
-                    ? 'bg-green-500' 
-                    : scenarioMode === 'high' 
-                      ? 'bg-amber-500' 
-                      : 'bg-red-500'
-                }>
-                  Cash Flow Impact
-                </Badge>
-              </div>
-              <div>
-                <Badge className={
-                  scenarioMode === 'boom' 
-                    ? 'bg-green-500' 
-                    : scenarioMode === 'current' || scenarioMode === 'low' 
-                      ? 'bg-amber-500' 
-                      : 'bg-red-500'
-                }>
-                  Value Appreciation
-                </Badge>
-              </div>
-              <div>
-                <Badge className={
-                  scenarioMode === 'recession'
-                    ? 'bg-green-500'
-                    : scenarioMode === 'high'
-                      ? 'bg-amber-500'
-                      : 'bg-red-500'
-                }>
-                  Buying Opportunities
-                </Badge>
-              </div>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
-      
-      <div className="grid md:grid-cols-2 gap-6">
-        <Card>
-          <CardHeader>
-            <CardTitle>Income Breakdown</CardTitle>
-            <CardDescription>Sources of monthly property income</CardDescription>
-          </CardHeader>
-          <CardContent className="flex flex-col items-center">
-            <div className="h-[250px] w-full">
-              <ResponsiveContainer width="100%" height="100%">
-                <PieChart>
-                  <Pie
-                    data={incomeBreakdown}
-                    cx="50%"
-                    cy="50%"
-                    labelLine={false}
-                    outerRadius={80}
-                    fill="#8884d8"
-                    dataKey="value"
-                    label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
-                  >
-                    {incomeBreakdown.map((entry, index) => (
-                      <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                    ))}
-                  </Pie>
-                  <Tooltip formatter={(value) => `${value}%`} />
-                </PieChart>
-              </ResponsiveContainer>
-            </div>
-            <div className="w-full mt-4 flex flex-wrap gap-2 justify-center">
-              {incomeBreakdown.map((item, index) => (
-                <Badge key={item.name} style={{backgroundColor: COLORS[index % COLORS.length]}} className="text-white">
-                  {item.name}: {item.value}%
-                </Badge>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
-        
-        <Card>
-          <CardHeader>
-            <CardTitle>Expense Breakdown</CardTitle>
-            <CardDescription>Distribution of monthly property expenses</CardDescription>
-          </CardHeader>
-          <CardContent className="flex flex-col items-center">
-            <div className="h-[250px] w-full">
-              <ResponsiveContainer width="100%" height="100%">
-                <PieChart>
-                  <Pie
-                    data={expenseBreakdown}
-                    cx="50%"
-                    cy="50%"
-                    labelLine={false}
-                    outerRadius={80}
-                    fill="#8884d8"
-                    dataKey="value"
-                    label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
-                  >
-                    {expenseBreakdown.map((entry, index) => (
-                      <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                    ))}
-                  </Pie>
-                  <Tooltip formatter={(value) => `${value}%`} />
-                </PieChart>
-              </ResponsiveContainer>
-            </div>
-            <div className="w-full mt-4 flex flex-wrap gap-2 justify-center">
-              {expenseBreakdown.map((item, index) => (
-                <Badge key={item.name} style={{backgroundColor: COLORS[index % COLORS.length]}} className="text-white">
-                  {item.name}: {item.value}%
-                </Badge>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-      
-      <Card className="bg-muted border-dashed">
-        <CardContent className="pt-6">
-          <div className="flex flex-col md:flex-row items-center justify-between gap-4">
-            <div className="flex items-center">
-              <Settings className="h-6 w-6 mr-2 text-muted-foreground" />
-              <div>
-                <h3 className="font-medium">Advanced Forecasting Settings</h3>
-                <p className="text-sm text-muted-foreground">Adjust parameters used in the cash flow prediction model</p>
-              </div>
-            </div>
-            <Button variant="outline">Configure Variables</Button>
-          </div>
-        </CardContent>
-      </Card>
+            </CardContent>
+          </Card>
+        </TabsContent>
+      </Tabs>
     </div>
   );
 };

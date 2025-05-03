@@ -27,6 +27,7 @@ import ExchangeTracker from './pages/ExchangeTracker';
 import InvestmentPartnerMatching from './pages/InvestmentPartnerMatching';
 import DeutscheImmobilienTools from './pages/DeutscheImmobilienTools';
 import Index from './pages/Index';
+import InvestmentCalculator from './pages/InvestmentCalculator';
 
 import { Toaster as SonnerToaster } from "@/components/ui/sonner";
 
@@ -59,6 +60,7 @@ export default function App() {
                     <Route path="/exchange-tracker" element={<ExchangeTracker />} />
                     <Route path="/partner-matching" element={<InvestmentPartnerMatching />} />
                     <Route path="/deutsche-immobilien-tools" element={<DeutscheImmobilienTools />} />
+                    <Route path="/investment-calculator" element={<InvestmentCalculator />} />
                     <Route path="*" element={<NotFound />} />
                   </Route>
                 </Routes>
