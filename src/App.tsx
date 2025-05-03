@@ -22,6 +22,7 @@ import Settings from './pages/Settings';
 import NotFound from './pages/NotFound';
 import InvestorDashboard from './pages/InvestorDashboard';
 import FeaturesDashboard from './pages/FeaturesDashboard';
+import RealEstateInvestorTools from './pages/RealEstateInvestorTools';
 import Index from './pages/Index';
 
 import { Toaster as SonnerToaster } from "@/components/ui/sonner";
@@ -51,6 +52,7 @@ export default function App() {
                     <Route path="/settings" element={<Settings />} />
                     <Route path="/investor-dashboard" element={<InvestorDashboard />} />
                     <Route path="/features" element={<FeaturesDashboard />} />
+                    <Route path="/investor-tools" element={<RealEstateInvestorTools />} />
                     <Route path="*" element={<NotFound />} />
                   </Route>
                 </Routes>

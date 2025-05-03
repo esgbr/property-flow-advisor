@@ -5,7 +5,7 @@ import { Sidebar, SidebarContent } from '@/components/ui/sidebar';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { 
   BarChart3, Book, Building, Calculator, Calendar, FileText, Home, 
-  LayoutDashboard, LineChart, Map, Settings2, Star, School, Building2
+  LayoutDashboard, LineChart, Map, Settings2, Star, School, Building2, Banknote 
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useUserPreferences } from '@/contexts/UserPreferencesContext';
@@ -26,6 +26,11 @@ const AppSidebar = () => {
       name: t('investorDashboard'),
       href: '/investor-dashboard',
       icon: <Building2 className="h-5 w-5" />,
+    },
+    {
+      name: t('investorTools'),
+      href: '/investor-tools',
+      icon: <Banknote className="h-5 w-5" />,
       new: true,
     },
     {
