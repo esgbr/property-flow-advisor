@@ -42,7 +42,8 @@ const SearchInput = React.forwardRef<HTMLInputElement, SearchInputProps>(
 
       return () => {
         if (autocomplete) {
-          google.maps.event.clearInstanceListeners(autocomplete);
+          // Fix: Use proper event clearListeners
+          window.google.maps.event.clearInstanceListeners(autocomplete);
         }
       };
     }, [usePlacesAutocomplete, onLocationSelect, autocomplete]);

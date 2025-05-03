@@ -37,8 +37,13 @@ declare namespace google {
         vicinity?: string;
       }
     }
+    
     interface MapsEventListener {
       remove(): void;
+    }
+    
+    namespace event {
+      function clearInstanceListeners(instance: object): void;
     }
   }
 }
