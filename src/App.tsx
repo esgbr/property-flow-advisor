@@ -25,6 +25,7 @@ import FeaturesDashboard from './pages/FeaturesDashboard';
 import RealEstateInvestorTools from './pages/RealEstateInvestorTools';
 import ExchangeTracker from './pages/ExchangeTracker';
 import InvestmentPartnerMatching from './pages/InvestmentPartnerMatching';
+import DeutscheImmobilienTools from './pages/DeutscheImmobilienTools';
 import Index from './pages/Index';
 
 import { Toaster as SonnerToaster } from "@/components/ui/sonner";
@@ -57,6 +58,7 @@ export default function App() {
                     <Route path="/investor-tools" element={<RealEstateInvestorTools />} />
                     <Route path="/exchange-tracker" element={<ExchangeTracker />} />
                     <Route path="/partner-matching" element={<InvestmentPartnerMatching />} />
+                    <Route path="/deutsche-immobilien-tools" element={<DeutscheImmobilienTools />} />
                     <Route path="*" element={<NotFound />} />
                   </Route>
                 </Routes>

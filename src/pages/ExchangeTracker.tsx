@@ -1,1092 +1,953 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Progress } from '@/components/ui/progress';
 import { Button } from '@/components/ui/button';
-import { Calendar } from '@/components/ui/calendar';
-import { useToast } from '@/components/ui/use-toast';
-import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Badge } from '@/components/ui/badge';
+import { Checkbox } from '@/components/ui/checkbox';
+import { toast } from 'sonner';
+import { Progress } from '@/components/ui/progress';
 import { Separator } from '@/components/ui/separator';
-import {
-  ClipboardCheck,
-  Clock,
-  AlertCircle,
-  Calendar as CalendarIcon,
-  DollarSign,
-  Building,
-  FileText,
-  Briefcase,
-  RefreshCw,
-  Info,
-  CheckCircle
-} from 'lucide-react';
-import { 
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle, 
-  DialogTrigger
-} from '@/components/ui/dialog';
+import { Calendar, CalendarIcon, Clock, FileText, Info, RefreshCw } from 'lucide-react';
 import { format, addDays, differenceInDays, isAfter, isBefore, parseISO } from 'date-fns';
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Calendar as CalendarComponent } from '@/components/ui/calendar';
 import { cn } from '@/lib/utils';
+import { de } from 'date-fns/locale';
+import { useIsMobile } from '@/hooks/use-mobile';
 
-type ExchangeProperty = {
-  id: string;
-  address: string;
-  purchasePrice: number;
-  estimatedValue: number;
-  dateAcquired: string;
-  status: 'identified' | 'under-contract' | 'closed';
-  notes: string;
-}
+type ExchangeSteps = 'not-started' | 'sale-pending' | 'sale-closed' | 'identification' | 'acquisition' | 'completed';
 
-type Exchange = {
+interface Exchange {
   id: string;
+  name: string;
   relinquishedProperty: {
     address: string;
-    sellingPrice: number;
+    salePrice: number;
     closingDate: string;
     originalPurchasePrice: number;
     improvements: number;
   };
+  exchangeStatus: ExchangeSteps;
   identificationDeadline: string; // 45 days from closing
   acquisitionDeadline: string; // 180 days from closing
-  potentialProperties: ExchangeProperty[];
-  status: 'active' | 'completed' | 'failed';
-  notes: string;
+  identifiedProperties: Array<{
+    id: string;
+    address: string;
+    price: number;
+    selected: boolean;
+    status: 'considering' | 'under-contract' | 'closed' | 'rejected';
+  }>;
 }
 
-const SAMPLE_EXCHANGES: Exchange[] = [
-  {
-    id: 'ex-1',
-    relinquishedProperty: {
-      address: '123 Main St, Austin, TX',
-      sellingPrice: 750000,
-      closingDate: '2025-04-05',
-      originalPurchasePrice: 450000,
-      improvements: 75000,
-    },
-    identificationDeadline: '2025-05-20',
-    acquisitionDeadline: '2025-10-02',
-    potentialProperties: [
-      {
-        id: 'prop-1',
-        address: '789 Highland Ave, Dallas, TX',
-        purchasePrice: 800000,
-        estimatedValue: 850000,
-        dateAcquired: '',
-        status: 'identified',
-        notes: 'Good location near new development',
-      },
-      {
-        id: 'prop-2',
-        address: '456 Oak St, Houston, TX',
-        purchasePrice: 780000,
-        estimatedValue: 800000,
-        dateAcquired: '',
-        status: 'under-contract',
-        notes: 'Inspection completed, closing scheduled',
-      }
-    ],
-    status: 'active',
-    notes: 'Working with ABC Exchange Accommodator',
-  },
-  {
-    id: 'ex-2',
-    relinquishedProperty: {
-      address: '555 Pine St, San Antonio, TX',
-      sellingPrice: 1250000,
-      closingDate: '2025-02-15',
-      originalPurchasePrice: 900000,
-      improvements: 150000,
-    },
-    identificationDeadline: '2025-04-01',
-    acquisitionDeadline: '2025-08-14',
-    potentialProperties: [
-      {
-        id: 'prop-3',
-        address: '345 Cedar Ave, Austin, TX',
-        purchasePrice: 1300000,
-        estimatedValue: 1350000,
-        dateAcquired: '2025-03-25',
-        status: 'closed',
-        notes: 'Successfully acquired property',
-      }
-    ],
-    status: 'completed',
-    notes: 'Exchange completed successfully',
-  }
-];
+interface TaxCalculation {
+  salesPrice: number;
+  originalBasis: number;
+  improvements: number;
+  sellingCosts: number;
+  adjustedBasis: number;
+  gainAmount: number;
+  deferredGain: number;
+  federalTaxRate: number;
+  stateTaxRate: number;
+  federalTaxSavings: number;
+  stateTaxSavings: number;
+  totalTaxSavings: number;
+  isLongTerm: boolean;
+}
 
 const ExchangeTracker: React.FC = () => {
-  const [exchanges, setExchanges] = useState<Exchange[]>(SAMPLE_EXCHANGES);
-  const [activeExchange, setActiveExchange] = useState<Exchange | null>(null);
-  const [activeTab, setActiveTab] = useState("dashboard");
-  const [calculatorValues, setCalculatorValues] = useState({
-    sellingPrice: 500000,
-    originalPurchase: 300000,
+  const isMobile = useIsMobile();
+  const [activeTab, setActiveTab] = useState('dashboard');
+  const [exchanges, setExchanges] = useState<Exchange[]>([
+    {
+      id: '1',
+      name: 'Downtown Apartment Exchange',
+      relinquishedProperty: {
+        address: '123 Main St, Munich, Germany',
+        salePrice: 850000,
+        closingDate: new Date().toISOString(),
+        originalPurchasePrice: 550000,
+        improvements: 100000,
+      },
+      exchangeStatus: 'sale-closed',
+      identificationDeadline: addDays(new Date(), 42).toISOString(),
+      acquisitionDeadline: addDays(new Date(), 175).toISOString(),
+      identifiedProperties: [
+        {
+          id: 'p1',
+          address: '456 Oak Ave, Berlin, Germany',
+          price: 920000,
+          selected: true,
+          status: 'under-contract',
+        },
+        {
+          id: 'p2',
+          address: '789 Pine St, Frankfurt, Germany',
+          price: 875000,
+          selected: false,
+          status: 'considering',
+        },
+        {
+          id: 'p3',
+          address: '321 Elm Rd, Hamburg, Germany',
+          price: 930000,
+          selected: false,
+          status: 'considering',
+        }
+      ],
+    }
+  ]);
+
+  const [newExchange, setNewExchange] = useState({
+    name: '',
+    propertyAddress: '',
+    salePrice: '',
+    originalPurchasePrice: '',
+    improvements: '',
+    closingDate: new Date(),
+  });
+
+  const [newProperty, setNewProperty] = useState({
+    address: '',
+    price: '',
+    exchangeId: '',
+  });
+
+  const [editExchangeId, setEditExchangeId] = useState<string | null>(null);
+  const [calculatorValues, setCalculatorValues] = useState<TaxCalculation>({
+    salesPrice: 500000,
+    originalBasis: 300000,
     improvements: 50000,
+    sellingCosts: 30000,
+    adjustedBasis: 0,
+    gainAmount: 0,
+    deferredGain: 0,
+    federalTaxRate: 20,
+    stateTaxRate: 5,
+    federalTaxSavings: 0,
+    stateTaxSavings: 0,
+    totalTaxSavings: 0,
     isLongTerm: true
   });
-  const [newExchange, setNewExchange] = useState<Partial<Exchange>>({
-    relinquishedProperty: {
-      address: '',
-      sellingPrice: 0,
-      closingDate: '',
-      originalPurchasePrice: 0,
-      improvements: 0
-    },
-    potentialProperties: [],
-    status: 'active',
-    notes: ''
-  });
-  const [newProperty, setNewProperty] = useState<Partial<ExchangeProperty>>({
-    address: '',
-    purchasePrice: 0,
-    estimatedValue: 0,
-    status: 'identified',
-    notes: ''
-  });
-  const [identifyDate, setIdentifyDate] = useState<Date>();
-  const [closingDate, setClosingDate] = useState<Date>();
-  const [showAddPropertyDialog, setShowAddPropertyDialog] = useState(false);
-  
-  const { toast } = useToast();
 
-  const calculateDeadlines = (closingDate: string) => {
-    const closing = new Date(closingDate);
-    return {
-      identificationDeadline: format(addDays(closing, 45), 'yyyy-MM-dd'),
-      acquisitionDeadline: format(addDays(closing, 180), 'yyyy-MM-dd')
-    };
-  };
+  // Calculate additional values whenever inputs change
+  React.useEffect(() => {
+    const adjustedBasis = calculatorValues.originalBasis + calculatorValues.improvements;
+    const gainAmount = calculatorValues.salesPrice - adjustedBasis - calculatorValues.sellingCosts;
+    
+    // Apply appropriate tax rates based on long vs. short term
+    const effectiveFederalRate = calculatorValues.isLongTerm ? calculatorValues.federalTaxRate : 37;
+    
+    const federalTaxSavings = (gainAmount > 0 ? gainAmount : 0) * (effectiveFederalRate / 100);
+    const stateTaxSavings = (gainAmount > 0 ? gainAmount : 0) * (calculatorValues.stateTaxRate / 100);
+    
+    setCalculatorValues({
+      ...calculatorValues,
+      adjustedBasis,
+      gainAmount,
+      deferredGain: gainAmount > 0 ? gainAmount : 0,
+      federalTaxSavings,
+      stateTaxSavings,
+      totalTaxSavings: federalTaxSavings + stateTaxSavings
+    });
+  }, [
+    calculatorValues.salesPrice,
+    calculatorValues.originalBasis,
+    calculatorValues.improvements,
+    calculatorValues.sellingCosts,
+    calculatorValues.federalTaxRate,
+    calculatorValues.stateTaxRate,
+    calculatorValues.isLongTerm
+  ]);
 
-  const calculateTaxSavings = () => {
-    const { sellingPrice, originalPurchase, improvements, isLongTerm } = calculatorValues;
-    const capitalGain = sellingPrice - originalPurchase - improvements;
-    
-    // Simplified tax calculation
-    const federalRate = isLongTerm ? 0.20 : 0.37;
-    const medicareRate = 0.038;
-    const stateRate = 0.05;
-    
-    const federalTax = capitalGain * federalRate;
-    const medicareTax = capitalGain * medicareRate;
-    const stateTax = capitalGain * stateRate;
-    
-    const totalTax = federalTax + medicareTax + stateTax;
-    return {
-      capitalGain,
-      federalTax,
-      medicareTax,
-      stateTax,
-      totalTax
-    };
-  };
-  
-  const handleAddExchange = () => {
-    if (!newExchange.relinquishedProperty?.address || !newExchange.relinquishedProperty?.closingDate) {
-      toast({
-        title: "Missing Information",
-        description: "Please provide all required information",
-        variant: "destructive"
-      });
+  const addExchange = () => {
+    if (!newExchange.name || !newExchange.propertyAddress || !newExchange.salePrice) {
+      toast.error('Please fill in all required fields');
       return;
     }
-    
-    const deadlines = calculateDeadlines(newExchange.relinquishedProperty.closingDate);
-    
+
+    const id = `ex-${Date.now()}`;
+    const closingDate = newExchange.closingDate.toISOString();
+    const identificationDeadline = addDays(newExchange.closingDate, 45).toISOString();
+    const acquisitionDeadline = addDays(newExchange.closingDate, 180).toISOString();
+
     const exchange: Exchange = {
-      id: `ex-${exchanges.length + 1}`,
+      id,
+      name: newExchange.name,
       relinquishedProperty: {
-        address: newExchange.relinquishedProperty.address,
-        sellingPrice: newExchange.relinquishedProperty.sellingPrice || 0,
-        closingDate: newExchange.relinquishedProperty.closingDate,
-        originalPurchasePrice: newExchange.relinquishedProperty.originalPurchasePrice || 0,
-        improvements: newExchange.relinquishedProperty.improvements || 0
+        address: newExchange.propertyAddress,
+        salePrice: parseFloat(newExchange.salePrice),
+        closingDate,
+        originalPurchasePrice: parseFloat(newExchange.originalPurchasePrice || '0'),
+        improvements: parseFloat(newExchange.improvements || '0'),
       },
-      identificationDeadline: deadlines.identificationDeadline,
-      acquisitionDeadline: deadlines.acquisitionDeadline,
-      potentialProperties: [],
-      status: 'active',
-      notes: newExchange.notes || ''
+      exchangeStatus: 'sale-pending',
+      identificationDeadline,
+      acquisitionDeadline,
+      identifiedProperties: [],
     };
-    
+
     setExchanges([...exchanges, exchange]);
-    setActiveExchange(exchange);
-    setActiveTab("details");
-    
-    toast({
-      title: "Exchange Added",
-      description: "New 1031 exchange has been created"
-    });
-    
-    // Reset form
     setNewExchange({
-      relinquishedProperty: {
-        address: '',
-        sellingPrice: 0,
-        closingDate: '',
-        originalPurchasePrice: 0,
-        improvements: 0
-      },
-      potentialProperties: [],
-      status: 'active',
-      notes: ''
+      name: '',
+      propertyAddress: '',
+      salePrice: '',
+      originalPurchasePrice: '',
+      improvements: '',
+      closingDate: new Date(),
     });
-    setClosingDate(undefined);
+
+    toast.success('New 1031 exchange created successfully');
   };
-  
-  const handleAddProperty = () => {
-    if (!activeExchange || !newProperty.address) return;
-    
-    const property: ExchangeProperty = {
-      id: `prop-${new Date().getTime()}`,
-      address: newProperty.address,
-      purchasePrice: newProperty.purchasePrice || 0,
-      estimatedValue: newProperty.estimatedValue || 0,
-      dateAcquired: '',
-      status: newProperty.status as 'identified' | 'under-contract' | 'closed',
-      notes: newProperty.notes || ''
-    };
-    
-    const updatedExchange = {
-      ...activeExchange,
-      potentialProperties: [...activeExchange.potentialProperties, property]
-    };
-    
-    setExchanges(exchanges.map(ex => ex.id === activeExchange.id ? updatedExchange : ex));
-    setActiveExchange(updatedExchange);
-    setShowAddPropertyDialog(false);
-    
-    toast({
-      title: "Property Added",
-      description: "Potential replacement property has been added"
-    });
-    
-    // Reset form
-    setNewProperty({
-      address: '',
-      purchasePrice: 0,
-      estimatedValue: 0,
-      status: 'identified',
-      notes: ''
-    });
-  };
-  
-  const updatePropertyStatus = (exchangeId: string, propertyId: string, status: 'identified' | 'under-contract' | 'closed') => {
-    const updatedExchanges = exchanges.map(exchange => {
-      if (exchange.id === exchangeId) {
-        const updatedProperties = exchange.potentialProperties.map(property => {
-          if (property.id === propertyId) {
-            return {
-              ...property,
-              status,
-              dateAcquired: status === 'closed' ? format(new Date(), 'yyyy-MM-dd') : property.dateAcquired
-            };
-          }
-          return property;
-        });
-        
-        // If a property is closed, update exchange status to completed
-        let exchangeStatus = exchange.status;
-        if (status === 'closed') {
-          exchangeStatus = 'completed';
+
+  const updateExchangeStatus = (exchangeId: string, status: ExchangeSteps) => {
+    setExchanges(exchanges.map(ex => {
+      if (ex.id === exchangeId) {
+        // If moving to 'sale-closed', update the deadlines based on current date
+        if (status === 'sale-closed') {
+          const today = new Date();
+          return {
+            ...ex,
+            exchangeStatus: status,
+            relinquishedProperty: {
+              ...ex.relinquishedProperty,
+              closingDate: today.toISOString(),
+            },
+            identificationDeadline: addDays(today, 45).toISOString(),
+            acquisitionDeadline: addDays(today, 180).toISOString(),
+          };
         }
-        
         return {
-          ...exchange,
-          potentialProperties: updatedProperties,
-          status: exchangeStatus
+          ...ex,
+          exchangeStatus: status,
         };
       }
-      return exchange;
-    });
-    
-    setExchanges(updatedExchanges);
-    
-    if (activeExchange && activeExchange.id === exchangeId) {
-      const updatedExchange = updatedExchanges.find(ex => ex.id === exchangeId);
-      if (updatedExchange) setActiveExchange(updatedExchange);
+      return ex;
+    }));
+    toast.success(`Exchange status updated to ${status.replace('-', ' ')}`);
+  };
+
+  const addIdentifiedProperty = () => {
+    if (!newProperty.address || !newProperty.price || !newProperty.exchangeId) {
+      toast.error('Please fill in all property details');
+      return;
     }
-    
-    toast({
-      title: "Status Updated",
-      description: `Property status changed to ${status}`
+
+    setExchanges(exchanges.map(ex => {
+      if (ex.id === newProperty.exchangeId) {
+        return {
+          ...ex,
+          identifiedProperties: [
+            ...ex.identifiedProperties,
+            {
+              id: `property-${Date.now()}`,
+              address: newProperty.address,
+              price: parseFloat(newProperty.price),
+              selected: false,
+              status: 'considering' as const,
+            }
+          ]
+        };
+      }
+      return ex;
+    }));
+
+    setNewProperty({
+      address: '',
+      price: '',
+      exchangeId: newProperty.exchangeId,
     });
+
+    toast.success('Property added to identification list');
   };
 
-  const handleViewDetailsClick = (exchange: Exchange) => {
-    setActiveExchange(exchange);
-    setActiveTab("details");
+  const updatePropertyStatus = (exchangeId: string, propertyId: string, status: 'considering' | 'under-contract' | 'closed' | 'rejected') => {
+    setExchanges(exchanges.map(ex => {
+      if (ex.id === exchangeId) {
+        return {
+          ...ex,
+          identifiedProperties: ex.identifiedProperties.map(prop => {
+            if (prop.id === propertyId) {
+              return {
+                ...prop,
+                status,
+                // If this property is closed, mark it as selected
+                selected: status === 'closed' ? true : prop.selected
+              };
+            }
+            // If this property is being set to closed, unselect all others
+            if (status === 'closed') {
+              return {
+                ...prop,
+                selected: prop.id === propertyId
+              };
+            }
+            return prop;
+          }),
+          // If a property is marked as closed, update the exchange status to completed
+          exchangeStatus: status === 'closed' ? 'completed' : ex.exchangeStatus
+        };
+      }
+      return ex;
+    }));
+
+    toast.success(`Property status updated to ${status}`);
   };
 
-  const calculateDaysLeft = (deadline: string) => {
-    const today = new Date();
+  const selectProperty = (exchangeId: string, propertyId: string) => {
+    setExchanges(exchanges.map(ex => {
+      if (ex.id === exchangeId) {
+        return {
+          ...ex,
+          identifiedProperties: ex.identifiedProperties.map(prop => ({
+            ...prop,
+            selected: prop.id === propertyId
+          }))
+        };
+      }
+      return ex;
+    }));
+    toast.success('Property selected as primary target');
+  };
+
+  const getDaysRemaining = (deadline: string) => {
+    const days = differenceInDays(new Date(deadline), new Date());
+    return days >= 0 ? days : 0;
+  };
+
+  const getProgressColor = (days: number, totalDays: number) => {
+    const percentage = (days / totalDays) * 100;
+    if (percentage > 66) return "bg-green-500";
+    if (percentage > 33) return "bg-yellow-500";
+    return "bg-red-500";
+  };
+
+  const formatCurrency = (amount: number) => {
+    return new Intl.NumberFormat('de-DE', {
+      style: 'currency',
+      currency: 'EUR',
+    }).format(amount);
+  };
+
+  const getDeadlineStatus = (deadline: string) => {
+    const now = new Date();
     const deadlineDate = new Date(deadline);
-    return differenceInDays(deadlineDate, today);
-  };
-  
-  const getStatusColor = (daysLeft: number) => {
-    if (daysLeft <= 0) return "bg-red-500";
-    if (daysLeft <= 7) return "bg-yellow-500";
-    return "bg-green-500";
-  };
-
-  // Fix here - Replace the click call with a focus() call
-  const handleSelectClosingDate = (date: Date | undefined) => {
-    if (date) {
-      setClosingDate(date);
-      const formatted = format(date, 'yyyy-MM-dd');
-      setNewExchange({
-        ...newExchange,
-        relinquishedProperty: {
-          ...newExchange.relinquishedProperty!,
-          closingDate: formatted
-        }
-      });
-      
-      // Calculate deadlines based on the selected closing date
-      const deadlines = calculateDeadlines(formatted);
-      setNewExchange(prev => ({
-        ...prev,
-        identificationDeadline: deadlines.identificationDeadline,
-        acquisitionDeadline: deadlines.acquisitionDeadline
-      }));
-      
-      // Instead of using click, use focus
-      setTimeout(() => {
-        const nextInput = document.querySelector('[name="originalPurchasePrice"]') as HTMLElement;
-        if (nextInput) nextInput.focus();
-      }, 100);
+    
+    if (isAfter(now, deadlineDate)) {
+      return <span className="text-red-500 font-semibold">Abgelaufen</span>;
     }
-  };
-  
-  const handleSelectIdentifyDate = (date: Date | undefined) => {
-    if (date) {
-      setIdentifyDate(date);
+    
+    const daysLeft = getDaysRemaining(deadline);
+    
+    if (daysLeft <= 7) {
+      return <span className="text-red-500 font-semibold">{daysLeft} Tage übrig</span>;
     }
+    
+    if (daysLeft <= 14) {
+      return <span className="text-orange-500 font-semibold">{daysLeft} Tage übrig</span>;
+    }
+    
+    return <span className="text-green-500 font-semibold">{daysLeft} Tage übrig</span>;
   };
 
   return (
-    <div className="space-y-6 animate-fade-in">
-      <div>
-        <h1 className="text-3xl font-bold">1031 Exchange Tracker</h1>
-        <p className="text-muted-foreground">Track your 1031 exchange deadlines and properties</p>
+    <div className="container mx-auto py-6 space-y-6 animate-fade-in">
+      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+        <div>
+          <h1 className="text-3xl font-bold tracking-tight">1031 Tauschüberwachung</h1>
+          <p className="text-muted-foreground">Verfolgen und verwalten Sie Ihre 1031-Tauschvorgänge und maximieren Sie die Steuervorteile.</p>
+        </div>
+        <Button onClick={() => setActiveTab('new')} className="md:self-end">
+          <RefreshCw className="mr-2 h-4 w-4" />
+          Neuen 1031-Tausch erstellen
+        </Button>
       </div>
 
-      <Tabs defaultValue={activeTab} value={activeTab} onValueChange={setActiveTab} className="w-full">
-        <TabsList>
-          <TabsTrigger value="dashboard">
-            <RefreshCw className="h-4 w-4 mr-2" />
-            Dashboard
-          </TabsTrigger>
-          <TabsTrigger value="calculator">
-            <DollarSign className="h-4 w-4 mr-2" />
-            Tax Savings Calculator
-          </TabsTrigger>
-          <TabsTrigger value="details" disabled={!activeExchange}>
-            <FileText className="h-4 w-4 mr-2" />
-            Exchange Details
-          </TabsTrigger>
-          <TabsTrigger value="add">
-            <Building className="h-4 w-4 mr-2" />
-            New Exchange
-          </TabsTrigger>
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+        <TabsList className="grid grid-cols-2 md:grid-cols-4 mb-4">
+          <TabsTrigger value="dashboard">Dashboard</TabsTrigger>
+          <TabsTrigger value="properties">Identifizierte Immobilien</TabsTrigger>
+          <TabsTrigger value="calculator">Steuerberechnungen</TabsTrigger>
+          <TabsTrigger value="new">Neuer Tausch</TabsTrigger>
         </TabsList>
 
-        <TabsContent value="dashboard" className="space-y-6">
-          <Card className="mb-4">
-            <CardHeader>
-              <CardTitle className="flex items-center">
-                <RefreshCw className="h-5 w-5 mr-2" />
-                Active 1031 Exchanges
-              </CardTitle>
-              <CardDescription>
-                Track your current exchange deadlines and progress
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              {exchanges.filter(ex => ex.status === 'active').length === 0 ? (
-                <div className="flex flex-col items-center justify-center py-8 text-center">
-                  <RefreshCw className="h-12 w-12 mb-4 text-muted-foreground" />
-                  <h3 className="text-lg font-medium">No active exchanges</h3>
-                  <p className="text-muted-foreground mb-4">
-                    Create a new 1031 exchange to start tracking your deadlines
-                  </p>
-                  <Button onClick={() => setActiveTab("add")}>
-                    Create New Exchange
-                  </Button>
-                </div>
-              ) : (
-                <div className="space-y-6">
-                  {exchanges
-                    .filter(ex => ex.status === 'active')
-                    .map(exchange => {
-                      const idDaysLeft = calculateDaysLeft(exchange.identificationDeadline);
-                      const acqDaysLeft = calculateDaysLeft(exchange.acquisitionDeadline);
+        <TabsContent value="dashboard" className="space-y-4">
+          {exchanges.length === 0 ? (
+            <Card>
+              <CardHeader>
+                <CardTitle>Keine aktiven Tausche</CardTitle>
+                <CardDescription>Sie haben derzeit keine aktiven 1031-Tausche. Erstellen Sie einen neuen, um zu beginnen.</CardDescription>
+              </CardHeader>
+              <CardFooter>
+                <Button onClick={() => setActiveTab('new')}>Neuen 1031-Tausch erstellen</Button>
+              </CardFooter>
+            </Card>
+          ) : (
+            exchanges.map(exchange => (
+              <Card key={exchange.id} className="overflow-hidden">
+                <CardHeader className="bg-muted/50">
+                  <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-2">
+                    <div>
+                      <CardTitle>{exchange.name}</CardTitle>
+                      <CardDescription>{exchange.relinquishedProperty.address}</CardDescription>
+                    </div>
+                    <div className="bg-primary/10 text-primary px-3 py-1 rounded-full text-sm capitalize">
+                      {exchange.exchangeStatus.replace('-', ' ')}
+                    </div>
+                  </div>
+                </CardHeader>
+                <CardContent className="pt-6">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    <div className="space-y-4">
+                      <div>
+                        <h3 className="font-medium mb-2 flex items-center">
+                          <FileText className="h-4 w-4 mr-2 text-muted-foreground" />
+                          Verkaufte Immobilie
+                        </h3>
+                        <div className="grid grid-cols-2 gap-2 text-sm">
+                          <div className="text-muted-foreground">Adresse:</div>
+                          <div>{exchange.relinquishedProperty.address}</div>
+                          
+                          <div className="text-muted-foreground">Verkaufspreis:</div>
+                          <div>{formatCurrency(exchange.relinquishedProperty.salePrice)}</div>
+                          
+                          <div className="text-muted-foreground">Abschlussdatum:</div>
+                          <div>{format(new Date(exchange.relinquishedProperty.closingDate), 'dd.MM.yyyy')}</div>
+                        </div>
+                      </div>
                       
-                      return (
-                        <div key={exchange.id} className="border rounded-lg p-4">
-                          <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-4">
-                            <div>
-                              <h3 className="text-lg font-medium">{exchange.relinquishedProperty.address}</h3>
-                              <p className="text-muted-foreground">${exchange.relinquishedProperty.sellingPrice.toLocaleString()}</p>
+                      <Separator />
+                      
+                      <div>
+                        <h3 className="font-medium mb-2 flex items-center">
+                          <Clock className="h-4 w-4 mr-2 text-muted-foreground" />
+                          Wichtige Fristen
+                        </h3>
+                        
+                        <div className="space-y-3">
+                          <div>
+                            <div className="flex justify-between mb-1 text-sm">
+                              <span className="text-muted-foreground">Identifikationsfrist (45 Tage)</span>
+                              <span>{getDeadlineStatus(exchange.identificationDeadline)}</span>
                             </div>
-                            <Button 
-                              variant="outline" 
-                              size="sm"
-                              onClick={() => handleViewDetailsClick(exchange)}
-                            >
-                              View Details
-                            </Button>
-                          </div>
-                          
-                          <div className="space-y-2">
-                            <div>
-                              <div className="flex justify-between mb-1">
-                                <span className="text-sm font-medium">
-                                  Identification Deadline
-                                </span>
-                                <span className="text-sm">
-                                  {idDaysLeft <= 0
-                                    ? "Expired"
-                                    : `${idDaysLeft} days left`
-                                  }
-                                </span>
-                              </div>
-                              <Progress 
-                                value={Math.max(0, (idDaysLeft / 45) * 100)} 
-                                className={getStatusColor(idDaysLeft)}
-                              />
-                              <p className="text-xs text-muted-foreground mt-1">
-                                {format(parseISO(exchange.identificationDeadline), 'MMM d, yyyy')}
-                              </p>
-                            </div>
-                            
-                            <div>
-                              <div className="flex justify-between mb-1">
-                                <span className="text-sm font-medium">
-                                  Acquisition Deadline
-                                </span>
-                                <span className="text-sm">
-                                  {acqDaysLeft <= 0
-                                    ? "Expired"
-                                    : `${acqDaysLeft} days left`
-                                  }
-                                </span>
-                              </div>
-                              <Progress 
-                                value={Math.max(0, (acqDaysLeft / 180) * 100)} 
-                                className={getStatusColor(acqDaysLeft)}
-                              />
-                              <p className="text-xs text-muted-foreground mt-1">
-                                {format(parseISO(exchange.acquisitionDeadline), 'MMM d, yyyy')}
-                              </p>
+                            <Progress 
+                              value={((45 - getDaysRemaining(exchange.identificationDeadline)) / 45) * 100} 
+                              className={cn("h-2", getProgressColor(getDaysRemaining(exchange.identificationDeadline), 45))}
+                            />
+                            <div className="mt-1 text-xs text-muted-foreground">
+                              Fälligkeit am {format(new Date(exchange.identificationDeadline), 'dd.MM.yyyy')}
                             </div>
                           </div>
                           
-                          <div className="mt-4">
-                            <p className="text-sm font-medium mb-2">Properties Identified: {exchange.potentialProperties.length}</p>
-                            <div className="flex flex-wrap gap-2">
-                              {exchange.potentialProperties.map(property => (
-                                <Badge 
-                                  key={property.id} 
-                                  variant={
-                                    property.status === 'closed' ? "default" :
-                                    property.status === 'under-contract' ? "secondary" : "outline"
-                                  }
-                                >
-                                  {property.status === 'closed' && <CheckCircle className="h-3 w-3 mr-1" />}
-                                  {property.status}
-                                </Badge>
-                              ))}
+                          <div>
+                            <div className="flex justify-between mb-1 text-sm">
+                              <span className="text-muted-foreground">Akquisitionsfrist (180 Tage)</span>
+                              <span>{getDeadlineStatus(exchange.acquisitionDeadline)}</span>
+                            </div>
+                            <Progress 
+                              value={((180 - getDaysRemaining(exchange.acquisitionDeadline)) / 180) * 100}
+                              className={cn("h-2", getProgressColor(getDaysRemaining(exchange.acquisitionDeadline), 180))}
+                            />
+                            <div className="mt-1 text-xs text-muted-foreground">
+                              Fälligkeit am {format(new Date(exchange.acquisitionDeadline), 'dd.MM.yyyy')}
                             </div>
                           </div>
                         </div>
-                      );
-                    })}
-                </div>
-              )}
-            </CardContent>
-          </Card>
-          
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center">
-                <CheckCircle className="h-5 w-5 mr-2" />
-                Completed Exchanges
-              </CardTitle>
-              <CardDescription>
-                View your completed 1031 exchanges
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              {exchanges.filter(ex => ex.status === 'completed').length === 0 ? (
-                <p className="text-muted-foreground text-center py-4">
-                  No completed exchanges yet
-                </p>
-              ) : (
-                <div className="space-y-4">
-                  {exchanges
-                    .filter(ex => ex.status === 'completed')
-                    .map(exchange => {
-                      const replacementProperty = exchange.potentialProperties.find(p => p.status === 'closed');
+                      </div>
+                    </div>
+                    
+                    <div className="space-y-4">
+                      <h3 className="font-medium flex items-center">
+                        <RefreshCw className="h-4 w-4 mr-2 text-muted-foreground" />
+                        Tauschstatus aktualisieren
+                      </h3>
                       
-                      return (
-                        <div key={exchange.id} className="flex flex-col md:flex-row justify-between border rounded-lg p-4">
-                          <div>
-                            <h3 className="text-lg font-medium">Relinquished: {exchange.relinquishedProperty.address}</h3>
-                            <p className="text-muted-foreground mb-2">${exchange.relinquishedProperty.sellingPrice.toLocaleString()}</p>
-                            {replacementProperty && (
-                              <>
-                                <h4 className="text-md font-medium">Acquired: {replacementProperty.address}</h4>
-                                <p className="text-muted-foreground">${replacementProperty.purchasePrice.toLocaleString()}</p>
-                              </>
-                            )}
+                      <div className="grid grid-cols-1 gap-3">
+                        <Button 
+                          variant={exchange.exchangeStatus === 'sale-pending' ? 'default' : 'outline'} 
+                          onClick={() => updateExchangeStatus(exchange.id, 'sale-pending')}
+                          disabled={exchange.exchangeStatus !== 'sale-pending' && exchange.exchangeStatus !== 'not-started'}
+                          className="justify-start"
+                        >
+                          1. Verkauf im Gange
+                        </Button>
+                        
+                        <Button 
+                          variant={exchange.exchangeStatus === 'sale-closed' ? 'default' : 'outline'} 
+                          onClick={() => updateExchangeStatus(exchange.id, 'sale-closed')}
+                          disabled={exchange.exchangeStatus !== 'sale-closed' && exchange.exchangeStatus !== 'sale-pending'}
+                          className="justify-start"
+                        >
+                          2. Verkauf abgeschlossen
+                        </Button>
+                        
+                        <Button 
+                          variant={exchange.exchangeStatus === 'identification' ? 'default' : 'outline'} 
+                          onClick={() => updateExchangeStatus(exchange.id, 'identification')}
+                          disabled={exchange.exchangeStatus !== 'identification' && exchange.exchangeStatus !== 'sale-closed'}
+                          className="justify-start"
+                        >
+                          3. Eigenschaften identifiziert
+                        </Button>
+                        
+                        <Button 
+                          variant={exchange.exchangeStatus === 'acquisition' ? 'default' : 'outline'} 
+                          onClick={() => updateExchangeStatus(exchange.id, 'acquisition')}
+                          disabled={exchange.exchangeStatus !== 'acquisition' && exchange.exchangeStatus !== 'identification'}
+                          className="justify-start"
+                        >
+                          4. Erwerb im Gange
+                        </Button>
+                        
+                        <Button 
+                          variant={exchange.exchangeStatus === 'completed' ? 'default' : 'outline'} 
+                          onClick={() => updateExchangeStatus(exchange.id, 'completed')}
+                          disabled={exchange.exchangeStatus !== 'completed' && exchange.exchangeStatus !== 'acquisition'}
+                          className="justify-start"
+                        >
+                          5. Tausch abgeschlossen
+                        </Button>
+                      </div>
+                      
+                      <div className="mt-4">
+                        <h4 className="text-sm font-medium mb-2">Identifizierte Ersatzimmobilien</h4>
+                        {exchange.identifiedProperties.length > 0 ? (
+                          <div className="space-y-2">
+                            {exchange.identifiedProperties.map(property => (
+                              <div 
+                                key={property.id}
+                                className={cn(
+                                  "p-2 border rounded-md text-sm",
+                                  property.selected && "border-primary bg-primary/5"
+                                )}
+                              >
+                                <div className="font-medium">{property.address}</div>
+                                <div className="flex justify-between mt-1">
+                                  <span className="text-muted-foreground">{formatCurrency(property.price)}</span>
+                                  <span className={cn(
+                                    "px-2 py-0.5 rounded-full text-xs capitalize",
+                                    property.status === 'under-contract' && "bg-orange-100 text-orange-600",
+                                    property.status === 'closed' && "bg-green-100 text-green-600",
+                                    property.status === 'rejected' && "bg-red-100 text-red-600",
+                                    property.status === 'considering' && "bg-blue-100 text-blue-600"
+                                  )}>
+                                    {property.status.replace('-', ' ')}
+                                  </span>
+                                </div>
+                              </div>
+                            ))}
                           </div>
+                        ) : (
+                          <div className="text-muted-foreground text-sm">Keine Immobilien identifiziert.</div>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            ))
+          )}
+        </TabsContent>
+
+        <TabsContent value="properties" className="space-y-6">
+          {exchanges.length === 0 ? (
+            <Card>
+              <CardHeader>
+                <CardTitle>Keine aktiven Tausche</CardTitle>
+                <CardDescription>Sie haben derzeit keine aktiven 1031-Tausche. Erstellen Sie einen neuen, um zu beginnen.</CardDescription>
+              </CardHeader>
+              <CardFooter>
+                <Button onClick={() => setActiveTab('new')}>Neuen 1031-Tausch erstellen</Button>
+              </CardFooter>
+            </Card>
+          ) : (
+            <>
+              {exchanges.map(exchange => (
+                <Card key={exchange.id}>
+                  <CardHeader>
+                    <CardTitle>{exchange.name}</CardTitle>
+                    <CardDescription>Identifizierte Ersatzimmobilien für diesen 1031-Tausch</CardDescription>
+                  </CardHeader>
+                  
+                  <CardContent>
+                    <div className="grid gap-4">
+                      <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-4">
+                        <div>
+                          <h3 className="text-sm font-medium">Identifikationsfrist</h3>
+                          <p className="text-sm text-muted-foreground">
+                            {getDeadlineStatus(exchange.identificationDeadline)} - bis {format(new Date(exchange.identificationDeadline), 'dd.MM.yyyy')}
+                          </p>
+                        </div>
+                        <div className="flex items-center gap-2">
                           <Button 
                             variant="outline" 
-                            size="sm"
-                            className="mt-2 md:mt-0"
-                            onClick={() => handleViewDetailsClick(exchange)}
+                            size="sm" 
+                            onClick={() => {
+                              setNewProperty({...newProperty, exchangeId: exchange.id});
+                              setEditExchangeId(exchange.id);
+                            }}
                           >
-                            View Details
+                            Immobilie hinzufügen
                           </Button>
                         </div>
-                      );
-                    })}
-                </div>
-              )}
-            </CardContent>
-          </Card>
+                      </div>
+                      
+                      {editExchangeId === exchange.id && (
+                        <div className="bg-muted/50 p-4 rounded-md">
+                          <h4 className="font-medium mb-3">Neue Ersatzimmobilie</h4>
+                          <div className="grid gap-3">
+                            <div>
+                              <Label htmlFor="property-address">Adresse</Label>
+                              <Input
+                                id="property-address"
+                                value={newProperty.address}
+                                onChange={e => setNewProperty({...newProperty, address: e.target.value})}
+                              />
+                            </div>
+                            <div>
+                              <Label htmlFor="property-price">Preis</Label>
+                              <Input
+                                id="property-price"
+                                type="number"
+                                value={newProperty.price}
+                                onChange={e => setNewProperty({...newProperty, price: e.target.value})}
+                              />
+                            </div>
+                            <div className="flex justify-end gap-2">
+                              <Button variant="outline" onClick={() => setEditExchangeId(null)}>Abbrechen</Button>
+                              <Button onClick={addIdentifiedProperty}>Hinzufügen</Button>
+                            </div>
+                          </div>
+                        </div>
+                      )}
+                      
+                      {exchange.identifiedProperties.length > 0 ? (
+                        <div className="overflow-x-auto">
+                          <table className="w-full border-collapse">
+                            <thead>
+                              <tr className="text-left text-sm text-muted-foreground border-b">
+                                <th className="pb-2 pl-2">Adresse</th>
+                                <th className="pb-2">Preis</th>
+                                <th className="pb-2">Status</th>
+                                <th className="pb-2 pr-2">Aktionen</th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              {exchange.identifiedProperties.map(property => (
+                                <tr 
+                                  key={property.id} 
+                                  className={cn(
+                                    "border-b last:border-0 hover:bg-muted/50",
+                                    property.selected && "bg-primary/5"
+                                  )}
+                                >
+                                  <td className="py-3 pl-2">{property.address}</td>
+                                  <td className="py-3">{formatCurrency(property.price)}</td>
+                                  <td className="py-3">
+                                    <div className={cn(
+                                      "inline-block px-2 py-1 rounded-full text-xs capitalize",
+                                      property.status === 'under-contract' && "bg-orange-100 text-orange-600",
+                                      property.status === 'closed' && "bg-green-100 text-green-600",
+                                      property.status === 'rejected' && "bg-red-100 text-red-600",
+                                      property.status === 'considering' && "bg-blue-100 text-blue-600"
+                                    )}>
+                                      {property.status.replace('-', ' ')}
+                                    </div>
+                                  </td>
+                                  <td className="py-3 pr-2">
+                                    <div className="flex items-center gap-1">
+                                      <Button 
+                                        variant="ghost" 
+                                        size="sm" 
+                                        onClick={() => selectProperty(exchange.id, property.id)}
+                                        disabled={property.selected}
+                                      >
+                                        {property.selected ? 'Ausgewählt' : 'Auswählen'}
+                                      </Button>
+                                      <Popover>
+                                        <PopoverTrigger asChild>
+                                          <Button variant="ghost" size="sm">Status</Button>
+                                        </PopoverTrigger>
+                                        <PopoverContent className="w-56 p-2">
+                                          <div className="grid gap-1">
+                                            <Button 
+                                              variant="ghost" 
+                                              size="sm" 
+                                              className="justify-start h-8"
+                                              onClick={() => updatePropertyStatus(exchange.id, property.id, 'considering')}
+                                            >
+                                              Betrachtend
+                                            </Button>
+                                            <Button 
+                                              variant="ghost" 
+                                              size="sm" 
+                                              className="justify-start h-8"
+                                              onClick={() => updatePropertyStatus(exchange.id, property.id, 'under-contract')}
+                                            >
+                                              Unter Vertrag
+                                            </Button>
+                                            <Button 
+                                              variant="ghost" 
+                                              size="sm" 
+                                              className="justify-start h-8"
+                                              onClick={() => updatePropertyStatus(exchange.id, property.id, 'closed')}
+                                            >
+                                              Abgeschlossen
+                                            </Button>
+                                            <Button 
+                                              variant="ghost" 
+                                              size="sm" 
+                                              className="justify-start h-8 text-red-500"
+                                              onClick={() => updatePropertyStatus(exchange.id, property.id, 'rejected')}
+                                            >
+                                              Abgelehnt
+                                            </Button>
+                                          </div>
+                                        </PopoverContent>
+                                      </Popover>
+                                    </div>
+                                  </td>
+                                </tr>
+                              ))}
+                            </tbody>
+                          </table>
+                        </div>
+                      ) : (
+                        <div className="bg-muted/30 p-6 text-center rounded-md">
+                          <p className="text-muted-foreground">Keine Immobilien identifiziert. Fügen Sie Ersatzimmobilien hinzu.</p>
+                        </div>
+                      )}
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </>
+          )}
         </TabsContent>
 
         <TabsContent value="calculator" className="space-y-6">
           <Card>
             <CardHeader>
-              <CardTitle className="flex items-center">
-                <DollarSign className="h-5 w-5 mr-2" />
-                1031 Exchange Tax Savings Calculator
-              </CardTitle>
-              <CardDescription>
-                Calculate your potential tax savings with a 1031 exchange
-              </CardDescription>
+              <CardTitle>Steueraufschubsrechner für 1031-Tausch</CardTitle>
+              <CardDescription>Berechnen Sie Ihre potenziellen Steuerersparnisse durch einen 1031-Tausch</CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="grid gap-4 md:grid-cols-2">
-                <div className="space-y-4">
-                  <div>
-                    <Label htmlFor="sellingPrice">Selling Price ($)</Label>
-                    <Input
-                      id="sellingPrice"
-                      type="number"
-                      value={calculatorValues.sellingPrice}
-                      onChange={(e) => setCalculatorValues({...calculatorValues, sellingPrice: Number(e.target.value)})}
-                    />
-                  </div>
-                  
-                  <div>
-                    <Label htmlFor="originalPurchase">Original Purchase Price ($)</Label>
-                    <Input
-                      id="originalPurchase"
-                      type="number"
-                      value={calculatorValues.originalPurchase}
-                      onChange={(e) => setCalculatorValues({...calculatorValues, originalPurchase: Number(e.target.value)})}
-                    />
-                  </div>
-                  
-                  <div>
-                    <Label htmlFor="improvements">Capital Improvements ($)</Label>
-                    <Input
-                      id="improvements"
-                      type="number"
-                      value={calculatorValues.improvements}
-                      onChange={(e) => setCalculatorValues({...calculatorValues, improvements: Number(e.target.value)})}
-                    />
-                  </div>
-                  
-                  <div className="flex items-center">
-                    <input
-                      id="isLongTerm"
-                      type="checkbox"
-                      className="mr-2"
-                      checked={calculatorValues.isLongTerm}
-                      onChange={(e) => setCalculatorValues({...calculatorValues, isLongTerm: e.target.checked})}
-                    />
-                    <Label htmlFor="isLongTerm">Long-term capital gains (owned > 1 year)</Label>
+              <div className="grid gap-6 md:grid-cols-2">
+                <div>
+                  <h3 className="font-medium mb-3">Immobiliendaten</h3>
+                  <div className="space-y-3">
+                    <div>
+                      <Label htmlFor="salesPrice">Verkaufspreis</Label>
+                      <Input
+                        id="salesPrice"
+                        type="number"
+                        value={calculatorValues.salesPrice}
+                        onChange={(e) => setCalculatorValues({...calculatorValues, salesPrice: parseFloat(e.target.value) || 0})}
+                      />
+                    </div>
+                    
+                    <div>
+                      <Label htmlFor="originalBasis">Ursprünglicher Kaufpreis</Label>
+                      <Input
+                        id="originalBasis"
+                        type="number"
+                        value={calculatorValues.originalBasis}
+                        onChange={(e) => setCalculatorValues({...calculatorValues, originalBasis: parseFloat(e.target.value) || 0})}
+                      />
+                    </div>
+                    
+                    <div>
+                      <Label htmlFor="improvements">Verbesserungskosten</Label>
+                      <Input
+                        id="improvements"
+                        type="number"
+                        value={calculatorValues.improvements}
+                        onChange={(e) => setCalculatorValues({...calculatorValues, improvements: parseFloat(e.target.value) || 0})}
+                      />
+                    </div>
+                    
+                    <div>
+                      <Label htmlFor="sellingCosts">Verkaufskosten</Label>
+                      <Input
+                        id="sellingCosts"
+                        type="number"
+                        value={calculatorValues.sellingCosts}
+                        onChange={(e) => setCalculatorValues({...calculatorValues, sellingCosts: parseFloat(e.target.value) || 0})}
+                      />
+                    </div>
+                    
+                    <div className="flex items-center space-x-2">
+                      <Checkbox 
+                        id="isLongTerm" 
+                        checked={calculatorValues.isLongTerm}
+                        onCheckedChange={(checked) => setCalculatorValues({...calculatorValues, isLongTerm: checked === true})}
+                      />
+                      <Label htmlFor="isLongTerm">Langfristiger Kapitalgewinn (Besitz {">"} 1 Jahr)</Label>
+                    </div>
                   </div>
                 </div>
                 
-                <div className="bg-muted p-4 rounded-lg">
-                  <h3 className="font-medium mb-4">Tax Savings Summary</h3>
-                  
-                  {(() => {
-                    const { capitalGain, federalTax, medicareTax, stateTax, totalTax } = calculateTaxSavings();
+                <div>
+                  <h3 className="font-medium mb-3">Steuerinformationen</h3>
+                  <div className="space-y-3">
+                    <div>
+                      <Label htmlFor="federalTaxRate">Bundessteuersatz (%)</Label>
+                      <Input
+                        id="federalTaxRate"
+                        type="number"
+                        value={calculatorValues.federalTaxRate}
+                        onChange={(e) => setCalculatorValues({...calculatorValues, federalTaxRate: parseFloat(e.target.value) || 0})}
+                      />
+                    </div>
                     
-                    return (
-                      <>
-                        <div className="space-y-2 text-sm">
-                          <div className="flex justify-between">
-                            <span>Capital Gain:</span>
-                            <span>${capitalGain.toLocaleString()}</span>
-                          </div>
-                          
-                          <Separator />
-                          
-                          <div className="flex justify-between">
-                            <span>Federal Capital Gains Tax 
-                              ({calculatorValues.isLongTerm ? "20%" : "37%"}):
-                            </span>
-                            <span>${federalTax.toLocaleString()}</span>
-                          </div>
-                          
-                          <div className="flex justify-between">
-                            <span>Medicare Surtax (3.8%):</span>
-                            <span>${medicareTax.toLocaleString()}</span>
-                          </div>
-                          
-                          <div className="flex justify-between">
-                            <span>State Income Tax (est. 5%):</span>
-                            <span>${stateTax.toLocaleString()}</span>
-                          </div>
-                          
-                          <Separator />
-                          
-                          <div className="flex justify-between font-medium">
-                            <span>Total Tax Due Without 1031:</span>
-                            <span>${totalTax.toLocaleString()}</span>
-                          </div>
-                          
-                          <div className="flex justify-between font-medium mt-2 text-green-600">
-                            <span>Tax Savings With 1031 Exchange:</span>
-                            <span>${totalTax.toLocaleString()}</span>
-                          </div>
-                        </div>
+                    <div>
+                      <Label htmlFor="stateTaxRate">Landessteuersatz (%)</Label>
+                      <Input
+                        id="stateTaxRate"
+                        type="number"
+                        value={calculatorValues.stateTaxRate}
+                        onChange={(e) => setCalculatorValues({...calculatorValues, stateTaxRate: parseFloat(e.target.value) || 0})}
+                      />
+                    </div>
+                    
+                    <div className="bg-muted/50 p-4 rounded-md space-y-3 mt-6">
+                      <h4 className="font-medium">Berechnungsergebnisse</h4>
+                      
+                      <div className="grid grid-cols-2 gap-2 text-sm">
+                        <div className="text-muted-foreground">Angepasste Basis:</div>
+                        <div>{formatCurrency(calculatorValues.adjustedBasis)}</div>
                         
-                        <Alert className="mt-4">
-                          <Info className="h-4 w-4" />
-                          <AlertTitle>Important Note</AlertTitle>
-                          <AlertDescription>
-                            This is a simplified calculation. Consult a tax professional for precise tax implications for your specific situation.
-                          </AlertDescription>
-                        </Alert>
-                      </>
-                    );
-                  })()}
+                        <div className="text-muted-foreground">Kapitalgewinn:</div>
+                        <div>{formatCurrency(calculatorValues.gainAmount)}</div>
+                        
+                        <div className="text-muted-foreground">Aufgeschobener Gewinn:</div>
+                        <div>{formatCurrency(calculatorValues.deferredGain)}</div>
+                      </div>
+                      
+                      <Separator />
+                      
+                      <div className="grid grid-cols-2 gap-2 text-sm">
+                        <div className="text-muted-foreground">Bundes-Steuerersparnis:</div>
+                        <div>{formatCurrency(calculatorValues.federalTaxSavings)}</div>
+                        
+                        <div className="text-muted-foreground">Landes-Steuerersparnis:</div>
+                        <div>{formatCurrency(calculatorValues.stateTaxSavings)}</div>
+                        
+                        <div className="font-medium">Gesamte Steuerersparnis:</div>
+                        <div className="font-medium text-green-600">{formatCurrency(calculatorValues.totalTaxSavings)}</div>
+                      </div>
+                    </div>
+                    
+                    <div className="flex items-center gap-2 text-sm mt-2">
+                      <Info className="h-4 w-4 text-muted-foreground" />
+                      <span className="text-muted-foreground">
+                        Dies ist eine Schätzung. Bitte konsultieren Sie einen Steuerberater für genaue Berechnungen.
+                      </span>
+                    </div>
+                  </div>
                 </div>
               </div>
             </CardContent>
           </Card>
         </TabsContent>
 
-        <TabsContent value="details" className="space-y-6">
-          {activeExchange && (
-            <>
-              <div className="flex justify-between items-center">
-                <h2 className="text-2xl font-bold">Exchange Details</h2>
-                <Badge 
-                  variant={
-                    activeExchange.status === 'completed' ? "default" : 
-                    activeExchange.status === 'failed' ? "destructive" : "outline"
-                  }
-                >
-                  {activeExchange.status}
-                </Badge>
-              </div>
-              
-              <Card>
-                <CardHeader>
-                  <CardTitle>Relinquished Property</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="grid gap-4 md:grid-cols-2">
-                    <div>
-                      <h3 className="font-medium mb-1">Address</h3>
-                      <p>{activeExchange.relinquishedProperty.address}</p>
-                    </div>
-                    
-                    <div>
-                      <h3 className="font-medium mb-1">Selling Price</h3>
-                      <p>${activeExchange.relinquishedProperty.sellingPrice.toLocaleString()}</p>
-                    </div>
-                    
-                    <div>
-                      <h3 className="font-medium mb-1">Closing Date</h3>
-                      <p>{format(parseISO(activeExchange.relinquishedProperty.closingDate), 'MMM d, yyyy')}</p>
-                    </div>
-                    
-                    <div>
-                      <h3 className="font-medium mb-1">Original Purchase Price</h3>
-                      <p>${activeExchange.relinquishedProperty.originalPurchasePrice.toLocaleString()}</p>
-                    </div>
-                    
-                    <div>
-                      <h3 className="font-medium mb-1">Capital Improvements</h3>
-                      <p>${activeExchange.relinquishedProperty.improvements.toLocaleString()}</p>
-                    </div>
-                    
-                    <div>
-                      <h3 className="font-medium mb-1">Capital Gain</h3>
-                      <p>${(activeExchange.relinquishedProperty.sellingPrice - activeExchange.relinquishedProperty.originalPurchasePrice - activeExchange.relinquishedProperty.improvements).toLocaleString()}</p>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-              
-              <div className="grid gap-4 md:grid-cols-2">
-                <Card className="relative">
-                  <div className={`absolute top-3 right-3 h-3 w-3 rounded-full ${
-                    calculateDaysLeft(activeExchange.identificationDeadline) <= 0 ? 'bg-red-500' :
-                    calculateDaysLeft(activeExchange.identificationDeadline) <= 7 ? 'bg-yellow-500' : 'bg-green-500'
-                  }`} />
-                  <CardHeader>
-                    <CardTitle className="flex items-center">
-                      <Clock className="h-5 w-5 mr-2" />
-                      Identification Deadline
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="text-lg font-medium mb-1">
-                      {format(parseISO(activeExchange.identificationDeadline), 'MMMM d, yyyy')}
-                    </div>
-                    <p className="text-muted-foreground mb-4">
-                      {calculateDaysLeft(activeExchange.identificationDeadline) <= 0
-                        ? "Deadline has expired"
-                        : `${calculateDaysLeft(activeExchange.identificationDeadline)} days remaining`
-                      }
-                    </p>
-                    <Progress 
-                      value={Math.max(0, (calculateDaysLeft(activeExchange.identificationDeadline) / 45) * 100)} 
-                      className={getStatusColor(calculateDaysLeft(activeExchange.identificationDeadline))}
-                    />
-                    <p className="text-sm mt-2">45-day identification period</p>
-                  </CardContent>
-                </Card>
-                
-                <Card className="relative">
-                  <div className={`absolute top-3 right-3 h-3 w-3 rounded-full ${
-                    calculateDaysLeft(activeExchange.acquisitionDeadline) <= 0 ? 'bg-red-500' :
-                    calculateDaysLeft(activeExchange.acquisitionDeadline) <= 7 ? 'bg-yellow-500' : 'bg-green-500'
-                  }`} />
-                  <CardHeader>
-                    <CardTitle className="flex items-center">
-                      <Clock className="h-5 w-5 mr-2" />
-                      Acquisition Deadline
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="text-lg font-medium mb-1">
-                      {format(parseISO(activeExchange.acquisitionDeadline), 'MMMM d, yyyy')}
-                    </div>
-                    <p className="text-muted-foreground mb-4">
-                      {calculateDaysLeft(activeExchange.acquisitionDeadline) <= 0
-                        ? "Deadline has expired"
-                        : `${calculateDaysLeft(activeExchange.acquisitionDeadline)} days remaining`
-                      }
-                    </p>
-                    <Progress 
-                      value={Math.max(0, (calculateDaysLeft(activeExchange.acquisitionDeadline) / 180) * 100)} 
-                      className={getStatusColor(calculateDaysLeft(activeExchange.acquisitionDeadline))}
-                    />
-                    <p className="text-sm mt-2">180-day exchange period</p>
-                  </CardContent>
-                </Card>
-              </div>
-              
-              <Card>
-                <CardHeader className="flex flex-row items-center justify-between">
-                  <CardTitle>Replacement Properties</CardTitle>
-                  <Dialog open={showAddPropertyDialog} onOpenChange={setShowAddPropertyDialog}>
-                    <DialogTrigger asChild>
-                      <Button size="sm">Add Property</Button>
-                    </DialogTrigger>
-                    <DialogContent>
-                      <DialogHeader>
-                        <DialogTitle>Add Replacement Property</DialogTitle>
-                        <DialogDescription>
-                          Add a property you've identified as a potential replacement
-                        </DialogDescription>
-                      </DialogHeader>
-                      
-                      <div className="space-y-4">
-                        <div className="space-y-2">
-                          <Label htmlFor="address">Property Address</Label>
-                          <Input 
-                            id="address" 
-                            value={newProperty.address}
-                            onChange={(e) => setNewProperty({...newProperty, address: e.target.value})}
-                          />
-                        </div>
-                        
-                        <div className="grid grid-cols-2 gap-4">
-                          <div className="space-y-2">
-                            <Label htmlFor="purchasePrice">Purchase Price ($)</Label>
-                            <Input 
-                              id="purchasePrice" 
-                              type="number"
-                              value={newProperty.purchasePrice || ''}
-                              onChange={(e) => setNewProperty({...newProperty, purchasePrice: Number(e.target.value)})}
-                            />
-                          </div>
-                          
-                          <div className="space-y-2">
-                            <Label htmlFor="estimatedValue">Estimated Value ($)</Label>
-                            <Input 
-                              id="estimatedValue" 
-                              type="number"
-                              value={newProperty.estimatedValue || ''}
-                              onChange={(e) => setNewProperty({...newProperty, estimatedValue: Number(e.target.value)})}
-                            />
-                          </div>
-                        </div>
-                        
-                        <div className="space-y-2">
-                          <Label htmlFor="status">Status</Label>
-                          <select 
-                            id="status"
-                            className="w-full p-2 border rounded"
-                            value={newProperty.status}
-                            onChange={(e) => setNewProperty({...newProperty, status: e.target.value as any})}
-                          >
-                            <option value="identified">Identified</option>
-                            <option value="under-contract">Under Contract</option>
-                            <option value="closed">Closed</option>
-                          </select>
-                        </div>
-                        
-                        <div className="space-y-2">
-                          <Label htmlFor="notes">Notes</Label>
-                          <textarea 
-                            id="notes"
-                            className="w-full p-2 border rounded"
-                            rows={3}
-                            value={newProperty.notes}
-                            onChange={(e) => setNewProperty({...newProperty, notes: e.target.value})}
-                          />
-                        </div>
-                      </div>
-                      
-                      <DialogFooter>
-                        <Button variant="outline" onClick={() => setShowAddPropertyDialog(false)}>
-                          Cancel
-                        </Button>
-                        <Button onClick={handleAddProperty}>Add Property</Button>
-                      </DialogFooter>
-                    </DialogContent>
-                  </Dialog>
-                </CardHeader>
-                <CardContent>
-                  {activeExchange.potentialProperties.length === 0 ? (
-                    <div className="text-center py-12">
-                      <Building className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
-                      <h3 className="text-lg font-medium mb-2">No properties identified yet</h3>
-                      <p className="text-muted-foreground mb-4">
-                        You can identify up to three potential replacement properties
-                      </p>
-                      <Button onClick={() => setShowAddPropertyDialog(true)}>
-                        Add Property
-                      </Button>
-                    </div>
-                  ) : (
-                    <div className="space-y-4">
-                      {activeExchange.potentialProperties.map(property => (
-                        <div key={property.id} className="border rounded-lg p-4">
-                          <div className="flex justify-between items-start">
-                            <div>
-                              <h3 className="font-medium">{property.address}</h3>
-                              <div className="flex gap-4 text-sm text-muted-foreground mt-1">
-                                <span>${property.purchasePrice.toLocaleString()}</span>
-                                {property.status === 'closed' && property.dateAcquired && (
-                                  <span>Acquired: {format(parseISO(property.dateAcquired), 'MMM d, yyyy')}</span>
-                                )}
-                              </div>
-                            </div>
-                            <Badge 
-                              variant={
-                                property.status === 'closed' ? "default" :
-                                property.status === 'under-contract' ? "secondary" : "outline"
-                              }
-                            >
-                              {property.status}
-                            </Badge>
-                          </div>
-                          
-                          {property.notes && (
-                            <p className="text-sm mt-2 bg-muted p-2 rounded">{property.notes}</p>
-                          )}
-                          
-                          {property.status !== 'closed' && (
-                            <div className="mt-4 flex gap-2 justify-end">
-                              {property.status === 'identified' && (
-                                <Button 
-                                  size="sm" 
-                                  variant="outline"
-                                  onClick={() => updatePropertyStatus(activeExchange.id, property.id, 'under-contract')}
-                                >
-                                  Mark as Under Contract
-                                </Button>
-                              )}
-                              {property.status === 'under-contract' && (
-                                <Button 
-                                  size="sm"
-                                  onClick={() => updatePropertyStatus(activeExchange.id, property.id, 'closed')}
-                                >
-                                  Mark as Closed
-                                </Button>
-                              )}
-                            </div>
-                          )}
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                </CardContent>
-              </Card>
-              
-              {activeExchange.notes && (
-                <Card>
-                  <CardHeader>
-                    <CardTitle>Notes</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <p>{activeExchange.notes}</p>
-                  </CardContent>
-                </Card>
-              )}
-            </>
-          )}
-        </TabsContent>
-        
-        <TabsContent value="add" className="space-y-6">
+        <TabsContent value="new" className="space-y-6">
           <Card>
             <CardHeader>
-              <CardTitle className="flex items-center">
-                <RefreshCw className="h-5 w-5 mr-2" />
-                Create New 1031 Exchange
-              </CardTitle>
-              <CardDescription>
-                Enter the details of your relinquished property
-              </CardDescription>
+              <CardTitle>Neuen 1031-Tausch erstellen</CardTitle>
+              <CardDescription>Beginnen Sie die Verfolgung eines neuen 1031-Tauschvorgangs</CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="space-y-4">
-                <div className="space-y-2">
-                  <Label htmlFor="address">Relinquished Property Address</Label>
+              <div className="grid gap-4">
+                <div>
+                  <Label htmlFor="exchange-name">Tauschname</Label>
                   <Input 
-                    id="address" 
-                    value={newExchange.relinquishedProperty?.address || ''}
-                    onChange={(e) => setNewExchange({
-                      ...newExchange,
-                      relinquishedProperty: {
-                        ...newExchange.relinquishedProperty!,
-                        address: e.target.value
-                      }
-                    })}
-                    placeholder="123 Main St, City, State"
+                    id="exchange-name" 
+                    placeholder="z.B. Frankfurt Apartment Tausch" 
+                    value={newExchange.name} 
+                    onChange={(e) => setNewExchange({...newExchange, name: e.target.value})}
                   />
                 </div>
                 
-                <div className="grid gap-4 md:grid-cols-2">
-                  <div className="space-y-2">
-                    <Label htmlFor="sellingPrice">Selling Price ($)</Label>
+                <div>
+                  <Label htmlFor="property-address">Adresse der verkauften Immobilie</Label>
+                  <Input 
+                    id="property-address" 
+                    placeholder="Vollständige Adresse" 
+                    value={newExchange.propertyAddress} 
+                    onChange={(e) => setNewExchange({...newExchange, propertyAddress: e.target.value})}
+                  />
+                </div>
+                
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <Label htmlFor="sale-price">Verkaufspreis</Label>
                     <Input 
-                      id="sellingPrice" 
-                      type="number"
-                      value={newExchange.relinquishedProperty?.sellingPrice || ''}
-                      onChange={(e) => setNewExchange({
-                        ...newExchange,
-                        relinquishedProperty: {
-                          ...newExchange.relinquishedProperty!,
-                          sellingPrice: Number(e.target.value)
-                        }
-                      })}
+                      id="sale-price" 
+                      type="number" 
+                      placeholder="z.B. 500000" 
+                      value={newExchange.salePrice} 
+                      onChange={(e) => setNewExchange({...newExchange, salePrice: e.target.value})}
                     />
                   </div>
                   
-                  <div className="space-y-2">
-                    <Label htmlFor="closingDate">Closing Date</Label>
+                  <div>
+                    <Label htmlFor="closing-date">Geplantes Abschlussdatum</Label>
                     <Popover>
                       <PopoverTrigger asChild>
                         <Button
-                          variant={"outline"}
-                          className={cn(
-                            "w-full justify-start text-left font-normal",
-                            !closingDate && "text-muted-foreground"
-                          )}
+                          variant="outline"
+                          className="w-full justify-start text-left font-normal"
                         >
                           <CalendarIcon className="mr-2 h-4 w-4" />
-                          {closingDate ? format(closingDate, "PPP") : <span>Select date</span>}
+                          {format(newExchange.closingDate, 'PPP', { locale: de })}
                         </Button>
                       </PopoverTrigger>
                       <PopoverContent className="w-auto p-0">
-                        <Calendar
+                        <CalendarComponent
                           mode="single"
-                          selected={closingDate}
-                          onSelect={handleSelectClosingDate}
+                          selected={newExchange.closingDate}
+                          onSelect={(date) => date && setNewExchange({...newExchange, closingDate: date})}
                           initialFocus
-                          className={cn("p-3 pointer-events-auto")}
                         />
                       </PopoverContent>
                     </Popover>
                   </div>
-                  
-                  <div className="space-y-2">
-                    <Label htmlFor="originalPurchasePrice">Original Purchase Price ($)</Label>
-                    <Input 
-                      id="originalPurchasePrice"
-                      name="originalPurchasePrice"  
-                      type="number"
-                      value={newExchange.relinquishedProperty?.originalPurchasePrice || ''}
-                      onChange={(e) => setNewExchange({
-                        ...newExchange,
-                        relinquishedProperty: {
-                          ...newExchange.relinquishedProperty!,
-                          originalPurchasePrice: Number(e.target.value)
-                        }
-                      })}
-                    />
-                  </div>
-                  
-                  <div className="space-y-2">
-                    <Label htmlFor="improvements">Capital Improvements ($)</Label>
-                    <Input 
-                      id="improvements" 
-                      type="number"
-                      value={newExchange.relinquishedProperty?.improvements || ''}
-                      onChange={(e) => setNewExchange({
-                        ...newExchange,
-                        relinquishedProperty: {
-                          ...newExchange.relinquishedProperty!,
-                          improvements: Number(e.target.value)
-                        }
-                      })}
-                    />
-                  </div>
                 </div>
                 
-                <div className="space-y-2">
-                  <Label htmlFor="notes">Notes (Optional)</Label>
-                  <textarea 
-                    id="notes"
-                    className="w-full p-2 border rounded"
-                    rows={3}
-                    value={newExchange.notes || ''}
-                    onChange={(e) => setNewExchange({...newExchange, notes: e.target.value})}
-                    placeholder="Enter any additional notes about this exchange"
-                  />
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <Label htmlFor="original-price">Ursprünglicher Kaufpreis</Label>
+                    <Input 
+                      id="original-price" 
+                      type="number" 
+                      placeholder="z.B. 300000" 
+                      value={newExchange.originalPurchasePrice} 
+                      onChange={(e) => setNewExchange({...newExchange, originalPurchasePrice: e.target.value})}
+                    />
+                  </div>
+                  
+                  <div>
+                    <Label htmlFor="improvements">Verbesserungskosten</Label>
+                    <Input 
+                      id="improvements" 
+                      type="number" 
+                      placeholder="z.B. 50000" 
+                      value={newExchange.improvements} 
+                      onChange={(e) => setNewExchange({...newExchange, improvements: e.target.value})}
+                    />
+                  </div>
                 </div>
               </div>
             </CardContent>
-            <CardFooter>
-              <Button onClick={handleAddExchange}>Create Exchange</Button>
+            <CardFooter className="flex flex-col sm:flex-row gap-3 sm:justify-between">
+              <div className="text-sm text-muted-foreground flex items-start gap-2">
+                <Info className="h-4 w-4 mt-0.5" />
+                <span>Nach der Erstellung können Sie identifizierte Ersatzimmobilien hinzufügen.</span>
+              </div>
+              <Button onClick={addExchange}>1031-Tausch erstellen</Button>
             </CardFooter>
           </Card>
         </TabsContent>
