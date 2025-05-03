@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { ArrowLeft } from 'lucide-react';
+import { ArrowLeft, Building } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Property } from '@/interfaces/property';
@@ -46,21 +46,36 @@ const PropertyHeader = ({ property }: PropertyHeaderProps) => {
   };
 
   return (
-    <div className="flex items-center justify-between">
+    <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between space-y-2 sm:space-y-0">
       <div className="flex items-center gap-2">
-        <Button variant="outline" size="icon" asChild>
+        <Button variant="outline" size="icon" asChild className="shrink-0">
           <Link to="/properties">
             <ArrowLeft className="h-4 w-4" />
           </Link>
         </Button>
-        <h1 className="text-2xl font-bold">{property.title}</h1>
-        <Badge variant={getBadgeVariant(property.status)}>
-          {formatStatusText(property.status)}
-        </Badge>
+        <div>
+          <div className="flex items-center gap-2">
+            <h1 className="text-2xl font-bold">{property.title}</h1>
+            <Badge variant={getBadgeVariant(property.status)}>
+              {formatStatusText(property.status)}
+            </Badge>
+          </div>
+          {property.address && (
+            <p className="text-sm text-muted-foreground mt-1">
+              <Building className="inline-block h-3.5 w-3.5 mr-1" />
+              {property.address}
+            </p>
+          )}
+        </div>
       </div>
-      <Button variant="default" asChild>
-        <Link to={`/property/${property.id}/edit`}>{t('editProperty')}</Link>
-      </Button>
+      <div className="flex gap-2 w-full sm:w-auto">
+        <Button variant="outline" className="flex-1 sm:flex-none" asChild>
+          <Link to={`/property/${property.id}/financials`}>{t('viewFinancials')}</Link>
+        </Button>
+        <Button variant="default" className="flex-1 sm:flex-none" asChild>
+          <Link to={`/property/${property.id}/edit`}>{t('editProperty')}</Link>
+        </Button>
+      </div>
     </div>
   );
 };

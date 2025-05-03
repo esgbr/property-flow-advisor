@@ -2,9 +2,18 @@
 import React, { useEffect, useState } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useLanguage } from '@/contexts/LanguageContext';
-import { Building, Calculator, ClipboardCheck, FileText, Receipt, Search, TrendingUp, AlertTriangle } from 'lucide-react';
+import { 
+  Building, 
+  Calculator, 
+  ClipboardCheck, 
+  FileText, 
+  Receipt, 
+  Search, 
+  TrendingUp, 
+  AlertTriangle 
+} from 'lucide-react';
 import { useUserPreferences } from '@/contexts/UserPreferencesContext';
-import PortfolioDashboard from '@/components/portfolio/PortfolioDashboard';
+import EnhancedPortfolioDashboard from '@/components/portfolio/EnhancedPortfolioDashboard';
 import MortgageCalculator from '@/components/financing/MortgageCalculator';
 import TaxPlanner from '@/components/tax/TaxPlanner';
 import MarketAnalysisTools from '@/components/market/MarketAnalysisTools';
@@ -12,7 +21,6 @@ import DueDiligenceChecklist from '@/components/due-diligence/DueDiligenceCheckl
 import { useLocation, useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 import { useIsMobile } from '@/hooks/use-mobile';
-import { Card } from '@/components/ui/card';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 
@@ -128,7 +136,7 @@ const InvestorDashboard: React.FC = () => {
         )}
 
         <TabsContent value="portfolio" className="mt-6">
-          <PortfolioDashboard />
+          <EnhancedPortfolioDashboard />
         </TabsContent>
 
         <TabsContent value="market" className="mt-6">
