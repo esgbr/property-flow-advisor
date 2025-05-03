@@ -1,4 +1,3 @@
-
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { useToast } from '@/components/ui/use-toast';
 import { OnboardingData } from '@/components/onboarding/OnboardingFlow';
@@ -45,6 +44,8 @@ interface UserPreferences {
     emailNotifications: boolean;
     reminderFrequency: 'daily' | 'weekly' | 'monthly' | 'none';
   };
+  // Security preference
+  dismissedSecurityAlert: boolean;
 }
 
 interface UserPreferencesContextType {
@@ -93,13 +94,17 @@ const defaultPreferences: UserPreferences = {
     preferredLearningStyle: null,
     emailNotifications: false,
     reminderFrequency: 'weekly'
-  }
+  },
+  dismissedSecurityAlert: false
 };
 
 const UserPreferencesContext = createContext<UserPreferencesContextType | undefined>(undefined);
 
 export const UserPreferencesProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [preferences, setPreferences] = useState<UserPreferences>(defaultPreferences);
+  const [preferences, setPreferences] = useState<UserPreferences>({
+    ...defaultPreferences,
+    dismissedSecurityAlert: false
+  });
   const [isFirstVisit, setIsFirstVisit] = useState<boolean>(true);
   const { toast } = useToast();
 

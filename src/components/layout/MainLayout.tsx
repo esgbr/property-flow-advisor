@@ -60,6 +60,7 @@ const MainLayout = () => {
     window.addEventListener('keypress', resetTimer);
     window.addEventListener('scroll', resetTimer);
     window.addEventListener('click', resetTimer);
+    window.addEventListener('touchstart', resetTimer); // Add touch event for mobile
     
     return () => {
       if (inactivityTimer) clearTimeout(inactivityTimer);
@@ -67,6 +68,7 @@ const MainLayout = () => {
       window.removeEventListener('keypress', resetTimer);
       window.removeEventListener('scroll', resetTimer);
       window.removeEventListener('click', resetTimer);
+      window.removeEventListener('touchstart', resetTimer);
     };
   }, [pin, isLocked, lockApp, inactivityTimer, t]);
 

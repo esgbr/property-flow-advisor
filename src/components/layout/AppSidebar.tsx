@@ -7,7 +7,7 @@ import {
   BarChart3, Building, Calculator, Calendar, Settings2, Star, 
   School, Building2, Banknote, RefreshCw, Users, Euro, 
   PieChart, BarChart, Globe, LayoutDashboard, Home,
-  LineChart
+  LineChart, Shield, FileText, ChevronRight
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useUserPreferences } from '@/contexts/UserPreferencesContext';
@@ -133,6 +133,12 @@ const AppSidebar = () => {
           name: t('settings'),
           href: '/settings',
           icon: <Settings2 className="h-5 w-5" />,
+        },
+        {
+          name: t('security'),
+          href: '/settings?tab=security',
+          icon: <Shield className="h-5 w-5" />,
+          new: true,
         },
       ]
     }

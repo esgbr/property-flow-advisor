@@ -1,197 +1,144 @@
+
 import React, { useState } from 'react';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Switch } from '@/components/ui/switch';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Badge } from '@/components/ui/badge';
-import { Progress } from '@/components/ui/progress';
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Checkbox } from '@/components/ui/checkbox';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Search, Filter, UserPlus, FileText, CalendarDays, Check, X, AlertTriangle, BellIcon } from 'lucide-react';
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { useIsMobile } from '@/hooks/use-mobile';
 import { toast } from 'sonner';
+import { 
+  Users, Search, Filter, PlusCircle, FileText, Calendar, 
+  Mail, Phone, ChevronRight, Banknote, Home, AlertTriangle 
+} from 'lucide-react';
+import { Progress } from '@/components/ui/progress';
 
-// Dummy tenant data
+// Sample tenant data
 const tenants = [
-  { 
-    id: 1, 
-    name: 'James Wilson', 
-    property: 'Downtown Apartment 3B', 
-    leaseEnd: '2024-12-31',
-    rentAmount: 1250,
-    status: 'active',
-    paymentStatus: 'paid',
-    joinedDate: '2022-01-15',
-    email: 'james.wilson@example.com',
+  {
+    id: 1,
+    name: 'John Smith',
+    unit: 'Apartment 101',
+    property: 'Sunset Heights',
+    leaseStart: '2023-06-01',
+    leaseEnd: '2024-05-31',
+    rent: 1200,
+    paymentStatus: 'current',
+    email: 'john.smith@example.com',
     phone: '+1 (555) 123-4567',
-    avatar: '/placeholder.svg'
+    backgroundCheck: 'passed',
+    incidents: 0,
+    communications: [
+      { date: '2023-12-15', type: 'email', subject: 'Maintenance Request' },
+      { date: '2024-01-03', type: 'phone', subject: 'Rent Payment' }
+    ]
   },
-  { 
-    id: 2, 
-    name: 'Sarah Johnson', 
-    property: 'Suburban House 42', 
-    leaseEnd: '2024-08-15',
-    rentAmount: 1800,
-    status: 'active',
-    paymentStatus: 'pending',
-    joinedDate: '2021-08-15',
-    email: 'sarah.j@example.com',
-    phone: '+1 (555) 987-6543',
-    avatar: '/placeholder.svg'
-  },
-  { 
-    id: 3, 
-    name: 'Michael Brown', 
-    property: 'Retail Space 101', 
-    leaseEnd: '2025-03-01',
-    rentAmount: 2500,
-    status: 'active',
-    paymentStatus: 'paid',
-    joinedDate: '2023-03-01',
-    email: 'michael.brown@example.com',
-    phone: '+1 (555) 456-7890',
-    avatar: '/placeholder.svg'
-  },
-  { 
-    id: 4, 
-    name: 'Jennifer Davis', 
-    property: 'Industrial Unit 7', 
-    leaseEnd: '2023-12-15',
-    rentAmount: 3200,
-    status: 'ending',
+  {
+    id: 2,
+    name: 'Sarah Johnson',
+    unit: 'Apartment 205',
+    property: 'Sunset Heights',
+    leaseStart: '2023-03-15',
+    leaseEnd: '2024-03-14',
+    rent: 1450,
     paymentStatus: 'late',
-    joinedDate: '2020-12-15',
-    email: 'jennifer.d@example.com',
-    phone: '+1 (555) 789-0123',
-    avatar: '/placeholder.svg'
+    email: 'sarah.johnson@example.com',
+    phone: '+1 (555) 987-6543',
+    backgroundCheck: 'passed',
+    incidents: 1,
+    communications: [
+      { date: '2024-01-20', type: 'email', subject: 'Late Payment Notice' },
+      { date: '2024-01-25', type: 'phone', subject: 'Payment Plan' }
+    ]
   },
+  {
+    id: 3,
+    name: 'Michael Brown',
+    unit: 'Apartment 310',
+    property: 'River View Apartments',
+    leaseStart: '2023-09-01',
+    leaseEnd: '2024-08-31',
+    rent: 1700,
+    paymentStatus: 'current',
+    email: 'michael.brown@example.com',
+    phone: '+1 (555) 234-5678',
+    backgroundCheck: 'passed',
+    incidents: 0,
+    communications: [
+      { date: '2023-11-05', type: 'email', subject: 'Parking Issue' }
+    ]
+  }
 ];
 
-// Maintenance requests data
-const maintenanceRequests = [
-  {
-    id: 'REQ-001',
-    tenant: 'James Wilson',
-    property: 'Downtown Apartment 3B',
-    issue: 'Leaky faucet in master bathroom',
-    status: 'pending',
-    priority: 'medium',
-    dateSubmitted: '2023-11-28',
-    assignedTo: 'Plumbing Team'
-  },
-  {
-    id: 'REQ-002',
-    tenant: 'Sarah Johnson',
-    property: 'Suburban House 42',
-    issue: 'Heating system not working',
-    status: 'in-progress',
-    priority: 'high',
-    dateSubmitted: '2023-11-25',
-    assignedTo: 'HVAC Specialists'
-  },
-  {
-    id: 'REQ-003',
-    tenant: 'Michael Brown',
-    property: 'Retail Space 101',
-    issue: 'Lighting fixtures need replacement',
-    status: 'completed',
-    priority: 'low',
-    dateSubmitted: '2023-11-20',
-    assignedTo: 'Electrical Team',
-    completedDate: '2023-11-22'
-  },
+// Sample properties
+const properties = [
+  { id: 1, name: 'Sunset Heights', units: 24, address: '123 Main St, Anytown, USA' },
+  { id: 2, name: 'River View Apartments', units: 18, address: '456 Water Ln, Riverside, USA' }
 ];
 
-const TenantManagement = () => {
+const TenantManagement: React.FC = () => {
   const [activeTab, setActiveTab] = useState('tenants');
-  const [searchQuery, setSearchQuery] = useState('');
-  const [showTenantDialog, setShowTenantDialog] = useState(false);
-  const [showNotificationDialog, setShowNotificationDialog] = useState(false);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [selectedTenant, setSelectedTenant] = useState<any>(null);
+  const [showAddTenant, setShowAddTenant] = useState(false);
+  const isMobile = useIsMobile();
+
+  // Notification preferences
+  const [notificationPrefs, setNotificationPrefs] = useState({
+    emailRentReminder: true,
+    smsRentReminder: false,
+    emailMaintenance: true,
+    smsMaintenance: false,
+    emailLease: true,
+    smsLease: false,
+  });
+
+  const handleTabChange = (value: string) => {
+    setActiveTab(value);
+  };
 
   const filteredTenants = tenants.filter(tenant => 
-    tenant.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    tenant.property.toLowerCase().includes(searchQuery.toLowerCase())
+    tenant.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    tenant.property.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    tenant.unit.toLowerCase().includes(searchTerm.toLowerCase())
   );
-  
-  const handleAddTenant = () => {
-    toast({
-      title: "Add tenant form",
-      description: "The tenant addition form would open here.",
-    });
-  };
-
-  const handlePaymentReminder = (tenantId: number) => {
-    toast({
-      title: "Reminder sent",
-      description: "Payment reminder has been sent to the tenant.",
-    });
-  };
-
-  const getStatusBadge = (status: string) => {
-    if (status === 'active') return <Badge className="bg-green-500">Active</Badge>;
-    if (status === 'ending') return <Badge className="bg-amber-500">Ending Soon</Badge>;
-    return <Badge>Unknown</Badge>;
-  };
-
-  const getPaymentStatusBadge = (status: string) => {
-    if (status === 'paid') return <Badge className="bg-green-500">Paid</Badge>;
-    if (status === 'pending') return <Badge className="bg-amber-500">Pending</Badge>;
-    if (status === 'late') return <Badge className="bg-red-500">Late</Badge>;
-    return <Badge>Unknown</Badge>;
-  };
-
-  const getMaintenanceStatusBadge = (status: string) => {
-    if (status === 'pending') return <Badge className="bg-amber-500">Pending</Badge>;
-    if (status === 'in-progress') return <Badge className="bg-blue-500">In Progress</Badge>;
-    if (status === 'completed') return <Badge className="bg-green-500">Completed</Badge>;
-    return <Badge>Unknown</Badge>;
-  };
-
-  const getPriorityBadge = (priority: string) => {
-    if (priority === 'high') return <Badge className="bg-red-500">High</Badge>;
-    if (priority === 'medium') return <Badge className="bg-amber-500">Medium</Badge>;
-    if (priority === 'low') return <Badge className="bg-green-500">Low</Badge>;
-    return <Badge>Unknown</Badge>;
-  };
 
   return (
     <div className="space-y-6 animate-fade-in">
       <div className="flex flex-col md:flex-row justify-between gap-4 mb-4">
         <div>
           <h2 className="text-2xl font-bold">Tenant Management</h2>
-          <p className="text-muted-foreground">Oversee tenant interactions and rental activities</p>
+          <p className="text-muted-foreground">Manage your tenants and lease agreements</p>
         </div>
         
         <div className="flex items-center gap-2">
           <div className="relative">
             <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-            <Input
-              type="search"
-              placeholder="Search tenants..."
+            <Input 
+              placeholder="Search tenants..." 
               className="pl-8 w-full md:w-[200px]"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
             />
           </div>
-          
           <Button variant="outline" size="icon">
             <Filter className="h-4 w-4" />
           </Button>
-          
-          <Button onClick={() => setShowTenantDialog(true)}>
-            <UserPlus className="h-4 w-4 mr-2" />
+          <Button onClick={() => setShowAddTenant(true)}>
+            <PlusCircle className="h-4 w-4 mr-2" />
             Add Tenant
           </Button>
         </div>
       </div>
       
-      <Tabs defaultValue={activeTab} value={activeTab} onValueChange={setActiveTab}>
-        <TabsList>
+      <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
+        <TabsList className="w-full justify-start mb-4">
           <TabsTrigger value="tenants">
-            <UserPlus className="h-4 w-4 mr-2" />
+            <Users className="h-4 w-4 mr-2" />
             Tenants
           </TabsTrigger>
           <TabsTrigger value="leases">
@@ -199,444 +146,508 @@ const TenantManagement = () => {
             Leases
           </TabsTrigger>
           <TabsTrigger value="payments">
-            <CalendarDays className="h-4 w-4 mr-2" />
+            <Banknote className="h-4 w-4 mr-2" />
             Payments
           </TabsTrigger>
-          <TabsTrigger value="applications">
-            <AlertTriangle className="h-4 w-4 mr-2" />
-            Applications
+          <TabsTrigger value="properties">
+            <Home className="h-4 w-4 mr-2" />
+            Properties
           </TabsTrigger>
         </TabsList>
         
-        <TabsContent value="tenants" className="space-y-4">
-          <Card>
-            <CardHeader>
-              <CardTitle>Current Tenants</CardTitle>
-              <CardDescription>Manage your property tenants</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="rounded-md border">
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>Tenant</TableHead>
-                      <TableHead>Property</TableHead>
-                      <TableHead>Lease End</TableHead>
-                      <TableHead>Status</TableHead>
-                      <TableHead className="text-right">Actions</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {tenants
-                      .filter(tenant => tenant.name.toLowerCase().includes(searchQuery.toLowerCase()) || tenant.property.toLowerCase().includes(searchQuery.toLowerCase()))
-                      .map((tenant) => (
-                        <TableRow key={tenant.id}>
-                          <TableCell>
-                            <div className="flex items-center gap-3">
-                              <Avatar>
-                                <AvatarFallback>{tenant.name.charAt(0)}</AvatarFallback>
-                              </Avatar>
-                              <div>
-                                <div className="font-medium">{tenant.name}</div>
-                                <div className="text-sm text-muted-foreground">{tenant.email}</div>
-                              </div>
-                            </div>
-                          </TableCell>
-                          <TableCell>{tenant.property}</TableCell>
-                          <TableCell>{tenant.leaseEnd}</TableCell>
-                          <TableCell>
-                            <Badge variant={tenant.status === 'Active' ? 'default' : tenant.status === 'Late Payment' ? 'destructive' : 'outline'}>
-                              {tenant.status}
-                            </Badge>
-                          </TableCell>
-                          <TableCell className="text-right">
-                            <Button 
-                              variant="ghost" 
-                              size="sm"
-                              onClick={() => setShowNotificationDialog(true)}
-                            >
-                              <BellIcon className="h-4 w-4 mr-1" />
-                              Notify
-                            </Button>
-                          </TableCell>
-                        </TableRow>
-                      ))}
-                  </TableBody>
-                </Table>
+        <TabsContent value="tenants">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {filteredTenants.map((tenant) => (
+              <Card key={tenant.id} className="cursor-pointer hover:shadow-md transition-shadow" onClick={() => setSelectedTenant(tenant)}>
+                <CardHeader>
+                  <div className="flex justify-between">
+                    <CardTitle>{tenant.name}</CardTitle>
+                    <Badge variant={tenant.paymentStatus === 'current' ? 'default' : 'destructive'}>
+                      {tenant.paymentStatus === 'current' ? 'Current' : 'Late'}
+                    </Badge>
+                  </div>
+                  <CardDescription>{tenant.unit}, {tenant.property}</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-4">
+                    <div className="flex items-center">
+                      <Calendar className="h-4 w-4 mr-2 text-muted-foreground" />
+                      <p className="text-sm">Lease: {new Date(tenant.leaseStart).toLocaleDateString()} - {new Date(tenant.leaseEnd).toLocaleDateString()}</p>
+                    </div>
+                    <div className="flex items-center">
+                      <Banknote className="h-4 w-4 mr-2 text-muted-foreground" />
+                      <p className="text-sm">Rent: ${tenant.rent}/month</p>
+                    </div>
+                    <div className="flex items-center">
+                      <Mail className="h-4 w-4 mr-2 text-muted-foreground" />
+                      <p className="text-sm truncate">{tenant.email}</p>
+                    </div>
+                  </div>
+                </CardContent>
+                <CardFooter className="border-t pt-4 flex justify-between">
+                  <Button variant="outline" size="sm">Contact</Button>
+                  <Button variant="ghost" size="icon">
+                    <ChevronRight className="h-4 w-4" />
+                  </Button>
+                </CardFooter>
+              </Card>
+            ))}
+            
+            {filteredTenants.length === 0 && (
+              <div className="col-span-3 flex justify-center items-center p-8 border rounded-lg">
+                <div className="text-center">
+                  <p className="text-muted-foreground mb-2">No tenants match your search criteria.</p>
+                  <Button variant="outline" onClick={() => setSearchTerm('')}>Clear Search</Button>
+                </div>
               </div>
-            </CardContent>
-          </Card>
-          
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            )}
+          </div>
+        </TabsContent>
+        
+        <TabsContent value="leases">
+          <div className="space-y-4">
             <Card>
-              <CardHeader className="pb-2">
-                <CardTitle className="text-sm font-medium">Occupancy Rate</CardTitle>
+              <CardHeader>
+                <CardTitle>Active Leases</CardTitle>
+                <CardDescription>Overview of current lease agreements</CardDescription>
               </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">94%</div>
-                <Progress className="h-2 mt-2" value={94} />
-                <p className="text-xs text-muted-foreground mt-2">15 of 16 units occupied</p>
+              <CardContent className="space-y-6">
+                {tenants.map((tenant) => (
+                  <div key={tenant.id} className="flex flex-col md:flex-row justify-between p-4 border rounded-lg">
+                    <div>
+                      <h3 className="font-medium">{tenant.name}</h3>
+                      <p className="text-sm text-muted-foreground">{tenant.unit}, {tenant.property}</p>
+                      <p className="text-sm mt-1">
+                        {new Date(tenant.leaseStart).toLocaleDateString()} - {new Date(tenant.leaseEnd).toLocaleDateString()}
+                      </p>
+                    </div>
+                    
+                    <div className="mt-2 md:mt-0 space-y-2">
+                      <div className="text-right">
+                        <span className="text-sm font-medium">${tenant.rent}/month</span>
+                      </div>
+                      <div className="flex gap-2 justify-end">
+                        <Button variant="outline" size="sm" onClick={() => toast.success(`Lease for ${tenant.name} downloaded`)}>
+                          Download
+                        </Button>
+                        <Button size="sm" onClick={() => toast.success(`Lease for ${tenant.name} viewed`)}>
+                          View
+                        </Button>
+                      </div>
+                    </div>
+                  </div>
+                ))}
               </CardContent>
+              <CardFooter>
+                <Button className="w-full" onClick={() => toast.success('Creating new lease agreement')}>
+                  <PlusCircle className="h-4 w-4 mr-2" />
+                  Create New Lease
+                </Button>
+              </CardFooter>
             </Card>
             
             <Card>
-              <CardHeader className="pb-2">
-                <CardTitle className="text-sm font-medium">Upcoming Renewals</CardTitle>
+              <CardHeader>
+                <CardTitle>Lease Renewals</CardTitle>
+                <CardDescription>Upcoming lease renewals requiring attention</CardDescription>
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold">3</div>
-                <p className="text-xs text-muted-foreground mt-2">Within the next 30 days</p>
-              </CardContent>
-            </Card>
-            
-            <Card>
-              <CardHeader className="pb-2">
-                <CardTitle className="text-sm font-medium">Outstanding Issues</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">2</div>
-                <p className="text-xs text-muted-foreground mt-2">Maintenance requests pending</p>
+                <div className="space-y-4">
+                  <div className="p-4 border border-amber-200 bg-amber-50 dark:bg-amber-900/20 rounded-lg flex items-start gap-3">
+                    <AlertTriangle className="h-5 w-5 text-amber-500 mt-0.5" />
+                    <div>
+                      <h4 className="font-medium">Sarah Johnson's lease expires in 45 days</h4>
+                      <p className="text-sm text-muted-foreground">Apartment 205, Sunset Heights</p>
+                      <div className="flex gap-2 mt-2">
+                        <Button size="sm" onClick={() => toast.success('Renewal process started')}>Start Renewal</Button>
+                        <Button variant="outline" size="sm" onClick={() => toast.success('Reminder sent')}>Send Reminder</Button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
               </CardContent>
             </Card>
           </div>
         </TabsContent>
         
-        <TabsContent value="leases" className="space-y-4">
-          <Card>
-            <CardHeader>
-              <CardTitle>Lease Documents</CardTitle>
-              <CardDescription>Manage leases, contracts and legal documents</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                {tenants.map((tenant) => (
-                  <div key={tenant.id} className="flex items-center justify-between p-4 border rounded-md">
-                    <div className="flex items-center">
-                      <div className="bg-muted p-2 rounded mr-3">
-                        <FileText className="h-5 w-5" />
-                      </div>
-                      <div>
-                        <div className="font-medium">{tenant.name} - Lease Agreement</div>
-                        <div className="text-sm text-muted-foreground">
-                          Valid until {new Date(tenant.leaseEnd).toLocaleDateString()}
-                        </div>
-                      </div>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <Button variant="outline" size="sm">View</Button>
-                      <Button variant="outline" size="sm">Download</Button>
-                    </div>
-                  </div>
-                ))}
-                
-                <div className="mt-8">
-                  <h3 className="font-medium mb-3">Upcoming Renewals</h3>
+        <TabsContent value="payments">
+          <div className="space-y-4">
+            <Card>
+              <CardHeader>
+                <CardTitle>Rent Collection Overview</CardTitle>
+                <CardDescription>Current month's rent collection status</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-6">
                   <div className="space-y-2">
-                    {tenants
-                      .filter(t => new Date(t.leaseEnd) < new Date(Date.now() + 90 * 24 * 60 * 60 * 1000))
-                      .map((tenant) => (
-                        <div key={`renewal-${tenant.id}`} className="flex items-center justify-between p-3 bg-muted rounded-md">
-                          <div>
-                            <div className="font-medium">{tenant.name}</div>
-                            <div className="text-sm text-muted-foreground">{tenant.property}</div>
-                          </div>
-                          <div>
-                            <div className="text-sm font-medium">
-                              Expires: {new Date(tenant.leaseEnd).toLocaleDateString()}
-                            </div>
-                            <div className="text-sm text-red-500">
-                              {Math.ceil((new Date(tenant.leaseEnd).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24))} days left
-                            </div>
-                          </div>
-                          <Button size="sm">Start Renewal</Button>
-                        </div>
-                      ))}
-                  </div>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        </TabsContent>
-        
-        <TabsContent value="payments" className="space-y-4">
-          <Card>
-            <CardHeader>
-              <CardTitle>Rent Payments</CardTitle>
-              <CardDescription>Track rental payments and payment history</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-6">
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                  <Card>
-                    <CardContent className="pt-6">
-                      <div className="text-2xl font-bold text-green-500">€7,550</div>
-                      <p className="text-muted-foreground text-sm">Payments collected this month</p>
-                    </CardContent>
-                  </Card>
-                  <Card>
-                    <CardContent className="pt-6">
-                      <div className="text-2xl font-bold text-amber-500">€3,200</div>
-                      <p className="text-muted-foreground text-sm">Pending payments</p>
-                    </CardContent>
-                  </Card>
-                  <Card>
-                    <CardContent className="pt-6">
-                      <div className="text-2xl font-bold text-red-500">€0</div>
-                      <p className="text-muted-foreground text-sm">Overdue payments</p>
-                    </CardContent>
-                  </Card>
-                  <Card>
-                    <CardContent className="pt-6">
-                      <div className="text-2xl font-bold">96%</div>
-                      <p className="text-muted-foreground text-sm">Collection rate</p>
-                    </CardContent>
-                  </Card>
-                </div>
-                
-                <div className="border rounded-md overflow-hidden">
-                  <div className="bg-muted px-4 py-2 grid grid-cols-5 font-medium text-sm">
-                    <div>Tenant</div>
-                    <div>Property</div>
-                    <div>Amount</div>
-                    <div>Due Date</div>
-                    <div>Status</div>
+                    <div className="flex justify-between">
+                      <span>Overall Collection</span>
+                      <span className="font-medium">67%</span>
+                    </div>
+                    <Progress value={67} />
                   </div>
                   
-                  <div className="divide-y">
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div className="p-4 border rounded-lg bg-green-50 dark:bg-green-900/20">
+                      <div className="font-medium text-green-700 dark:text-green-400">Paid</div>
+                      <div className="text-2xl font-bold">2</div>
+                      <div className="text-sm text-muted-foreground">$2,900.00</div>
+                    </div>
+                    
+                    <div className="p-4 border rounded-lg bg-amber-50 dark:bg-amber-900/20">
+                      <div className="font-medium text-amber-700 dark:text-amber-400">Late</div>
+                      <div className="text-2xl font-bold">1</div>
+                      <div className="text-sm text-muted-foreground">$1,450.00</div>
+                    </div>
+                    
+                    <div className="p-4 border rounded-lg">
+                      <div className="font-medium">Total</div>
+                      <div className="text-2xl font-bold">3</div>
+                      <div className="text-sm text-muted-foreground">$4,350.00</div>
+                    </div>
+                  </div>
+                  
+                  <div className="space-y-4">
                     {tenants.map((tenant) => (
-                      <div key={tenant.id} className="px-4 py-3 grid grid-cols-5 items-center">
-                        <div className="font-medium">{tenant.name}</div>
-                        <div className="text-sm">{tenant.property}</div>
-                        <div>€{tenant.rentAmount}</div>
-                        <div className="text-sm">1st of each month</div>
+                      <div key={tenant.id} className="flex flex-col md:flex-row justify-between p-4 border rounded-lg">
                         <div>
-                          {getPaymentStatusBadge(tenant.paymentStatus)}
-                          {tenant.paymentStatus !== 'paid' && (
-                            <Button variant="ghost" size="sm" className="ml-2" onClick={() => handlePaymentReminder(tenant.id)}>
-                              <BellIcon className="h-4 w-4" />
-                            </Button>
-                          )}
+                          <h3 className="font-medium">{tenant.name}</h3>
+                          <p className="text-sm text-muted-foreground">{tenant.unit}, {tenant.property}</p>
+                        </div>
+                        
+                        <div className="mt-2 md:mt-0 flex flex-col md:flex-row md:items-center gap-2 md:gap-4">
+                          <Badge variant={tenant.paymentStatus === 'current' ? 'outline' : 'destructive'}>
+                            {tenant.paymentStatus === 'current' ? 'Paid' : 'Late'}
+                          </Badge>
+                          <span className="font-medium">${tenant.rent.toLocaleString()}</span>
+                          <Button 
+                            size="sm" 
+                            variant={tenant.paymentStatus === 'current' ? 'outline' : 'default'}
+                            onClick={() => toast.success(`Payment recorded for ${tenant.name}`)}
+                          >
+                            {tenant.paymentStatus === 'current' ? 'View Receipt' : 'Record Payment'}
+                          </Button>
                         </div>
                       </div>
                     ))}
                   </div>
                 </div>
-                
-                <div className="flex items-center justify-between p-4 border rounded-md">
-                  <div>
-                    <h3 className="font-medium">Automatic Payment Reminders</h3>
-                    <p className="text-sm text-muted-foreground">Send automatic reminders before rent is due</p>
+              </CardContent>
+            </Card>
+            
+            <Card>
+              <CardHeader>
+                <CardTitle>Payment Settings</CardTitle>
+                <CardDescription>Configure rent collection preferences</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  <div className="flex flex-col md:flex-row md:items-center justify-between gap-2 p-4 border rounded-lg">
+                    <div>
+                      <h3 className="font-medium">Automatic Payment Reminders</h3>
+                      <p className="text-sm text-muted-foreground">Send automatic reminders before rent is due</p>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <Switch id="auto-reminders" checked onChange={() => toast.success('Reminder settings updated')} />
+                      <Label htmlFor="auto-reminders">Enabled</Label>
+                    </div>
                   </div>
-                  <div className="flex items-center space-x-2">
-                    <Switch id="auto-reminders" defaultChecked />
-                    <Label htmlFor="auto-reminders">Enabled</Label>
+                  
+                  <div className="flex flex-col md:flex-row md:items-center justify-between gap-2 p-4 border rounded-lg">
+                    <div>
+                      <h3 className="font-medium">Late Fee Enforcement</h3>
+                      <p className="text-sm text-muted-foreground">Automatically apply late fees after grace period</p>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <Switch id="late-fees" onChange={() => toast.success('Late fee settings updated')} />
+                      <Label htmlFor="late-fees">Disabled</Label>
+                    </div>
+                  </div>
+                  
+                  <div className="flex flex-col md:flex-row md:items-center justify-between gap-2 p-4 border rounded-lg">
+                    <div>
+                      <h3 className="font-medium">Payment Methods</h3>
+                      <p className="text-sm text-muted-foreground">Configure accepted payment methods</p>
+                    </div>
+                    <Button variant="outline" onClick={() => toast.success('Payment methods settings opened')}>
+                      Configure
+                    </Button>
                   </div>
                 </div>
-              </div>
-            </CardContent>
-          </Card>
+              </CardContent>
+            </Card>
+          </div>
         </TabsContent>
         
-        <TabsContent value="applications" className="space-y-4">
-          <Card>
-            <CardHeader>
-              <CardTitle>Property Applications</CardTitle>
-              <CardDescription>Manage property applications and requests</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-                  <Card>
-                    <CardHeader>
-                      <CardTitle>Applications</CardTitle>
-                      <CardDescription>View and manage property applications</CardDescription>
-                    </CardHeader>
-                    <CardContent>
-                      <div className="space-y-4">
-                        <div className="flex items-center justify-between">
-                          <div className="flex items-center gap-2">
-                            <span className="text-muted-foreground">Status:</span>
-                            <Badge variant="default">Pending</Badge>
-                          </div>
-                          <Button variant="outline" size="sm">View All</Button>
-                        </div>
-                        <div className="flex items-center justify-between">
-                          <div className="flex items-center gap-2">
-                            <span className="text-muted-foreground">Status:</span>
-                            <Badge variant="destructive">Rejected</Badge>
-                          </div>
-                          <Button variant="outline" size="sm">View All</Button>
-                        </div>
-                        <div className="flex items-center justify-between">
-                          <div className="flex items-center gap-2">
-                            <span className="text-muted-foreground">Status:</span>
-                            <Badge variant="outline">Accepted</Badge>
-                          </div>
-                          <Button variant="outline" size="sm">View All</Button>
-                        </div>
+        <TabsContent value="properties">
+          <div className="space-y-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {properties.map((property) => (
+                <Card key={property.id}>
+                  <CardHeader>
+                    <CardTitle>{property.name}</CardTitle>
+                    <CardDescription>{property.address}</CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-4">
+                      <div className="flex justify-between">
+                        <span>Total Units</span>
+                        <span className="font-medium">{property.units}</span>
                       </div>
-                    </CardContent>
-                  </Card>
-                  
-                  <Card>
-                    <CardHeader>
-                      <CardTitle>Requests</CardTitle>
-                      <CardDescription>View and manage property requests</CardDescription>
-                    </CardHeader>
-                    <CardContent>
-                      <div className="space-y-4">
-                        <div className="flex items-center justify-between">
-                          <div className="flex items-center gap-2">
-                            <span className="text-muted-foreground">Status:</span>
-                            <Badge variant="default">Pending</Badge>
-                          </div>
-                          <Button variant="outline" size="sm">View All</Button>
-                        </div>
-                        <div className="flex items-center justify-between">
-                          <div className="flex items-center gap-2">
-                            <span className="text-muted-foreground">Status:</span>
-                            <Badge variant="destructive">Rejected</Badge>
-                          </div>
-                          <Button variant="outline" size="sm">View All</Button>
-                        </div>
-                        <div className="flex items-center justify-between">
-                          <div className="flex items-center gap-2">
-                            <span className="text-muted-foreground">Status:</span>
-                            <Badge variant="outline">Accepted</Badge>
-                          </div>
-                          <Button variant="outline" size="sm">View All</Button>
-                        </div>
+                      <div className="flex justify-between">
+                        <span>Occupied</span>
+                        <span className="font-medium">
+                          {property.id === 1 ? '2' : '1'} / {property.units}
+                        </span>
                       </div>
-                    </CardContent>
-                  </Card>
-                </div>
-                
-                <div className="flex items-center justify-between p-4 border rounded-md">
-                  <div>
-                    <h3 className="font-medium">New Applications</h3>
-                    <p className="text-sm text-muted-foreground">View and manage new property applications</p>
+                      <div className="space-y-2">
+                        <div className="flex justify-between">
+                          <span>Occupancy Rate</span>
+                          <span className="font-medium">
+                            {property.id === 1 ? '8' : '6'}%
+                          </span>
+                        </div>
+                        <Progress value={property.id === 1 ? 8 : 6} />
+                      </div>
+                      <div className="flex justify-between">
+                        <span>Monthly Revenue</span>
+                        <span className="font-medium">
+                          ${property.id === 1 ? '2,650' : '1,700'}
+                        </span>
+                      </div>
+                    </div>
+                  </CardContent>
+                  <CardFooter className="flex justify-between">
+                    <Button variant="outline" onClick={() => toast.success(`Viewing units for ${property.name}`)}>
+                      View Units
+                    </Button>
+                    <Button onClick={() => toast.success(`Managing ${property.name}`)}>
+                      Manage
+                    </Button>
+                  </CardFooter>
+                </Card>
+              ))}
+            </div>
+            
+            <Card>
+              <CardHeader>
+                <CardTitle>Add New Property</CardTitle>
+                <CardDescription>Register a new property to manage</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="property-name">Property Name</Label>
+                    <Input id="property-name" placeholder="Enter property name" />
                   </div>
-                  <div className="flex items-center space-x-2">
-                    <Switch id="new-applications" defaultChecked />
-                    <Label htmlFor="new-applications">Enabled</Label>
+                  <div className="space-y-2">
+                    <Label htmlFor="property-address">Address</Label>
+                    <Input id="property-address" placeholder="Enter property address" />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="property-units">Number of Units</Label>
+                    <Input id="property-units" type="number" placeholder="Enter number of units" />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="property-type">Property Type</Label>
+                    <Select>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select property type" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="apartment">Apartment Building</SelectItem>
+                        <SelectItem value="single">Single Family Home</SelectItem>
+                        <SelectItem value="duplex">Duplex</SelectItem>
+                        <SelectItem value="commercial">Commercial</SelectItem>
+                      </SelectContent>
+                    </Select>
                   </div>
                 </div>
-              </div>
-            </CardContent>
-          </Card>
+              </CardContent>
+              <CardFooter>
+                <Button 
+                  className="w-full" 
+                  onClick={() => toast.success('New property added successfully')}
+                >
+                  Add Property
+                </Button>
+              </CardFooter>
+            </Card>
+          </div>
         </TabsContent>
       </Tabs>
       
+      {/* Tenant Detail Dialog */}
+      {selectedTenant && (
+        <Dialog open={!!selectedTenant} onOpenChange={() => setSelectedTenant(null)}>
+          <DialogContent className={`sm:max-w-[600px] ${isMobile ? 'p-4' : ''}`}>
+            <DialogHeader>
+              <DialogTitle>{selectedTenant.name}</DialogTitle>
+              <DialogDescription>
+                {selectedTenant.unit}, {selectedTenant.property}
+              </DialogDescription>
+            </DialogHeader>
+            
+            <div className="space-y-4 py-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-1">
+                  <p className="text-sm font-medium">Contact Information</p>
+                  <div className="flex items-center">
+                    <Mail className="h-4 w-4 mr-2 text-muted-foreground" />
+                    <p className="text-sm">{selectedTenant.email}</p>
+                  </div>
+                  <div className="flex items-center">
+                    <Phone className="h-4 w-4 mr-2 text-muted-foreground" />
+                    <p className="text-sm">{selectedTenant.phone}</p>
+                  </div>
+                </div>
+                
+                <div className="space-y-1">
+                  <p className="text-sm font-medium">Lease Details</p>
+                  <p className="text-sm">Start: {new Date(selectedTenant.leaseStart).toLocaleDateString()}</p>
+                  <p className="text-sm">End: {new Date(selectedTenant.leaseEnd).toLocaleDateString()}</p>
+                  <p className="text-sm">Monthly Rent: ${selectedTenant.rent}</p>
+                </div>
+              </div>
+              
+              <div className="space-y-2 border-t pt-4">
+                <p className="text-sm font-medium">Payment History</p>
+                <div className="space-y-2">
+                  <div className="flex justify-between p-2 bg-gray-100 dark:bg-gray-800 rounded">
+                    <span className="text-sm">May 2024</span>
+                    <Badge variant="outline" className="bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200">Paid</Badge>
+                  </div>
+                  <div className="flex justify-between p-2 bg-gray-100 dark:bg-gray-800 rounded">
+                    <span className="text-sm">April 2024</span>
+                    <Badge variant="outline" className="bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200">Paid</Badge>
+                  </div>
+                  <div className="flex justify-between p-2 bg-gray-100 dark:bg-gray-800 rounded">
+                    <span className="text-sm">March 2024</span>
+                    <Badge variant="outline" className="bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200">Paid</Badge>
+                  </div>
+                </div>
+              </div>
+              
+              <div className="space-y-2 border-t pt-4">
+                <p className="text-sm font-medium">Recent Communications</p>
+                <div className="space-y-2">
+                  {selectedTenant.communications.map((comm: any, index: number) => (
+                    <div key={index} className="flex justify-between p-2 bg-gray-100 dark:bg-gray-800 rounded">
+                      <div className="flex items-center">
+                        {comm.type === 'email' ? (
+                          <Mail className="h-4 w-4 mr-2 text-muted-foreground" />
+                        ) : (
+                          <Phone className="h-4 w-4 mr-2 text-muted-foreground" />
+                        )}
+                        <span className="text-sm">{comm.subject}</span>
+                      </div>
+                      <span className="text-xs text-muted-foreground">{new Date(comm.date).toLocaleDateString()}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+            
+            <DialogFooter>
+              <div className="flex w-full justify-between flex-col md:flex-row gap-2">
+                <div className="flex gap-2">
+                  <Button variant="outline" onClick={() => {
+                    toast.success(`Sending message to ${selectedTenant.name}`);
+                  }}>
+                    Message
+                  </Button>
+                  <Button variant="outline" onClick={() => {
+                    toast.success(`Viewing full history for ${selectedTenant.name}`);
+                  }}>
+                    Full History
+                  </Button>
+                </div>
+                <Button onClick={() => {
+                  toast.success(`Editing details for ${selectedTenant.name}`);
+                  setSelectedTenant(null);
+                }}>
+                  Edit Details
+                </Button>
+              </div>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+      )}
+      
       {/* Add Tenant Dialog */}
-      <Dialog open={showTenantDialog} onOpenChange={setShowTenantDialog}>
-        <DialogContent>
+      <Dialog open={showAddTenant} onOpenChange={setShowAddTenant}>
+        <DialogContent className="sm:max-w-[500px]">
           <DialogHeader>
             <DialogTitle>Add New Tenant</DialogTitle>
-            <DialogDescription>Enter tenant details to add them to a property</DialogDescription>
+            <DialogDescription>Enter tenant information and assign to a property</DialogDescription>
           </DialogHeader>
           
-          <div className="grid gap-4 py-4">
-            <div className="grid grid-cols-2 gap-4">
+          <div className="space-y-4 py-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label htmlFor="first-name">First name</Label>
-                <Input id="first-name" placeholder="First name" />
+                <Label htmlFor="tenant-name">Full Name</Label>
+                <Input id="tenant-name" placeholder="John Smith" />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="last-name">Last name</Label>
-                <Input id="last-name" placeholder="Last name" />
+                <Label htmlFor="tenant-email">Email</Label>
+                <Input id="tenant-email" type="email" placeholder="john@example.com" />
               </div>
-            </div>
-            
-            <div className="space-y-2">
-              <Label htmlFor="email">Email</Label>
-              <Input id="email" placeholder="Email address" type="email" />
-            </div>
-            
-            <div className="space-y-2">
-              <Label htmlFor="phone">Phone</Label>
-              <Input id="phone" placeholder="Phone number" type="tel" />
-            </div>
-            
-            <div className="space-y-2">
-              <Label htmlFor="property">Property</Label>
-              <Select>
-                <SelectTrigger>
-                  <SelectValue placeholder="Select property" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="property1">123 Main St, Apt 4B</SelectItem>
-                  <SelectItem value="property2">456 Oak Ave, Unit 7</SelectItem>
-                  <SelectItem value="property3">789 Pine Blvd, Apt 12</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            
-            <div className="space-y-2">
-              <Label htmlFor="lease-start">Lease Start Date</Label>
-              <Input id="lease-start" type="date" />
-            </div>
-            
-            <div className="space-y-2">
-              <Label htmlFor="lease-end">Lease End Date</Label>
-              <Input id="lease-end" type="date" />
-            </div>
-            
-            <div className="flex items-center space-x-2">
-              <Checkbox id="background-check" />
-              <Label htmlFor="background-check">Background check completed</Label>
+              <div className="space-y-2">
+                <Label htmlFor="tenant-phone">Phone Number</Label>
+                <Input id="tenant-phone" placeholder="+1 (555) 123-4567" />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="move-in-date">Move-in Date</Label>
+                <Input id="move-in-date" type="date" />
+              </div>
+              <div className="space-y-2 md:col-span-2">
+                <Label htmlFor="property">Property</Label>
+                <Select>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select property" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {properties.map(property => (
+                      <SelectItem key={property.id} value={property.id.toString()}>
+                        {property.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-2 md:col-span-2">
+                <Label htmlFor="unit">Unit/Apartment</Label>
+                <Input id="unit" placeholder="Apartment 101" />
+              </div>
+              <div className="space-y-2 md:col-span-2">
+                <Label htmlFor="rent-amount">Monthly Rent</Label>
+                <Input id="rent-amount" type="number" placeholder="1200" />
+              </div>
+              <div className="space-y-2 md:col-span-2">
+                <Label htmlFor="lease-length">Lease Term (months)</Label>
+                <Select defaultValue="12">
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select lease term" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="6">6 Months</SelectItem>
+                    <SelectItem value="12">12 Months</SelectItem>
+                    <SelectItem value="18">18 Months</SelectItem>
+                    <SelectItem value="24">24 Months</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
           </div>
           
           <DialogFooter>
-            <Button variant="outline" onClick={() => setShowTenantDialog(false)}>Cancel</Button>
+            <Button variant="outline" onClick={() => setShowAddTenant(false)}>Cancel</Button>
             <Button onClick={() => {
               toast.success("New tenant added successfully");
-              setShowTenantDialog(false);
-            }}>Add Tenant</Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-      
-      {/* Send Notification Dialog */}
-      <Dialog open={showNotificationDialog} onOpenChange={setShowNotificationDialog}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Send Tenant Notification</DialogTitle>
-            <DialogDescription>Send an announcement or reminder to your tenant</DialogDescription>
-          </DialogHeader>
-          
-          <div className="grid gap-4 py-4">
-            <div className="space-y-2">
-              <Label htmlFor="subject">Subject</Label>
-              <Input id="subject" placeholder="Notification subject" />
-            </div>
-            
-            <div className="space-y-2">
-              <Label htmlFor="message">Message</Label>
-              <textarea
-                id="message"
-                className="min-h-[100px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-                placeholder="Enter your message here"
-              />
-            </div>
-            
-            <div className="flex items-center space-x-2">
-              <Checkbox id="urgent" />
-              <Label htmlFor="urgent">Mark as urgent</Label>
-            </div>
-            
-            <div className="flex items-center space-x-2">
-              <Checkbox id="sms" />
-              <Label htmlFor="sms">Send SMS notification</Label>
-            </div>
-          </div>
-          
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setShowNotificationDialog(false)}>Cancel</Button>
-            <Button onClick={() => {
-              toast.success("Notification sent to tenant");
-              setShowNotificationDialog(false);
-            }}>Send Notification</Button>
+              setShowAddTenant(false);
+            }}>
+              Add Tenant
+            </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>

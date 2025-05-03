@@ -1,10 +1,9 @@
-
 import React, { useState } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { 
   Calculator, ChartBar, FileText, Search, TrendingUp, Users, PieChart, 
-  Shield, Smartphone, Leaf, Home, Building, Map, LineChart, Globe
+  Shield, Smartphone, Leaf, Home, Building, Map, LineChart, Globe, BookOpen
 } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { toast } from 'sonner';
@@ -20,7 +19,6 @@ import CashFlowForecasting from '@/components/cashflow/CashFlowForecasting';
 import SustainabilityMetrics from '@/components/sustainability/SustainabilityMetrics';
 import MobileIntegration from '@/components/mobile/MobileIntegration';
 import InsuranceComparison from '@/components/insurance/InsuranceComparison';
-import SmartHomeIntegration from '@/components/smarthome/SmartHomeIntegration';
 
 const FeaturesDashboard: React.FC = () => {
   const { t } = useLanguage();
@@ -111,10 +109,6 @@ const FeaturesDashboard: React.FC = () => {
               <Shield className="h-4 w-4 mr-2" />
               {!isMobile ? "Insurance Comparison" : "Insurance"}
             </TabsTrigger>
-            <TabsTrigger value="smarthome" className={isMobile ? "text-xs px-2 py-2" : ""}>
-              <Home className="h-4 w-4 mr-2" />
-              {!isMobile ? "Smart Home Integration" : "Smart Home"}
-            </TabsTrigger>
             <TabsTrigger value="international" className={isMobile ? "text-xs px-2 py-2" : ""}>
               <Globe className="h-4 w-4 mr-2" />
               {!isMobile ? "International Markets" : "International"}
@@ -124,7 +118,7 @@ const FeaturesDashboard: React.FC = () => {
               {!isMobile ? "Tax Planning" : "Tax"}
             </TabsTrigger>
             <TabsTrigger value="education" className={isMobile ? "text-xs px-2 py-2" : ""}>
-              <Book className="h-4 w-4 mr-2" />
+              <BookOpen className="h-4 w-4 mr-2" />
               {!isMobile ? "Education Resources" : "Education"}
             </TabsTrigger>
             <TabsTrigger value="financing" className={isMobile ? "text-xs px-2 py-2" : ""}>
@@ -199,10 +193,6 @@ const FeaturesDashboard: React.FC = () => {
         
         <TabsContent value="insurance" className="mt-6">
           <InsuranceComparison />
-        </TabsContent>
-        
-        <TabsContent value="smarthome" className="mt-6">
-          <SmartHomeIntegration />
         </TabsContent>
 
         <TabsContent value="international" className="mt-6">
