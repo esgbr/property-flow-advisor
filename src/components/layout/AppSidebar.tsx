@@ -4,9 +4,10 @@ import { Link, useLocation } from 'react-router-dom';
 import { Sidebar, SidebarContent } from '@/components/ui/sidebar';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { 
-  BarChart3, Book, Building, Calculator, Calendar, FileText, Home, 
-  LayoutDashboard, LineChart, Map, Settings2, Star, School, Building2, Banknote, 
-  RefreshCw, Users, Euro, PieChart, Calculator as CalculatorIcon, BarChart, Globe
+  BarChart3, Building, Calculator, Calendar, Settings2, Star, 
+  School, Building2, Banknote, RefreshCw, Users, Euro, 
+  PieChart, BarChart, Globe, LayoutDashboard, Home,
+  LineChart
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useUserPreferences } from '@/contexts/UserPreferencesContext';
@@ -16,132 +17,166 @@ const AppSidebar = () => {
   const location = useLocation();
   const { preferences } = useUserPreferences();
 
-  // Define navigation items
-  const navigationItems = [
+  // Organize navigation items by category for better structure
+  const navigationCategories = [
     {
-      name: t('dashboard'),
-      href: '/dashboard',
-      icon: <LayoutDashboard className="h-5 w-5" />,
+      title: t('mainNavigation'),
+      items: [
+        {
+          name: t('dashboard'),
+          href: '/dashboard',
+          icon: <LayoutDashboard className="h-5 w-5" />,
+        },
+        {
+          name: t('investorDashboard'),
+          href: '/investor-dashboard',
+          icon: <Building2 className="h-5 w-5" />,
+        },
+        {
+          name: t('properties'),
+          href: '/properties',
+          icon: <Building className="h-5 w-5" />,
+        },
+      ]
     },
     {
-      name: t('investorDashboard'),
-      href: '/investor-dashboard',
-      icon: <Building2 className="h-5 w-5" />,
+      title: t('tools'),
+      items: [
+        {
+          name: t('investorTools'),
+          href: '/investor-tools',
+          icon: <Banknote className="h-5 w-5" />,
+          new: true,
+        },
+        {
+          name: t('calculators'),
+          href: '/calculators',
+          icon: <Calculator className="h-5 w-5" />,
+        },
+        {
+          name: t('investmentCalculator'),
+          href: '/investment-calculator',
+          icon: <PieChart className="h-5 w-5" />,
+          new: true,
+        },
+        {
+          name: t('portfolioOptimization'),
+          href: '/portfolio-optimization',
+          icon: <BarChart className="h-5 w-5" />,
+          new: true,
+        },
+      ]
     },
     {
-      name: t('investorTools'),
-      href: '/investor-tools',
-      icon: <Banknote className="h-5 w-5" />,
-      new: true,
+      title: t('specializedTools'),
+      items: [
+        {
+          name: t('exchangeTracker'),
+          href: '/exchange-tracker',
+          icon: <RefreshCw className="h-5 w-5" />,
+          new: true,
+        },
+        {
+          name: t('partnerMatching'),
+          href: '/partner-matching',
+          icon: <Users className="h-5 w-5" />,
+          new: true,
+        },
+        {
+          name: t('deutscheImmobilienTools'),
+          href: '/deutsche-immobilien-tools',
+          icon: <Euro className="h-5 w-5" />,
+          new: true,
+        },
+      ]
     },
     {
-      name: t('properties'),
-      href: '/properties',
-      icon: <Building className="h-5 w-5" />,
+      title: t('planning'),
+      items: [
+        {
+          name: t('schedule'),
+          href: '/schedule',
+          icon: <Calendar className="h-5 w-5" />,
+        },
+        {
+          name: t('decision'),
+          href: '/decision',
+          icon: <LineChart className="h-5 w-5" />,
+        },
+        {
+          name: t('refurbishment'),
+          href: '/refurbishment',
+          icon: <Home className="h-5 w-5" />,
+        },
+      ]
     },
     {
-      name: t('calculators'),
-      href: '/calculators',
-      icon: <Calculator className="h-5 w-5" />,
-    },
-    {
-      name: "Investment Calculator",
-      href: '/investment-calculator',
-      icon: <PieChart className="h-5 w-5" />,
-      new: true,
-    },
-    {
-      name: "Portfolio-Optimierung",
-      href: '/portfolio-optimization',
-      icon: <BarChart className="h-5 w-5" />,
-      new: true,
-    },
-    {
-      name: "1031 Exchange Tracker",
-      href: '/exchange-tracker',
-      icon: <RefreshCw className="h-5 w-5" />,
-      new: true,
-    },
-    {
-      name: "Partner Matching",
-      href: '/partner-matching',
-      icon: <Users className="h-5 w-5" />,
-      new: true,
-    },
-    {
-      name: "Deutsche Immobilien-Tools",
-      href: '/deutsche-immobilien-tools',
-      icon: <Euro className="h-5 w-5" />,
-      new: true,
-    },
-    {
-      name: t('schedule'),
-      href: '/schedule',
-      icon: <Calendar className="h-5 w-5" />,
-    },
-    {
-      name: t('decision'),
-      href: '/decision',
-      icon: <LineChart className="h-5 w-5" />,
-    },
-    {
-      name: t('refurbishment'),
-      href: '/refurbishment',
-      icon: <Home className="h-5 w-5" />,
-    },
-    {
-      name: t('rewards'),
-      href: '/rewards',
-      icon: <Star className="h-5 w-5" />,
-    },
-    {
-      name: t('education'),
-      href: '/education',
-      icon: <School className="h-5 w-5" />,
-    },
-    {
-      name: "Features",
-      href: '/features',
-      icon: <Globe className="h-5 w-5" />,
-      new: true,
-    },
-    {
-      name: t('settings'),
-      href: '/settings',
-      icon: <Settings2 className="h-5 w-5" />,
-    },
+      title: t('more'),
+      items: [
+        {
+          name: t('rewards'),
+          href: '/rewards',
+          icon: <Star className="h-5 w-5" />,
+        },
+        {
+          name: t('education'),
+          href: '/education',
+          icon: <School className="h-5 w-5" />,
+        },
+        {
+          name: t('features'),
+          href: '/features',
+          icon: <Globe className="h-5 w-5" />,
+          new: true,
+        },
+        {
+          name: t('settings'),
+          href: '/settings',
+          icon: <Settings2 className="h-5 w-5" />,
+        },
+      ]
+    }
   ];
 
   return (
     <Sidebar>
       <div className="flex flex-col h-full py-4">
         <div className="px-3 py-2">
-          <Link to="/" className="flex items-center mb-10">
+          <Link to="/" className="flex items-center mb-6">
             <Building className="h-8 w-8 text-primary" />
             <span className="text-xl font-bold ml-2">PropertyFlow</span>
           </Link>
-          <div className="space-y-1">
-            {navigationItems.map((item) => (
-              <Link
-                key={item.href}
-                to={item.href}
-                className={cn(
-                  "flex items-center py-2 px-3 rounded-md group transition-colors",
-                  location.pathname === item.href
-                    ? "bg-primary text-primary-foreground"
-                    : "hover:bg-muted"
-                )}
-              >
-                {item.icon}
-                <span className="ml-3 flex-1">{item.name}</span>
-                {item.new && (
-                  <span className="bg-primary/10 text-primary text-xs px-1.5 py-0.5 rounded-full">
-                    {t('new')}
-                  </span>
-                )}
-              </Link>
-            ))}
-          </div>
+          
+          {navigationCategories.map((category, idx) => (
+            <div key={idx} className="mb-6">
+              <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider px-3 mb-2">
+                {category.title}
+              </h3>
+              <div className="space-y-1">
+                {category.items.map((item) => (
+                  <Link
+                    key={item.href}
+                    to={item.href}
+                    className={cn(
+                      "flex items-center py-2 px-3 rounded-md group transition-colors",
+                      location.pathname === item.href
+                        ? "bg-primary text-primary-foreground"
+                        : "hover:bg-muted"
+                    )}
+                    aria-current={location.pathname === item.href ? "page" : undefined}
+                  >
+                    {item.icon}
+                    <span className="ml-3 flex-1">{item.name}</span>
+                    {item.new && (
+                      <span className="bg-primary/10 text-primary text-xs px-1.5 py-0.5 rounded-full">
+                        {t('new')}
+                      </span>
+                    )}
+                  </Link>
+                ))}
+              </div>
+            </div>
+          ))}
         </div>
         <div className="mt-auto px-3">
           {preferences.name && (

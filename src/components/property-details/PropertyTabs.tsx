@@ -1,5 +1,5 @@
 
-import React, { useEffect } from 'react';
+import React, { useEffect, useMemo } from 'react';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { Property } from '@/interfaces/property';
 import PropertyDetailsTab from './PropertyDetailsTab';
@@ -8,7 +8,10 @@ import PropertyScheduleTab from './PropertyScheduleTab';
 import PropertyRefurbishmentTab from './PropertyRefurbishmentTab';
 import PropertyDocumentsTab from './PropertyDocumentsTab';
 import PropertyLocationAnalysisTab from './PropertyLocationAnalysisTab';
-import { Building, Calculator, Calendar, FileText, Map, TrendingUp, BarChart, Users } from 'lucide-react';
+import { 
+  Building, Calculator, Calendar, FileText, Map, 
+  TrendingUp, BarChart, Users 
+} from 'lucide-react';
 import { useUserPreferences } from '@/contexts/UserPreferencesContext';
 
 interface PropertyTabsProps {
@@ -25,67 +28,22 @@ const PropertyTabs = ({ property }: PropertyTabsProps) => {
     setKey(prev => prev + 1);
   }, [property.address, property.city, property.country, property.zipCode]);
 
-  return (
-    <Tabs defaultValue="details" key={key} className="w-full animate-fade-in">
-      <TabsList className="grid grid-cols-4 md:grid-cols-8 w-full">
-        <TabsTrigger value="details" className="flex items-center gap-1">
-          <Building className="h-4 w-4" />
-          <span className="hidden md:inline">Details</span>
-        </TabsTrigger>
-        <TabsTrigger value="financial" className="flex items-center gap-1">
-          <Calculator className="h-4 w-4" />
-          <span className="hidden md:inline">Financial</span>
-        </TabsTrigger>
-        <TabsTrigger value="location" className="flex items-center gap-1">
-          <Map className="h-4 w-4" />
-          <span className="hidden md:inline">Location</span>
-        </TabsTrigger>
-        <TabsTrigger value="schedule" className="flex items-center gap-1">
-          <Calendar className="h-4 w-4" />
-          <span className="hidden md:inline">Schedule</span>
-        </TabsTrigger>
-        <TabsTrigger value="refurbishment" className="flex items-center gap-1">
-          <TrendingUp className="h-4 w-4" />
-          <span className="hidden md:inline">Refurbishment</span>
-        </TabsTrigger>
-        <TabsTrigger value="documents" className="flex items-center gap-1">
-          <FileText className="h-4 w-4" />
-          <span className="hidden md:inline">Documents</span>
-        </TabsTrigger>
-        <TabsTrigger value="market" className="flex items-center gap-1">
-          <BarChart className="h-4 w-4" />
-          <span className="hidden md:inline">Market</span>
-        </TabsTrigger>
-        <TabsTrigger value="tenants" className="flex items-center gap-1">
-          <Users className="h-4 w-4" />
-          <span className="hidden md:inline">Tenants</span>
-        </TabsTrigger>
-      </TabsList>
-      <TabsContent value="details" className="space-y-4 mt-4">
-        <PropertyDetailsTab property={property} />
-      </TabsContent>
-      
-      <TabsContent value="financial" className="mt-4">
-        <PropertyFinancialTab />
-      </TabsContent>
-      
-      <TabsContent value="location" className="mt-4">
-        <PropertyLocationAnalysisTab property={property} />
-      </TabsContent>
-      
-      <TabsContent value="schedule" className="mt-4">
-        <PropertyScheduleTab />
-      </TabsContent>
-      
-      <TabsContent value="refurbishment" className="mt-4">
-        <PropertyRefurbishmentTab />
-      </TabsContent>
-      
-      <TabsContent value="documents" className="mt-4">
-        <PropertyDocumentsTab />
-      </TabsContent>
-      
-      <TabsContent value="market" className="mt-4">
+  // Define tabs in a more maintainable way
+  const tabs = useMemo(() => [
+    { id: 'details', icon: <Building className="h-4 w-4" />, label: 'Details', 
+      content: <PropertyDetailsTab property={property} /> },
+    { id: 'financial', icon: <Calculator className="h-4 w-4" />, label: 'Financial', 
+      content: <PropertyFinancialTab /> },
+    { id: 'location', icon: <Map className="h-4 w-4" />, label: 'Location', 
+      content: <PropertyLocationAnalysisTab property={property} /> },
+    { id: 'schedule', icon: <Calendar className="h-4 w-4" />, label: 'Schedule', 
+      content: <PropertyScheduleTab /> },
+    { id: 'refurbishment', icon: <TrendingUp className="h-4 w-4" />, label: 'Refurbishment', 
+      content: <PropertyRefurbishmentTab /> },
+    { id: 'documents', icon: <FileText className="h-4 w-4" />, label: 'Documents', 
+      content: <PropertyDocumentsTab /> },
+    { id: 'market', icon: <BarChart className="h-4 w-4" />, label: 'Market', 
+      content: (
         <div className="space-y-4">
           <h3 className="text-lg font-medium">Market Analysis</h3>
           <p className="text-muted-foreground">
@@ -119,9 +77,10 @@ const PropertyTabs = ({ property }: PropertyTabsProps) => {
             </div>
           </div>
         </div>
-      </TabsContent>
-      
-      <TabsContent value="tenants" className="mt-4">
+      ) 
+    },
+    { id: 'tenants', icon: <Users className="h-4 w-4" />, label: 'Tenants', 
+      content: (
         <div className="space-y-4">
           <h3 className="text-lg font-medium">Tenant Management</h3>
           <p className="text-muted-foreground">
@@ -175,7 +134,26 @@ const PropertyTabs = ({ property }: PropertyTabsProps) => {
             </div>
           )}
         </div>
-      </TabsContent>
+      ) 
+    }
+  ], [property, preferences.experienceLevel]);
+
+  return (
+    <Tabs defaultValue="details" key={key} className="w-full animate-fade-in">
+      <TabsList className="grid grid-cols-4 md:grid-cols-8 w-full">
+        {tabs.map(tab => (
+          <TabsTrigger key={tab.id} value={tab.id} className="flex items-center gap-1">
+            {tab.icon}
+            <span className="hidden md:inline">{tab.label}</span>
+          </TabsTrigger>
+        ))}
+      </TabsList>
+      
+      {tabs.map(tab => (
+        <TabsContent key={tab.id} value={tab.id} className="mt-4">
+          {tab.content}
+        </TabsContent>
+      ))}
     </Tabs>
   );
 };

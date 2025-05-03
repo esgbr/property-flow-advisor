@@ -540,7 +540,7 @@ const SmartHomeIntegration: React.FC = () => {
                   <SelectItem value="livingroom">Living Room</SelectItem>
                   <SelectItem value="kitchen">Kitchen</SelectItem>
                   <SelectItem value="bedroom">Bedroom</SelectItem>
-                  <SelectItem value="bathroom">Bathroom</Bathroom>
+                  <SelectItem value="bathroom">Bathroom</SelectItem>
                   <SelectItem value="outside">Outside</SelectItem>
                 </SelectContent>
               </Select>
