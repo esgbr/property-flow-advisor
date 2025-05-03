@@ -6,7 +6,7 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import { 
   BarChart3, Book, Building, Calculator, Calendar, FileText, Home, 
   LayoutDashboard, LineChart, Map, Settings2, Star, School, Building2, Banknote, 
-  RefreshCw, Users, Euro, PieChart, Calculator as CalculatorIcon, BarChart
+  RefreshCw, Users, Euro, PieChart, Calculator as CalculatorIcon, BarChart, Globe
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useUserPreferences } from '@/contexts/UserPreferencesContext';
@@ -98,6 +98,12 @@ const AppSidebar = () => {
       name: t('education'),
       href: '/education',
       icon: <School className="h-5 w-5" />,
+    },
+    {
+      name: "Features",
+      href: '/features',
+      icon: <Globe className="h-5 w-5" />,
+      new: true,
     },
     {
       name: t('settings'),

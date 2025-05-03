@@ -2,7 +2,10 @@
 import React, { useState } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useLanguage } from '@/contexts/LanguageContext';
-import { Calculator, ChartBar, FileText, Search, TrendingUp, Users, PieChart, Shield, Smartphone, Leaf, Home } from 'lucide-react';
+import { 
+  Calculator, ChartBar, FileText, Search, TrendingUp, Users, PieChart, 
+  Shield, Smartphone, Leaf, Home, Building, Map, LineChart, Globe
+} from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { toast } from 'sonner';
 import { useIsMobile } from '@/hooks/use-mobile';
@@ -40,7 +43,11 @@ const FeaturesDashboard: React.FC = () => {
       'sustainability': 'Sustainability Metrics loaded',
       'mobile': 'Mobile App Integration loaded',
       'insurance': 'Property Insurance Comparison loaded',
-      'smarthome': 'Smart Home Integration loaded'
+      'smarthome': 'Smart Home Integration loaded',
+      'international': 'International Markets loaded',
+      'taxplanning': 'Tax Planning loaded',
+      'education': 'Education Resources loaded',
+      'financing': 'Financing Options loaded'
     };
     
     if (toastMessages[value]) {
@@ -108,6 +115,22 @@ const FeaturesDashboard: React.FC = () => {
               <Home className="h-4 w-4 mr-2" />
               {!isMobile ? "Smart Home Integration" : "Smart Home"}
             </TabsTrigger>
+            <TabsTrigger value="international" className={isMobile ? "text-xs px-2 py-2" : ""}>
+              <Globe className="h-4 w-4 mr-2" />
+              {!isMobile ? "International Markets" : "International"}
+            </TabsTrigger>
+            <TabsTrigger value="taxplanning" className={isMobile ? "text-xs px-2 py-2" : ""}>
+              <Calculator className="h-4 w-4 mr-2" />
+              {!isMobile ? "Tax Planning" : "Tax"}
+            </TabsTrigger>
+            <TabsTrigger value="education" className={isMobile ? "text-xs px-2 py-2" : ""}>
+              <Book className="h-4 w-4 mr-2" />
+              {!isMobile ? "Education Resources" : "Education"}
+            </TabsTrigger>
+            <TabsTrigger value="financing" className={isMobile ? "text-xs px-2 py-2" : ""}>
+              <Building className="h-4 w-4 mr-2" />
+              {!isMobile ? "Financing Options" : "Financing"}
+            </TabsTrigger>
           </TabsList>
         </div>
 
@@ -126,6 +149,10 @@ const FeaturesDashboard: React.FC = () => {
               {activeTab === 'mobile' && "Mobile App Integration"}
               {activeTab === 'insurance' && "Property Insurance Comparison"}
               {activeTab === 'smarthome' && "Smart Home Integration"}
+              {activeTab === 'international' && "International Markets"}
+              {activeTab === 'taxplanning' && "Tax Planning"}
+              {activeTab === 'education' && "Education Resources"}
+              {activeTab === 'financing' && "Financing Options"}
             </div>
           </div>
         )}
@@ -176,6 +203,257 @@ const FeaturesDashboard: React.FC = () => {
         
         <TabsContent value="smarthome" className="mt-6">
           <SmartHomeIntegration />
+        </TabsContent>
+
+        <TabsContent value="international" className="mt-6">
+          <div className="space-y-4">
+            <Card>
+              <CardHeader>
+                <CardTitle>International Real Estate Markets</CardTitle>
+                <CardDescription>Explore investment opportunities in different countries</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="grid md:grid-cols-2 gap-4">
+                  {["USA", "UK", "Spain", "France", "Italy", "Portugal"].map((country) => (
+                    <Card key={country} className="hover:shadow-md transition-shadow">
+                      <CardHeader className="p-4">
+                        <CardTitle className="text-lg">{country}</CardTitle>
+                      </CardHeader>
+                      <CardContent className="p-4 pt-0">
+                        <p className="text-sm text-muted-foreground">
+                          Explore real estate market trends, tax implications, and investment opportunities in {country}.
+                        </p>
+                        <button 
+                          className="mt-2 text-sm text-primary"
+                          onClick={() => toast.info(`${country} market information coming soon`)}
+                        >
+                          View market details →
+                        </button>
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        </TabsContent>
+
+        <TabsContent value="taxplanning" className="mt-6">
+          <div className="space-y-4">
+            <Card>
+              <CardHeader>
+                <CardTitle>Tax Planning & Optimization</CardTitle>
+                <CardDescription>Maximize your investment returns through tax strategies</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  <div className="grid md:grid-cols-3 gap-4">
+                    <Card className="hover:shadow-md transition-shadow">
+                      <CardHeader className="p-4">
+                        <CardTitle className="text-lg">Depreciation Calculator</CardTitle>
+                      </CardHeader>
+                      <CardContent className="p-4 pt-0">
+                        <p className="text-sm text-muted-foreground">
+                          Calculate potential tax savings through depreciation on your property investments.
+                        </p>
+                        <button 
+                          className="mt-2 text-sm text-primary"
+                          onClick={() => toast.info("Depreciation calculator coming soon")}
+                        >
+                          Use calculator →
+                        </button>
+                      </CardContent>
+                    </Card>
+                    
+                    <Card className="hover:shadow-md transition-shadow">
+                      <CardHeader className="p-4">
+                        <CardTitle className="text-lg">1031 Exchange Guide</CardTitle>
+                      </CardHeader>
+                      <CardContent className="p-4 pt-0">
+                        <p className="text-sm text-muted-foreground">
+                          Learn how to defer capital gains taxes when selling investment properties.
+                        </p>
+                        <button 
+                          className="mt-2 text-sm text-primary"
+                          onClick={() => toast.info("1031 Exchange guide coming soon")}
+                        >
+                          View guide →
+                        </button>
+                      </CardContent>
+                    </Card>
+                    
+                    <Card className="hover:shadow-md transition-shadow">
+                      <CardHeader className="p-4">
+                        <CardTitle className="text-lg">Tax Deduction Finder</CardTitle>
+                      </CardHeader>
+                      <CardContent className="p-4 pt-0">
+                        <p className="text-sm text-muted-foreground">
+                          Identify all possible tax deductions for your real estate investments.
+                        </p>
+                        <button 
+                          className="mt-2 text-sm text-primary"
+                          onClick={() => toast.info("Tax deduction finder coming soon")}
+                        >
+                          Find deductions →
+                        </button>
+                      </CardContent>
+                    </Card>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        </TabsContent>
+
+        <TabsContent value="education" className="mt-6">
+          <div className="space-y-4">
+            <Card>
+              <CardHeader>
+                <CardTitle>Educational Resources</CardTitle>
+                <CardDescription>Enhance your real estate investment knowledge</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  <div className="grid md:grid-cols-2 gap-4">
+                    <Card className="hover:shadow-md transition-shadow">
+                      <CardHeader className="p-4">
+                        <CardTitle className="text-lg">Video Courses</CardTitle>
+                      </CardHeader>
+                      <CardContent className="p-4 pt-0">
+                        <p className="text-sm text-muted-foreground">
+                          Learn from expert investors through our comprehensive video courses.
+                        </p>
+                        <button 
+                          className="mt-2 text-sm text-primary"
+                          onClick={() => toast.info("Video courses coming soon")}
+                        >
+                          Browse courses →
+                        </button>
+                      </CardContent>
+                    </Card>
+                    
+                    <Card className="hover:shadow-md transition-shadow">
+                      <CardHeader className="p-4">
+                        <CardTitle className="text-lg">Investment Guides</CardTitle>
+                      </CardHeader>
+                      <CardContent className="p-4 pt-0">
+                        <p className="text-sm text-muted-foreground">
+                          Step-by-step guides for different real estate investment strategies.
+                        </p>
+                        <button 
+                          className="mt-2 text-sm text-primary"
+                          onClick={() => toast.info("Investment guides coming soon")}
+                        >
+                          View guides →
+                        </button>
+                      </CardContent>
+                    </Card>
+                    
+                    <Card className="hover:shadow-md transition-shadow">
+                      <CardHeader className="p-4">
+                        <CardTitle className="text-lg">Expert Webinars</CardTitle>
+                      </CardHeader>
+                      <CardContent className="p-4 pt-0">
+                        <p className="text-sm text-muted-foreground">
+                          Regular webinars with industry experts discussing market trends and strategies.
+                        </p>
+                        <button 
+                          className="mt-2 text-sm text-primary"
+                          onClick={() => toast.info("Expert webinars coming soon")}
+                        >
+                          View schedule →
+                        </button>
+                      </CardContent>
+                    </Card>
+                    
+                    <Card className="hover:shadow-md transition-shadow">
+                      <CardHeader className="p-4">
+                        <CardTitle className="text-lg">Community Forum</CardTitle>
+                      </CardHeader>
+                      <CardContent className="p-4 pt-0">
+                        <p className="text-sm text-muted-foreground">
+                          Connect with other investors to share insights and ask questions.
+                        </p>
+                        <button 
+                          className="mt-2 text-sm text-primary"
+                          onClick={() => toast.info("Community forum coming soon")}
+                        >
+                          Join community →
+                        </button>
+                      </CardContent>
+                    </Card>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        </TabsContent>
+
+        <TabsContent value="financing" className="mt-6">
+          <div className="space-y-4">
+            <Card>
+              <CardHeader>
+                <CardTitle>Financing Options</CardTitle>
+                <CardDescription>Explore different ways to finance your real estate investments</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  <div className="grid md:grid-cols-3 gap-4">
+                    <Card className="hover:shadow-md transition-shadow">
+                      <CardHeader className="p-4">
+                        <CardTitle className="text-lg">Mortgage Comparison</CardTitle>
+                      </CardHeader>
+                      <CardContent className="p-4 pt-0">
+                        <p className="text-sm text-muted-foreground">
+                          Compare mortgage offers from different lenders to find the best rates.
+                        </p>
+                        <button 
+                          className="mt-2 text-sm text-primary"
+                          onClick={() => toast.info("Mortgage comparison tool coming soon")}
+                        >
+                          Compare rates →
+                        </button>
+                      </CardContent>
+                    </Card>
+                    
+                    <Card className="hover:shadow-md transition-shadow">
+                      <CardHeader className="p-4">
+                        <CardTitle className="text-lg">Creative Financing</CardTitle>
+                      </CardHeader>
+                      <CardContent className="p-4 pt-0">
+                        <p className="text-sm text-muted-foreground">
+                          Explore alternative financing methods beyond traditional mortgages.
+                        </p>
+                        <button 
+                          className="mt-2 text-sm text-primary"
+                          onClick={() => toast.info("Creative financing guides coming soon")}
+                        >
+                          Explore options →
+                        </button>
+                      </CardContent>
+                    </Card>
+                    
+                    <Card className="hover:shadow-md transition-shadow">
+                      <CardHeader className="p-4">
+                        <CardTitle className="text-lg">Refinancing Analysis</CardTitle>
+                      </CardHeader>
+                      <CardContent className="p-4 pt-0">
+                        <p className="text-sm text-muted-foreground">
+                          Calculate potential savings from refinancing your existing properties.
+                        </p>
+                        <button 
+                          className="mt-2 text-sm text-primary"
+                          onClick={() => toast.info("Refinancing calculator coming soon")}
+                        >
+                          Analyze savings →
+                        </button>
+                      </CardContent>
+                    </Card>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
         </TabsContent>
       </Tabs>
     </div>
