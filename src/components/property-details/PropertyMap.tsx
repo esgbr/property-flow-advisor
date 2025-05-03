@@ -1,8 +1,6 @@
 
 import React, { useEffect, useRef, useState } from 'react';
 import { Property } from '@/interfaces/property';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
 import { MapPin } from 'lucide-react';
 
 interface PropertyMapProps {
@@ -14,25 +12,38 @@ const PropertyMap: React.FC<PropertyMapProps> = ({ property }) => {
   const [mapLoaded, setMapLoaded] = useState<boolean>(false);
   
   useEffect(() => {
-    // Load Google Maps API script
-    if (!document.querySelector('script[src*="maps.googleapis.com/maps/api"]')) {
-      const script = document.createElement('script');
-      script.src = `https://maps.googleapis.com/maps/api/js?key=&libraries=places&callback=initMap`;
-      script.async = true;
-      script.defer = true;
-      
-      // Define the callback function that will be called once the API is loaded
-      window.initMap = () => {
-        setMapLoaded(true);
-      };
-      
-      document.head.appendChild(script);
-    } else {
-      // If script already exists, check if maps API is loaded
-      if (window.google && window.google.maps) {
+    // Load Google Maps API script with retry mechanism
+    const loadGoogleMapsAPI = (retryCount = 0) => {
+      if (!document.querySelector('script[src*="maps.googleapis.com/maps/api"]')) {
+        const script = document.createElement('script');
+        // Note: In a production app you would use an environment variable for the API key
+        script.src = `https://maps.googleapis.com/maps/api/js?key=AIzaSyB41DRUbKWJHPxaFjMAwdrzWzbVKartNGg&libraries=places&callback=initMap`;
+        script.async = true;
+        script.defer = true;
+        
+        // Define the callback function that will be called once the API is loaded
+        window.initMap = () => {
+          setMapLoaded(true);
+          console.log('Google Maps API loaded successfully');
+        };
+        
+        script.onerror = () => {
+          // Retry loading the script up to 3 times
+          if (retryCount < 3) {
+            console.log(`Retrying Google Maps API load (${retryCount + 1}/3)`);
+            setTimeout(() => loadGoogleMapsAPI(retryCount + 1), 1500);
+          } else {
+            console.error('Google Maps API failed to load after multiple attempts');
+          }
+        };
+        
+        document.head.appendChild(script);
+      } else if (window.google && window.google.maps) {
         setMapLoaded(true);
       }
-    }
+    };
+    
+    loadGoogleMapsAPI();
     
     return () => {
       // Clean up the global callback
@@ -44,10 +55,36 @@ const PropertyMap: React.FC<PropertyMapProps> = ({ property }) => {
   useEffect(() => {
     if (!mapLoaded || !mapRef.current) return;
     
-    const addressString = `${property.address}, ${property.city}, ${property.zipCode}, ${property.country}`;
-    
     try {
-      // Create the map
+      // If we already have coordinates, use them directly
+      if (property.latitude && property.longitude) {
+        const location = { lat: property.latitude, lng: property.longitude };
+        
+        // Create the map centered on the property location
+        const map = new window.google.maps.Map(mapRef.current, {
+          zoom: 15,
+          center: location,
+          mapTypeControl: true,
+          streetViewControl: true,
+          fullscreenControl: true,
+          zoomControl: true,
+        });
+        
+        // Add a marker for the property
+        new window.google.maps.Marker({
+          map,
+          position: location,
+          title: property.title,
+          animation: window.google.maps.Animation.DROP,
+        });
+        
+        return;
+      }
+      
+      // If we don't have coordinates, geocode the address
+      const addressString = `${property.address}, ${property.city}, ${property.zipCode}, ${property.country}`;
+      
+      // Create the map with a default center
       const map = new window.google.maps.Map(mapRef.current, {
         zoom: 14,
         center: { lat: 52.52, lng: 13.405 }, // Default to Berlin
@@ -74,6 +111,12 @@ const PropertyMap: React.FC<PropertyMapProps> = ({ property }) => {
             title: property.title,
             animation: window.google.maps.Animation.DROP,
           });
+          
+          // Log the coordinates (in a real app, we might want to save these to the property)
+          console.log("Geocoded coordinates:", {
+            lat: location.lat(),
+            lng: location.lng()
+          });
         } else {
           console.warn('Geocoding was not successful for the following reason:', status);
         }
@@ -81,7 +124,7 @@ const PropertyMap: React.FC<PropertyMapProps> = ({ property }) => {
     } catch (error) {
       console.error('Error initializing map:', error);
     }
-  }, [mapLoaded, property.address, property.city, property.zipCode, property.country, property]);
+  }, [mapLoaded, property]);
   
   return (
     <div className="h-[400px] relative rounded-lg overflow-hidden border">

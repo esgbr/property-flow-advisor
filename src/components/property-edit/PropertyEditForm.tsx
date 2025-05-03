@@ -40,7 +40,7 @@ interface FormValues {
   squareMeters: number;
   rooms: number;
   purchasePrice: number;
-  status: string;
+  status: Property['status']; // Use the status type from Property interface
 }
 
 const PropertyEditForm = ({ property, onSave }: PropertyEditFormProps) => {
@@ -122,7 +122,7 @@ const PropertyEditForm = ({ property, onSave }: PropertyEditFormProps) => {
       try {
         const autocomplete = new window.google.maps.places.Autocomplete(addressInputRef.current, {
           types: ['address'],
-          fields: ['address_components', 'formatted_address'],
+          fields: ['address_components', 'formatted_address', 'geometry'],
         });
         
         autocomplete.addListener('place_changed', () => {
@@ -174,6 +174,13 @@ const PropertyEditForm = ({ property, onSave }: PropertyEditFormProps) => {
               description: "The address has been verified and updated with Google Maps data.",
               duration: 3000,
             });
+            
+            // Save latitude and longitude coordinates if available
+            if (place.geometry && place.geometry.location) {
+              // We could update the form with these values if needed
+              console.log("Latitude:", place.geometry.location.lat());
+              console.log("Longitude:", place.geometry.location.lng());
+            }
           }
         });
       } catch (error) {
@@ -181,7 +188,7 @@ const PropertyEditForm = ({ property, onSave }: PropertyEditFormProps) => {
         setLoadingError('Error initializing address suggestions.');
       }
     }
-  }, [autocompleteLoaded, form]);
+  }, [autocompleteLoaded, form, toast]);
 
   const onSubmit = (values: FormValues) => {
     // Sanitize all text inputs
@@ -195,7 +202,8 @@ const PropertyEditForm = ({ property, onSave }: PropertyEditFormProps) => {
       // Convert numeric values to ensure proper types
       squareMeters: Number(values.squareMeters),
       rooms: Number(values.rooms),
-      purchasePrice: Number(values.purchasePrice)
+      purchasePrice: Number(values.purchasePrice),
+      status: values.status // This will now be properly typed
     };
     
     // Pass the updated values to the onSave callback

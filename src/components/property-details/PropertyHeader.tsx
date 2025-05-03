@@ -32,6 +32,16 @@ const PropertyHeader = ({ property }: PropertyHeaderProps) => {
     }
   };
 
+  // Function to format status text with proper capitalization
+  const formatStatusText = (status: string): string => {
+    // Replace underscores with spaces and capitalize each word
+    return status
+      .replace(/_/g, ' ')
+      .split(' ')
+      .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+      .join(' ');
+  };
+
   return (
     <div className="flex items-center justify-between">
       <div className="flex items-center gap-2">
@@ -42,7 +52,7 @@ const PropertyHeader = ({ property }: PropertyHeaderProps) => {
         </Button>
         <h1 className="text-2xl font-bold">{property.title}</h1>
         <Badge variant={getBadgeVariant(property.status)}>
-          {property.status.replace('_', ' ')}
+          {formatStatusText(property.status)}
         </Badge>
       </div>
       <Button variant="default" asChild>
