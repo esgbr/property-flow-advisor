@@ -5,12 +5,15 @@ import { ArrowLeft } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Property } from '@/interfaces/property';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 interface PropertyHeaderProps {
   property: Property;
 }
 
 const PropertyHeader = ({ property }: PropertyHeaderProps) => {
+  const { t } = useLanguage();
+  
   // Function to determine badge variant based on status
   const getBadgeVariant = (status: string) => {
     switch (status) {
@@ -56,7 +59,7 @@ const PropertyHeader = ({ property }: PropertyHeaderProps) => {
         </Badge>
       </div>
       <Button variant="default" asChild>
-        <Link to={`/property/${property.id}/edit`}>Edit Property</Link>
+        <Link to={`/property/${property.id}/edit`}>{t('editProperty')}</Link>
       </Button>
     </div>
   );

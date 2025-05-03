@@ -23,6 +23,7 @@ import {
 } from "@/components/ui/select";
 import { MapPinCheck, MapPin, AlertCircle, Shield } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 interface PropertyEditFormProps {
   property: Property;
@@ -50,6 +51,7 @@ const PropertyEditForm = ({ property, onSave }: PropertyEditFormProps) => {
   const [autocompleteLoaded, setAutocompleteLoaded] = useState<boolean>(false);
   const [loadingError, setLoadingError] = useState<string | null>(null);
   const { toast } = useToast();
+  const { t } = useLanguage();
   
   // Security feature - sanitize input
   const sanitizeInput = (input: string): string => {
@@ -170,8 +172,8 @@ const PropertyEditForm = ({ property, onSave }: PropertyEditFormProps) => {
             setAddressVerified(true);
             
             toast({
-              title: "Address Verified",
-              description: "The address has been verified and updated with Google Maps data.",
+              title: t('addressVerified'),
+              description: t('addressVerifiedDescription'),
               duration: 3000,
             });
             
@@ -188,7 +190,7 @@ const PropertyEditForm = ({ property, onSave }: PropertyEditFormProps) => {
         setLoadingError('Error initializing address suggestions.');
       }
     }
-  }, [autocompleteLoaded, form, toast]);
+  }, [autocompleteLoaded, form, toast, t]);
 
   const onSubmit = (values: FormValues) => {
     // Sanitize all text inputs
@@ -214,10 +216,10 @@ const PropertyEditForm = ({ property, onSave }: PropertyEditFormProps) => {
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
         <div className="flex justify-between items-center">
-          <h2 className="text-2xl font-bold">Edit Property Details</h2>
+          <h2 className="text-2xl font-bold">{t('editPropertyDetails')}</h2>
           <div className="flex items-center text-sm text-muted-foreground">
             <Shield className="h-4 w-4 mr-1" />
-            Enhanced Security
+            {t('enhancedSecurity')}
           </div>
         </div>
 
@@ -227,9 +229,9 @@ const PropertyEditForm = ({ property, onSave }: PropertyEditFormProps) => {
             name="title"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Property Title</FormLabel>
+                <FormLabel>{t('propertyTitle')}</FormLabel>
                 <FormControl>
-                  <Input placeholder="Enter property title" {...field} />
+                  <Input placeholder={t('enterPropertyTitle')} {...field} />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -241,23 +243,23 @@ const PropertyEditForm = ({ property, onSave }: PropertyEditFormProps) => {
             name="propertyType"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Property Type</FormLabel>
+                <FormLabel>{t('propertyType')}</FormLabel>
                 <Select 
                   onValueChange={field.onChange} 
                   defaultValue={field.value}
                 >
                   <FormControl>
                     <SelectTrigger>
-                      <SelectValue placeholder="Select property type" />
+                      <SelectValue placeholder={t('selectPropertyType')} />
                     </SelectTrigger>
                   </FormControl>
                   <SelectContent>
-                    <SelectItem value="apartment">Apartment</SelectItem>
-                    <SelectItem value="house">House</SelectItem>
-                    <SelectItem value="condo">Condo</SelectItem>
-                    <SelectItem value="townhouse">Townhouse</SelectItem>
-                    <SelectItem value="land">Land</SelectItem>
-                    <SelectItem value="commercial">Commercial</SelectItem>
+                    <SelectItem value="apartment">{t('apartment')}</SelectItem>
+                    <SelectItem value="house">{t('house')}</SelectItem>
+                    <SelectItem value="condo">{t('condo')}</SelectItem>
+                    <SelectItem value="townhouse">{t('townhouse')}</SelectItem>
+                    <SelectItem value="land">{t('land')}</SelectItem>
+                    <SelectItem value="commercial">{t('commercial')}</SelectItem>
                   </SelectContent>
                 </Select>
                 <FormMessage />
@@ -271,7 +273,7 @@ const PropertyEditForm = ({ property, onSave }: PropertyEditFormProps) => {
             render={({ field }) => (
               <FormItem>
                 <FormLabel className="flex items-center gap-1">
-                  Address
+                  {t('address')}
                   {addressVerified && (
                     <div className="flex items-center" aria-label="Address verified">
                       <MapPinCheck className="h-4 w-4 text-green-500" />
@@ -281,7 +283,7 @@ const PropertyEditForm = ({ property, onSave }: PropertyEditFormProps) => {
                 <FormControl>
                   <div className="relative">
                     <Textarea 
-                      placeholder="Start typing to get address suggestions..." 
+                      placeholder={t('startTypingForAddressSuggestions')} 
                       {...field} 
                       ref={addressInputRef}
                       className={loadingError ? "border-red-300" : ""}
@@ -290,7 +292,7 @@ const PropertyEditForm = ({ property, onSave }: PropertyEditFormProps) => {
                       <div className="absolute inset-0 bg-background/50 flex items-center justify-center rounded-md">
                         <p className="text-sm text-muted-foreground flex items-center">
                           <MapPin className="mr-1 h-4 w-4 animate-pulse" />
-                          Loading address suggestions...
+                          {t('loadingAddressSuggestions')}
                         </p>
                       </div>
                     )}
@@ -303,7 +305,7 @@ const PropertyEditForm = ({ property, onSave }: PropertyEditFormProps) => {
                   </div>
                 </FormControl>
                 <p className="text-xs text-muted-foreground">
-                  {!loadingError ? "Start typing to get address suggestions from Google Maps" : "Please enter your address manually"}
+                  {!loadingError ? t('startTypingForGoogleMaps') : t('enterAddressManually')}
                 </p>
                 <FormMessage />
               </FormItem>
@@ -316,9 +318,9 @@ const PropertyEditForm = ({ property, onSave }: PropertyEditFormProps) => {
               name="city"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>City</FormLabel>
+                  <FormLabel>{t('city')}</FormLabel>
                   <FormControl>
-                    <Input placeholder="Enter city" {...field} />
+                    <Input placeholder={t('enterCity')} {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -330,9 +332,9 @@ const PropertyEditForm = ({ property, onSave }: PropertyEditFormProps) => {
               name="zipCode"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Zip Code</FormLabel>
+                  <FormLabel>{t('zipCode')}</FormLabel>
                   <FormControl>
-                    <Input placeholder="Enter zip code" {...field} />
+                    <Input placeholder={t('enterZipCode')} {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -345,9 +347,9 @@ const PropertyEditForm = ({ property, onSave }: PropertyEditFormProps) => {
             name="country"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Country</FormLabel>
+                <FormLabel>{t('country')}</FormLabel>
                 <FormControl>
-                  <Input placeholder="Enter country" {...field} />
+                  <Input placeholder={t('enterCountry')} {...field} />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -360,11 +362,11 @@ const PropertyEditForm = ({ property, onSave }: PropertyEditFormProps) => {
               name="squareMeters"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Area (m²)</FormLabel>
+                  <FormLabel>{t('areaInSquareMeters')}</FormLabel>
                   <FormControl>
                     <Input 
                       type="number" 
-                      placeholder="Area in m²"
+                      placeholder={t('areaInSquareMeters')}
                       {...field}
                       onChange={e => field.onChange(Number(e.target.value))} 
                     />
@@ -379,11 +381,11 @@ const PropertyEditForm = ({ property, onSave }: PropertyEditFormProps) => {
               name="rooms"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Rooms</FormLabel>
+                  <FormLabel>{t('rooms')}</FormLabel>
                   <FormControl>
                     <Input 
                       type="number" 
-                      placeholder="Number of rooms"
+                      placeholder={t('numberOfRooms')}
                       {...field}
                       onChange={e => field.onChange(Number(e.target.value))} 
                     />
@@ -399,11 +401,11 @@ const PropertyEditForm = ({ property, onSave }: PropertyEditFormProps) => {
             name="purchasePrice"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Purchase Price (€)</FormLabel>
+                <FormLabel>{t('purchasePrice')} (€)</FormLabel>
                 <FormControl>
                   <Input 
                     type="number" 
-                    placeholder="Enter purchase price"
+                    placeholder={t('enterPurchasePrice')}
                     {...field}
                     onChange={e => field.onChange(Number(e.target.value))} 
                   />
@@ -418,27 +420,27 @@ const PropertyEditForm = ({ property, onSave }: PropertyEditFormProps) => {
             name="status"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Status</FormLabel>
+                <FormLabel>{t('status')}</FormLabel>
                 <Select 
                   onValueChange={field.onChange} 
                   defaultValue={field.value}
                 >
                   <FormControl>
                     <SelectTrigger>
-                      <SelectValue placeholder="Select status" />
+                      <SelectValue placeholder={t('selectStatus')} />
                     </SelectTrigger>
                   </FormControl>
                   <SelectContent>
-                    <SelectItem value="prospect">Prospect</SelectItem>
-                    <SelectItem value="analyzing">Analyzing</SelectItem>
-                    <SelectItem value="negotiating">Negotiating</SelectItem>
-                    <SelectItem value="under_contract">Under Contract</SelectItem>
-                    <SelectItem value="owned">Owned</SelectItem>
-                    <SelectItem value="active">Active</SelectItem>
-                    <SelectItem value="pending">Pending</SelectItem>
-                    <SelectItem value="sold">Sold</SelectItem>
-                    <SelectItem value="off-market">Off-Market</SelectItem>
-                    <SelectItem value="rejected">Rejected</SelectItem>
+                    <SelectItem value="prospect">{t('prospect')}</SelectItem>
+                    <SelectItem value="analyzing">{t('analyzing')}</SelectItem>
+                    <SelectItem value="negotiating">{t('negotiating')}</SelectItem>
+                    <SelectItem value="under_contract">{t('underContract')}</SelectItem>
+                    <SelectItem value="owned">{t('owned')}</SelectItem>
+                    <SelectItem value="active">{t('active')}</SelectItem>
+                    <SelectItem value="pending">{t('pending')}</SelectItem>
+                    <SelectItem value="sold">{t('sold')}</SelectItem>
+                    <SelectItem value="off-market">{t('offMarket')}</SelectItem>
+                    <SelectItem value="rejected">{t('rejected')}</SelectItem>
                   </SelectContent>
                 </Select>
                 <FormMessage />
@@ -453,9 +455,9 @@ const PropertyEditForm = ({ property, onSave }: PropertyEditFormProps) => {
             variant="outline" 
             onClick={() => navigate(`/property/${property.id}`)}
           >
-            Cancel
+            {t('cancel')}
           </Button>
-          <Button type="submit">Save Changes</Button>
+          <Button type="submit">{t('saveChanges')}</Button>
         </div>
       </form>
     </Form>
