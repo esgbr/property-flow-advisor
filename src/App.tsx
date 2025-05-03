@@ -22,6 +22,7 @@ import Settings from './pages/Settings';
 import NotFound from './pages/NotFound';
 import InvestorDashboard from './pages/InvestorDashboard';
 import FeaturesDashboard from './pages/FeaturesDashboard';
+import Index from './pages/Index';
 
 import { Toaster as SonnerToaster } from "@/components/ui/sonner";
 
@@ -34,8 +35,8 @@ export default function App() {
             <RewardsProvider>
               <Router>
                 <Routes>
-                  {/* Redirect root to dashboard */}
-                  <Route path="/" element={<Navigate to="/dashboard" replace />} />
+                  {/* Root route shows landing page */}
+                  <Route path="/" element={<Index />} />
                   <Route element={<MainLayout />}>
                     <Route path="/dashboard" element={<Dashboard />} />
                     <Route path="/properties" element={<Properties />} />
