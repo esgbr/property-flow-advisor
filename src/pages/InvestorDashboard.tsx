@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useLanguage } from '@/contexts/LanguageContext';
@@ -13,7 +12,7 @@ import {
   AlertTriangle 
 } from 'lucide-react';
 import { useUserPreferences } from '@/contexts/UserPreferencesContext';
-import EnhancedPortfolioDashboard from '@/components/portfolio/EnhancedPortfolioDashboard';
+import UnifiedPortfolioDashboard from '@/components/portfolio/UnifiedPortfolioDashboard';
 import MortgageCalculator from '@/components/financing/MortgageCalculator';
 import TaxPlanner from '@/components/tax/TaxPlanner';
 import MarketAnalysisTools from '@/components/market/MarketAnalysisTools';
@@ -136,7 +135,7 @@ const InvestorDashboard: React.FC = () => {
         )}
 
         <TabsContent value="portfolio" className="mt-6">
-          <EnhancedPortfolioDashboard />
+          <UnifiedPortfolioDashboard />
         </TabsContent>
 
         <TabsContent value="market" className="mt-6">

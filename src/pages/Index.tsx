@@ -1,10 +1,9 @@
-
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { useLanguage } from '@/contexts/LanguageContext';
-import { Building, Calculate, BarChart3, Home, BookOpen } from 'lucide-react';
+import { Building, Calculator, BarChart3, Home, BookOpen } from 'lucide-react';
 
 const Index: React.FC = () => {
   const navigate = useNavigate();
@@ -26,7 +25,7 @@ const Index: React.FC = () => {
     {
       title: t('financialCalculators'),
       description: t('financialCalculatorsDescription'),
-      icon: <Calculate className="h-8 w-8 text-primary" />,
+      icon: <Calculator className="h-8 w-8 text-primary" />,
       action: () => navigate('/calculators')
     },
     {

@@ -6,18 +6,14 @@ import {
   CardTitle,
   CardDescription,
   CardContent,
-  CardFooter,
 } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import {
-  InputOTP,
-  InputOTPGroup,
-  InputOTPSlot,
-} from '@/components/ui/input-otp';
 import { toast } from 'sonner';
 import { useAppLock } from '@/contexts/AppLockContext';
 import { useLanguage } from '@/contexts/LanguageContext';
-import { Key, Lock, Shield } from 'lucide-react';
+import { Key, Lock } from 'lucide-react';
+import PinInput from './app-lock/PinInput';
+import BiometricButton from './app-lock/BiometricButton';
 
 const AppLockScreen = () => {
   const { validatePin, unlockApp, useFaceId, supportsFaceId } = useAppLock();
@@ -41,7 +37,6 @@ const AppLockScreen = () => {
       const success = await useFaceId();
       if (success) {
         // We still need to call unlockApp with a pin since our context requires it
-        // In a real implementation, we would handle this differently
         unlockApp(enteredPin);
         toast.success('Face ID authentication successful!');
       } else {
@@ -68,17 +63,9 @@ const AppLockScreen = () => {
         </CardHeader>
         <CardContent>
           <div className="flex flex-col items-center space-y-6">
-            <InputOTP
-              maxLength={4}
+            <PinInput
               value={enteredPin}
               onChange={setEnteredPin}
-              render={({ slots }) => (
-                <InputOTPGroup>
-                  {slots.map((slot, index) => (
-                    <InputOTPSlot key={index} {...slot} index={index} />
-                  ))}
-                </InputOTPGroup>
-              )}
             />
             
             <Button 
@@ -90,14 +77,10 @@ const AppLockScreen = () => {
             </Button>
             
             {supportsFaceId && (
-              <Button 
+              <BiometricButton 
                 onClick={handleFaceIdAuth} 
-                variant="outline" 
-                className="w-full"
-                disabled={isAuthenticating}
-              >
-                <Shield className="mr-2 h-4 w-4" /> {t('useFaceId')}
-              </Button>
+                isLoading={isAuthenticating} 
+              />
             )}
           </div>
         </CardContent>

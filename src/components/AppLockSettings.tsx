@@ -6,20 +6,15 @@ import {
   CardTitle,
   CardDescription,
   CardContent,
-  CardFooter,
 } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import {
-  InputOTP,
-  InputOTPGroup,
-  InputOTPSlot,
-} from '@/components/ui/input-otp';
 import { Switch } from '@/components/ui/switch';
 import { toast } from 'sonner';
 import { useAppLock } from '@/contexts/AppLockContext';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { Label } from '@/components/ui/label';
 import { Lock, Key, Shield } from 'lucide-react';
+import PinInput from './app-lock/PinInput';
 
 const AppLockSettings = () => {
   const { pin, setPin, lockApp, unlockApp, isLocked, supportsFaceId } = useAppLock();
@@ -83,21 +78,10 @@ const AppLockSettings = () => {
         </div>
         
         <div className="space-y-4">
-          <div className="text-sm font-medium">
-            {step === 'create' ? 'Set a PIN' : 'Confirm your PIN'}
-          </div>
-          
-          <InputOTP
-            maxLength={4}
+          <PinInput 
             value={step === 'create' ? newPin : confirmPin}
             onChange={step === 'create' ? setNewPin : setConfirmPin}
-            render={({ slots }) => (
-              <InputOTPGroup>
-                {slots.map((slot, index) => (
-                  <InputOTPSlot key={index} {...slot} index={index} />
-                ))}
-              </InputOTPGroup>
-            )}
+            label={step === 'create' ? 'Set a PIN' : 'Confirm your PIN'}
           />
           
           <Button 
