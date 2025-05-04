@@ -25,12 +25,7 @@ const WelcomeModal = () => {
 
   const handleComplete = (data: OnboardingData) => {
     // Sync user data across platform
-    const updatedData = {
-      ...data,
-      lastUpdated: new Date().toISOString(),
-    };
-    
-    saveOnboardingData(updatedData);
+    saveOnboardingData(data);
     setOpen(false);
     
     // Navigate to appropriate dashboard based on selected market
@@ -62,7 +57,6 @@ const WelcomeModal = () => {
     
     // If user skips, we still save what we know
     updatePreferences({
-      lastUpdated: new Date().toISOString(),
       onboardingCompleted: true
     });
     

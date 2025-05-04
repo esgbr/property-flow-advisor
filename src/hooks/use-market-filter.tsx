@@ -2,9 +2,13 @@
 import { useUserPreferences } from '@/contexts/UserPreferencesContext';
 import { InvestmentMarket } from '@/contexts/UserPreferencesContext';
 
-type MarketSpecificFeature = {
+export type MarketSpecificFeature = {
   id: string;
   markets: InvestmentMarket[];
+  title?: string;
+  description?: string;
+  icon?: React.ReactNode;
+  path?: string;
 };
 
 // Hook to check if a feature should be shown based on the user's selected market
@@ -30,11 +34,26 @@ export function useMarketFilter() {
   ): T[] => {
     return features.filter(shouldShowFeature);
   };
+
+  // Get display name for current market
+  const getMarketDisplayName = (): string => {
+    switch(userMarket) {
+      case 'germany': return 'German';
+      case 'austria': return 'Austrian';
+      case 'usa': return 'US';
+      case 'canada': return 'Canadian';
+      case 'switzerland': return 'Swiss';
+      case 'france': return 'French';
+      case 'global': return 'Global';
+      default: return '';
+    }
+  };
   
   return {
     shouldShowFeature,
     filterFeaturesByMarket,
-    userMarket
+    userMarket,
+    getMarketDisplayName
   };
 }
 

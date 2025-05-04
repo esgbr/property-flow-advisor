@@ -25,6 +25,10 @@ import FeaturesDashboard from '@/pages/FeaturesDashboard';
 import GermanRealEstateInvestor from '@/pages/GermanRealEstateInvestor';
 import USRealEstateTools from '@/pages/USRealEstateTools';
 import NotFound from '@/pages/NotFound';
+import MarketExplorerPage from '@/pages/MarketExplorerPage';
+import AdvancedCalculatorsPage from '@/pages/AdvancedCalculatorsPage';
+import PropertyComparatorPage from '@/pages/PropertyComparatorPage';
+import PortfolioAnalyticsPage from '@/pages/PortfolioAnalyticsPage';
 
 function App() {
   return (
@@ -43,6 +47,7 @@ function App() {
                   <Route path="/property/:id/financials" element={<PropertyFinancials />} />
                   <Route path="/investor-dashboard" element={<InvestorDashboard />} />
                   <Route path="/calculators" element={<Calculators />} />
+                  <Route path="/advanced-calculators" element={<AdvancedCalculatorsPage />} />
                   <Route path="/education" element={<Education />} />
                   <Route path="/settings" element={<Settings />} />
                   <Route path="/profile" element={<UserProfile />} />
@@ -50,6 +55,9 @@ function App() {
                   <Route path="/german-investor" element={<GermanRealEstateInvestor />} />
                   <Route path="/features" element={<FeaturesDashboard />} />
                   <Route path="/us-real-estate-tools" element={<USRealEstateTools />} />
+                  <Route path="/market-explorer" element={<MarketExplorerPage />} />
+                  <Route path="/property-comparator" element={<PropertyComparatorPage />} />
+                  <Route path="/portfolio-analytics" element={<PortfolioAnalyticsPage />} />
                 </Route>
                 {/* Redirect for backward compatibility */}
                 <Route path="/exchange-tracker" element={<Navigate to="/calculators?tab=exchange" replace />} />
