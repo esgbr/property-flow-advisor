@@ -1,13 +1,14 @@
+
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { useLanguage } from '@/contexts/LanguageContext';
-import { Building, Calculator, BarChart3, Home, BookOpen } from 'lucide-react';
+import { Building, Calculator, BarChart3, Home, BookOpen, Euro } from 'lucide-react';
 
 const Index: React.FC = () => {
   const navigate = useNavigate();
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
 
   const features = [
     {
@@ -29,10 +30,12 @@ const Index: React.FC = () => {
       action: () => navigate('/calculators')
     },
     {
-      title: t('realEstateEducation'),
-      description: t('realEstateEducationDescription'),
-      icon: <BookOpen className="h-8 w-8 text-primary" />,
-      action: () => navigate('/education')
+      title: language === 'de' ? 'Deutsche Immobilien-Tools' : 'German Real Estate Tools',
+      description: language === 'de' 
+        ? 'Spezielle Tools für den deutschen Immobilienmarkt, inkl. Grunderwerbsteuer, Mietkauf und AfA-Rechner.'
+        : 'Specialized tools for the German real estate market, including transfer tax, rent-to-own and depreciation calculators.',
+      icon: <Euro className="h-8 w-8 text-primary" />,
+      action: () => navigate('/deutsche-immobilien-tools')
     }
   ];
 

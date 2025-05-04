@@ -19,6 +19,8 @@ import { AppLockProvider } from '@/contexts/AppLockContext';
 import Calculators from '@/pages/Calculators';
 import { Toaster } from '@/components/ui/sonner';
 import DeutscheImmobilienTools from '@/pages/DeutscheImmobilienTools';
+import Features from '@/pages/Features';
+import FeaturesDashboard from '@/pages/FeaturesDashboard';
 
 function App() {
   return (
@@ -39,7 +41,8 @@ function App() {
                 <Route path="/education" element={<Education />} />
                 <Route path="/settings" element={<Settings />} />
                 <Route path="/profile" element={<UserProfile />} />
-                <Route path="/deutsche-immobilien-tools" element={<DeutscheImmobilienTools />} />
+                <Route path="/deutsche-immobilien-tools" element={<Features />} />
+                <Route path="/features" element={<FeaturesDashboard />} />
               </Route>
             </Routes>
             <Toaster position="top-right" />

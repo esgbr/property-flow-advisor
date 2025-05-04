@@ -119,9 +119,7 @@ const StreamlinedSidebar: React.FC<{
   ];
 
   // Show/hide German tools based on language
-  const filteredGroups = language === 'de' 
-    ? navigationGroups 
-    : navigationGroups.filter(group => group.label !== 'German Tools');
+  const filteredGroups = navigationGroups;
 
   return (
     <aside className={cn(
