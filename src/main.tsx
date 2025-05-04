@@ -20,7 +20,15 @@ window.addEventListener('error', (event) => {
   
   // Display a user-friendly message if in production
   if (import.meta.env.PROD) {
+    const existingError = document.getElementById('global-error-message');
+    if (existingError) {
+      existingError.remove(); // Remove existing error message to prevent stacking
+    }
+    
     const errorElement = document.createElement('div');
+    errorElement.id = 'global-error-message';
+    errorElement.role = 'alert';
+    errorElement.setAttribute('aria-live', 'assertive');
     errorElement.style.position = 'fixed';
     errorElement.style.top = '10px';
     errorElement.style.left = '50%';
@@ -32,13 +40,52 @@ window.addEventListener('error', (event) => {
     errorElement.style.zIndex = '9999';
     errorElement.style.maxWidth = '80%';
     errorElement.style.textAlign = 'center';
+    errorElement.style.boxShadow = '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)';
     errorElement.textContent = 'An unexpected error occurred. The application will attempt to recover.';
     document.body.appendChild(errorElement);
     
-    // Remove after 8 seconds
+    // Add retry button
+    const retryButton = document.createElement('button');
+    retryButton.textContent = 'Reload';
+    retryButton.style.marginLeft = '10px';
+    retryButton.style.backgroundColor = 'white';
+    retryButton.style.color = 'rgba(220, 38, 38, 0.9)';
+    retryButton.style.padding = '4px 8px';
+    retryButton.style.borderRadius = '4px';
+    retryButton.style.border = 'none';
+    retryButton.style.cursor = 'pointer';
+    retryButton.onclick = () => window.location.reload();
+    errorElement.appendChild(retryButton);
+    
+    // Remove after 15 seconds
     setTimeout(() => {
-      document.body.removeChild(errorElement);
-    }, 8000);
+      if (document.body.contains(errorElement)) {
+        document.body.removeChild(errorElement);
+      }
+    }, 15000);
+    
+    // Try to recover the application
+    try {
+      // Force a re-render
+      const appRoot = document.getElementById('root');
+      if (appRoot && appRoot.firstChild) {
+        const firstChild = appRoot.firstChild;
+        appRoot.removeChild(firstChild);
+        appRoot.appendChild(firstChild);
+      }
+    } catch (recoveryError) {
+      console.error('Failed to recover from error:', recoveryError);
+    }
+  }
+});
+
+// Enhance keyboard navigation
+window.addEventListener('keydown', (event) => {
+  // Add global keyboard shortcuts here
+  if (event.key === '?' && (event.ctrlKey || event.metaKey)) {
+    event.preventDefault();
+    console.info('Keyboard shortcuts help triggered');
+    // Could show a help modal in the future
   }
 });
 

@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -83,11 +83,58 @@ const Features = () => {
   const [afaValue, setAfaValue] = useState('');
   const [afaRate, setAfaRate] = useState('2');
   const [buildingCostPercentage, setBuildingCostPercentage] = useState('70');
+  const [calculationResult, setCalculationResult] = useState('');
 
   // Reset form when changing tabs
   useEffect(() => {
     setTransferTax(0);
+    setCalculationResult('');
   }, [activeTab]);
+
+  // Handle keyboard navigation for tabs
+  const handleKeyNavigation = useCallback((e: KeyboardEvent) => {
+    if (e.altKey) {
+      if (e.key === 'ArrowRight') {
+        const tabConfig = [
+          'grunderwerbsteuer', 
+          'mietkauf', 
+          'afa', 
+          'mietspiegel', 
+          'energieausweis', 
+          'nebenkosten'
+        ];
+        const currentIndex = tabConfig.indexOf(activeTab);
+        if (currentIndex < tabConfig.length - 1) {
+          setActiveTab(tabConfig[currentIndex + 1]);
+        }
+      } else if (e.key === 'ArrowLeft') {
+        const tabConfig = [
+          'grunderwerbsteuer', 
+          'mietkauf', 
+          'afa', 
+          'mietspiegel', 
+          'energieausweis', 
+          'nebenkosten'
+        ];
+        const currentIndex = tabConfig.indexOf(activeTab);
+        if (currentIndex > 0) {
+          setActiveTab(tabConfig[currentIndex - 1]);
+        }
+      }
+    }
+  }, [activeTab, setActiveTab]);
+
+  useEffect(() => {
+    document.addEventListener('keydown', handleKeyNavigation);
+    return () => {
+      document.removeEventListener('keydown', handleKeyNavigation);
+    };
+  }, [handleKeyNavigation]);
+
+  // Validate number input
+  const validateNumberInput = (value: string): boolean => {
+    return !isNaN(parseFloat(value)) && parseFloat(value) > 0;
+  };
 
   // Calculate transfer tax
   const calculateTransferTax = () => {
@@ -97,18 +144,24 @@ const Features = () => {
     }
     
     try {
-      const price = parseFloat(propertyPrice);
-      if (isNaN(price) || price <= 0) {
+      if (!validateNumberInput(propertyPrice)) {
         toast.error(language === 'de' ? 'Bitte geben Sie einen gültigen Kaufpreis ein' : 'Please enter a valid purchase price');
         return;
       }
       
+      const price = parseFloat(propertyPrice);
       const stateData = germanStates.find(state => state.name === selectedState);
       
       if (stateData) {
         const taxAmount = (price * stateData.tax) / 100;
         setTransferTax(taxAmount);
         toast.success(t('calculationSuccess') || 'Calculation completed successfully');
+
+        // Set calculation result for screen readers
+        const resultText = language === 'de' 
+          ? `Grunderwerbsteuer: ${taxAmount.toLocaleString('de-DE')}€ (${stateData.tax}% von ${price.toLocaleString('de-DE')}€)`
+          : `Transfer Tax: ${taxAmount.toLocaleString('en-US')}€ (${stateData.tax}% of ${price.toLocaleString('en-US')}€)`;
+        setCalculationResult(resultText);
       }
     } catch (error) {
       console.error('Calculation error:', error);
@@ -124,23 +177,26 @@ const Features = () => {
     }
     
     try {
-      const price = parseFloat(mietkaufPrice);
-      const monthlyRent = parseFloat(mietkaufRent);
-      const years = parseFloat(mietkaufDuration);
-      
-      if (isNaN(price) || price <= 0 || isNaN(monthlyRent) || monthlyRent <= 0 || isNaN(years) || years <= 0) {
+      if (!validateNumberInput(mietkaufPrice) || 
+          !validateNumberInput(mietkaufRent) || 
+          !validateNumberInput(mietkaufDuration)) {
         toast.error(language === 'de' ? 'Bitte geben Sie gültige Werte ein' : 'Please enter valid values');
         return;
       }
       
+      const price = parseFloat(mietkaufPrice);
+      const monthlyRent = parseFloat(mietkaufRent);
+      const years = parseFloat(mietkaufDuration);
+      
       const totalRentPayments = monthlyRent * 12 * years;
       const remainingAmount = price - totalRentPayments;
+
+      const resultText = language === 'de' 
+        ? `Nach ${years} Jahren: ${totalRentPayments.toLocaleString('de-DE')}€ bezahlt, ${remainingAmount.toLocaleString('de-DE')}€ verbleibend`
+        : `After ${years} years: ${totalRentPayments.toLocaleString('en-US')}€ paid, ${remainingAmount.toLocaleString('en-US')}€ remaining`;
       
-      toast.success(
-        language === 'de' 
-          ? `Nach ${years} Jahren: ${totalRentPayments.toLocaleString('de-DE')}€ bezahlt, ${remainingAmount.toLocaleString('de-DE')}€ verbleibend`
-          : `After ${years} years: ${totalRentPayments.toLocaleString('en-US')}€ paid, ${remainingAmount.toLocaleString('en-US')}€ remaining`
-      );
+      toast.success(resultText);
+      setCalculationResult(resultText);
     } catch (error) {
       console.error('Calculation error:', error);
       toast.error(t('calculationError') || 'Error during calculation');
@@ -155,24 +211,27 @@ const Features = () => {
     }
     
     try {
-      const propertyValue = parseFloat(afaValue);
-      const rate = parseFloat(afaRate);
-      const buildingPercentage = parseFloat(buildingCostPercentage) / 100;
-      
-      if (isNaN(propertyValue) || propertyValue <= 0 || isNaN(rate) || rate <= 0 || isNaN(buildingPercentage) || buildingPercentage <= 0) {
+      if (!validateNumberInput(afaValue) || 
+          !validateNumberInput(afaRate) || 
+          !validateNumberInput(buildingCostPercentage)) {
         toast.error(language === 'de' ? 'Bitte geben Sie gültige Werte ein' : 'Please enter valid values');
         return;
       }
+      
+      const propertyValue = parseFloat(afaValue);
+      const rate = parseFloat(afaRate);
+      const buildingPercentage = parseFloat(buildingCostPercentage) / 100;
       
       // Only the building can be depreciated, not the land
       const buildingValue = propertyValue * buildingPercentage;
       const yearlyDepreciation = buildingValue * (rate / 100);
       
-      toast.success(
-        language === 'de'
-          ? `Jährliche AfA: ${yearlyDepreciation.toLocaleString('de-DE')}€`
-          : `Yearly depreciation: ${yearlyDepreciation.toLocaleString('en-US')}€`
-      );
+      const resultText = language === 'de'
+        ? `Jährliche AfA: ${yearlyDepreciation.toLocaleString('de-DE')}€ (${rate}% von ${buildingValue.toLocaleString('de-DE')}€)`
+        : `Yearly depreciation: ${yearlyDepreciation.toLocaleString('en-US')}€ (${rate}% of ${buildingValue.toLocaleString('en-US')}€)`;
+      
+      toast.success(resultText);
+      setCalculationResult(resultText);
     } catch (error) {
       console.error('Calculation error:', error);
       toast.error(t('calculationError') || 'Error during calculation');
@@ -220,7 +279,7 @@ const Features = () => {
   
   return (
     <div className="space-y-6 animate-fade-in">
-      <div className="flex justify-between items-center">
+      <div className="flex justify-between items-center mb-8">
         <div>
           <h1 className={`text-3xl font-bold ${largeText ? 'text-4xl' : ''}`}>
             {language === 'de' ? 'Deutsche Immobilien Tools' : 'German Real Estate Tools'}
@@ -243,21 +302,44 @@ const Features = () => {
         </Button>
       </div>
 
+      {/* Mobile dashboard button */}
+      <div className="md:hidden mb-4">
+        <Button 
+          variant="outline" 
+          size="sm" 
+          onClick={handleBackToDashboard}
+          className="w-full flex items-center justify-center gap-2"
+          aria-label={language === 'de' ? 'Zurück zum Dashboard' : 'Back to Dashboard'}
+        >
+          <Home className="h-4 w-4" />
+          {language === 'de' ? 'Zurück zum Dashboard' : 'Back to Dashboard'}
+        </Button>
+      </div>
+
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-        <div className={`mb-6 ${isMobile ? 'overflow-x-auto' : ''}`}>
-          <TabsList className={isMobile ? 'flex w-max space-x-1' : ''}>
-            {tabConfig.map(tab => (
+        <div className={`mb-6 ${isMobile ? 'overflow-x-auto pb-2' : ''}`}>
+          <TabsList className={`${isMobile ? 'flex w-max space-x-1 border-b' : ''} ${highContrast ? 'border-2 p-1' : ''}`}>
+            {tabConfig.map((tab, index) => (
               <TabsTrigger 
                 key={tab.id} 
                 value={tab.id} 
                 className={`flex items-center ${largeText ? 'text-base px-4 py-2' : ''}`}
                 aria-label={tab.label}
+                data-testid={`tab-${tab.id}`}
+                accessKey={`${index + 1}`}
               >
                 {tab.icon}
                 <span className={largeText ? 'text-base' : ''}>{tab.label}</span>
               </TabsTrigger>
             ))}
           </TabsList>
+        </div>
+
+        {/* Screen reader only instructions */}
+        <div className="sr-only" aria-live="polite">
+          {language === 'de' 
+            ? 'Verwenden Sie Alt + Pfeiltasten links/rechts, um zwischen Tabs zu navigieren.' 
+            : 'Use Alt + Arrow Left/Right to navigate between tabs.'}
         </div>
 
         {/* Grunderwerbsteuer (Transfer Tax) Calculator */}
@@ -408,6 +490,22 @@ const Features = () => {
                 >
                   {language === 'de' ? 'Mietkauf berechnen' : 'Calculate Rent-to-Own'}
                 </Button>
+
+                {calculationResult && activeTab === 'mietkauf' && (
+                  <div 
+                    className={`mt-4 p-4 border rounded-md bg-muted ${highContrast ? 'border-2 border-primary' : ''}`} 
+                    aria-live="polite"
+                  >
+                    <h3 className={`font-semibold ${largeText ? 'text-lg' : ''}`}>
+                      {language === 'de' ? 'Ergebnis:' : 'Result:'}
+                    </h3>
+                    <div className="mt-2">
+                      <p className={`${largeText ? 'text-lg' : ''}`}>
+                        {calculationResult}
+                      </p>
+                    </div>
+                  </div>
+                )}
               </div>
             </CardContent>
           </Card>
@@ -481,92 +579,81 @@ const Features = () => {
                 >
                   {language === 'de' ? 'AfA berechnen' : 'Calculate Depreciation'}
                 </Button>
+
+                {calculationResult && activeTab === 'afa' && (
+                  <div 
+                    className={`mt-4 p-4 border rounded-md bg-muted ${highContrast ? 'border-2 border-primary' : ''}`} 
+                    aria-live="polite"
+                  >
+                    <h3 className={`font-semibold ${largeText ? 'text-lg' : ''}`}>
+                      {language === 'de' ? 'Ergebnis:' : 'Result:'}
+                    </h3>
+                    <div className="mt-2">
+                      <p className={`${largeText ? 'text-lg' : ''}`}>
+                        {calculationResult}
+                      </p>
+                    </div>
+                  </div>
+                )}
               </div>
             </CardContent>
           </Card>
         </TabsContent>
 
-        {/* Mietspiegel (Rent Index) */}
-        <TabsContent value="mietspiegel">
-          <Card className={highContrast ? 'border-2' : ''}>
-            <CardHeader>
-              <CardTitle className={largeText ? 'text-2xl' : ''}>
-                {language === 'de' ? 'Mietspiegel-Analyse' : 'Rent Index Analysis'}
-              </CardTitle>
-              <CardDescription className={largeText ? 'text-lg' : ''}>
-                {language === 'de'
-                  ? 'Vergleichen Sie Ihre Mietpreise mit dem lokalen Mietspiegel für deutsche Städte.'
-                  : 'Compare your rental prices with the local rent index for German cities.'}
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="flex flex-col items-center justify-center py-8 gap-4">
-                <Search className="h-12 w-12 text-muted-foreground mb-2" aria-hidden="true" />
-                <p className={`text-muted-foreground ${largeText ? 'text-lg' : ''}`}>
-                  {language === 'de' ? 'Kommt bald' : 'Coming Soon'}
-                </p>
-                <Button variant="outline" onClick={() => toast.info(language === 'de' ? 'Diese Funktion wird bald verfügbar sein' : 'This feature will be available soon')}>
-                  {language === 'de' ? 'Benachrichtigen' : 'Notify me'}
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
-        </TabsContent>
-
-        {/* Energieausweis (Energy Certificate) Analyzer */}
-        <TabsContent value="energieausweis">
-          <Card className={highContrast ? 'border-2' : ''}>
-            <CardHeader>
-              <CardTitle className={largeText ? 'text-2xl' : ''}>
-                {language === 'de' ? 'Energieausweis-Analyse' : 'Energy Certificate Analysis'}
-              </CardTitle>
-              <CardDescription className={largeText ? 'text-lg' : ''}>
-                {language === 'de'
-                  ? 'Analysieren Sie Energieausweise und deren Einfluss auf Immobilieninvestitionen.'
-                  : 'Analyze energy certificates and their impact on real estate investments.'}
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="flex flex-col items-center justify-center py-8 gap-4">
-                <LineChart className="h-12 w-12 text-muted-foreground mb-2" aria-hidden="true" />
-                <p className={`text-muted-foreground ${largeText ? 'text-lg' : ''}`}>
-                  {language === 'de' ? 'Kommt bald' : 'Coming Soon'}
-                </p>
-                <Button variant="outline" onClick={() => toast.info(language === 'de' ? 'Diese Funktion wird bald verfügbar sein' : 'This feature will be available soon')}>
-                  {language === 'de' ? 'Benachrichtigen' : 'Notify me'}
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
-        </TabsContent>
-
-        {/* Nebenkosten (Additional Costs) Calculator */}
-        <TabsContent value="nebenkosten">
-          <Card className={highContrast ? 'border-2' : ''}>
-            <CardHeader>
-              <CardTitle className={largeText ? 'text-2xl' : ''}>
-                {language === 'de' ? 'Nebenkosten-Rechner' : 'Additional Costs Calculator'}
-              </CardTitle>
-              <CardDescription className={largeText ? 'text-lg' : ''}>
-                {language === 'de'
-                  ? 'Berechnen und schätzen Sie die Nebenkosten für Mietobjekte.'
-                  : 'Calculate and estimate additional costs for rental properties.'}
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="flex flex-col items-center justify-center py-8 gap-4">
-                <Calculator className="h-12 w-12 text-muted-foreground mb-2" aria-hidden="true" />
-                <p className={`text-muted-foreground ${largeText ? 'text-lg' : ''}`}>
-                  {language === 'de' ? 'Kommt bald' : 'Coming Soon'}
-                </p>
-                <Button variant="outline" onClick={() => toast.info(language === 'de' ? 'Diese Funktion wird bald verfügbar sein' : 'This feature will be available soon')}>
-                  {language === 'de' ? 'Benachrichtigen' : 'Notify me'}
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
-        </TabsContent>
+        {/* Coming Soon tabs with improved UI */}
+        {['mietspiegel', 'energieausweis', 'nebenkosten'].map((tabId) => {
+          const tabData = tabConfig.find(tab => tab.id === tabId);
+          if (!tabData) return null;
+          
+          return (
+            <TabsContent key={tabId} value={tabId}>
+              <Card className={highContrast ? 'border-2' : ''}>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    {tabData.icon}
+                    {tabData.label}
+                  </CardTitle>
+                  <CardDescription>
+                    {language === 'de'
+                      ? 'Diese Funktion wird demnächst verfügbar sein.'
+                      : 'This feature will be available soon.'}
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="flex flex-col items-center justify-center py-12 gap-4">
+                    {tabId === 'mietspiegel' && <Search className="h-16 w-16 text-muted-foreground mb-2" aria-hidden="true" />}
+                    {tabId === 'energieausweis' && <LineChart className="h-16 w-16 text-muted-foreground mb-2" aria-hidden="true" />}
+                    {tabId === 'nebenkosten' && <Calculator className="h-16 w-16 text-muted-foreground mb-2" aria-hidden="true" />}
+                    
+                    <p className={`text-muted-foreground font-semibold ${largeText ? 'text-xl' : 'text-lg'}`}>
+                      {language === 'de' ? 'Kommt bald' : 'Coming Soon'}
+                    </p>
+                    
+                    <p className="text-center text-muted-foreground max-w-md">
+                      {language === 'de' 
+                        ? 'Wir arbeiten daran, dieses Feature so schnell wie möglich bereitzustellen.'
+                        : 'We are working to make this feature available as soon as possible.'}
+                    </p>
+                    
+                    <Button 
+                      variant="outline" 
+                      onClick={() => toast.info(language === 'de' ? 'Sie werden benachrichtigt, wenn diese Funktion verfügbar ist' : 'You will be notified when this feature becomes available')}
+                      className={`mt-4 ${largeText ? 'text-base py-6 px-8' : ''}`}
+                    >
+                      {language === 'de' ? 'Benachrichtigen' : 'Notify me'}
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+            </TabsContent>
+          );
+        })}
       </Tabs>
+
+      {/* Accessibility announcement for screen readers */}
+      <div className="sr-only" aria-live="assertive">
+        {calculationResult}
+      </div>
     </div>
   );
 };
