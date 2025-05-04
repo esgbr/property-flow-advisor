@@ -423,8 +423,7 @@ const englishTranslations = {
   // Export calculation
   exportCalculation: "Export Calculation",
   
-  // Investment analysis
-  investmentAnalysis: "Investment Analysis",
+  // Investment analysis - already defined above, so removing this duplicate
   
   // Monthly cash flow - already defined above, so skipping this duplicate
   
