@@ -52,6 +52,7 @@ const MarketTrendsChart: React.FC<MarketTrendsChartProps> = ({ className = '' })
       id: 'comparison',
       name: `${marketName} ${currentYear}`,
       color: 'var(--secondary)',
+      strokeDasharray: '', // Adding the missing property
       opacities: {
         stroke: 1,
         fill: 0.1

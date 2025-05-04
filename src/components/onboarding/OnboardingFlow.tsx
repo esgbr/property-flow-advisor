@@ -21,7 +21,7 @@ interface OnboardingStep {
 
 export interface OnboardingData {
   name?: string;
-  experienceLevel: 'beginner' | 'intermediate' | 'expert';
+  experienceLevel: 'beginner' | 'intermediate' | 'advanced' | 'expert'; // Added 'advanced'
   investmentGoals: string[];
   preferredPropertyTypes: string[];
   interests: string[];
