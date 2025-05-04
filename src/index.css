@@ -5,6 +5,7 @@
 
 @layer base {
   :root {
+    /* Light mode variables */
     --background: 210 33% 99%;
     --foreground: 222 47% 11%;
 
@@ -46,6 +47,7 @@
   }
  
   .dark {
+    /* Dark mode variables */
     --background: 222 47% 11%;
     --foreground: 210 40% 98%;
 
@@ -73,6 +75,16 @@
     --border: 217 33% 18%;
     --input: 217 33% 18%;
     --ring: 213 27% 84%;
+
+    /* Keep sidebar variables the same in dark mode */
+    --sidebar-background: 222 47% 11%;
+    --sidebar-foreground: 210 40% 98%;
+    --sidebar-primary: 25 95% 53%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 220 13% 28%;
+    --sidebar-accent-foreground: 210 40% 98%;
+    --sidebar-border: 217 33% 18%;
+    --sidebar-ring: 215 20% 65%;
   }
 }
 
@@ -83,6 +95,43 @@
 
   body {
     @apply bg-background text-foreground;
+    font-synthesis: none;
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+  
+  /* Focus styles for keyboard users */
+  .keyboard-user *:focus-visible {
+    @apply outline-2 outline-offset-2 outline-primary ring-2 ring-primary ring-offset-2;
+  }
+  
+  /* Ensure white text is properly visible on primary color */
+  .text-primary-foreground {
+    color: hsl(var(--primary-foreground));
+  }
+  
+  /* Enhanced contrast for text */
+  .dark .text-muted-foreground {
+    color: hsl(215 20% 75%); /* Brighter in dark mode for better contrast */
+  }
+  
+  /* Improved focus indicators for accessibility */
+  [data-focus-visible-added] {
+    @apply outline-2 outline-offset-2 outline-primary;
+  }
+  
+  /* Skip link when visible */
+  .skip-link:focus,
+  .skip-link:focus-visible {
+    @apply translate-y-0 opacity-100 z-50;
+  }
+  
+  /* Screen reader only */
+  .sr-only {
+    @apply absolute w-px h-px p-0 -m-px overflow-hidden whitespace-nowrap border-0;
+    clip: rect(0, 0, 0, 0);
+    clip-path: inset(50%);
   }
 }
 
@@ -93,5 +142,67 @@
   
   .card-hover {
     @apply transition-all duration-200 hover:shadow-lg hover:-translate-y-1;
+  }
+  
+  /* Glassmorphism effect for cards */
+  .glass-card {
+    @apply bg-white/10 dark:bg-black/20 backdrop-blur-lg border border-white/20 dark:border-white/10 shadow-lg;
+  }
+  
+  /* Better nav links */
+  .nav-link {
+    @apply relative px-2 py-1 transition-colors;
+  }
+  
+  .nav-link::after {
+    @apply content-[''] absolute w-full scale-x-0 h-0.5 bottom-0 left-0 bg-primary origin-bottom-right transition-transform duration-300;
+  }
+  
+  .nav-link:hover::after,
+  .nav-link.active::after {
+    @apply scale-x-100 origin-bottom-left;
+  }
+  
+  /* Form inputs with consistent styling */
+  .form-input {
+    @apply w-full px-3 py-2 border border-input rounded-md focus:outline-none focus:ring-2 focus:ring-primary;
+  }
+  
+  /* Button variants */
+  .btn-primary {
+    @apply bg-primary text-primary-foreground hover:bg-primary/90 px-4 py-2 rounded-md transition-colors;
+  }
+  
+  .btn-secondary {
+    @apply bg-secondary text-secondary-foreground hover:bg-secondary/90 px-4 py-2 rounded-md transition-colors;
+  }
+  
+  .btn-ghost {
+    @apply text-foreground hover:bg-muted px-4 py-2 rounded-md transition-colors;
+  }
+  
+  .btn-outline {
+    @apply border border-input bg-background hover:bg-accent hover:text-accent-foreground px-4 py-2 rounded-md transition-colors;
+  }
+  
+  /* Card variants */
+  .card-primary {
+    @apply bg-primary/5 border-primary/20;
+  }
+  
+  .card-secondary {
+    @apply bg-secondary/5 border-secondary/20;
+  }
+}
+
+/* Reduce motion for users who prefer it */
+@media (prefers-reduced-motion) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
   }
 }

@@ -1,5 +1,5 @@
 
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState, useCallback } from 'react';
 
 // Hook to trap focus within a component (e.g., for modals)
 export const useFocusTrap = (active = true) => {
@@ -12,15 +12,18 @@ export const useFocusTrap = (active = true) => {
     if (!container) return;
 
     // Find all focusable elements
-    const focusableElements = container.querySelectorAll<HTMLElement>(
+    const getFocusableElements = () => container.querySelectorAll<HTMLElement>(
       'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
     );
     
-    const firstElement = focusableElements[0];
-    const lastElement = focusableElements[focusableElements.length - 1];
-
-    const handleTabKey = (e: KeyboardEvent) => {
+    const handleFocusTrap = (e: KeyboardEvent) => {
       if (e.key !== 'Tab') return;
+
+      const focusableElements = getFocusableElements();
+      if (focusableElements.length === 0) return;
+      
+      const firstElement = focusableElements[0];
+      const lastElement = focusableElements[focusableElements.length - 1];
 
       if (e.shiftKey) {
         if (document.activeElement === firstElement) {
@@ -36,15 +39,30 @@ export const useFocusTrap = (active = true) => {
     };
 
     // Focus first element on mount
-    if (firstElement) {
-      firstElement.focus();
+    const focusableElements = getFocusableElements();
+    if (focusableElements.length > 0) {
+      // Store the previously focused element to restore later
+      const previouslyFocused = document.activeElement as HTMLElement;
+      
+      // Focus the first focusable element in the container
+      focusableElements[0].focus();
+      
+      // Store the previously focused element to restore on unmount
+      container.dataset.previouslyFocused = previouslyFocused?.id || '';
     }
 
     // Add event listener for keyboard navigation
-    document.addEventListener('keydown', handleTabKey);
+    document.addEventListener('keydown', handleFocusTrap);
     
     return () => {
-      document.removeEventListener('keydown', handleTabKey);
+      document.removeEventListener('keydown', handleFocusTrap);
+      
+      // Restore focus when the trap is removed
+      const previouslyFocusedId = container.dataset.previouslyFocused;
+      if (previouslyFocusedId) {
+        const previousElement = document.getElementById(previouslyFocusedId);
+        previousElement?.focus();
+      }
     };
   }, [active]);
 
@@ -53,33 +71,53 @@ export const useFocusTrap = (active = true) => {
 
 // Hook to announce messages to screen readers
 export const useAnnouncement = () => {
-  const announce = (message: string, politeness: 'assertive' | 'polite' = 'polite') => {
-    // Create or use existing announcer element
-    let announcer = document.getElementById('a11y-announcer');
+  const [announcer, setAnnouncer] = useState<HTMLElement | null>(null);
+
+  useEffect(() => {
+    let element = document.getElementById('a11y-announcer');
     
-    if (!announcer) {
-      announcer = document.createElement('div');
-      announcer.id = 'a11y-announcer';
-      announcer.setAttribute('aria-live', politeness);
-      announcer.setAttribute('aria-atomic', 'true');
-      announcer.style.position = 'absolute';
-      announcer.style.width = '1px';
-      announcer.style.height = '1px';
-      announcer.style.padding = '0';
-      announcer.style.overflow = 'hidden';
-      announcer.style.clip = 'rect(0, 0, 0, 0)';
-      announcer.style.whiteSpace = 'nowrap';
-      announcer.style.border = '0';
-      document.body.appendChild(announcer);
+    if (!element) {
+      element = document.createElement('div');
+      element.id = 'a11y-announcer';
+      element.style.position = 'absolute';
+      element.style.width = '1px';
+      element.style.height = '1px';
+      element.style.padding = '0';
+      element.style.overflow = 'hidden';
+      element.style.clip = 'rect(0, 0, 0, 0)';
+      element.style.whiteSpace = 'nowrap';
+      element.style.border = '0';
+      document.body.appendChild(element);
     }
     
-    // Update the content to trigger announcement
+    setAnnouncer(element);
+    
+    return () => {
+      // Don't remove the announcer on component unmount
+      // as it might be used by other components
+    };
+  }, []);
+
+  const announce = useCallback((
+    message: string, 
+    politeness: 'assertive' | 'polite' = 'polite',
+    timeout = 50
+  ) => {
+    if (!announcer) return;
+    
+    // Update ARIA live attribute to match politeness level
+    announcer.setAttribute('aria-live', politeness);
+    announcer.setAttribute('aria-atomic', 'true');
+    
+    // Clear announcer to ensure it will announce the same message 
+    // multiple times if needed
     announcer.textContent = '';
+    
     // Slight delay to ensure the DOM update is processed
     setTimeout(() => {
       announcer!.textContent = message;
-    }, 50);
-  };
+    }, timeout);
+  }, [announcer]);
   
   return { announce };
 };
@@ -99,5 +137,75 @@ export const ariaAttributes = {
   tooltip: (content: string) => ({
     'aria-label': content,
     'data-tooltip': content
+  }),
+  // Additional ARIA helpers
+  listbox: (label: string, expanded: boolean) => ({
+    role: 'listbox',
+    'aria-label': label,
+    'aria-expanded': expanded,
+  }),
+  option: (selected: boolean, label: string) => ({
+    role: 'option',
+    'aria-selected': selected,
+    'aria-label': label
+  }),
+  tablist: () => ({
+    role: 'tablist'
+  }),
+  tab: (selected: boolean, controls: string) => ({
+    role: 'tab',
+    'aria-selected': selected,
+    'aria-controls': controls,
+    tabIndex: selected ? 0 : -1
+  }),
+  tabpanel: (id: string, labelledBy: string) => ({
+    role: 'tabpanel',
+    id,
+    'aria-labelledby': labelledBy,
+    tabIndex: 0
+  }),
+  modal: (labelledBy: string) => ({
+    role: 'dialog',
+    'aria-modal': true,
+    'aria-labelledby': labelledBy
   })
+};
+
+// Hook to detect mouse vs. keyboard navigation
+export const useUserInteractionMode = () => {
+  const [isKeyboardMode, setIsKeyboardMode] = useState(false);
+  
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Tab') {
+        setIsKeyboardMode(true);
+        document.body.classList.add('keyboard-user');
+      }
+    };
+    
+    const handleMouseDown = () => {
+      setIsKeyboardMode(false);
+      document.body.classList.remove('keyboard-user');
+    };
+    
+    document.addEventListener('keydown', handleKeyDown);
+    document.addEventListener('mousedown', handleMouseDown);
+    
+    return () => {
+      document.removeEventListener('keydown', handleKeyDown);
+      document.removeEventListener('mousedown', handleMouseDown);
+    };
+  }, []);
+  
+  return { isKeyboardMode };
+};
+
+// Focus visible utility for keyboard accessibility
+export const useFocusVisible = () => {
+  const { isKeyboardMode } = useUserInteractionMode();
+  
+  return {
+    focusVisibleClass: isKeyboardMode ? 'focus-visible' : '',
+    isFocusVisible: isKeyboardMode
+  };
 };

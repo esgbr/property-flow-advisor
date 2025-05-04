@@ -2,16 +2,16 @@
 import React from 'react';
 import { Moon, Sun } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { useTheme } from '@/components/theme-provider';
+import { useAppTheme } from '@/components/theme-provider';
 import { useUserPreferences } from '@/contexts/UserPreferencesContext';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 
 export function ThemeToggle() {
-  const { theme, setTheme } = useTheme();
+  const { theme, setTheme, isDarkMode } = useAppTheme();
   const { updatePreferences } = useUserPreferences();
   
   const toggleTheme = () => {
-    const newTheme = theme === 'dark' ? 'light' : 'dark';
+    const newTheme = isDarkMode ? 'light' : 'dark';
     setTheme(newTheme);
     updatePreferences({ theme: newTheme });
   };
@@ -24,17 +24,19 @@ export function ThemeToggle() {
             variant="ghost" 
             size="icon" 
             onClick={toggleTheme}
-            aria-label={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
+            className="focus-visible:ring-2 focus-visible:ring-offset-2"
+            aria-label={isDarkMode ? 'Switch to light mode' : 'Switch to dark mode'}
+            aria-pressed={isDarkMode}
           >
-            {theme === 'dark' ? (
-              <Sun className="h-5 w-5" />
-            ) : (
-              <Moon className="h-5 w-5" />
-            )}
+            <Sun className={`h-5 w-5 transition-opacity ${isDarkMode ? 'opacity-0 absolute' : 'opacity-100'}`} />
+            <Moon className={`h-5 w-5 transition-opacity ${isDarkMode ? 'opacity-100' : 'opacity-0 absolute'}`} />
+            <span className="sr-only">
+              {isDarkMode ? 'Switch to light mode' : 'Switch to dark mode'}
+            </span>
           </Button>
         </TooltipTrigger>
         <TooltipContent>
-          <p>{theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}</p>
+          <p>{isDarkMode ? 'Switch to light mode' : 'Switch to dark mode'}</p>
         </TooltipContent>
       </Tooltip>
     </TooltipProvider>
