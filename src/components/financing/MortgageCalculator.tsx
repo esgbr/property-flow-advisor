@@ -1,386 +1,334 @@
-
-import React, { useState, useEffect } from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
-import { Slider } from '@/components/ui/slider';
-import { Label } from '@/components/ui/label';
+import React, { useState } from 'react';
+import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
 import { useLanguage } from '@/contexts/LanguageContext';
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
-import { Calculator, InfoIcon, Share2 } from 'lucide-react';
-import { useToast } from '@/components/ui/use-toast';
+import { Calculator, LineChart, PieChart, Wallet } from 'lucide-react';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Slider } from '@/components/ui/slider';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
-import { TooltipProvider, Tooltip as UITooltip, TooltipTrigger, TooltipContent } from '@/components/ui/tooltip';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-
-export interface MortgageDetails {
-  loanAmount: number;
-  interestRate: number;
-  loanTerm: number;
-  downPayment: number;
-  propertyValue: number;
-}
+import { PieChart as RechartsChart, Pie, ResponsiveContainer, Cell, Tooltip } from 'recharts';
 
 const MortgageCalculator: React.FC = () => {
   const { t } = useLanguage();
-  const { toast } = useToast();
+  const [loanAmount, setLoanAmount] = useState(300000);
+  const [downPayment, setDownPayment] = useState(60000);
+  const [interestRate, setInterestRate] = useState(3.5);
+  const [loanTerm, setLoanTerm] = useState(25);
   
-  const [mortgageDetails, setMortgageDetails] = useState<MortgageDetails>({
-    propertyValue: 300000,
-    downPayment: 60000,
-    loanAmount: 240000,
-    interestRate: 3.5,
-    loanTerm: 30
-  });
+  // Calculate total property price
+  const propertyPrice = loanAmount + downPayment;
   
-  const [monthlyPayment, setMonthlyPayment] = useState(0);
-  const [totalInterest, setTotalInterest] = useState(0);
-  const [amortizationSchedule, setAmortizationSchedule] = useState<any[]>([]);
+  // Calculate down payment percentage
+  const downPaymentPercentage = (downPayment / propertyPrice) * 100;
   
-  // Calculate mortgage details when inputs change
-  useEffect(() => {
-    calculateMortgage();
-  }, [mortgageDetails]);
-  
-  const calculateMortgage = () => {
-    const principal = mortgageDetails.loanAmount;
-    const interestRate = mortgageDetails.interestRate / 100 / 12; // Monthly interest rate
-    const numberOfPayments = mortgageDetails.loanTerm * 12; // Total number of payments
+  // Calculate monthly payment
+  const calculateMonthlyPayment = () => {
+    const monthlyRate = interestRate / 100 / 12;
+    const numberOfPayments = loanTerm * 12;
     
-    // Calculate monthly payment using the formula: M = P[r(1+r)^n]/[(1+r)^n-1]
-    if (interestRate === 0) {
-      setMonthlyPayment(principal / numberOfPayments);
-      setTotalInterest(0);
-    } else {
-      const monthlyPayment = principal * interestRate * Math.pow(1 + interestRate, numberOfPayments) / (Math.pow(1 + interestRate, numberOfPayments) - 1);
-      setMonthlyPayment(monthlyPayment);
-      setTotalInterest((monthlyPayment * numberOfPayments) - principal);
-    }
+    if (monthlyRate === 0) return loanAmount / numberOfPayments;
     
-    generateAmortizationSchedule(principal, interestRate, numberOfPayments);
+    const x = Math.pow(1 + monthlyRate, numberOfPayments);
+    return loanAmount * monthlyRate * x / (x - 1);
   };
   
-  // Generate amortization schedule for the entire loan term
-  const generateAmortizationSchedule = (principal: number, monthlyInterestRate: number, numberOfPayments: number) => {
-    const schedule = [];
-    
-    // Calculate payment first
-    const payment = monthlyInterestRate === 0 ? 
-      principal / numberOfPayments : 
-      principal * monthlyInterestRate * Math.pow(1 + monthlyInterestRate, numberOfPayments) / (Math.pow(1 + monthlyInterestRate, numberOfPayments) - 1);
-    
-    let balance = principal;
-    let totalInterest = 0;
-    let totalPrincipal = 0;
-    
-    // Generate yearly data points for the chart (instead of monthly)
-    for (let year = 1; year <= mortgageDetails.loanTerm; year++) {
-      let yearlyPrincipal = 0;
-      let yearlyInterest = 0;
-      
-      // Calculate 12 months for each data point
-      for (let month = 1; month <= 12; month++) {
-        if ((year - 1) * 12 + month <= numberOfPayments) {
-          const interestPayment = balance * monthlyInterestRate;
-          const principalPayment = payment - interestPayment;
-          
-          yearlyPrincipal += principalPayment;
-          yearlyInterest += interestPayment;
-          balance -= principalPayment;
-        }
-      }
-      
-      totalPrincipal += yearlyPrincipal;
-      totalInterest += yearlyInterest;
-      
-      schedule.push({
-        year,
-        balance: Math.max(0, balance),
-        totalPaid: totalPrincipal + totalInterest,
-        principalPaid: totalPrincipal,
-        interestPaid: totalInterest
-      });
-    }
-    
-    setAmortizationSchedule(schedule);
-  };
+  // Monthly payment
+  const monthlyPayment = calculateMonthlyPayment();
   
-  // Handle input changes
-  const handlePropertyValueChange = (value: number) => {
-    const downPaymentPercent = mortgageDetails.downPayment / mortgageDetails.propertyValue;
-    const newDownPayment = value * downPaymentPercent;
-    const newLoanAmount = value - newDownPayment;
-    
-    setMortgageDetails({
-      ...mortgageDetails,
-      propertyValue: value,
-      downPayment: newDownPayment,
-      loanAmount: newLoanAmount
-    });
-  };
+  // Total loan cost
+  const totalLoanCost = monthlyPayment * loanTerm * 12;
   
-  const handleDownPaymentChange = (value: number) => {
-    const newLoanAmount = mortgageDetails.propertyValue - value;
-    
-    setMortgageDetails({
-      ...mortgageDetails,
-      downPayment: value,
-      loanAmount: newLoanAmount
-    });
-  };
+  // Total interest paid
+  const totalInterestPaid = totalLoanCost - loanAmount;
   
-  const handleDownPaymentPercentChange = (percentValue: number[]) => {
-    const percent = percentValue[0];
-    const downPayment = mortgageDetails.propertyValue * (percent / 100);
-    const loanAmount = mortgageDetails.propertyValue - downPayment;
-    
-    setMortgageDetails({
-      ...mortgageDetails,
-      downPayment: downPayment,
-      loanAmount: loanAmount
-    });
-  };
-  
-  const handleInterestRateChange = (value: number) => {
-    setMortgageDetails({
-      ...mortgageDetails,
-      interestRate: value
-    });
-  };
-  
-  const handleTermChange = (value: number) => {
-    setMortgageDetails({
-      ...mortgageDetails,
-      loanTerm: value
-    });
-  };
-  
-  const handleSaveCalculation = () => {
-    toast({
-      title: t('calculationSaved'),
-      description: t('calculationSavedToProfile'),
-    });
-  };
-  
-  const handleShareCalculation = () => {
-    toast({
-      title: t('shareLinkCreated'),
-      description: t('shareLinkCreatedDescription'),
-    });
-  };
-  
-  // Format numbers as currency
-  const formatCurrency = (value: number) => {
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: 'EUR',
-      minimumFractionDigits: 0,
-      maximumFractionDigits: 0
-    }).format(value);
-  };
-  
-  // Create data for the breakdown pie chart
-  const breakdownData = [
-    { name: t('principal'), value: mortgageDetails.loanAmount },
-    { name: t('interest'), value: totalInterest }
+  // Pie chart data for payment breakdown
+  const pieData = [
+    { name: t('principal'), value: loanAmount },
+    { name: t('totalInterestPaid'), value: totalInterestPaid }
   ];
   
-  const COLORS = ['#4f46e5', '#f59e0b'];
-  
-  const downPaymentPercentage = (mortgageDetails.downPayment / mortgageDetails.propertyValue) * 100;
+  // Colors for pie chart
+  const COLORS = ['#0088FE', '#FF8042'];
   
   return (
     <Card>
       <CardHeader>
-        <div className="flex justify-between items-center">
-          <div>
-            <CardTitle>{t('mortgageCalculator')}</CardTitle>
-            <CardDescription>{t('calculateYourMonthlyPayments')}</CardDescription>
-          </div>
-          <Calculator className="h-8 w-8 text-muted-foreground" />
-        </div>
+        <CardTitle className="flex items-center">
+          <Calculator className="mr-2 h-5 w-5" />
+          {t('mortgageCalculator')}
+        </CardTitle>
+        <CardDescription>{t('calculateMortgagePayments')}</CardDescription>
       </CardHeader>
       <CardContent>
-        <div className="grid gap-6 md:grid-cols-2">
-          <div className="space-y-6">
-            <div>
-              <div className="flex justify-between">
-                <Label>{t('propertyValue')}</Label>
-                <span className="text-sm font-medium">{formatCurrency(mortgageDetails.propertyValue)}</span>
-              </div>
-              <div className="flex mt-2">
-                <Input 
-                  type="number" 
-                  value={mortgageDetails.propertyValue} 
-                  onChange={(e) => handlePropertyValueChange(Number(e.target.value))} 
-                  min="10000"
-                />
-              </div>
-            </div>
-            
-            <div>
-              <div className="flex justify-between">
-                <Label>{t('downPayment')}</Label>
-                <span className="text-sm font-medium">
-                  {formatCurrency(mortgageDetails.downPayment)} ({downPaymentPercentage.toFixed(0)}%)
-                </span>
-              </div>
-              <div className="mt-2">
-                <Slider 
-                  value={[downPaymentPercentage]} 
-                  min={0} 
-                  max={100} 
-                  step={1} 
-                  onValueChange={handleDownPaymentPercentChange}
-                />
-              </div>
-            </div>
-            
-            <div>
-              <div className="flex justify-between">
-                <Label>{t('loanAmount')}</Label>
-                <span className="text-sm font-medium">{formatCurrency(mortgageDetails.loanAmount)}</span>
-              </div>
-              <div className="flex mt-2">
-                <Input 
-                  type="number" 
-                  value={mortgageDetails.loanAmount} 
-                  readOnly 
-                  className="bg-muted"
-                />
-              </div>
-            </div>
-            
-            <div>
-              <div className="flex justify-between">
-                <Label>{t('interestRate')}</Label>
-                <span className="text-sm font-medium">{mortgageDetails.interestRate}%</span>
-              </div>
-              <div className="flex mt-2">
-                <Input 
-                  type="number" 
-                  value={mortgageDetails.interestRate} 
-                  onChange={(e) => handleInterestRateChange(Number(e.target.value))} 
-                  min="0" 
-                  max="20" 
-                  step="0.1" 
-                />
-              </div>
-            </div>
-            
-            <div>
-              <div className="flex justify-between">
-                <Label>{t('loanTerm')}</Label>
-                <span className="text-sm font-medium">{mortgageDetails.loanTerm} {t('years')}</span>
-              </div>
-              <div className="mt-2">
-                <Tabs defaultValue="30" onValueChange={(value) => handleTermChange(parseInt(value))}>
-                  <TabsList className="grid w-full grid-cols-3">
-                    <TabsTrigger value="15">15 {t('years')}</TabsTrigger>
-                    <TabsTrigger value="20">20 {t('years')}</TabsTrigger>
-                    <TabsTrigger value="30">30 {t('years')}</TabsTrigger>
-                  </TabsList>
-                </Tabs>
-              </div>
-            </div>
-            
-            <div className="p-4 bg-primary/10 rounded-lg">
-              <div className="text-sm text-muted-foreground mb-1">{t('monthlyPayment')}</div>
-              <div className="text-3xl font-bold">
-                {formatCurrency(monthlyPayment)}
-              </div>
-              <div className="mt-4">
-                <div className="flex justify-between text-sm">
-                  <span>{t('totalPaid')}:</span>
-                  <span className="font-medium">{formatCurrency(mortgageDetails.loanAmount + totalInterest)}</span>
-                </div>
-                <div className="flex justify-between text-sm">
-                  <span>{t('totalInterest')}:</span>
-                  <span className="font-medium">{formatCurrency(totalInterest)}</span>
-                </div>
-              </div>
-            </div>
-            
-            <div className="flex space-x-2">
-              <Button variant="outline" onClick={handleSaveCalculation} className="flex-1">
-                {t('saveCalculation')}
-              </Button>
-              <Button variant="outline" onClick={handleShareCalculation} className="flex items-center">
-                <Share2 className="h-4 w-4 mr-2" />
-                {t('share')}
-              </Button>
-            </div>
-          </div>
+        <Tabs defaultValue="calculator">
+          <TabsList className="grid w-full grid-cols-3">
+            <TabsTrigger value="calculator">
+              <Calculator className="h-4 w-4 mr-2" />
+              {t('calculator')}
+            </TabsTrigger>
+            <TabsTrigger value="payment-breakdown">
+              <PieChart className="h-4 w-4 mr-2" />
+              {t('paymentBreakdown')}
+            </TabsTrigger>
+            <TabsTrigger value="amortization">
+              <LineChart className="h-4 w-4 mr-2" />
+              {t('amortizationSchedule')}
+            </TabsTrigger>
+          </TabsList>
           
-          <div className="space-y-6">
-            <div>
-              <h3 className="font-medium mb-2">{t('amortizationSchedule')}</h3>
-              <div className="bg-muted p-1 rounded-lg">
-                <ResponsiveContainer width="100%" height={200}>
-                  <LineChart
-                    data={amortizationSchedule}
-                    margin={{ top: 5, right: 5, left: 5, bottom: 5 }}
-                  >
-                    <CartesianGrid strokeDasharray="3 3" />
-                    <XAxis dataKey="year" label={{ value: t('year'), position: 'insideBottom', offset: 0 }} />
-                    <YAxis tickFormatter={(tick) => `${Math.round(tick / 1000)}k`} />
-                    <Tooltip formatter={(value: number) => [formatCurrency(value), ""]} />
-                    <Line type="monotone" dataKey="balance" name={t('remainingBalance')} stroke="#4f46e5" strokeWidth={2} />
-                    <Line type="monotone" dataKey="principalPaid" name={t('principalPaid')} stroke="#10b981" strokeWidth={2} />
-                  </LineChart>
-                </ResponsiveContainer>
+          <TabsContent value="calculator" className="space-y-6 mt-6">
+            <div className="grid md:grid-cols-2 gap-6">
+              <div className="space-y-4">
+                <div>
+                  <Label>{t('propertyPrice')} (€{propertyPrice.toLocaleString()})</Label>
+                  <Slider
+                    value={[propertyPrice]}
+                    min={50000}
+                    max={1500000}
+                    step={10000}
+                    onValueChange={(value) => {
+                      const newPropertyPrice = value[0];
+                      // Keep down payment percentage consistent when changing property price
+                      const newDownPayment = Math.round(newPropertyPrice * (downPaymentPercentage / 100));
+                      setDownPayment(newDownPayment);
+                      setLoanAmount(newPropertyPrice - newDownPayment);
+                    }}
+                  />
+                </div>
+                
+                <div>
+                  <div className="flex justify-between">
+                    <Label>{t('downPayment')}</Label>
+                    <span className="text-xs text-muted-foreground">
+                      {downPaymentPercentage.toFixed(1)}%
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <div className="flex-1">
+                      <Slider
+                        value={[downPaymentPercentage]}
+                        min={5}
+                        max={50}
+                        step={1}
+                        onValueChange={(value) => {
+                          const newPercentage = value[0];
+                          const newDownPayment = Math.round(propertyPrice * (newPercentage / 100));
+                          setDownPayment(newDownPayment);
+                          setLoanAmount(propertyPrice - newDownPayment);
+                        }}
+                      />
+                    </div>
+                    <div className="w-20">
+                      <Input
+                        type="number"
+                        value={downPayment}
+                        onChange={(e) => {
+                          const newDownPayment = parseFloat(e.target.value) || 0;
+                          setDownPayment(newDownPayment);
+                          setLoanAmount(propertyPrice - newDownPayment);
+                        }}
+                        className="text-right"
+                      />
+                    </div>
+                  </div>
+                </div>
+                
+                <div>
+                  <div className="flex justify-between">
+                    <Label>{t('interestRate')}</Label>
+                    <span className="text-xs text-muted-foreground">
+                      {interestRate}%
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <div className="flex-1">
+                      <Slider
+                        value={[interestRate]}
+                        min={0.5}
+                        max={10}
+                        step={0.1}
+                        onValueChange={(value) => setInterestRate(value[0])}
+                      />
+                    </div>
+                    <div className="w-20">
+                      <Input
+                        type="number"
+                        value={interestRate}
+                        step="0.1"
+                        onChange={(e) => setInterestRate(parseFloat(e.target.value) || 0)}
+                        className="text-right"
+                      />
+                    </div>
+                  </div>
+                </div>
+                
+                <div>
+                  <div className="flex justify-between">
+                    <Label>{t('loanTerm')}</Label>
+                    <span className="text-xs text-muted-foreground">
+                      {loanTerm} {t('years')}
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <div className="flex-1">
+                      <Slider
+                        value={[loanTerm]}
+                        min={5}
+                        max={40}
+                        step={1}
+                        onValueChange={(value) => setLoanTerm(value[0])}
+                      />
+                    </div>
+                    <div className="w-20">
+                      <Input
+                        type="number"
+                        value={loanTerm}
+                        onChange={(e) => setLoanTerm(parseInt(e.target.value) || 5)}
+                        className="text-right"
+                      />
+                    </div>
+                  </div>
+                </div>
+              </div>
+              
+              <div className="space-y-4">
+                <Card className="border-2 border-primary/20">
+                  <CardHeader className="py-4">
+                    <CardTitle className="text-lg">{t('monthlyPayment')}</CardTitle>
+                  </CardHeader>
+                  <CardContent className="flex items-center justify-center py-6">
+                    <div className="text-center">
+                      <Wallet className="w-8 h-8 text-primary mx-auto mb-2" />
+                      <div className="text-3xl font-bold">€{monthlyPayment.toFixed(0)}</div>
+                      <div className="text-xs text-muted-foreground mt-1">
+                        {t('principal')} + {t('interest')}
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+                
+                <div className="space-y-4 border rounded-md p-4">
+                  <h3 className="font-medium">{t('loanSummary')}</h3>
+                  
+                  <div className="space-y-2">
+                    <div className="flex justify-between text-sm">
+                      <span>{t('loanAmount')}:</span>
+                      <span className="font-medium">€{loanAmount.toLocaleString()}</span>
+                    </div>
+                    <div className="flex justify-between text-sm">
+                      <span>{t('downPayment')}:</span>
+                      <span>€{downPayment.toLocaleString()} ({downPaymentPercentage.toFixed(0)}%)</span>
+                    </div>
+                    <div className="flex justify-between text-sm">
+                      <span>{t('interestRate')}:</span>
+                      <span>{interestRate}%</span>
+                    </div>
+                    <div className="flex justify-between text-sm">
+                      <span>{t('loanTerm')}:</span>
+                      <span>{loanTerm} {t('years')}</span>
+                    </div>
+                  </div>
+                  
+                  <div className="pt-2 border-t">
+                    <div className="flex justify-between text-sm font-medium">
+                      <span>{t('totalLoanCost')}:</span>
+                      <span>€{totalLoanCost.toLocaleString()}</span>
+                    </div>
+                    <div className="flex justify-between text-sm">
+                      <span>{t('totalInterestPaid')}:</span>
+                      <span>€{totalInterestPaid.toLocaleString()}</span>
+                    </div>
+                  </div>
+                </div>
+                
+                <Button className="w-full">
+                  {t('saveCalculation')}
+                </Button>
               </div>
             </div>
-            
-            <div>
-              <div className="flex justify-between items-center mb-2">
-                <h3 className="font-medium">{t('paymentBreakdown')}</h3>
-                <TooltipProvider>
-                  <UITooltip>
-                    <TooltipTrigger>
-                      <InfoIcon className="h-4 w-4 text-muted-foreground" />
-                    </TooltipTrigger>
-                    <TooltipContent>
-                      <p>{t('paymentBreakdownTooltip')}</p>
-                    </TooltipContent>
-                  </UITooltip>
-                </TooltipProvider>
-              </div>
-              <div className="bg-muted p-4 rounded-lg">
-                <ResponsiveContainer width="100%" height={200}>
-                  <PieChart>
+          </TabsContent>
+          
+          <TabsContent value="payment-breakdown" className="mt-6">
+            <div className="grid md:grid-cols-2 gap-6">
+              <div className="h-64">
+                <ResponsiveContainer width="100%" height="100%">
+                  <RechartsChart>
                     <Pie
-                      data={breakdownData}
+                      data={pieData}
                       cx="50%"
                       cy="50%"
                       innerRadius={60}
                       outerRadius={80}
-                      fill="#8884d8"
-                      paddingAngle={2}
+                      paddingAngle={5}
                       dataKey="value"
-                      label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
+                      label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
                     >
-                      {breakdownData.map((entry, index) => (
+                      {pieData.map((entry, index) => (
                         <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                       ))}
                     </Pie>
-                    <Tooltip formatter={(value: number) => [formatCurrency(value), ""]} />
-                  </PieChart>
+                    <Tooltip formatter={(value) => `€${value.toLocaleString()}`} />
+                  </RechartsChart>
                 </ResponsiveContainer>
               </div>
-              <div className="mt-2 flex justify-center space-x-4">
-                {breakdownData.map((entry, index) => (
-                  <div key={index} className="flex items-center">
-                    <div 
-                      className="w-3 h-3 mr-1 rounded-full" 
-                      style={{ backgroundColor: COLORS[index % COLORS.length] }}
-                    />
-                    <span className="text-xs">{entry.name}</span>
+              <div className="space-y-4">
+                <div className="space-y-2">
+                  <h3 className="font-medium">{t('costBreakdown')}</h3>
+                  <p className="text-sm text-muted-foreground">
+                    {t('mortgagePaymentExplained')}
+                  </p>
+                  
+                  <div className="mt-4">
+                    <div className="flex items-center mb-2">
+                      <div className="w-3 h-3 rounded-full bg-[#0088FE] mr-2"></div>
+                      <div className="text-sm">{t('principal')}: <span className="font-medium">€{loanAmount.toLocaleString()}</span></div>
+                    </div>
+                    <div className="flex items-center">
+                      <div className="w-3 h-3 rounded-full bg-[#FF8042] mr-2"></div>
+                      <div className="text-sm">{t('interest')}: <span className="font-medium">€{totalInterestPaid.toLocaleString()}</span></div>
+                    </div>
                   </div>
-                ))}
+                </div>
+                
+                <Card>
+                  <CardHeader className="py-3">
+                    <CardTitle className="text-sm">{t('paymentDistribution')}</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="text-sm">
+                      <div className="flex justify-between mb-1">
+                        <span>{t('principalPercentage')}:</span>
+                        <span className="font-medium">{((loanAmount / totalLoanCost) * 100).toFixed(1)}%</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span>{t('interestPercentage')}:</span>
+                        <span className="font-medium">{((totalInterestPaid / totalLoanCost) * 100).toFixed(1)}%</span>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+                
+                <div className="text-xs text-muted-foreground border-t pt-2">
+                  {t('mortgagePaymentNote')}
+                </div>
               </div>
             </div>
-          </div>
-        </div>
+          </TabsContent>
+          
+          <TabsContent value="amortization" className="mt-6">
+            <div className="text-center py-12 border rounded-lg">
+              <LineChart className="h-8 w-8 mx-auto text-muted-foreground mb-2" />
+              <h3 className="font-medium">{t('amortizationSchedule')}</h3>
+              <p className="text-sm text-muted-foreground mt-2 mb-4 max-w-md mx-auto">
+                {t('amortizationScheduleDescription')}
+              </p>
+              <Button>
+                {t('unlockAmortizationSchedule')}
+              </Button>
+            </div>
+          </TabsContent>
+        </Tabs>
       </CardContent>
     </Card>
   );

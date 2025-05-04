@@ -1,321 +1,204 @@
 
-import React, { useState } from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import React from 'react';
+import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
 import { useLanguage } from '@/contexts/LanguageContext';
-import { 
-  Building, Calendar, CheckCircle, CheckSquare, ChevronDown, ChevronRight,
-  ClipboardCheck, FileText, Search, TrendingUp, Map
-} from 'lucide-react';
+import { ClipboardCheck, SquareCheck, File, Building, Search, AlertTriangle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Checkbox } from '@/components/ui/checkbox';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Progress } from '@/components/ui/progress';
 import { Badge } from '@/components/ui/badge';
-import { Input } from '@/components/ui/input';
-import { Separator } from '@/components/ui/separator';
-import {
-  Accordion,
-  AccordionContent,
-  AccordionItem,
-  AccordionTrigger,
-} from "@/components/ui/accordion";
 
-// Simplified implementation of DueDiligenceChecklist component
 const DueDiligenceChecklist: React.FC = () => {
   const { t } = useLanguage();
-  const [activeTab, setActiveTab] = useState("property");
-  const [searchTerm, setSearchTerm] = useState("");
   
-  // Sample data for the checklist
-  const checklistItems = {
-    property: [
-      { id: "p1", title: "Property inspection report", completed: true },
-      { id: "p2", title: "Building condition assessment", completed: false },
-      { id: "p3", title: "Past inspection records review", completed: false },
-      { id: "p4", title: "Pest inspection report", completed: true },
-      { id: "p5", title: "Floor plan verification", completed: false },
-      { id: "p6", title: "Utility systems check", completed: false },
-    ],
-    financial: [
-      { id: "f1", title: "Income & expense verification", completed: false },
-      { id: "f2", title: "Cash flow analysis", completed: false },
-      { id: "f3", title: "Tax records review", completed: false },
-      { id: "f4", title: "Insurance quote", completed: false },
-      { id: "f5", title: "Property tax assessment", completed: false },
-    ],
-    legal: [
-      { id: "l1", title: "Title search completion", completed: true },
-      { id: "l2", title: "Property liens check", completed: false },
-      { id: "l3", title: "Zoning compliance verification", completed: false },
-      { id: "l4", title: "Easements & encroachments", completed: false },
-      { id: "l5", title: "HOA document review", completed: false },
-    ],
-    environmental: [
-      { id: "e1", title: "Environmental site assessment", completed: false },
-      { id: "e2", title: "Flood zone determination", completed: true },
-      { id: "e3", title: "Soil contamination check", completed: false },
-      { id: "e4", title: "Lead & asbestos testing", completed: false },
-    ]
-  };
+  // Sample checklist data
+  const checklistItems = [
+    { id: 1, category: 'legal', name: 'Property Title Search', completed: true, critical: true },
+    { id: 2, category: 'legal', name: 'Review of Deed Restrictions', completed: true, critical: true },
+    { id: 3, category: 'legal', name: 'Zoning Verification', completed: false, critical: true },
+    { id: 4, category: 'legal', name: 'HOA Document Review', completed: false, critical: false },
+    { id: 5, category: 'financial', name: 'Income & Expense Verification', completed: true, critical: true },
+    { id: 6, category: 'financial', name: 'Tax History Review', completed: true, critical: true },
+    { id: 7, category: 'financial', name: 'Insurance Quote', completed: false, critical: true },
+    { id: 8, category: 'financial', name: 'Utility Bills Analysis', completed: false, critical: false },
+    { id: 9, category: 'physical', name: 'Professional Home Inspection', completed: false, critical: true },
+    { id: 10, category: 'physical', name: 'Roof Inspection', completed: false, critical: true },
+    { id: 11, category: 'physical', name: 'HVAC System Check', completed: false, critical: false },
+    { id: 12, category: 'physical', name: 'Plumbing System Check', completed: false, critical: false },
+  ];
   
-  // Calculate completion percentages
-  const calculateCompletion = (items) => {
-    const total = items.length;
-    const completed = items.filter(item => item.completed).length;
-    return total > 0 ? Math.round((completed / total) * 100) : 0;
-  };
+  const legalItems = checklistItems.filter(item => item.category === 'legal');
+  const financialItems = checklistItems.filter(item => item.category === 'financial');
+  const physicalItems = checklistItems.filter(item => item.category === 'physical');
   
-  const propertyCompletion = calculateCompletion(checklistItems.property);
-  const financialCompletion = calculateCompletion(checklistItems.financial);
-  const legalCompletion = calculateCompletion(checklistItems.legal);
-  const environmentalCompletion = calculateCompletion(checklistItems.environmental);
+  // Calculate progress percentages
+  const legalProgress = (legalItems.filter(item => item.completed).length / legalItems.length) * 100;
+  const financialProgress = (financialItems.filter(item => item.completed).length / financialItems.length) * 100;
+  const physicalProgress = (physicalItems.filter(item => item.completed).length / physicalItems.length) * 100;
+  const overallProgress = (checklistItems.filter(item => item.completed).length / checklistItems.length) * 100;
   
-  const totalCompletion = Math.round(
-    (propertyCompletion + financialCompletion + legalCompletion + environmentalCompletion) / 4
-  );
-  
-  // Toggle item completion status
-  const toggleItem = (category, id) => {
-    // In a real application, this would update state and possibly save to backend
-    console.log(`Toggling ${category} item ${id}`);
-  };
+  const criticalItemsCount = checklistItems.filter(item => item.critical && !item.completed).length;
   
   return (
-    <div className="space-y-6">
-      <div>
-        <h1 className="text-3xl font-bold">
-          <ClipboardCheck className="inline-block mr-2 h-8 w-8" />
+    <Card>
+      <CardHeader>
+        <CardTitle className="flex items-center">
+          <ClipboardCheck className="mr-2 h-5 w-5" />
           {t('dueDiligence')}
-        </h1>
-        <p className="text-muted-foreground">{t('completeInvestmentChecklist')}</p>
-      </div>
-      
-      <Card>
-        <CardHeader>
-          <div className="flex justify-between items-center">
-            <div>
-              <CardTitle>Due Diligence Progress</CardTitle>
-              <CardDescription>Track your investment verification process</CardDescription>
-            </div>
-            <div className="text-right">
-              <div className="text-2xl font-bold">{totalCompletion}%</div>
-              <div className="text-xs text-muted-foreground">Overall completion</div>
-            </div>
+        </CardTitle>
+        <CardDescription>{t('comprehensiveDueDiligenceChecklist')}</CardDescription>
+      </CardHeader>
+      <CardContent>
+        <div className="mb-6">
+          <div className="flex justify-between mb-2">
+            <h3 className="text-sm font-medium">{t('overallProgress')}</h3>
+            <span className="text-sm font-medium">{Math.round(overallProgress)}%</span>
           </div>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-4">
-            <div>
-              <div className="flex justify-between text-sm mb-1">
-                <div className="flex items-center">
-                  <Building className="h-4 w-4 mr-1" />
-                  <span>Property</span>
-                </div>
-                <span>{propertyCompletion}%</span>
-              </div>
-              <Progress value={propertyCompletion} className="h-2" />
-            </div>
-            
-            <div>
-              <div className="flex justify-between text-sm mb-1">
-                <div className="flex items-center">
-                  <TrendingUp className="h-4 w-4 mr-1" />
-                  <span>Financial</span>
-                </div>
-                <span>{financialCompletion}%</span>
-              </div>
-              <Progress value={financialCompletion} className="h-2" />
-            </div>
-            
-            <div>
-              <div className="flex justify-between text-sm mb-1">
-                <div className="flex items-center">
-                  <FileText className="h-4 w-4 mr-1" />
-                  <span>Legal</span>
-                </div>
-                <span>{legalCompletion}%</span>
-              </div>
-              <Progress value={legalCompletion} className="h-2" />
-            </div>
-            
-            <div>
-              <div className="flex justify-between text-sm mb-1">
-                <div className="flex items-center">
-                  <Map className="h-4 w-4 mr-1" />
-                  <span>Environmental</span>
-                </div>
-                <span>{environmentalCompletion}%</span>
-              </div>
-              <Progress value={environmentalCompletion} className="h-2" />
-            </div>
-          </div>
-        </CardContent>
-      </Card>
-      
-      <div className="flex items-center space-x-2">
-        <Search className="h-4 w-4 text-muted-foreground" />
-        <Input
-          placeholder="Search checklist items..."
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-          className="flex-1"
-        />
-      </div>
-      
-      <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-        <TabsList className="grid w-full grid-cols-4">
-          <TabsTrigger value="property">Property</TabsTrigger>
-          <TabsTrigger value="financial">Financial</TabsTrigger>
-          <TabsTrigger value="legal">Legal</TabsTrigger>
-          <TabsTrigger value="environmental">Environmental</TabsTrigger>
-        </TabsList>
-        
-        <TabsContent value="property" className="mt-4 space-y-4">
-          <Card>
-            <CardContent className="pt-6">
-              <Accordion type="single" collapsible className="w-full">
-                <AccordionItem value="inspection">
-                  <AccordionTrigger>
-                    <div className="flex items-center">
-                      <span className="mr-2">Property Inspection</span>
-                      <Badge variant={propertyCompletion > 0 ? "default" : "outline"}>
-                        {calculateCompletion(checklistItems.property.slice(0, 3))}%
-                      </Badge>
-                    </div>
-                  </AccordionTrigger>
-                  <AccordionContent>
-                    <div className="space-y-2 pl-4">
-                      {checklistItems.property.slice(0, 3).map(item => (
-                        <div key={item.id} className="flex items-center space-x-2">
-                          <Checkbox
-                            id={item.id}
-                            checked={item.completed}
-                            onCheckedChange={() => toggleItem("property", item.id)}
-                          />
-                          <label
-                            htmlFor={item.id}
-                            className={`text-sm ${item.completed ? 'line-through text-muted-foreground' : ''}`}
-                          >
-                            {item.title}
-                          </label>
-                        </div>
-                      ))}
-                    </div>
-                  </AccordionContent>
-                </AccordionItem>
-                
-                <AccordionItem value="structure">
-                  <AccordionTrigger>
-                    <div className="flex items-center">
-                      <span className="mr-2">Structure & Systems</span>
-                      <Badge variant={propertyCompletion > 0 ? "default" : "outline"}>
-                        {calculateCompletion(checklistItems.property.slice(3))}%
-                      </Badge>
-                    </div>
-                  </AccordionTrigger>
-                  <AccordionContent>
-                    <div className="space-y-2 pl-4">
-                      {checklistItems.property.slice(3).map(item => (
-                        <div key={item.id} className="flex items-center space-x-2">
-                          <Checkbox
-                            id={item.id}
-                            checked={item.completed}
-                            onCheckedChange={() => toggleItem("property", item.id)}
-                          />
-                          <label
-                            htmlFor={item.id}
-                            className={`text-sm ${item.completed ? 'line-through text-muted-foreground' : ''}`}
-                          >
-                            {item.title}
-                          </label>
-                        </div>
-                      ))}
-                    </div>
-                  </AccordionContent>
-                </AccordionItem>
-              </Accordion>
-            </CardContent>
-          </Card>
+          <Progress value={overallProgress} />
           
-          <Button className="w-full" variant="outline">
-            <FileText className="h-4 w-4 mr-2" />
-            Generate Property Report
-          </Button>
-        </TabsContent>
+          {criticalItemsCount > 0 && (
+            <div className="flex items-center mt-2 text-amber-500 text-sm">
+              <AlertTriangle className="h-4 w-4 mr-1" />
+              {criticalItemsCount} {t('criticalItemsRemaining')}
+            </div>
+          )}
+        </div>
         
-        <TabsContent value="financial" className="mt-4">
-          <Card>
-            <CardContent className="pt-6">
-              <div className="space-y-4">
-                {checklistItems.financial.map(item => (
-                  <div key={item.id} className="flex items-center space-x-2">
-                    <Checkbox
-                      id={item.id}
-                      checked={item.completed}
-                      onCheckedChange={() => toggleItem("financial", item.id)}
-                    />
-                    <label
-                      htmlFor={item.id}
-                      className={`flex-1 ${item.completed ? 'line-through text-muted-foreground' : ''}`}
-                    >
-                      {item.title}
-                    </label>
-                  </div>
-                ))}
+        <Tabs defaultValue="legal">
+          <TabsList className="grid w-full grid-cols-3">
+            <TabsTrigger value="legal">
+              <File className="h-4 w-4 mr-2" />
+              {t('legal')}
+            </TabsTrigger>
+            <TabsTrigger value="financial">
+              <Search className="h-4 w-4 mr-2" />
+              {t('financial')}
+            </TabsTrigger>
+            <TabsTrigger value="physical">
+              <Building className="h-4 w-4 mr-2" />
+              {t('physical')}
+            </TabsTrigger>
+          </TabsList>
+          
+          <TabsContent value="legal" className="space-y-4 mt-6">
+            <div className="flex justify-between mb-2 items-center">
+              <h3 className="text-sm font-medium">{t('legalDueDiligence')}</h3>
+              <div className="flex items-center">
+                <span className="text-sm mr-2">{Math.round(legalProgress)}%</span>
+                <Button variant="outline" size="sm">{t('addItem')}</Button>
               </div>
-            </CardContent>
-          </Card>
-        </TabsContent>
+            </div>
+            
+            <div className="space-y-2">
+              {legalItems.map(item => (
+                <div key={item.id} className="flex items-center justify-between border rounded-md p-3">
+                  <div className="flex items-center">
+                    <div className={`w-5 h-5 rounded flex items-center justify-center mr-3 ${item.completed ? 'bg-green-100 text-green-600' : 'bg-muted'}`}>
+                      {item.completed && <SquareCheck className="h-4 w-4" />}
+                    </div>
+                    <div>
+                      <span className="font-medium">{item.name}</span>
+                      {item.critical && (
+                        <Badge variant="outline" className="ml-2 bg-red-50 text-red-700 border-red-200">
+                          {t('critical')}
+                        </Badge>
+                      )}
+                    </div>
+                  </div>
+                  <Button size="sm" variant="ghost">
+                    {item.completed ? t('view') : t('complete')}
+                  </Button>
+                </div>
+              ))}
+            </div>
+          </TabsContent>
+          
+          <TabsContent value="financial" className="space-y-4 mt-6">
+            <div className="flex justify-between mb-2 items-center">
+              <h3 className="text-sm font-medium">{t('financialDueDiligence')}</h3>
+              <div className="flex items-center">
+                <span className="text-sm mr-2">{Math.round(financialProgress)}%</span>
+                <Button variant="outline" size="sm">{t('addItem')}</Button>
+              </div>
+            </div>
+            
+            <div className="space-y-2">
+              {financialItems.map(item => (
+                <div key={item.id} className="flex items-center justify-between border rounded-md p-3">
+                  <div className="flex items-center">
+                    <div className={`w-5 h-5 rounded flex items-center justify-center mr-3 ${item.completed ? 'bg-green-100 text-green-600' : 'bg-muted'}`}>
+                      {item.completed && <SquareCheck className="h-4 w-4" />}
+                    </div>
+                    <div>
+                      <span className="font-medium">{item.name}</span>
+                      {item.critical && (
+                        <Badge variant="outline" className="ml-2 bg-red-50 text-red-700 border-red-200">
+                          {t('critical')}
+                        </Badge>
+                      )}
+                    </div>
+                  </div>
+                  <Button size="sm" variant="ghost">
+                    {item.completed ? t('view') : t('complete')}
+                  </Button>
+                </div>
+              ))}
+            </div>
+          </TabsContent>
+          
+          <TabsContent value="physical" className="space-y-4 mt-6">
+            <div className="flex justify-between mb-2 items-center">
+              <h3 className="text-sm font-medium">{t('physicalDueDiligence')}</h3>
+              <div className="flex items-center">
+                <span className="text-sm mr-2">{Math.round(physicalProgress)}%</span>
+                <Button variant="outline" size="sm">{t('addItem')}</Button>
+              </div>
+            </div>
+            
+            <div className="space-y-2">
+              {physicalItems.map(item => (
+                <div key={item.id} className="flex items-center justify-between border rounded-md p-3">
+                  <div className="flex items-center">
+                    <div className={`w-5 h-5 rounded flex items-center justify-center mr-3 ${item.completed ? 'bg-green-100 text-green-600' : 'bg-muted'}`}>
+                      {item.completed && <SquareCheck className="h-4 w-4" />}
+                    </div>
+                    <div>
+                      <span className="font-medium">{item.name}</span>
+                      {item.critical && (
+                        <Badge variant="outline" className="ml-2 bg-red-50 text-red-700 border-red-200">
+                          {t('critical')}
+                        </Badge>
+                      )}
+                    </div>
+                  </div>
+                  <Button size="sm" variant="ghost">
+                    {item.completed ? t('view') : t('complete')}
+                  </Button>
+                </div>
+              ))}
+            </div>
+          </TabsContent>
+        </Tabs>
         
-        <TabsContent value="legal" className="mt-4">
-          <Card>
-            <CardContent className="pt-6">
-              <div className="space-y-4">
-                {checklistItems.legal.map(item => (
-                  <div key={item.id} className="flex items-center space-x-2">
-                    <Checkbox
-                      id={item.id}
-                      checked={item.completed}
-                      onCheckedChange={() => toggleItem("legal", item.id)}
-                    />
-                    <label
-                      htmlFor={item.id}
-                      className={`flex-1 ${item.completed ? 'line-through text-muted-foreground' : ''}`}
-                    >
-                      {item.title}
-                    </label>
-                  </div>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
-        </TabsContent>
-        
-        <TabsContent value="environmental" className="mt-4">
-          <Card>
-            <CardContent className="pt-6">
-              <div className="space-y-4">
-                {checklistItems.environmental.map(item => (
-                  <div key={item.id} className="flex items-center space-x-2">
-                    <Checkbox
-                      id={item.id}
-                      checked={item.completed}
-                      onCheckedChange={() => toggleItem("environmental", item.id)}
-                    />
-                    <label
-                      htmlFor={item.id}
-                      className={`flex-1 ${item.completed ? 'line-through text-muted-foreground' : ''}`}
-                    >
-                      {item.title}
-                    </label>
-                  </div>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
-        </TabsContent>
-      </Tabs>
-    </div>
+        <div className="mt-6 border-t pt-4">
+          <h3 className="text-sm font-medium mb-2">{t('dueDiligenceTemplates')}</h3>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <Button variant="outline" className="justify-start">
+              <Building className="mr-2 h-4 w-4" />
+              {t('singleFamilyTemplate')}
+            </Button>
+            <Button variant="outline" className="justify-start">
+              <Building className="mr-2 h-4 w-4" />
+              {t('multiUnitTemplate')}
+            </Button>
+            <Button variant="outline" className="justify-start">
+              <Building className="mr-2 h-4 w-4" />
+              {t('commercialTemplate')}
+            </Button>
+          </div>
+        </div>
+      </CardContent>
+    </Card>
   );
 };
 

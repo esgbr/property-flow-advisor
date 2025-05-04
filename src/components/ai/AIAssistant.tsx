@@ -1,130 +1,148 @@
 
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog';
-import { Sparkles, MessageSquarePlus, Check } from 'lucide-react';
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Brain, Sparkles } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { Badge } from '@/components/ui/badge';
 
 interface AIAssistantProps {
-  contextData?: any;
+  variant?: 'icon' | 'button';
+  size?: 'sm' | 'md' | 'lg';
+  contextData?: Record<string, any>;
   title?: string;
   description?: string;
-  variant?: 'default' | 'icon';
-  size?: 'sm' | 'md' | 'lg';
 }
 
-const AIAssistant: React.FC<AIAssistantProps> = ({
-  contextData,
-  title,
-  description,
-  variant = 'default',
+const AIAssistant: React.FC<AIAssistantProps> = ({ 
+  variant = 'button',
   size = 'md',
+  contextData = {},
+  title,
+  description
 }) => {
-  const [isOpen, setIsOpen] = useState(false);
-  const [isGenerating, setIsGenerating] = useState(false);
-  const [insights, setInsights] = useState<string[] | null>(null);
   const { t } = useLanguage();
+  const [isOpen, setIsOpen] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [insights, setInsights] = useState<string[]>([]);
+  const [recommendations, setRecommendations] = useState<string[]>([]);
 
-  const handleGenerate = () => {
-    setIsGenerating(true);
+  // Simulate AI analysis
+  const generateInsightsAndRecommendations = () => {
+    setIsLoading(true);
     
-    // Simulate AI response generation
+    // In a real application, you would send the contextData to an AI service
+    // and get back insights and recommendations
     setTimeout(() => {
       setInsights([
-        t('increasedCashflowOpportunity'),
-        t('portfolioDiversificationRecommendation'),
-        t('refinancingOpportunityDetected'),
-        t('propertyAppreciationTrend'),
+        'Your portfolio shows strong annual ROI at 7.2%, above market average of 6.3%.',
+        'Cash flow positive across all properties with €12,500 monthly net income.',
+        'Your debt-to-equity ratio is 1.63, slightly above recommended 1.5.',
+        'Portfolio is currently concentrated in residential properties (78%).'
       ]);
-      setIsGenerating(false);
+      
+      setRecommendations([
+        'Consider refinancing options for 2 properties to reduce overall loan costs.',
+        'Diversify with 1-2 commercial properties to balance portfolio allocation.',
+        'Set aside 3-5% of portfolio value for maintenance reserves.',
+        'Review insurance coverage - current policy may be insufficient for portfolio size.'
+      ]);
+      
+      setIsLoading(false);
     }, 2000);
   };
 
-  // Size styling
-  const sizeStyles = {
-    sm: 'h-8 w-8',
-    md: 'h-10 w-10',
-    lg: 'h-12 w-12',
-  };
-
-  // Variant rendering
-  const renderButton = () => {
-    if (variant === 'icon') {
-      return (
-        <Button
-          variant="secondary"
-          size="icon"
-          onClick={() => setIsOpen(true)}
-          className={sizeStyles[size]}
-        >
-          <Sparkles className="h-4 w-4" />
-        </Button>
-      );
+  // Handle dialog open
+  const handleOpen = () => {
+    setIsOpen(true);
+    if (insights.length === 0) {
+      generateInsightsAndRecommendations();
     }
-
-    return (
-      <Button onClick={() => setIsOpen(true)} className="gap-2">
-        <Sparkles className="h-4 w-4" />
-        {t('generateInsights')}
-      </Button>
-    );
   };
 
   return (
     <>
-      {renderButton()}
-      
+      {variant === 'icon' ? (
+        <Button 
+          onClick={handleOpen}
+          variant="ghost" 
+          size={size} 
+          className="h-8 w-8 p-0 rounded-full"
+        >
+          <Sparkles className="h-4 w-4" />
+          <span className="sr-only">AI Assistant</span>
+        </Button>
+      ) : (
+        <Button 
+          onClick={handleOpen}
+          variant="outline" 
+          size={size} 
+          className="flex items-center"
+        >
+          <Sparkles className="mr-2 h-4 w-4" />
+          {t('aiInsights')}
+        </Button>
+      )}
+
       <Dialog open={isOpen} onOpenChange={setIsOpen}>
-        <DialogContent className="sm:max-w-[500px]">
+        <DialogContent className="sm:max-w-[600px]">
           <DialogHeader>
             <DialogTitle className="flex items-center">
-              <Sparkles className="mr-2 h-5 w-5 text-primary" />
-              {title || t('aiPortfolioInsights')}
+              <Brain className="h-5 w-5 mr-2 text-primary" />
+              {title || t('portfolioInsights')}
             </DialogTitle>
             <DialogDescription>
-              {description || t('aiPortfolioInsightsDescription')}
+              {description || t('aiGeneratedPortfolioAnalysis')}
             </DialogDescription>
           </DialogHeader>
-
-          <div className="py-4">
-            {!insights ? (
-              <div className="flex flex-col items-center justify-center p-8 gap-4 text-center">
-                <MessageSquarePlus className="h-12 w-12 text-muted-foreground" />
-                <p className="text-muted-foreground">{t('generateAIInsightsPrompt')}</p>
-                <Button 
-                  onClick={handleGenerate} 
-                  disabled={isGenerating}
-                  className="mt-2"
-                >
-                  {isGenerating ? t('generating') : t('generateInsights')}
-                  {isGenerating && (
-                    <div className="ml-2 animate-spin h-4 w-4 border-2 border-current border-t-transparent rounded-full" />
-                  )}
-                </Button>
+          
+          {isLoading ? (
+            <div className="flex flex-col items-center justify-center py-12">
+              <div className="animate-pulse flex items-center space-x-2">
+                <Sparkles className="h-5 w-5 text-primary" />
+                <div className="text-sm">{t('analyzingYourPortfolio')}</div>
               </div>
-            ) : (
-              <div className="space-y-3">
-                {insights.map((insight, i) => (
-                  <div key={i} className="flex items-start gap-2 p-3 rounded-md bg-primary/5">
-                    <Check className="h-5 w-5 text-primary mt-0.5" />
-                    <p className="text-sm">{insight}</p>
-                  </div>
-                ))}
+            </div>
+          ) : (
+            <div className="space-y-6">
+              <div>
+                <h3 className="text-sm font-medium flex items-center mb-3">
+                  <Badge variant="outline" className="mr-2">AI</Badge>
+                  {t('portfolioInsights')}
+                </h3>
+                <ul className="space-y-2">
+                  {insights.map((insight, index) => (
+                    <li key={index} className="flex items-start">
+                      <span className="mr-2 text-primary">•</span>
+                      <span className="text-sm">{insight}</span>
+                    </li>
+                  ))}
+                </ul>
               </div>
-            )}
-          </div>
-
+              
+              <div>
+                <h3 className="text-sm font-medium flex items-center mb-3">
+                  <Badge variant="outline" className="mr-2">AI</Badge>
+                  {t('recommendedActions')}
+                </h3>
+                <ul className="space-y-2">
+                  {recommendations.map((rec, index) => (
+                    <li key={index} className="flex items-start">
+                      <span className="mr-2 text-primary">•</span>
+                      <span className="text-sm">{rec}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+              
+              <div className="text-xs text-muted-foreground border-t pt-2 mt-4">
+                {t('aiDisclaimer')}
+              </div>
+            </div>
+          )}
+          
           <DialogFooter>
-            <Button variant="outline" onClick={() => setIsOpen(false)}>
-              {t('close')}
-            </Button>
+            <Button onClick={() => setIsOpen(false)}>{t('close')}</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
