@@ -118,13 +118,13 @@ const RentalYieldMap: React.FC = () => {
                   {t('All Yields')}
                 </DropdownMenuItem>
                 <DropdownMenuItem onClick={() => setSelectedFilter('high')}>
-                  {t('High Yield')} (>6%)
+                  {t('High Yield')} {'>'}6%
                 </DropdownMenuItem>
                 <DropdownMenuItem onClick={() => setSelectedFilter('medium')}>
-                  {t('Medium Yield')} (5-6%)
+                  {t('Medium Yield')} 5-6%
                 </DropdownMenuItem>
                 <DropdownMenuItem onClick={() => setSelectedFilter('low')}>
-                  {t('Low Yield')} (&lt;5%)
+                  {t('Low Yield')} {'<'}5%
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
@@ -140,7 +140,7 @@ const RentalYieldMap: React.FC = () => {
             <div className="flex items-center space-x-4">
               <div className="flex items-center">
                 <div className="h-4 w-4 bg-red-500 rounded mr-2"></div>
-                <span className="text-sm text-muted-foreground">&lt;5%</span>
+                <span className="text-sm text-muted-foreground">{'<'}5%</span>
               </div>
               <div className="flex items-center">
                 <div className="h-4 w-4 bg-amber-500 rounded mr-2"></div>
@@ -148,7 +148,7 @@ const RentalYieldMap: React.FC = () => {
               </div>
               <div className="flex items-center">
                 <div className="h-4 w-4 bg-green-500 rounded mr-2"></div>
-                <span className="text-sm text-muted-foreground">&gt;6%</span>
+                <span className="text-sm text-muted-foreground">{'>'}6%</span>
               </div>
             </div>
           </div>
