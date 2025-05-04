@@ -1,4 +1,3 @@
-
 import React, { createContext, useContext, useState, useEffect } from 'react';
 
 interface LanguageContextProps {
@@ -426,9 +425,8 @@ const englishTranslations = {
   // Investment analysis
   investmentAnalysis: "Investment Analysis",
   
-  // Price to rent ratio
-  
   // Monthly cash flow
+  monthlyCashFlow: "Monthly Cash Flow",
   
   // Mortgage calculator
   calculateMortgagePayments: "Calculate mortgage payments",

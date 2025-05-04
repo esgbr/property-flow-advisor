@@ -8,7 +8,7 @@ import { Badge } from '@/components/ui/badge';
 
 interface AIAssistantProps {
   variant?: 'icon' | 'button';
-  size?: 'sm' | 'default' | 'lg'; // Changed 'md' to 'default' to match Button component's allowed size values
+  size?: 'sm' | 'default' | 'lg';
   contextData?: Record<string, any>;
   title?: string;
   description?: string;
@@ -16,7 +16,7 @@ interface AIAssistantProps {
 
 const AIAssistant: React.FC<AIAssistantProps> = ({ 
   variant = 'button',
-  size = 'default', // Using 'default' instead of 'md'
+  size = 'default',
   contextData = {},
   title,
   description
