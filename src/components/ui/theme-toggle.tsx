@@ -11,7 +11,7 @@ export function ThemeToggle() {
   const { theme, setTheme, isDarkMode } = useAppTheme();
   const { updatePreferences } = useUserPreferences();
   
-  const handleThemeChange = (newTheme: string) => {
+  const handleThemeChange = (newTheme: 'light' | 'dark' | 'system') => {
     setTheme(newTheme);
     updatePreferences({ theme: newTheme });
   };

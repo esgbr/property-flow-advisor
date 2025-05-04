@@ -5,9 +5,11 @@ import * as React from "react";
 import { ThemeProvider as NextThemesProvider } from "next-themes";
 import type { ThemeProviderProps } from "next-themes";
 
+type ThemeType = 'light' | 'dark' | 'system';
+
 const ThemeContext = React.createContext({
-  theme: undefined as string | undefined,
-  setTheme: (_theme: string) => {},
+  theme: 'system' as ThemeType | undefined,
+  setTheme: (_theme: ThemeType) => {},
   isDarkMode: false,
   toggleTheme: () => {},
 });
@@ -17,9 +19,9 @@ export function ThemeProvider({ children, ...props }: ThemeProviderProps) {
 }
 
 export function useTheme() {
-  const [theme, setThemeState] = React.useState<string | undefined>(
+  const [theme, setThemeState] = React.useState<ThemeType | undefined>(
     typeof window !== 'undefined' 
-      ? localStorage.getItem('real-estate-theme') || 'system' 
+      ? (localStorage.getItem('real-estate-theme') as ThemeType) || 'system' 
       : 'light'
   );
   
@@ -32,7 +34,7 @@ export function useTheme() {
     return theme === 'dark';
   }, [theme]);
   
-  const setTheme = React.useCallback((newTheme: string) => {
+  const setTheme = React.useCallback((newTheme: ThemeType) => {
     setThemeState(newTheme);
     if (typeof window !== 'undefined') {
       localStorage.setItem('real-estate-theme', newTheme);
@@ -63,7 +65,7 @@ export function useTheme() {
       const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
       setTheme('system');
     } else {
-      const savedTheme = localStorage.getItem('real-estate-theme');
+      const savedTheme = localStorage.getItem('real-estate-theme') as ThemeType | null;
       if (savedTheme) {
         setTheme(savedTheme);
       }
