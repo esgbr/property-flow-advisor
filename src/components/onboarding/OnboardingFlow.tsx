@@ -6,8 +6,11 @@ import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/components/ui/use-toast';
 import { useLanguage } from '@/contexts/LanguageContext';
-import { Check, ChevronRight } from 'lucide-react';
+import { Check, ChevronRight, Globe } from 'lucide-react';
 import { Input } from '@/components/ui/input';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { InvestmentMarket } from '@/contexts/UserPreferencesContext';
 
 interface OnboardingStep {
   id: string;
@@ -22,6 +25,7 @@ export interface OnboardingData {
   investmentGoals: string[];
   preferredPropertyTypes: string[];
   interests: string[];
+  investmentMarket: InvestmentMarket;
 }
 
 interface OnboardingFlowProps {
@@ -31,7 +35,7 @@ interface OnboardingFlowProps {
 }
 
 export const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ onComplete, onSkip, initialData }) => {
-  const { t } = useLanguage();
+  const { t, language, setLanguage } = useLanguage();
   const { toast } = useToast();
   const [currentStep, setCurrentStep] = useState(0);
   const [data, setData] = useState<OnboardingData>({
@@ -39,7 +43,8 @@ export const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ onComplete, onSk
     experienceLevel: initialData?.experienceLevel || 'beginner',
     investmentGoals: initialData?.investmentGoals || [],
     preferredPropertyTypes: initialData?.preferredPropertyTypes || [],
-    interests: initialData?.interests || []
+    interests: initialData?.interests || [],
+    investmentMarket: initialData?.investmentMarket || ''
   });
 
   // Define the onboarding steps
@@ -62,6 +67,72 @@ export const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ onComplete, onSk
               className="mt-1"
             />
           </div>
+          
+          <div className="w-full mt-4">
+            <Label>{t('chooseLanguage')}</Label>
+            <Tabs 
+              defaultValue={language} 
+              className="mt-1" 
+              onValueChange={(value) => setLanguage(value as 'en' | 'de')}
+            >
+              <TabsList className="grid grid-cols-2">
+                <TabsTrigger value="en">English</TabsTrigger>
+                <TabsTrigger value="de">Deutsch</TabsTrigger>
+              </TabsList>
+            </Tabs>
+          </div>
+        </div>
+      )
+    },
+    {
+      id: 'market',
+      title: t('investmentMarket'),
+      description: t('whereDoYouPlanToInvest'),
+      component: (
+        <div className="space-y-6">
+          <div className="flex justify-center mb-4">
+            <Globe className="h-16 w-16 text-primary opacity-80" />
+          </div>
+          
+          <Select
+            value={data.investmentMarket}
+            onValueChange={(value: InvestmentMarket) => 
+              setData({ ...data, investmentMarket: value })
+            }
+          >
+            <SelectTrigger>
+              <SelectValue placeholder={t('selectAMarket')} />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="germany">{t('germany')}</SelectItem>
+              <SelectItem value="austria">{t('austria')}</SelectItem>
+              <SelectItem value="switzerland">{t('switzerland')}</SelectItem>
+              <SelectItem value="france">{t('france')}</SelectItem>
+              <SelectItem value="usa">{t('unitedStates')}</SelectItem>
+              <SelectItem value="canada">{t('canada')}</SelectItem>
+              <SelectItem value="other">{t('otherMarket')}</SelectItem>
+            </SelectContent>
+          </Select>
+          
+          {data.investmentMarket === 'germany' && (
+            <div className="mt-4 p-3 bg-primary/10 rounded-md">
+              <p className="text-sm text-center">
+                {language === 'de' 
+                  ? 'Wir haben spezielle Tools für den deutschen Immobilienmarkt, die für Sie angepasst werden.'
+                  : 'We have specialized tools for the German real estate market that will be customized for you.'}
+              </p>
+            </div>
+          )}
+          
+          {data.investmentMarket === 'usa' && (
+            <div className="mt-4 p-3 bg-primary/10 rounded-md">
+              <p className="text-sm text-center">
+                {language === 'de' 
+                  ? 'US-spezifische Tools wie 1031 Exchange und andere werden für Sie verfügbar sein.'
+                  : 'US-specific tools like 1031 Exchange and others will be available to you.'}
+              </p>
+            </div>
+          )}
         </div>
       )
     },
@@ -190,7 +261,21 @@ export const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ onComplete, onSk
             <Check className="h-8 w-8 text-primary" />
           </div>
           <h3 className="text-xl font-medium">{t('profileCompleted')}</h3>
-          <p className="text-muted-foreground">{t('weveCustomizedYourExperience')}</p>
+          <p className="text-muted-foreground">
+            {t('weveCustomizedYourExperience')}
+            {data.investmentMarket && (
+              <span className="block mt-2">
+                {language === 'de' 
+                  ? `Spezifische Tools für ${data.investmentMarket === 'germany' ? 'Deutschland' : 
+                      data.investmentMarket === 'usa' ? 'die USA' : 
+                      data.investmentMarket === 'austria' ? 'Österreich' : 
+                      data.investmentMarket} wurden für Sie vorbereitet.` 
+                  : `Specific tools for ${data.investmentMarket === 'germany' ? 'Germany' : 
+                      data.investmentMarket === 'usa' ? 'the USA' : 
+                      data.investmentMarket} have been prepared for you.`}
+              </span>
+            )}
+          </p>
         </div>
       )
     }

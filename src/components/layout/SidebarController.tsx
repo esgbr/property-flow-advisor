@@ -12,12 +12,12 @@ interface SidebarControllerProps {
 const SidebarController: React.FC<SidebarControllerProps> = ({ children }) => {
   const isMobile = useIsMobile();
   const location = useLocation();
-  const { preferences } = useUserPreferences();
+  const { preferences, updatePreferences } = useUserPreferences();
   
   // Get sidebar state from preferences or default to collapsed on mobile
   const [sidebarCollapsed, setSidebarCollapsed] = useState(() => {
-    if (preferences.sidebarState) {
-      return preferences.sidebarState === 'collapsed';
+    if (preferences.sidebarPreferences?.collapsed !== undefined) {
+      return preferences.sidebarPreferences.collapsed;
     }
     return isMobile;
   });
@@ -30,8 +30,17 @@ const SidebarController: React.FC<SidebarControllerProps> = ({ children }) => {
   }, [isMobile, location.pathname]);
   
   const toggleSidebar = useCallback(() => {
-    setSidebarCollapsed(prev => !prev);
-  }, []);
+    const newCollapsedState = !sidebarCollapsed;
+    setSidebarCollapsed(newCollapsedState);
+    
+    // Save user preference
+    updatePreferences({
+      sidebarPreferences: {
+        ...preferences.sidebarPreferences,
+        collapsed: newCollapsedState
+      }
+    });
+  }, [sidebarCollapsed, updatePreferences, preferences.sidebarPreferences]);
 
   // Double-tap detection for mobile sidebar swipe gesture
   const [lastTapTime, setLastTapTime] = useState(0);

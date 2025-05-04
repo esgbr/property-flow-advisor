@@ -48,7 +48,8 @@ const WelcomeModal = () => {
             experienceLevel: preferences.experienceLevel,
             interests: preferences.interests || [],
             investmentGoals: preferences.investmentGoals || [],
-            preferredPropertyTypes: preferences.preferredPropertyTypes || []
+            preferredPropertyTypes: preferences.preferredPropertyTypes || [],
+            investmentMarket: preferences.investmentMarket || ''
           } : undefined}
         />
       </DialogContent>

@@ -14,22 +14,52 @@ import {
   Map
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { useUserPreferences } from '@/contexts/UserPreferencesContext';
 
 export const MobileNavigation: React.FC = () => {
   const { t, language } = useLanguage();
   const location = useLocation();
   const navigate = useNavigate();
+  const { preferences } = useUserPreferences();
   
-  const navItems = [
+  // Base navigation items for all users
+  const baseNavItems = [
     { icon: <Home className="h-5 w-5" />, label: t('dashboard'), path: '/dashboard' },
     { icon: <Building className="h-5 w-5" />, label: t('properties'), path: '/properties' },
     { icon: <BarChart3 className="h-5 w-5" />, label: t('investorDashboard'), path: '/investor-dashboard' },
-    { icon: <Euro className="h-5 w-5" />, label: language === 'de' ? 'DE Tools' : 'DE Tools', path: '/german-investor' },
     { icon: <Settings className="h-5 w-5" />, label: t('settings'), path: '/settings' }
   ];
+  
+  // German-specific navigation item
+  const germanNavItem = { 
+    icon: <Euro className="h-5 w-5" />, 
+    label: language === 'de' ? 'DE Tools' : 'DE Tools', 
+    path: '/deutsche-immobilien-tools'
+  };
+  
+  // USA-specific navigation item
+  const usaNavItem = { 
+    icon: <Calculator className="h-5 w-5" />, 
+    label: 'US Tools', 
+    path: '/us-real-estate-tools'
+  };
+  
+  // Final navigation items based on user preferences
+  const navItems = [...baseNavItems];
+  
+  // Add market-specific navigation item
+  if (!preferences.investmentMarket || preferences.investmentMarket === 'germany' || preferences.investmentMarket === 'austria') {
+    navItems.splice(3, 0, germanNavItem);
+  } else if (preferences.investmentMarket === 'usa' || preferences.investmentMarket === 'canada') {
+    navItems.splice(3, 0, usaNavItem);
+  }
 
   // Add quick access to popular German tools if on German investor page
   const isGermanInvestorPage = location.pathname === '/german-investor' || location.pathname === '/deutsche-immobilien-tools';
+  
+  // Show German tools quick access only for users with Germany as their investment market
+  const showGermanQuickTools = isGermanInvestorPage && 
+    (!preferences.investmentMarket || preferences.investmentMarket === 'germany' || preferences.investmentMarket === 'austria');
   
   // German quick access tools shown when on German pages
   const germanQuickTools = [
@@ -53,7 +83,7 @@ export const MobileNavigation: React.FC = () => {
 
   return (
     <div className="fixed bottom-0 left-0 right-0 z-50 bg-background border-t border-border shadow-lg">
-      {isGermanInvestorPage && (
+      {showGermanQuickTools && (
         <div className="grid grid-cols-4 h-12 border-b border-border/30">
           {germanQuickTools.map((item) => {
             const isActive = location.pathname + location.search === item.path;

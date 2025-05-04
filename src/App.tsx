@@ -23,6 +23,7 @@ import DeutscheImmobilienTools from '@/pages/DeutscheImmobilienTools';
 import Features from '@/pages/Features';
 import FeaturesDashboard from '@/pages/FeaturesDashboard';
 import GermanRealEstateInvestor from '@/pages/GermanRealEstateInvestor';
+import USRealEstateTools from '@/pages/USRealEstateTools';
 import NotFound from '@/pages/NotFound';
 
 function App() {
@@ -48,6 +49,7 @@ function App() {
                   <Route path="/deutsche-immobilien-tools" element={<DeutscheImmobilienTools />} />
                   <Route path="/german-investor" element={<GermanRealEstateInvestor />} />
                   <Route path="/features" element={<FeaturesDashboard />} />
+                  <Route path="/us-real-estate-tools" element={<USRealEstateTools />} />
                 </Route>
                 {/* Redirect for backward compatibility */}
                 <Route path="/exchange-tracker" element={<Navigate to="/calculators?tab=exchange" replace />} />

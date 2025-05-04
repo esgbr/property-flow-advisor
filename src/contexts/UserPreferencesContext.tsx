@@ -3,14 +3,21 @@ import React, { createContext, useContext, useState, useEffect } from 'react';
 import { useToast } from '@/components/ui/use-toast';
 import { OnboardingData } from '@/components/onboarding/OnboardingFlow';
 
+export type InvestmentMarket = 'germany' | 'austria' | 'switzerland' | 'france' | 'usa' | 'canada' | 'other' | '';
+
 interface UserPreferences {
   onboardingCompleted: boolean;
   experienceLevel: 'beginner' | 'intermediate' | 'expert';
   darkMode: boolean;
   investmentGoals: string[];
   preferredPropertyTypes: string[];
+  investmentMarket: InvestmentMarket;
   analyticsConsent: boolean;
   notificationsEnabled: boolean;
+  sidebarPreferences?: {
+    collapsed: boolean;
+    favorites: string[];
+  };
   calendarIntegration: {
     google: boolean;
     outlook: boolean;
@@ -83,8 +90,13 @@ const defaultPreferences: UserPreferences = {
   darkMode: false,
   investmentGoals: [],
   preferredPropertyTypes: [],
+  investmentMarket: '',
   analyticsConsent: false,
   notificationsEnabled: true,
+  sidebarPreferences: {
+    collapsed: false,
+    favorites: []
+  },
   calendarIntegration: {
     google: false,
     outlook: false,
@@ -245,7 +257,8 @@ export const UserPreferencesProvider: React.FC<{ children: React.ReactNode }> = 
       experienceLevel: data.experienceLevel,
       investmentGoals: data.investmentGoals || [],
       preferredPropertyTypes: data.preferredPropertyTypes || [],
-      interests: data.interests || []
+      interests: data.interests || [],
+      investmentMarket: data.investmentMarket || ''
     });
     
     localStorage.setItem('firstVisit', 'false');

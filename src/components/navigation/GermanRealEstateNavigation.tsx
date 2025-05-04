@@ -20,14 +20,14 @@ import {
   PanelLeft,
   Handshake,
   Users,
-  BadgePound,
-  Shield,
   Briefcase,
+  Shield,
   LineChart
 } from 'lucide-react';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
+import { useUserPreferences } from '@/contexts/UserPreferencesContext';
 
 interface NavigationItem {
   name: string;
@@ -41,10 +41,21 @@ export const GermanRealEstateNavigation: React.FC = () => {
   const { t, language } = useLanguage();
   const location = useLocation();
   const isMobile = useIsMobile();
+  const { preferences } = useUserPreferences();
   
   // Get current active tab from URL if it exists
   const searchParams = new URLSearchParams(location.search);
   const currentTab = searchParams.get('tab') || '';
+  
+  // Check if user selected Germany as their investment market
+  const showGermanTools = !preferences.investmentMarket || 
+                          preferences.investmentMarket === 'germany' || 
+                          preferences.investmentMarket === 'austria';
+  
+  // If user has selected a different market, don't show German-specific tools
+  if (!showGermanTools) {
+    return null;
+  }
   
   const germanInvestorTools: NavigationItem[] = [
     { 
