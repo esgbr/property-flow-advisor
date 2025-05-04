@@ -19,6 +19,7 @@ const LanguageContext = createContext<LanguageContextProps>({
 
 // English translations - Default language
 const englishTranslations = {
+  // Navigation
   dashboard: 'Dashboard',
   properties: 'Properties',
   investorDashboard: 'Investor Dashboard',
@@ -134,8 +135,6 @@ const englishTranslations = {
   portfolioManagementDesc: 'Track performance and set goals for your investment portfolio',
   financialTools: 'Financial Tools',
   financialToolsDesc: 'Calculate ROI, cash flow, and analyze investment opportunities',
-  marketAnalysis: 'Market Analysis',
-  marketAnalysisDesc: 'Research markets and identify growth opportunities',
   explore: 'Explore',
   educationHeader: 'Education Center',
   educationDescription: 'Learn everything you need to know about real estate investing',
@@ -148,7 +147,6 @@ const englishTranslations = {
   investmentStrategies: 'Learn proven strategies for building wealth through real estate',
   buyAndHoldStrategy: 'Buy & Hold Strategy',
   fixAndFlipStrategy: 'Fix & Flip Strategy',
-  cashFlowAnalysis: 'Cash Flow Analysis',
   startInvesting: 'Start Investing Today',
   startInvestingDescription: 'Create your account and begin your journey to financial freedom through real estate',
   getStarted: 'Get Started',
@@ -245,7 +243,6 @@ const englishTranslations = {
   // Calculator related
   realEstateInvestmentCalculator: 'Real Estate Investment Calculator',
   analyzePropertyInvestments: 'Analyze potential property investments',
-  mortgage: 'Mortgage',
   returns: 'Returns',
   projection: 'Projection',
   propertyValue: 'Property Value',
@@ -256,7 +253,6 @@ const englishTranslations = {
   years: 'years',
   month: 'month',
   monthlyRent: 'Monthly Rent',
-  vacancy: 'Vacancy',
   resetToDefaults: 'Reset to Defaults',
   mortgageCalculation: 'Mortgage Calculation',
   loanAmount: 'Loan Amount',
@@ -267,10 +263,8 @@ const englishTranslations = {
   netOperatingIncome: 'Net Operating Income',
   breakEvenPoint: 'Break-even Point',
   notProfitable: 'Not profitable',
-  fiveYearProjection: '5 Year Projection',
   year: 'Year',
   assumptions: 'Assumptions',
-  propertyAppreciation: 'Property Appreciation',
   annually: 'annually',
   rentalGrowth: 'Rental Growth',
   expenseInflation: 'Expense Inflation',
@@ -342,7 +336,6 @@ const englishTranslations = {
   medianHomePrice: "Median Home Price",
   medianRent: "Median Rent",
   priceToRentRatio: "Price-to-Rent Ratio",
-  cashOnCashReturn: "Cash-on-Cash Return",
   
   // Real Estate Education
   residentialProperties: "Residential Properties",
@@ -359,8 +352,6 @@ const englishTranslations = {
   ltvDefinition: "The ratio of loan amount to property value, expressed as a percentage",
   amortization: "Amortization",
   amortizationDefinition: "The process of paying off a loan over time through regular payments",
-  downPayment: "Down Payment",
-  downPaymentDefinition: "Initial upfront payment toward the property purchase",
   capRateDefinition: "Net operating income divided by property value",
   cashOnCashReturnDefinition: "Annual cash flow divided by total cash invested",
   roiDefinition: "Total return on investment including cash flow and appreciation",
@@ -428,14 +419,6 @@ const englishTranslations = {
   analyzeRentalInvestmentReturns: "Analyze potential rental investment returns",
   grossYield: "Gross Yield",
   netYield: "Net Yield",
-  annualRentalIncome: "Annual Rental Income",
-  calculateYield: "Calculate Yield",
-  propertyTaxRate: "Property Tax Rate",
-  maintenanceReserve: "Maintenance Reserve",
-  propertyManagementFee: "Property Management Fee",
-  annualExpenses: "Annual Expenses",
-  netOperatingIncomeNOI: "Net Operating Income (NOI)",
-  calculateYield: "Calculate Yield",
   
   // Export calculation
   exportCalculation: "Export Calculation",
@@ -444,15 +427,8 @@ const englishTranslations = {
   investmentAnalysis: "Investment Analysis",
   
   // Price to rent ratio
-  priceToRentRatio: "Price-to-Rent Ratio",
   
   // Monthly cash flow
-  monthlyCashFlow: "Monthly Cash Flow",
-  
-  // What is a good investment
-  goodInvestmentDescription: "This property is a good investment based on the net rental yield.",
-  averageInvestmentDescription: "This property is an average investment based on the net rental yield.",
-  poorInvestmentDescription: "This property is a poor investment based on the net rental yield.",
   
   // Mortgage calculator
   calculateMortgagePayments: "Calculate mortgage payments",
@@ -462,9 +438,6 @@ const englishTranslations = {
   amortizationScheduleDescription: "View the amortization schedule for your mortgage",
   principal: "Principal",
   interest: "Interest",
-  totalLoanCost: "Total Loan Cost",
-  totalInterestPaid: "Total Interest Paid",
-  saveCalculation: "Save Calculation",
   costBreakdown: "Cost Breakdown",
   mortgagePaymentExplained: "See how your mortgage payment is broken down",
   paymentDistribution: "Payment Distribution",
@@ -522,7 +495,6 @@ const englishTranslations = {
   latestDealsAndListings: "Latest deals and listings",
   hotDeal: "Hot Deal",
   price: "Price",
-  capRate: "Cap Rate",
   viewDeal: "View Deal",
   viewMoreListings: "View More Listings",
   
@@ -536,9 +508,7 @@ const englishTranslations = {
   listedProperties: "Listed Properties",
   monthsOfInventory: "Months of Inventory",
   marketActivityMetric: "Market Activity Metric",
-  medianDaysOnMarket: "Median Days on Market",
   absorptionRate: "Absorption Rate",
-  neighborhoodAnalysis: "Neighborhood Analysis",
   accessDetailedNeighborhoodData: "Access detailed neighborhood data",
   unlockNeighborhoodData: "Unlock Neighborhood Data",
   demographicData: "Demographic Data",
@@ -562,172 +532,20 @@ const englishTranslations = {
   residential: "Residential",
   commercial: "Commercial",
   mixed: "Mixed",
-  land: "Land",
   
-  // Cash flow analysis
-  unlockCashFlowAnalysis: "Unlock Cash Flow Analysis",
-  
-  // Appreciation forecast
-  appreciationForecast: "Appreciation Forecast",
-  appreciationForecastTool: "Appreciation Forecast Tool",
-  comingSoon: "Coming Soon",
-  
-  // Mortgage calculator
-  mortgageCalculator: "Mortgage Calculator",
-  calculateMortgagePayments: "Calculate mortgage payments",
-  calculator: "Calculator",
-  paymentBreakdown: "Payment Breakdown",
-  amortizationSchedule: "Amortization Schedule",
-  amortizationScheduleDescription: "View the amortization schedule for your mortgage",
-  principal: "Principal",
-  interest: "Interest",
-  totalLoanCost: "Total Loan Cost",
-  totalInterestPaid: "Total Interest Paid",
-  saveCalculation: "Save Calculation",
-  costBreakdown: "Cost Breakdown",
-  mortgagePaymentExplained: "See how your mortgage payment is broken down",
-  paymentDistribution: "Payment Distribution",
-  principalPercentage: "Principal Percentage",
-  interestPercentage: "Interest Percentage",
-  mortgagePaymentNote: "This is an estimate only. Consult with a financial advisor for more information.",
-  unlockAmortizationSchedule: "Unlock Amortization Schedule",
-  
-  // Tax planning
-  optimizeTaxStrategyRealEstate: "Optimize your tax strategy for real estate",
-  taxStrategies: "Tax Strategies",
-  taxCalculator: "Tax Calculator",
-  realEstateTaxCalculator: "Real Estate Tax Calculator",
-  taxCalculatorDescription: "Calculate your real estate taxes",
-  unlockTaxCalculator: "Unlock Tax Calculator",
-  taxSavingOpportunities: "Tax Saving Opportunities",
-  potentialTaxSavingsProperties: "Potential tax savings for your properties",
-  depreciationOpportunity: "Depreciation Opportunity",
-  potentialAnnualSavings: "Potential Annual Savings",
-  reviewOpportunity: "Review Opportunity",
-  section1031Opportunity: "Section 1031 Opportunity",
-  potentialDeferredTax: "Potential Deferred Tax",
-  
-  // Due diligence
-  comprehensiveDueDiligenceChecklist: "Comprehensive due diligence checklist",
-  overallProgress: "Overall Progress",
-  criticalItemsRemaining: "Critical Items Remaining",
-  legal: "Legal",
-  financial: "Financial",
-  physical: "Physical",
-  legalDueDiligence: "Legal Due Diligence",
-  financialDueDiligence: "Financial Due Diligence",
-  physicalDueDiligence: "Physical Due Diligence",
-  addItem: "Add Item",
-  view: "View",
-  complete: "Complete",
-  critical: "Critical",
-  dueDiligenceTemplates: "Due Diligence Templates",
-  singleFamilyTemplate: "Single Family Template",
-  multiUnitTemplate: "Multi-Unit Template",
-  commercialTemplate: "Commercial Template",
-  
-  // Property scanner
-  propertyScanner: "Property Scanner",
-  findUndervaluedProperties: "Find undervalued properties",
-  locationOrZipCode: "Location or Zip Code",
-  minCashFlow: "Min. Cash Flow",
-  minCapRate: "Min. Cap Rate",
-  priceRange: "Price Range",
-  scanning: "Scanning",
-  scanForProperties: "Scan for Properties",
-  
-  // Investment opportunities
-  investmentOpportunities: "Investment Opportunities",
-  latestDealsAndListings: "Latest deals and listings",
-  hotDeal: "Hot Deal",
-  price: "Price",
-  capRate: "Cap Rate",
-  viewDeal: "View Deal",
-  viewMoreListings: "View More Listings",
-  
-  // Market analysis
-  researchMarketsAndIdentifyOpportunities: "Research markets and identify opportunities",
-  yearOverYear: "Year over Year",
-  marketTrendsChart: "Market Trends Chart",
-  propertyValuesTrendLast5Years: "Property values trend last 5 years",
-  upgradeToAccessDetailedMarketData: "Upgrade to access detailed market data",
-  unlockMarketData: "Unlock Market Data",
-  listedProperties: "Listed Properties",
-  monthsOfInventory: "Months of Inventory",
-  marketActivityMetric: "Market Activity Metric",
-  medianDaysOnMarket: "Median Days on Market",
-  absorptionRate: "Absorption Rate",
-  neighborhoodAnalysis: "Neighborhood Analysis",
-  accessDetailedNeighborhoodData: "Access detailed neighborhood data",
-  unlockNeighborhoodData: "Unlock Neighborhood Data",
-  demographicData: "Demographic Data",
-  accessDemographicInsights: "Access demographic insights",
-  unlockDemographicData: "Unlock Demographic Data",
-  
-  // AI Assistant
-  aiInsights: "AI Insights",
-  aiGeneratedPortfolioAnalysis: "AI-generated analysis of your portfolio",
-  analyzingYourPortfolio: "Analyzing your portfolio",
-  recommendedActions: "Recommended Actions",
-  aiDisclaimer: "Disclaimer: AI-generated insights are for informational purposes only and should not be considered financial advice.",
-  close: "Close",
-  
-  // Asset allocation
-  assetAllocation: "Asset Allocation",
-  assetAllocationDescription: "View your asset allocation",
-  unlockAssetAllocation: "Unlock Asset Allocation",
-  assetAllocationChart: "Asset Allocation Chart",
-  breakdownByPropertyType: "Breakdown by property type",
-  residentialProperties: "Residential Properties",
-  commercialProperties: "Commercial Properties",
-  mixedUseProperties: "Mixed-Use Properties",
-  industrialProperties: "Industrial Properties",
-  land: "Land",
-  
-  // Cash flow analysis
-  cashFlowAnalysis: "Cash Flow Analysis",
-  cashFlowAnalysisDescription: "Analyze the cash flow of your properties",
-  unlockCashFlowAnalysis: "Unlock Cash Flow Analysis",
-  
-  // Appreciation forecast
-  appreciationForecast: "Appreciation Forecast",
-  appreciationForecastTool: "Appreciation Forecast Tool",
-  comingSoon: "Coming Soon",
-  
-  // Mortgage calculator
-  mortgageCalculator: "Mortgage Calculator",
-  calculateMortgagePayments: "Calculate mortgage payments",
-  calculator: "Calculator",
-  paymentBreakdown: "Payment Breakdown",
-  amortizationSchedule: "Amortization Schedule",
-  amortizationScheduleDescription: "View the amortization schedule for your mortgage",
-  principal: "Principal",
-  interest: "Interest",
-  totalLoanCost: "Total Loan Cost",
-  totalInterestPaid: "Total Interest Paid",
-  saveCalculation: "Save Calculation",
-  costBreakdown: "Cost Breakdown",
-  mortgagePaymentExplained: "See how your mortgage payment is broken down",
-  paymentDistribution: "Payment Distribution",
-  principalPercentage: "Principal Percentage",
-  interestPercentage: "Interest Percentage",
-  mortgagePaymentNote: "This is an estimate only. Consult with a financial advisor for more information.",
-  unlockAmortizationSchedule: "Unlock Amortization Schedule",
-  
-  // Tax planning
-  optimizeTaxStrategyRealEstate: "Optimize your tax strategy for real estate",
-  taxStrategies: "Tax Strategies",
-  taxCalculator: "Tax Calculator",
-  realEstateTaxCalculator: "Real Estate Tax Calculator",
-  taxCalculatorDescription: "Calculate your real estate taxes",
-  unlockTaxCalculator: "Unlock Tax Calculator",
-  taxSavingOpportunities: "Tax Saving Opportunities",
-  potentialTaxSavingsProperties: "Potential tax savings for your properties",
-  depreciationOpportunity: "Depreciation Opportunity",
-  potentialAnnualSavings: "Potential Annual Savings",
-  reviewOpportunity: "Review Opportunity",
-  section1031Opportunity: "Section 1031 Opportunity",
-  potentialDeferredTax: "Potential Deferred Tax"
+  // Language settings translations
+  languageSettings: "Language Settings",
+  manageLanguagePreferences: "Manage language preferences and translation status",
+  currentLanguage: "Current Language",
+  activeLanguageDescription: "Currently selected language for the application",
+  interfaceLanguage: "Interface Language",
+  interfaceLanguageDescription: "The language used for application elements",
+  interfaceLanguageInfo: "Select your preferred language for the application interface",
+  switchLanguageDescription: "Switch between available languages",
+  languagePreferences: "Language Preferences",
+  languagePreferencesDescription: "Advanced options for language preferences",
+  languageChanged: "Language Changed",
+  displayLanguageChangedTo: "Display language changed to"
 };
 
 export const LanguageProvider = ({ children }: { children: React.ReactNode }) => {
