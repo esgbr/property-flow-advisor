@@ -9,7 +9,8 @@ import {
   BarChart3, 
   Map, 
   Settings, 
-  Euro
+  Euro,
+  Globe
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -27,20 +28,21 @@ export const MobileNavigation: React.FC = () => {
   ];
 
   return (
-    <div className="fixed bottom-0 left-0 right-0 z-50 bg-background border-t border-border">
+    <div className="fixed bottom-0 left-0 right-0 z-50 bg-background border-t border-border shadow-lg">
       <div className="grid grid-cols-5 h-16">
         {navItems.map((item) => {
-          const isActive = location.pathname === item.path;
+          const isActive = location.pathname === item.path || location.pathname.startsWith(item.path + '/');
           return (
             <button
               key={item.path}
               className={cn(
-                "flex flex-col items-center justify-center space-y-1",
+                "flex flex-col items-center justify-center space-y-1 transition-colors",
                 isActive 
                   ? "text-primary" 
                   : "text-muted-foreground hover:text-foreground"
               )}
               onClick={() => navigate(item.path)}
+              aria-label={item.label}
             >
               {React.cloneElement(item.icon, { 
                 className: cn(
@@ -48,7 +50,7 @@ export const MobileNavigation: React.FC = () => {
                   isActive ? "text-primary" : "text-muted-foreground"
                 )
               })}
-              <span className="text-xs">{item.label}</span>
+              <span className="text-xs truncate max-w-[90%]">{item.label}</span>
             </button>
           );
         })}

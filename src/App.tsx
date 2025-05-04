@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { Routes, Route } from 'react-router-dom';
+import { Routes, Route, Navigate } from 'react-router-dom';
 import { ThemeProvider } from '@/components/theme-provider';
 import MainLayout from '@/components/layout/MainLayout';
 import Index from '@/pages/Index';
@@ -23,6 +23,7 @@ import DeutscheImmobilienTools from '@/pages/DeutscheImmobilienTools';
 import Features from '@/pages/Features';
 import FeaturesDashboard from '@/pages/FeaturesDashboard';
 import GermanRealEstateInvestor from '@/pages/GermanRealEstateInvestor';
+import NotFound from '@/pages/NotFound';
 
 function App() {
   return (
@@ -48,6 +49,14 @@ function App() {
                   <Route path="/german-investor" element={<GermanRealEstateInvestor />} />
                   <Route path="/features" element={<FeaturesDashboard />} />
                 </Route>
+                {/* Redirect for backward compatibility */}
+                <Route path="/exchange-tracker" element={<Navigate to="/calculators?tab=exchange" replace />} />
+                <Route path="/partner-matching" element={<Navigate to="/investor-dashboard?tab=partners" replace />} />
+                <Route path="/investment-calculator" element={<Navigate to="/calculators?tab=investment" replace />} />
+                <Route path="/portfolio-optimization" element={<Navigate to="/investor-dashboard?tab=portfolio" replace />} />
+                <Route path="/features/:featureId" element={<Features />} />
+                {/* Catch all route for 404s */}
+                <Route path="*" element={<NotFound />} />
               </Routes>
               <Toaster position="top-right" />
             </RewardsProvider>
