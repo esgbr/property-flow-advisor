@@ -16,6 +16,7 @@ import { useUserPreferences } from '@/contexts/UserPreferencesContext';
 import { useMarketFilter } from '@/hooks/use-market-filter';
 import { Badge } from '@/components/ui/badge';
 import { toast } from 'sonner';
+import { InvestmentMarket } from '@/contexts/UserPreferencesContext';
 
 interface MarketSelectorProps {
   variant?: 'default' | 'outline' | 'secondary';
@@ -39,7 +40,7 @@ const MarketSelector: React.FC<MarketSelectorProps> = ({
   const currentMarket = preferences.investmentMarket || 'global';
   const markets = getAvailableMarkets();
   
-  const handleMarketChange = (marketId: string) => {
+  const handleMarketChange = (marketId: InvestmentMarket) => {
     if (marketId === currentMarket) return;
     
     updatePreferences({ ...preferences, investmentMarket: marketId });

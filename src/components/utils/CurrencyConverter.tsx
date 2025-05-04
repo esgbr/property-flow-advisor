@@ -1,277 +1,268 @@
 
 import React, { useState, useEffect } from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { 
-  Select,
-  SelectContent,
-  SelectGroup,
-  SelectItem,
-  SelectLabel,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { ArrowUpDown, RefreshCw, Info } from 'lucide-react';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { ArrowRight, RefreshCw, Globe, Clock } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
+import { toast } from 'sonner';
+
+// Currency type
+type Currency = 'EUR' | 'USD' | 'GBP' | 'CHF' | 'JPY' | 'CAD' | 'AUD';
+
+// Exchange rate type
+type ExchangeRates = Record<Currency, Record<Currency, number>>;
 
 const CurrencyConverter: React.FC = () => {
   const { t } = useLanguage();
   const [amount, setAmount] = useState<string>('100');
-  const [fromCurrency, setFromCurrency] = useState<string>('EUR');
-  const [toCurrency, setToCurrency] = useState<string>('USD');
-  const [convertedAmount, setConvertedAmount] = useState<string>('');
-  const [exchangeRate, setExchangeRate] = useState<number | null>(null);
-  const [lastUpdated, setLastUpdated] = useState<string>('');
+  const [fromCurrency, setFromCurrency] = useState<Currency>('EUR');
+  const [toCurrency, setToCurrency] = useState<Currency>('USD');
+  const [convertedAmount, setConvertedAmount] = useState<number | null>(null);
+  const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [lastUpdated, setLastUpdated] = useState<Date>(new Date());
 
-  // Sample exchange rates (in a real app, these would come from an API)
-  const exchangeRates = {
+  // Sample exchange rates (in a real app, fetch these from an API)
+  const exchangeRates: ExchangeRates = {
     EUR: {
-      USD: 1.07,
+      USD: 1.09,
       GBP: 0.85,
       CHF: 0.96,
-      JPY: 163.45,
+      JPY: 157.20,
       CAD: 1.47,
-      AUD: 1.64
+      AUD: 1.62
     },
     USD: {
-      EUR: 0.93,
-      GBP: 0.79,
-      CHF: 0.89,
-      JPY: 152.38,
-      CAD: 1.37,
-      AUD: 1.53
+      EUR: 0.92,
+      GBP: 0.78,
+      CHF: 0.88,
+      JPY: 144.50,
+      CAD: 1.35,
+      AUD: 1.49
     },
     GBP: {
-      EUR: 1.18,
-      USD: 1.27,
+      EUR: 1.17,
+      USD: 1.28,
       CHF: 1.13,
-      JPY: 192.82,
+      JPY: 184.30,
       CAD: 1.73,
-      AUD: 1.93
+      AUD: 1.91
     },
     CHF: {
       EUR: 1.04,
-      USD: 1.12,
+      USD: 1.14,
       GBP: 0.88,
-      JPY: 170.26,
+      JPY: 163.30,
       CAD: 1.53,
-      AUD: 1.71
+      AUD: 1.69
     },
     JPY: {
-      EUR: 0.0061,
-      USD: 0.0066,
-      GBP: 0.0052,
-      CHF: 0.0059,
-      CAD: 0.0090,
-      AUD: 0.010
+      EUR: 0.0064,
+      USD: 0.0069,
+      GBP: 0.0054,
+      CHF: 0.0061,
+      CAD: 0.0094,
+      AUD: 0.0103
     },
     CAD: {
       EUR: 0.68,
-      USD: 0.73,
+      USD: 0.74,
       GBP: 0.58,
       CHF: 0.65,
-      JPY: 111.19,
-      AUD: 1.12
+      JPY: 107.30,
+      AUD: 1.10
     },
     AUD: {
-      EUR: 0.61,
-      USD: 0.65,
+      EUR: 0.62,
+      USD: 0.67,
       GBP: 0.52,
-      CHF: 0.58,
-      JPY: 99.66,
-      CAD: 0.89
+      CHF: 0.59,
+      JPY: 97.30,
+      CAD: 0.91
     }
   };
 
-  // Currencies
-  const currencies = [
-    { code: 'EUR', name: 'Euro', symbol: '€' },
-    { code: 'USD', name: 'US Dollar', symbol: '$' },
-    { code: 'GBP', name: 'British Pound', symbol: '£' },
-    { code: 'CHF', name: 'Swiss Franc', symbol: 'Fr' },
-    { code: 'JPY', name: 'Japanese Yen', symbol: '¥' },
-    { code: 'CAD', name: 'Canadian Dollar', symbol: 'C$' },
-    { code: 'AUD', name: 'Australian Dollar', symbol: 'A$' }
+  // All available currencies
+  const currencies: { value: Currency; label: string }[] = [
+    { value: 'EUR', label: 'Euro (€)' },
+    { value: 'USD', label: 'US Dollar ($)' },
+    { value: 'GBP', label: 'British Pound (£)' },
+    { value: 'CHF', label: 'Swiss Franc (CHF)' },
+    { value: 'JPY', label: 'Japanese Yen (¥)' },
+    { value: 'CAD', label: 'Canadian Dollar (C$)' },
+    { value: 'AUD', label: 'Australian Dollar (A$)' }
   ];
 
-  // Get currency name by code
-  const getCurrencyName = (code: string): string => {
-    const currency = currencies.find(c => c.code === code);
-    return currency ? currency.name : code;
-  };
-
-  // Get currency symbol by code
-  const getCurrencySymbol = (code: string): string => {
-    const currency = currencies.find(c => c.code === code);
-    return currency ? currency.symbol : code;
+  // Convert currencies
+  const convertCurrency = () => {
+    setIsLoading(true);
+    
+    // Simulate API delay
+    setTimeout(() => {
+      try {
+        const numAmount = parseFloat(amount);
+        
+        if (isNaN(numAmount)) {
+          toast.error(t('Invalid Amount'), { description: t('Please enter a valid number') });
+          setConvertedAmount(null);
+          setIsLoading(false);
+          return;
+        }
+        
+        if (fromCurrency === toCurrency) {
+          setConvertedAmount(numAmount);
+        } else {
+          const rate = exchangeRates[fromCurrency][toCurrency];
+          const result = numAmount * rate;
+          setConvertedAmount(result);
+        }
+        
+        setLastUpdated(new Date());
+        setIsLoading(false);
+      } catch (error) {
+        toast.error(t('Conversion Error'), { description: t('An error occurred during conversion') });
+        setIsLoading(false);
+      }
+    }, 500);
   };
 
   // Swap currencies
   const swapCurrencies = () => {
-    const temp = fromCurrency;
     setFromCurrency(toCurrency);
-    setToCurrency(temp);
+    setToCurrency(fromCurrency);
   };
 
-  // Convert currency
-  const convertCurrency = () => {
-    const numAmount = parseFloat(amount);
-    if (isNaN(numAmount)) {
-      setConvertedAmount('');
-      setExchangeRate(null);
-      return;
-    }
-
-    if (fromCurrency === toCurrency) {
-      setConvertedAmount(amount);
-      setExchangeRate(1);
-      return;
-    }
-
-    const rate = exchangeRates[fromCurrency as keyof typeof exchangeRates][toCurrency as keyof typeof exchangeRates[typeof fromCurrency]];
-    const converted = numAmount * rate;
-    setConvertedAmount(converted.toFixed(2));
-    setExchangeRate(rate);
-    setLastUpdated(new Date().toLocaleDateString());
+  // Format currency
+  const formatCurrency = (value: number, currency: Currency): string => {
+    const formatter = new Intl.NumberFormat(undefined, {
+      style: 'currency',
+      currency: currency,
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    });
+    
+    return formatter.format(value);
   };
 
-  // Effect to convert currency when inputs change
+  // Effect to convert currency when input values change
   useEffect(() => {
-    convertCurrency();
-  }, [fromCurrency, toCurrency, amount]);
+    if (amount) {
+      convertCurrency();
+    }
+  }, [fromCurrency, toCurrency]);
 
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="flex items-center">
+        <CardTitle className="flex items-center gap-2">
+          <Globe className="h-5 w-5 text-primary" />
           {t('Currency Converter')}
-          <TooltipProvider>
-            <Tooltip>
-              <TooltipTrigger className="ml-1">
-                <Info className="h-4 w-4 text-muted-foreground" />
-              </TooltipTrigger>
-              <TooltipContent>
-                <p>{t('Convert property values between different currencies')}</p>
-              </TooltipContent>
-            </Tooltip>
-          </TooltipProvider>
         </CardTitle>
-        <CardDescription>{t('Convert between real estate markets')}</CardDescription>
+        <CardDescription>
+          {t('Convert between different currencies using real-time exchange rates')}
+        </CardDescription>
       </CardHeader>
       <CardContent>
         <div className="space-y-4">
-          {/* Amount input */}
           <div>
-            <label className="block text-sm font-medium mb-1">{t('Amount')}</label>
-            <div className="relative">
-              <Input
-                type="number"
-                value={amount}
-                onChange={(e) => setAmount(e.target.value)}
-                className="pl-8"
-                placeholder="0.00"
-              />
-              <div className="absolute left-2 top-1/2 transform -translate-y-1/2 text-muted-foreground">
-                {getCurrencySymbol(fromCurrency)}
-              </div>
-            </div>
+            <label className="block text-sm font-medium mb-1">
+              {t('Amount')}
+            </label>
+            <Input
+              type="number"
+              value={amount}
+              onChange={(e) => setAmount(e.target.value)}
+              placeholder="Enter amount"
+              className="w-full"
+            />
           </div>
           
-          {/* Currency selection */}
-          <div className="grid grid-cols-[1fr,auto,1fr] items-center gap-2">
-            <div>
-              <label className="block text-sm font-medium mb-1">{t('From')}</label>
-              <Select value={fromCurrency} onValueChange={setFromCurrency}>
+          <div className="grid grid-cols-7 gap-2 items-center">
+            <div className="col-span-3">
+              <label className="block text-sm font-medium mb-1">
+                {t('From')}
+              </label>
+              <Select value={fromCurrency} onValueChange={(value: string) => setFromCurrency(value as Currency)}>
                 <SelectTrigger>
                   <SelectValue placeholder={t('Select currency')} />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectGroup>
-                    <SelectLabel>{t('Currencies')}</SelectLabel>
-                    {currencies.map((currency) => (
-                      <SelectItem key={currency.code} value={currency.code}>
-                        {currency.code} - {currency.name}
-                      </SelectItem>
-                    ))}
-                  </SelectGroup>
+                  {currencies.map((currency) => (
+                    <SelectItem key={currency.value} value={currency.value}>
+                      {currency.label}
+                    </SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
             </div>
             
-            <Button
-              variant="outline"
-              size="icon"
+            <Button 
+              variant="ghost" 
+              size="icon" 
+              onClick={swapCurrencies} 
               className="mt-6"
-              onClick={swapCurrencies}
-              title={t('Swap currencies')}
             >
-              <ArrowUpDown className="h-4 w-4" />
+              <ArrowRight className="h-4 w-4" />
             </Button>
             
-            <div>
-              <label className="block text-sm font-medium mb-1">{t('To')}</label>
-              <Select value={toCurrency} onValueChange={setToCurrency}>
+            <div className="col-span-3">
+              <label className="block text-sm font-medium mb-1">
+                {t('To')}
+              </label>
+              <Select value={toCurrency} onValueChange={(value: string) => setToCurrency(value as Currency)}>
                 <SelectTrigger>
                   <SelectValue placeholder={t('Select currency')} />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectGroup>
-                    <SelectLabel>{t('Currencies')}</SelectLabel>
-                    {currencies.map((currency) => (
-                      <SelectItem key={currency.code} value={currency.code}>
-                        {currency.code} - {currency.name}
-                      </SelectItem>
-                    ))}
-                  </SelectGroup>
+                  {currencies.map((currency) => (
+                    <SelectItem key={currency.value} value={currency.value}>
+                      {currency.label}
+                    </SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
             </div>
           </div>
           
-          {/* Result */}
-          <div className="bg-muted/50 p-4 rounded-lg">
-            <div className="flex items-center justify-between mb-2">
-              <span className="text-sm text-muted-foreground">{t('Converted Amount')}</span>
-              <Button
-                variant="ghost"
-                size="sm"
-                className="h-6 text-xs"
-                onClick={convertCurrency}
-              >
-                <RefreshCw className="h-3 w-3 mr-1" />
-                {t('Refresh')}
-              </Button>
-            </div>
-            <div className="text-2xl font-bold">
-              {convertedAmount ? (
-                <>
-                  {getCurrencySymbol(toCurrency)} {parseFloat(convertedAmount).toLocaleString()}
-                </>
-              ) : (
-                '—'
-              )}
-            </div>
-            {exchangeRate !== null && (
-              <div className="text-xs text-muted-foreground mt-1">
-                {t('Exchange Rate')}: 1 {fromCurrency} = {exchangeRate.toFixed(4)} {toCurrency}
-              </div>
+          <Button 
+            onClick={convertCurrency} 
+            className="w-full"
+            disabled={isLoading}
+          >
+            {isLoading ? (
+              <>
+                <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
+                {t('Converting...')}
+              </>
+            ) : (
+              t('Convert')
             )}
-          </div>
+          </Button>
           
-          {lastUpdated && (
-            <div className="text-xs text-muted-foreground text-right">
-              {t('Last updated')}: {lastUpdated}
+          {convertedAmount !== null && (
+            <div className="mt-4 p-4 bg-muted rounded-lg">
+              <div className="text-sm text-muted-foreground mb-1">
+                {t('Result')}:
+              </div>
+              <div className="grid grid-cols-1 gap-1">
+                <div className="text-xl font-semibold">
+                  {formatCurrency(parseFloat(amount), fromCurrency)} = {formatCurrency(convertedAmount, toCurrency)}
+                </div>
+                <div className="text-sm text-muted-foreground">
+                  1 {fromCurrency} = {exchangeRates[fromCurrency][toCurrency]} {toCurrency}
+                </div>
+              </div>
             </div>
           )}
         </div>
       </CardContent>
+      <CardFooter className="text-xs text-muted-foreground">
+        <div className="flex items-center gap-1">
+          <Clock className="h-3 w-3" />
+          {t('Last updated')}: {lastUpdated.toLocaleTimeString()}
+        </div>
+      </CardFooter>
     </Card>
   );
 };

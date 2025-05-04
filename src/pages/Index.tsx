@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -20,6 +19,7 @@ import {
 } from 'lucide-react';
 import { useMarketFilter } from '@/hooks/use-market-filter';
 import { Badge } from '@/components/ui/badge';
+import { InvestmentMarket } from '@/contexts/UserPreferencesContext';
 
 const Index: React.FC = () => {
   const navigate = useNavigate();
@@ -33,7 +33,7 @@ const Index: React.FC = () => {
       description: t('Portfolio Management Description'),
       icon: <Building className="h-8 w-8 text-primary" />,
       action: () => navigate('/properties'),
-      markets: ['global']
+      markets: ['global' as InvestmentMarket]
     },
     {
       id: 'investment',
@@ -41,7 +41,7 @@ const Index: React.FC = () => {
       description: t('Investment Analysis Description'),
       icon: <BarChart3 className="h-8 w-8 text-primary" />,
       action: () => navigate('/investor-dashboard'),
-      markets: ['global']
+      markets: ['global' as InvestmentMarket]
     },
     {
       id: 'calculators',
@@ -49,7 +49,7 @@ const Index: React.FC = () => {
       description: t('Financial Calculators Description'),
       icon: <Calculator className="h-8 w-8 text-primary" />,
       action: () => navigate('/calculators'),
-      markets: ['global']
+      markets: ['global' as InvestmentMarket]
     },
     {
       id: 'german-tools',
@@ -59,7 +59,7 @@ const Index: React.FC = () => {
         : 'Specialized tools for the German real estate market, including transfer tax, rent-to-own and depreciation calculators.',
       icon: <Euro className="h-8 w-8 text-primary" />,
       action: () => navigate('/deutsche-immobilien-tools'),
-      markets: ['germany', 'austria', 'switzerland']
+      markets: ['germany', 'austria', 'switzerland'] as InvestmentMarket[]
     },
     {
       id: 'us-tools',
@@ -69,7 +69,7 @@ const Index: React.FC = () => {
         : 'Specialized tools for the US real estate market, including 1031 exchange, property tax and depreciation calculators.',
       icon: <Briefcase className="h-8 w-8 text-primary" />,
       action: () => navigate('/us-real-estate-tools'),
-      markets: ['usa', 'canada']
+      markets: ['usa', 'canada'] as InvestmentMarket[]
     },
     {
       id: 'market',

@@ -2,7 +2,7 @@
 import React from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import { ThemeProvider } from '@/components/theme-provider';
-import MainLayout from '@/components/layout/MainLayout';
+import MainLayout from '@/layouts/MainLayout';
 import Index from '@/pages/Index';
 import Dashboard from '@/pages/Dashboard';
 import PropertyList from '@/pages/PropertyList';

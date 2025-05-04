@@ -25,8 +25,8 @@ export function useMarketFilter() {
     }
     
     // Show features that match the user's market or are set to be available in all markets
-    return feature.markets.includes(userMarket as InvestmentMarket) || 
-           feature.markets.includes('global' as InvestmentMarket);
+    return feature.markets.includes(userMarket) || 
+           feature.markets.includes('global');
   };
   
   // Function to filter an array of market-specific features
@@ -52,7 +52,7 @@ export function useMarketFilter() {
   };
   
   // Get available markets for filtering
-  const getAvailableMarkets = (): {id: string, name: string}[] => {
+  const getAvailableMarkets = (): {id: InvestmentMarket, name: string}[] => {
     return [
       { id: 'germany', name: 'Germany' },
       { id: 'austria', name: 'Austria' },

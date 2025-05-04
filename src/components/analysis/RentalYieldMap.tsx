@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { Info, Filter, ChevronDown, Map, Search, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -15,6 +15,16 @@ import {
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { useMarketFilter } from '@/hooks/use-market-filter';
+import RentalYieldMapLegend from './RentalYieldMapLegend';
+
+// Define neighborhood type for better type safety
+interface Neighborhood {
+  id: string;
+  name: string;
+  yield: number;
+  color: string;
+  tier: 'high' | 'medium' | 'low';
+}
 
 const RentalYieldMap: React.FC = () => {
   const { t } = useLanguage();
@@ -24,7 +34,7 @@ const RentalYieldMap: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState('');
   
   // Sample neighborhood data - in a real app this would come from an API
-  const allNeighborhoods = [
+  const allNeighborhoods: Neighborhood[] = [
     { id: 'n1', name: 'Downtown', yield: 5.8, color: 'bg-amber-500', tier: 'medium' },
     { id: 'n2', name: 'Westside', yield: 6.4, color: 'bg-green-500', tier: 'high' },
     { id: 'n3', name: 'Eastside', yield: 4.2, color: 'bg-red-500', tier: 'low' },
@@ -50,6 +60,10 @@ const RentalYieldMap: React.FC = () => {
   const clearFilters = () => {
     setSelectedFilter('all');
     setSearchQuery('');
+  };
+
+  const getSelectedNeighborhood = () => {
+    return filteredNeighborhoods.find(n => n.id === selectedArea);
   };
 
   return (
@@ -136,21 +150,8 @@ const RentalYieldMap: React.FC = () => {
             )}
           </div>
 
-          <div className="flex items-center justify-center mb-4">
-            <div className="flex items-center space-x-4">
-              <div className="flex items-center">
-                <div className="h-4 w-4 bg-red-500 rounded mr-2"></div>
-                <span className="text-sm text-muted-foreground">{'<'}5%</span>
-              </div>
-              <div className="flex items-center">
-                <div className="h-4 w-4 bg-amber-500 rounded mr-2"></div>
-                <span className="text-sm text-muted-foreground">5-6%</span>
-              </div>
-              <div className="flex items-center">
-                <div className="h-4 w-4 bg-green-500 rounded mr-2"></div>
-                <span className="text-sm text-muted-foreground">{'>'}6%</span>
-              </div>
-            </div>
+          <div className="mb-4">
+            <RentalYieldMapLegend />
           </div>
           
           <div className="relative flex-grow bg-slate-100 dark:bg-slate-800 rounded overflow-hidden">
@@ -206,10 +207,10 @@ const RentalYieldMap: React.FC = () => {
           <div className="flex justify-between items-center">
             <div>
               <h4 className="font-medium">
-                {filteredNeighborhoods.find(n => n.id === selectedArea)?.name}
+                {getSelectedNeighborhood()?.name}
               </h4>
               <p className="text-sm text-muted-foreground">
-                {t('Average Yield')}: {filteredNeighborhoods.find(n => n.id === selectedArea)?.yield}%
+                {t('Average Yield')}: {getSelectedNeighborhood()?.yield}%
               </p>
             </div>
             <div className="flex gap-2">
