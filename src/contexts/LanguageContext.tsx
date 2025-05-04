@@ -243,7 +243,6 @@ const translations: Record<Language, Record<string, string>> = {
     
     // Investment categories
     investmentBasics: 'Investmentgrundlagen',
-    financing: 'Finanzierung',
     taxation: 'Besteuerung',
     legalBasics: 'Rechtliche Grundlagen',
     propertyManagement: 'Immobilienverwaltung',
@@ -973,15 +972,15 @@ export const LanguageProvider = ({ children }: LanguageProviderProps) => {
     return {
       beginner: {
         ...englishContent.beginner,
-        ...(currentLanguageContent.beginner || {})
+        ...(currentLanguageContent?.beginner || {})
       },
       intermediate: {
         ...englishContent.intermediate,
-        ...(currentLanguageContent.intermediate || {})
+        ...(currentLanguageContent?.intermediate || {})
       },
       expert: {
         ...englishContent.expert,
-        ...(currentLanguageContent.expert || {})
+        ...(currentLanguageContent?.expert || {})
       }
     };
   };
