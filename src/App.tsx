@@ -29,6 +29,7 @@ import MarketExplorerPage from '@/pages/MarketExplorerPage';
 import AdvancedCalculatorsPage from '@/pages/AdvancedCalculatorsPage';
 import PropertyComparatorPage from '@/pages/PropertyComparatorPage';
 import PortfolioAnalyticsPage from '@/pages/PortfolioAnalyticsPage';
+import MarketAnalysisDashboard from '@/pages/MarketAnalysisDashboard';
 
 function App() {
   return (
@@ -58,6 +59,7 @@ function App() {
                   <Route path="/market-explorer" element={<MarketExplorerPage />} />
                   <Route path="/property-comparator" element={<PropertyComparatorPage />} />
                   <Route path="/portfolio-analytics" element={<PortfolioAnalyticsPage />} />
+                  <Route path="/market-analysis" element={<MarketAnalysisDashboard />} />
                 </Route>
                 {/* Redirect for backward compatibility */}
                 <Route path="/exchange-tracker" element={<Navigate to="/calculators?tab=exchange" replace />} />

@@ -8,7 +8,7 @@ import {
   CardContent,
   CardFooter
 } from '@/components/ui/card';
-import { Settings as SettingsIcon, UserCheck, RefreshCw, Bell, Shield, BarChart, Calendar } from 'lucide-react';
+import { Settings as SettingsIcon, UserCheck, RefreshCw, Bell, Shield, BarChart, Calendar, MapPin, Building, Globe } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import LanguageSwitcher from '@/components/LanguageSwitcher';
 import AppLockSettings from '@/components/AppLockSettings';
@@ -20,10 +20,14 @@ import { Separator } from '@/components/ui/separator';
 import { toast } from '@/components/ui/use-toast';
 import { useUserPreferences } from '@/contexts/UserPreferencesContext';
 import AIAssistant from '@/components/ai/AIAssistant';
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
+import { useNavigate } from 'react-router-dom';
+import { InvestmentMarket } from '@/contexts/UserPreferencesContext';
 
 const Settings = () => {
   const { t } = useLanguage();
   const { preferences, updatePreferences, resetOnboarding } = useUserPreferences();
+  const navigate = useNavigate();
 
   const handleToggleSetting = (key: keyof typeof preferences) => {
     updatePreferences({ [key]: !preferences[key as keyof typeof preferences] });
@@ -45,6 +49,16 @@ const Settings = () => {
     });
   };
 
+  const handleMarketChange = (market: string) => {
+    // Convert string to valid market type
+    updatePreferences({ investmentMarket: market as InvestmentMarket });
+    
+    toast({
+      title: t('marketPreferenceUpdated'),
+      description: t('yourMarketPreferenceHasBeenUpdated'),
+    });
+  };
+
   return (
     <div className="space-y-6 animate-fade-in">
       <div className="flex justify-between items-center">
@@ -61,6 +75,7 @@ const Settings = () => {
       <Tabs defaultValue="general">
         <TabsList className="mb-4">
           <TabsTrigger value="general">{t('general')}</TabsTrigger>
+          <TabsTrigger value="market">{t('market')}</TabsTrigger>
           <TabsTrigger value="security">{t('security')}</TabsTrigger>
           <TabsTrigger value="preferences">{t('preferences')}</TabsTrigger>
           <TabsTrigger value="analytics">{t('analytics')}</TabsTrigger>
@@ -123,6 +138,114 @@ const Settings = () => {
                 </div>
               </div>
             </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="market" className="grid gap-6 md:grid-cols-2">
+          <Card className="md:col-span-2">
+            <CardHeader>
+              <CardTitle className="flex items-center">
+                <Globe className="mr-2 h-5 w-5" />
+                {t('investmentMarket')}
+              </CardTitle>
+              <CardDescription>{t('selectYourPrimaryInvestmentMarket')}</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <RadioGroup 
+                value={preferences.investmentMarket} 
+                onValueChange={handleMarketChange}
+                className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4"
+              >
+                <div className="flex flex-col items-center space-y-2 border rounded-lg p-4 hover:bg-accent/10">
+                  <div className="flex items-center space-x-2">
+                    <RadioGroupItem value="germany" id="germany" />
+                    <Label htmlFor="germany">Germany</Label>
+                  </div>
+                  <div className="h-10 w-10 rounded-full bg-muted flex items-center justify-center">
+                    <span className="text-lg">🇩🇪</span>
+                  </div>
+                </div>
+                
+                <div className="flex flex-col items-center space-y-2 border rounded-lg p-4 hover:bg-accent/10">
+                  <div className="flex items-center space-x-2">
+                    <RadioGroupItem value="austria" id="austria" />
+                    <Label htmlFor="austria">Austria</Label>
+                  </div>
+                  <div className="h-10 w-10 rounded-full bg-muted flex items-center justify-center">
+                    <span className="text-lg">🇦🇹</span>
+                  </div>
+                </div>
+                
+                <div className="flex flex-col items-center space-y-2 border rounded-lg p-4 hover:bg-accent/10">
+                  <div className="flex items-center space-x-2">
+                    <RadioGroupItem value="switzerland" id="switzerland" />
+                    <Label htmlFor="switzerland">Switzerland</Label>
+                  </div>
+                  <div className="h-10 w-10 rounded-full bg-muted flex items-center justify-center">
+                    <span className="text-lg">🇨🇭</span>
+                  </div>
+                </div>
+                
+                <div className="flex flex-col items-center space-y-2 border rounded-lg p-4 hover:bg-accent/10">
+                  <div className="flex items-center space-x-2">
+                    <RadioGroupItem value="france" id="france" />
+                    <Label htmlFor="france">France</Label>
+                  </div>
+                  <div className="h-10 w-10 rounded-full bg-muted flex items-center justify-center">
+                    <span className="text-lg">🇫🇷</span>
+                  </div>
+                </div>
+                
+                <div className="flex flex-col items-center space-y-2 border rounded-lg p-4 hover:bg-accent/10">
+                  <div className="flex items-center space-x-2">
+                    <RadioGroupItem value="usa" id="usa" />
+                    <Label htmlFor="usa">USA</Label>
+                  </div>
+                  <div className="h-10 w-10 rounded-full bg-muted flex items-center justify-center">
+                    <span className="text-lg">🇺🇸</span>
+                  </div>
+                </div>
+                
+                <div className="flex flex-col items-center space-y-2 border rounded-lg p-4 hover:bg-accent/10">
+                  <div className="flex items-center space-x-2">
+                    <RadioGroupItem value="canada" id="canada" />
+                    <Label htmlFor="canada">Canada</Label>
+                  </div>
+                  <div className="h-10 w-10 rounded-full bg-muted flex items-center justify-center">
+                    <span className="text-lg">🇨🇦</span>
+                  </div>
+                </div>
+                
+                <div className="flex flex-col items-center space-y-2 border rounded-lg p-4 hover:bg-accent/10">
+                  <div className="flex items-center space-x-2">
+                    <RadioGroupItem value="global" id="global" />
+                    <Label htmlFor="global">Global</Label>
+                  </div>
+                  <div className="h-10 w-10 rounded-full bg-muted flex items-center justify-center">
+                    <Globe className="h-6 w-6" />
+                  </div>
+                </div>
+                
+                <div className="flex flex-col items-center space-y-2 border rounded-lg p-4 hover:bg-accent/10">
+                  <div className="flex items-center space-x-2">
+                    <RadioGroupItem value="other" id="other" />
+                    <Label htmlFor="other">Other</Label>
+                  </div>
+                  <div className="h-10 w-10 rounded-full bg-muted flex items-center justify-center">
+                    <MapPin className="h-6 w-6" />
+                  </div>
+                </div>
+              </RadioGroup>
+            </CardContent>
+            <CardFooter className="flex justify-between">
+              <div className="text-sm text-muted-foreground">
+                {t('marketPreferenceDescription')}
+              </div>
+              <Button onClick={() => navigate('/market-analysis')}>
+                <Building className="mr-2 h-4 w-4" />
+                {t('viewMarketAnalysis')}
+              </Button>
+            </CardFooter>
           </Card>
         </TabsContent>
         
