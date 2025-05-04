@@ -1,3 +1,4 @@
+
 import React, { createContext, useContext, useState } from 'react';
 
 interface LanguageContextProps {
@@ -502,7 +503,7 @@ const englishTranslations = {
   listedProperties: "Listed Properties",
   monthsOfInventory: "Months of Inventory",
   marketActivityMetric: "Market Activity Metric",
-  absorptionRate: "Absorption Rate",
+  marketAbsorptionRate: "Market Absorption Rate", // Changed from duplicated 'absorptionRate' to 'marketAbsorptionRate'
   
   // Market analysis additional terms (no duplicates)
   accessDetailedNeighborhoodData: "Access detailed neighborhood data",
