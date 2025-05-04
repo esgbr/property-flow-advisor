@@ -17,7 +17,7 @@ const Index = () => {
           <div className="grid gap-6 lg:grid-cols-2 lg:gap-12 items-center">
             <div className="space-y-4">
               <h1 className="text-3xl font-bold tracking-tighter sm:text-4xl md:text-5xl">
-                {t('propertyInvestmentMadeEasy')}
+                {t('realEstateInvestmentMadeEasy')}
               </h1>
               <p className="max-w-[600px] text-muted-foreground md:text-xl">
                 {t('comprehensiveToolsForRealEstate')}
