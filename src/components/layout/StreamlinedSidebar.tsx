@@ -12,7 +12,12 @@ import {
   BookOpen,
   Menu,
   ChevronRight,
-  ChevronDown
+  ChevronDown,
+  Euro,
+  Landmark,
+  PiggyBank,
+  Home as HomeIcon,
+  Receipt
 } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { cn } from '@/lib/utils';
@@ -40,13 +45,16 @@ const StreamlinedSidebar: React.FC<{
   collapsed?: boolean;
   onToggleCollapse?: () => void;
 }> = ({ className, collapsed = false, onToggleCollapse }) => {
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   const navigate = useNavigate();
   const location = useLocation();
   const [openGroups, setOpenGroups] = useState<Record<string, boolean>>({
+    home: true,
     portfolio: true,
     tools: false,
-    resources: false
+    german: false,
+    resources: false,
+    settings: false
   });
 
   const toggleGroup = (group: string) => {
@@ -56,12 +64,13 @@ const StreamlinedSidebar: React.FC<{
     }));
   };
 
+  // Define navigation structure with German-specific tools
   const navigationGroups: NavigationGroup[] = [
     {
       label: t('home'),
       icon: <Home className="h-5 w-5" />,
       items: [
-        { label: t('dashboard'), icon: <Home className="h-4 w-4" />, path: '/dashboard' },
+        { label: t('dashboard'), icon: <HomeIcon className="h-4 w-4" />, path: '/dashboard' },
         { label: t('welcomePage'), icon: <Home className="h-4 w-4" />, path: '/' }
       ]
     },
@@ -83,6 +92,16 @@ const StreamlinedSidebar: React.FC<{
       ]
     },
     {
+      label: language === 'de' ? 'Deutsche Tools' : 'German Tools',
+      icon: <Euro className="h-5 w-5" />,
+      items: [
+        { label: language === 'de' ? 'Immobilien Tools' : 'German Property Tools', icon: <Building className="h-4 w-4" />, path: '/deutsche-immobilien-tools' },
+        { label: language === 'de' ? 'Grunderwerbsteuer' : 'Transfer Tax', icon: <Receipt className="h-4 w-4" />, path: '/deutsche-immobilien-tools?tab=grunderwerbsteuer' },
+        { label: language === 'de' ? 'Mietkauf' : 'Rent-to-Own', icon: <Landmark className="h-4 w-4" />, path: '/deutsche-immobilien-tools?tab=mietkauf' },
+        { label: language === 'de' ? 'AfA-Rechner' : 'Depreciation', icon: <PiggyBank className="h-4 w-4" />, path: '/deutsche-immobilien-tools?tab=afa' }
+      ]
+    },
+    {
       label: t('resources'),
       icon: <BookOpen className="h-5 w-5" />,
       items: [
@@ -94,10 +113,15 @@ const StreamlinedSidebar: React.FC<{
       icon: <Settings className="h-5 w-5" />,
       items: [
         { label: t('settings'), icon: <Settings className="h-4 w-4" />, path: '/settings' },
-        { label: t('userProfile'), icon: <Settings className="h-4 w-4" />, path: '/user-profile' }
+        { label: t('userProfile'), icon: <Settings className="h-4 w-4" />, path: '/profile' }
       ]
     }
   ];
+
+  // Show/hide German tools based on language
+  const filteredGroups = language === 'de' 
+    ? navigationGroups 
+    : navigationGroups.filter(group => group.label !== 'German Tools');
 
   return (
     <aside className={cn(
@@ -118,7 +142,7 @@ const StreamlinedSidebar: React.FC<{
       </div>
 
       <div className="flex-1 overflow-y-auto py-2">
-        {navigationGroups.map((group) => (
+        {filteredGroups.map((group) => (
           collapsed ? (
             <Button
               key={group.label}
@@ -157,7 +181,7 @@ const StreamlinedSidebar: React.FC<{
                     variant="ghost"
                     className={cn(
                       "w-full justify-start pl-8 rounded-none h-9",
-                      location.pathname === item.path && "bg-accent text-accent-foreground"
+                      location.pathname === item.path.split('?')[0] && "bg-accent text-accent-foreground"
                     )}
                     onClick={() => navigate(item.path)}
                   >

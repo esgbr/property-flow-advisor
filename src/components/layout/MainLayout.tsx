@@ -2,7 +2,7 @@
 import React, { useEffect, useState } from 'react';
 import { Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { SidebarProvider } from '@/components/ui/sidebar';
-import AppSidebar from '@/layouts/AppSidebar';
+import SidebarController from '@/components/layout/SidebarController';
 import Navbar from '@/layouts/Navbar';
 import { useAppLock } from '@/contexts/AppLockContext';
 import AppLockScreen from '@/components/AppLockScreen';
@@ -126,52 +126,53 @@ const MainLayout = () => {
   return (
     <SidebarProvider>
       <div className={`min-h-screen flex w-full ${preferences.darkMode ? 'dark' : ''}`}>
-        <AppSidebar />
-        <div className="flex flex-col flex-1">
-          <Navbar />
-          <main className={`flex-1 ${isMobile ? 'p-3' : 'p-6'}`}>
-            {showSecurityAlert && (
-              <Alert className="mb-6 border-amber-500 bg-amber-500/10">
-                <AlertTriangle className="h-4 w-4 text-amber-500" />
-                <AlertTitle className="text-amber-500">{t('securityAlert')}</AlertTitle>
-                <AlertDescription className="flex flex-col gap-2">
-                  <p>{t('securityAlertDescription')}</p>
-                  <div className="flex gap-2 mt-1">
-                    <button 
-                      onClick={setupPIN}
-                      className="px-3 py-1 text-sm rounded-md bg-primary text-white"
-                    >
-                      {t('setupPIN')}
-                    </button>
-                    <button 
-                      onClick={dismissSecurityAlert}
-                      className="px-3 py-1 text-sm rounded-md bg-muted text-muted-foreground"
-                    >
-                      {t('dismiss')}
-                    </button>
-                  </div>
-                </AlertDescription>
-              </Alert>
-            )}
-            
-            {pin && (
-              <Alert className="mb-6 border-green-500 bg-green-500/10">
-                <ShieldCheck className="h-4 w-4 text-green-500" />
-                <AlertTitle className="text-green-500">{t('securityEnabled')}</AlertTitle>
-                <AlertDescription>{t('securityEnabledDescription')}</AlertDescription>
-              </Alert>
-            )}
-            
-            <div className={isMobile ? 'mb-16' : ''}>
-              <Outlet />
-            </div>
-          </main>
+        <SidebarController>
+          <div className="flex flex-col flex-1">
+            <Navbar />
+            <main className={`flex-1 ${isMobile ? 'p-3' : 'p-6'}`}>
+              {showSecurityAlert && (
+                <Alert className="mb-6 border-amber-500 bg-amber-500/10">
+                  <AlertTriangle className="h-4 w-4 text-amber-500" />
+                  <AlertTitle className="text-amber-500">{t('securityAlert')}</AlertTitle>
+                  <AlertDescription className="flex flex-col gap-2">
+                    <p>{t('securityAlertDescription')}</p>
+                    <div className="flex gap-2 mt-1">
+                      <button 
+                        onClick={setupPIN}
+                        className="px-3 py-1 text-sm rounded-md bg-primary text-white"
+                      >
+                        {t('setupPIN')}
+                      </button>
+                      <button 
+                        onClick={dismissSecurityAlert}
+                        className="px-3 py-1 text-sm rounded-md bg-muted text-muted-foreground"
+                      >
+                        {t('dismiss')}
+                      </button>
+                    </div>
+                  </AlertDescription>
+                </Alert>
+              )}
+              
+              {pin && (
+                <Alert className="mb-6 border-green-500 bg-green-500/10">
+                  <ShieldCheck className="h-4 w-4 text-green-500" />
+                  <AlertTitle className="text-green-500">{t('securityEnabled')}</AlertTitle>
+                  <AlertDescription>{t('securityEnabledDescription')}</AlertDescription>
+                </Alert>
+              )}
+              
+              <div className={isMobile ? 'mb-16' : ''}>
+                <Outlet />
+              </div>
+            </main>
+          </div>
           <div className="fixed bottom-4 right-4 z-50 flex flex-col gap-2">
             <FeedbackModal variant="icon" size="md" />
           </div>
-        </div>
-        <WelcomeModal />
+        </SidebarController>
       </div>
+      <WelcomeModal />
     </SidebarProvider>
   );
 };

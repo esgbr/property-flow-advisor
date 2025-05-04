@@ -28,9 +28,7 @@ const SidebarController: React.FC<SidebarControllerProps> = ({ children }) => {
         collapsed={sidebarCollapsed} 
         onToggleCollapse={toggleSidebar} 
       />
-      <div className="flex-1 overflow-y-auto">
-        {children}
-      </div>
+      {children}
     </div>
   );
 };
