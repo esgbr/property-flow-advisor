@@ -1,5 +1,5 @@
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect } from 'react';
 import { Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { SidebarProvider } from '@/components/ui/sidebar';
 import SidebarController from '@/components/layout/SidebarController';
@@ -23,8 +23,8 @@ const MainLayout = () => {
   const { t } = useLanguage();
   const location = useLocation();
   const navigate = useNavigate();
-  const [inactivityTimer, setInactivityTimer] = useState<NodeJS.Timeout | null>(null);
-  const [showSecurityAlert, setShowSecurityAlert] = useState(false);
+  const [inactivityTimer, setInactivityTimer] = React.useState<NodeJS.Timeout | null>(null);
+  const [showSecurityAlert, setShowSecurityAlert] = React.useState(false);
   
   // Enhanced security - auto-lock on inactivity
   useEffect(() => {
@@ -80,7 +80,8 @@ const MainLayout = () => {
   
   // Show security alert if no pin is set
   useEffect(() => {
-    if (preferences.experienceLevel === 'expert' && !pin && !preferences.dismissedSecurityAlert) {
+    if ((preferences.experienceLevel === 'expert' || preferences.experienceLevel === 'advanced') && 
+        !pin && !preferences.dismissedSecurityAlert) {
       setShowSecurityAlert(true);
     }
   }, [preferences.experienceLevel, pin, preferences.dismissedSecurityAlert]);
@@ -90,7 +91,7 @@ const MainLayout = () => {
     const currentPath = location.pathname;
     const visitedPages = preferences.visitedPages || [];
     
-    if (!visitedPages.includes(currentPath)) {
+    if (visitedPages && !visitedPages.includes(currentPath)) {
       updatePreferences({ 
         visitedPages: [...visitedPages, currentPath],
         lastVisitedPage: currentPath,

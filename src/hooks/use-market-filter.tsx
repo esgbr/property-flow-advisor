@@ -25,7 +25,7 @@ export function useMarketFilter() {
     }
     
     // Show features that match the user's market or are set to be available in all markets
-    return feature.markets.includes(userMarket) || 
+    return feature.markets.includes(userMarket as InvestmentMarket) || 
            feature.markets.includes('global');
   };
   

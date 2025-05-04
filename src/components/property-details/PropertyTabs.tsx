@@ -87,7 +87,7 @@ const PropertyTabs = ({ property }: PropertyTabsProps) => {
             Manage tenants and rental income for this property
           </p>
           
-          {preferences.experienceLevel === 'expert' ? (
+          {preferences.experienceLevel === 'expert' || preferences.experienceLevel === 'advanced' ? (
             <div className="grid md:grid-cols-2 gap-4">
               <div className="border rounded-lg p-4 space-y-2">
                 <h4 className="font-medium">Current Tenants</h4>

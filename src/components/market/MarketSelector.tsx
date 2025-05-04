@@ -10,7 +10,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { Check, ChevronDown, Globe } from 'lucide-react';
+import { Check, ChevronDown, Globe, X } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useUserPreferences } from '@/contexts/UserPreferencesContext';
 import { useMarketFilter } from '@/hooks/use-market-filter';
