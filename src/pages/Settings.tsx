@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { 
   Card, 
@@ -8,7 +7,7 @@ import {
   CardContent,
   CardFooter
 } from '@/components/ui/card';
-import { Settings as SettingsIcon, UserCheck, RefreshCw, Bell, Shield, BarChart, Calendar, MapPin, Building, Globe } from 'lucide-react';
+import { Settings as SettingsIcon, UserCheck, RefreshCw, Bell, Shield, BarChart, Calendar, MapPin, Building, Globe, Eye } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import LanguageSwitcher from '@/components/LanguageSwitcher';
 import AppLockSettings from '@/components/AppLockSettings';
@@ -23,11 +22,13 @@ import AIAssistant from '@/components/ai/AIAssistant';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { useNavigate } from 'react-router-dom';
 import { InvestmentMarket } from '@/contexts/UserPreferencesContext';
+import { useAccessibility } from '@/components/accessibility/A11yProvider';
 
 const Settings = () => {
   const { t } = useLanguage();
   const { preferences, updatePreferences, resetOnboarding } = useUserPreferences();
   const navigate = useNavigate();
+  const { reduceMotion, highContrast, largeText, screenReader } = useAccessibility();
 
   const handleToggleSetting = (key: keyof typeof preferences) => {
     updatePreferences({ [key]: !preferences[key as keyof typeof preferences] });
@@ -75,6 +76,7 @@ const Settings = () => {
       <Tabs defaultValue="general">
         <TabsList className="mb-4">
           <TabsTrigger value="general">{t('general')}</TabsTrigger>
+          <TabsTrigger value="accessibility">{t('accessibility')}</TabsTrigger>
           <TabsTrigger value="market">{t('market')}</TabsTrigger>
           <TabsTrigger value="security">{t('security')}</TabsTrigger>
           <TabsTrigger value="preferences">{t('preferences')}</TabsTrigger>
@@ -141,6 +143,57 @@ const Settings = () => {
           </Card>
         </TabsContent>
 
+        <TabsContent value="accessibility" className="grid gap-6 md:grid-cols-2">
+          <Card className="md:col-span-2">
+            <CardHeader>
+              <CardTitle className="flex items-center">
+                <Eye className="mr-2 h-5 w-5" />
+                {t('accessibilitySettings')}
+              </CardTitle>
+              <CardDescription>{t('accessibilitySettingsDescription') || 'Customize your experience for better accessibility'}</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="space-y-2">
+                  <h3 className="font-medium">{t('currentSettings') || 'Current Settings'}</h3>
+                  <div className="space-y-2">
+                    <div className="flex items-center justify-between">
+                      <span>{t('reduceMotion') || 'Reduce Motion'}</span>
+                      <span className={`px-2 py-0.5 rounded-full text-xs ${reduceMotion ? 'bg-green-100 text-green-800 dark:bg-green-800 dark:text-green-100' : 'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-100'}`}>
+                        {reduceMotion ? t('enabled') || 'Enabled' : t('disabled') || 'Disabled'}
+                      </span>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span>{t('highContrast') || 'High Contrast'}</span>
+                      <span className={`px-2 py-0.5 rounded-full text-xs ${highContrast ? 'bg-green-100 text-green-800 dark:bg-green-800 dark:text-green-100' : 'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-100'}`}>
+                        {highContrast ? t('enabled') || 'Enabled' : t('disabled') || 'Disabled'}
+                      </span>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span>{t('largeText') || 'Large Text'}</span>
+                      <span className={`px-2 py-0.5 rounded-full text-xs ${largeText ? 'bg-green-100 text-green-800 dark:bg-green-800 dark:text-green-100' : 'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-100'}`}>
+                        {largeText ? t('enabled') || 'Enabled' : t('disabled') || 'Disabled'}
+                      </span>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span>{t('screenReader') || 'Screen Reader Optimizations'}</span>
+                      <span className={`px-2 py-0.5 rounded-full text-xs ${screenReader ? 'bg-green-100 text-green-800 dark:bg-green-800 dark:text-green-100' : 'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-100'}`}>
+                        {screenReader ? t('enabled') || 'Enabled' : t('disabled') || 'Disabled'}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </CardContent>
+            <CardFooter className="flex justify-end">
+              <Button onClick={() => navigate('/accessibility')}>
+                <Eye className="mr-2 h-4 w-4" />
+                {t('manageAccessibilitySettings') || 'Manage Accessibility Settings'}
+              </Button>
+            </CardFooter>
+          </Card>
+        </TabsContent>
+        
         <TabsContent value="market" className="grid gap-6 md:grid-cols-2">
           <Card className="md:col-span-2">
             <CardHeader>

@@ -1,4 +1,3 @@
-
 import React, { useEffect, lazy, Suspense } from 'react';
 import { Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { SidebarProvider } from '@/components/ui/sidebar';
@@ -15,6 +14,8 @@ import MobileNavigation from '@/components/navigation/MobileNavigation';
 import ErrorBoundary from '@/components/ErrorBoundary';
 import SkipToContent from '@/components/accessibility/SkipToContent';
 import { AppThemeProvider, useAppTheme } from '@/components/theme-provider';
+import { A11yProvider } from '@/components/accessibility/A11yProvider';
+import AccessibilitySettingsButton from '@/components/accessibility/AccessibilitySettingsButton';
 
 // Lazy load non-critical components
 const FeedbackModal = lazy(() => import('@/components/feedback/FeedbackModal'));
@@ -175,6 +176,7 @@ const MainLayout = () => {
               {isMobile && <MobileNavigation />}
             </div>
             <div className="fixed bottom-4 right-4 z-50 flex flex-col gap-2">
+              <AccessibilitySettingsButton />
               <Suspense fallback={null}>
                 <FeedbackModal variant="icon" size="md" />
               </Suspense>
@@ -189,11 +191,13 @@ const MainLayout = () => {
   );
 };
 
-// Wrap the MainLayout with the AppThemeProvider
+// Wrap the MainLayout with the AppThemeProvider and A11yProvider
 const ThemedMainLayout = () => {
   return (
     <AppThemeProvider>
-      <MainLayout />
+      <A11yProvider>
+        <MainLayout />
+      </A11yProvider>
     </AppThemeProvider>
   );
 };

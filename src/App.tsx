@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import { ThemeProvider } from '@/components/theme-provider';
@@ -31,6 +30,7 @@ import AdvancedCalculatorsPage from '@/pages/AdvancedCalculatorsPage';
 import PropertyComparatorPage from '@/pages/PropertyComparatorPage';
 import PortfolioAnalyticsPage from '@/pages/PortfolioAnalyticsPage';
 import MarketAnalysisDashboard from '@/pages/MarketAnalysisDashboard';
+import AccessibilitySettings from './components/accessibility/AccessibilitySettings';
 
 function App() {
   return (
