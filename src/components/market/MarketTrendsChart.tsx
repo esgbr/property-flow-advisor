@@ -95,6 +95,11 @@ const MarketTrendsChart: React.FC<MarketTrendsChartProps> = ({ className = '' })
     [selectedMetric]
   );
 
+  // Fix the return type of formatTooltip to ensure it returns a tuple with exactly 2 elements
+  const formatTooltipValue = (value: any): [string, string] => {
+    return [formatYAxisTick(value as number), ''];
+  };
+
   return (
     <Card className={className}>
       <CardHeader>
@@ -109,7 +114,7 @@ const MarketTrendsChart: React.FC<MarketTrendsChartProps> = ({ className = '' })
           xAxisKey="month"
           yAxisLabel={getYAxisLabel()}
           formatYAxisTick={formatYAxisTick}
-          formatTooltip={(value) => [formatYAxisTick(value as number), '']}
+          formatTooltip={formatTooltipValue}
           formatTooltipLabel={(label) => `${label} ${currentYear}`}
           height={400}
           domain={yAxisDomain}
