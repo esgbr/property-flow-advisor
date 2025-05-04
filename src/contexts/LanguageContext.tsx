@@ -371,7 +371,7 @@ const englishTranslations = {
   propertyFlipping: "Property Flipping",
   propertyFlippingDescription: "Buying, renovating, and quickly reselling for profit",
 
-  // Investment analysis
+  // Investment analysis tools and terms
   comparablesSalesApproach: "Comparable Sales Approach",
   incomeCashFlowApproach: "Income/Cash Flow Approach",
   replacementCostApproach: "Replacement Cost Approach",
@@ -503,9 +503,8 @@ const englishTranslations = {
   listedProperties: "Listed Properties",
   monthsOfInventory: "Months of Inventory",
   marketActivityMetric: "Market Activity Metric",
-  absorptionRate: "Absorption Rate",
-  accessDetailedNeighborhoodData: "Access detailed neighborhood data",
-  unlockNeighborhoodData: "Unlock Neighborhood Data",
+  
+  // Market analysis additional terms (removed duplicate property)
   demographicData: "Demographic Data",
   accessDemographicInsights: "Access demographic insights",
   unlockDemographicData: "Unlock Demographic Data",
@@ -597,3 +596,4 @@ export const LanguageProvider = ({ children }: { children: React.ReactNode }) =>
 };
 
 export const useLanguage = () => useContext(LanguageContext);
+
