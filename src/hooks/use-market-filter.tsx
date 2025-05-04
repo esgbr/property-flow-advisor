@@ -1,6 +1,7 @@
 
 import { useUserPreferences } from '@/contexts/UserPreferencesContext';
 import { InvestmentMarket } from '@/contexts/UserPreferencesContext';
+import { availableMarkets, getMarketDisplayName as getDisplayName } from '@/utils/marketHelpers';
 
 // Market-specific feature type
 export type MarketSpecificFeature = {
@@ -36,33 +37,14 @@ export function useMarketFilter() {
     return features.filter(shouldShowFeature);
   };
 
-  // Get display name for current market
+  // Get display name for current market using our utility function
   const getMarketDisplayName = (): string => {
-    switch(userMarket) {
-      case 'germany': return 'German';
-      case 'austria': return 'Austrian';
-      case 'switzerland': return 'Swiss';
-      case 'france': return 'French';
-      case 'usa': return 'US';
-      case 'canada': return 'Canadian';
-      case 'global': return 'Global';
-      case 'other': return 'International';
-      default: return '';
-    }
+    return getDisplayName(userMarket as InvestmentMarket);
   };
   
-  // Get available markets for filtering
-  const getAvailableMarkets = (): {id: InvestmentMarket, name: string}[] => {
-    return [
-      { id: 'germany', name: 'Germany' },
-      { id: 'austria', name: 'Austria' },
-      { id: 'switzerland', name: 'Switzerland' },
-      { id: 'france', name: 'France' },
-      { id: 'usa', name: 'USA' },
-      { id: 'canada', name: 'Canada' },
-      { id: 'global', name: 'Global' },
-      { id: 'other', name: 'Other' }
-    ];
+  // Get available markets for filtering using our centralized data
+  const getAvailableMarkets = () => {
+    return availableMarkets;
   };
   
   return {

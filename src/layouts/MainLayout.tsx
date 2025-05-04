@@ -4,12 +4,15 @@ import { Outlet } from 'react-router-dom';
 import { SidebarProvider } from '@/components/ui/sidebar';
 import AppSidebar from './AppSidebar';
 import Navbar from './Navbar';
-import { ThemeProvider } from '@/components/theme-provider';
+import { useUserPreferences } from '@/contexts/UserPreferencesContext';
 
 const MainLayout = () => {
+  const { preferences } = useUserPreferences();
+  const theme = preferences.theme || 'light';
+  
   return (
-    <ThemeProvider defaultTheme="light" storageKey="real-estate-theme">
-      <div className="min-h-screen flex w-full">
+    <div className="min-h-screen flex w-full">
+      <SidebarProvider>
         <AppSidebar />
         <div className="flex flex-col flex-1">
           <Navbar />
@@ -17,8 +20,8 @@ const MainLayout = () => {
             <Outlet />
           </main>
         </div>
-      </div>
-    </ThemeProvider>
+      </SidebarProvider>
+    </div>
   );
 };
 

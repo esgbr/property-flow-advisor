@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -21,19 +22,30 @@ import { useMarketFilter } from '@/hooks/use-market-filter';
 import { Badge } from '@/components/ui/badge';
 import { InvestmentMarket } from '@/contexts/UserPreferencesContext';
 
+// Feature interface to ensure proper typing
+interface Feature {
+  id: string;
+  title: string;
+  description: string;
+  icon: React.ReactNode;
+  action: () => void;
+  markets: InvestmentMarket[];
+}
+
 const Index: React.FC = () => {
   const navigate = useNavigate();
   const { t, language } = useLanguage();
   const { shouldShowFeature, userMarket } = useMarketFilter();
 
-  const features = [
+  // Properly typed features array
+  const features: Feature[] = [
     {
       id: 'portfolio',
       title: t('Portfolio Management'),
       description: t('Portfolio Management Description'),
       icon: <Building className="h-8 w-8 text-primary" />,
       action: () => navigate('/properties'),
-      markets: ['global' as InvestmentMarket]
+      markets: ['global']
     },
     {
       id: 'investment',
@@ -41,7 +53,7 @@ const Index: React.FC = () => {
       description: t('Investment Analysis Description'),
       icon: <BarChart3 className="h-8 w-8 text-primary" />,
       action: () => navigate('/investor-dashboard'),
-      markets: ['global' as InvestmentMarket]
+      markets: ['global']
     },
     {
       id: 'calculators',
@@ -49,7 +61,7 @@ const Index: React.FC = () => {
       description: t('Financial Calculators Description'),
       icon: <Calculator className="h-8 w-8 text-primary" />,
       action: () => navigate('/calculators'),
-      markets: ['global' as InvestmentMarket]
+      markets: ['global']
     },
     {
       id: 'german-tools',
@@ -59,7 +71,7 @@ const Index: React.FC = () => {
         : 'Specialized tools for the German real estate market, including transfer tax, rent-to-own and depreciation calculators.',
       icon: <Euro className="h-8 w-8 text-primary" />,
       action: () => navigate('/deutsche-immobilien-tools'),
-      markets: ['germany', 'austria', 'switzerland'] as InvestmentMarket[]
+      markets: ['germany', 'austria', 'switzerland']
     },
     {
       id: 'us-tools',
@@ -69,7 +81,7 @@ const Index: React.FC = () => {
         : 'Specialized tools for the US real estate market, including 1031 exchange, property tax and depreciation calculators.',
       icon: <Briefcase className="h-8 w-8 text-primary" />,
       action: () => navigate('/us-real-estate-tools'),
-      markets: ['usa', 'canada'] as InvestmentMarket[]
+      markets: ['usa', 'canada']
     },
     {
       id: 'market',

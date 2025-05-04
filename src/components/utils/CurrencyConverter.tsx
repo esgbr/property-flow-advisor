@@ -11,7 +11,7 @@ import { toast } from 'sonner';
 // Currency type
 type Currency = 'EUR' | 'USD' | 'GBP' | 'CHF' | 'JPY' | 'CAD' | 'AUD';
 
-// Exchange rate type
+// Fixed exchange rate type to properly handle self-references
 type ExchangeRates = Record<Currency, Record<Currency, number>>;
 
 const CurrencyConverter: React.FC = () => {
@@ -23,9 +23,10 @@ const CurrencyConverter: React.FC = () => {
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [lastUpdated, setLastUpdated] = useState<Date>(new Date());
 
-  // Sample exchange rates (in a real app, fetch these from an API)
+  // Updated exchange rates with proper self-references for each currency
   const exchangeRates: ExchangeRates = {
     EUR: {
+      EUR: 1.0,
       USD: 1.09,
       GBP: 0.85,
       CHF: 0.96,
@@ -34,6 +35,7 @@ const CurrencyConverter: React.FC = () => {
       AUD: 1.62
     },
     USD: {
+      USD: 1.0,
       EUR: 0.92,
       GBP: 0.78,
       CHF: 0.88,
@@ -42,6 +44,7 @@ const CurrencyConverter: React.FC = () => {
       AUD: 1.49
     },
     GBP: {
+      GBP: 1.0,
       EUR: 1.17,
       USD: 1.28,
       CHF: 1.13,
@@ -50,6 +53,7 @@ const CurrencyConverter: React.FC = () => {
       AUD: 1.91
     },
     CHF: {
+      CHF: 1.0,
       EUR: 1.04,
       USD: 1.14,
       GBP: 0.88,
@@ -58,6 +62,7 @@ const CurrencyConverter: React.FC = () => {
       AUD: 1.69
     },
     JPY: {
+      JPY: 1.0,
       EUR: 0.0064,
       USD: 0.0069,
       GBP: 0.0054,
@@ -66,6 +71,7 @@ const CurrencyConverter: React.FC = () => {
       AUD: 0.0103
     },
     CAD: {
+      CAD: 1.0,
       EUR: 0.68,
       USD: 0.74,
       GBP: 0.58,
@@ -74,6 +80,7 @@ const CurrencyConverter: React.FC = () => {
       AUD: 1.10
     },
     AUD: {
+      AUD: 1.0,
       EUR: 0.62,
       USD: 0.67,
       GBP: 0.52,

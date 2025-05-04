@@ -12,7 +12,6 @@ export interface UserPreferences {
   name?: string;
   email?: string;
   investmentMarket?: InvestmentMarket;
-  // Updated to include 'expert' as a valid experience level
   experienceLevel?: 'beginner' | 'intermediate' | 'advanced' | 'expert';
   appLockEnabled?: boolean;
   appLockMethod?: 'pin' | 'biometric' | 'none';
@@ -44,12 +43,27 @@ export interface UserPreferences {
     collapsed?: boolean;
     favoriteItems?: string[];
   };
+  // Adding properties needed for WelcomeModal
+  isFirstVisit?: boolean;
+}
+
+// Define OnboardingData type for WelcomeModal
+export interface OnboardingData {
+  name: string;
+  experienceLevel: 'beginner' | 'intermediate' | 'advanced' | 'expert';
+  interests: string[];
+  investmentGoals: string[];
+  preferredPropertyTypes: string[];
+  investmentMarket: InvestmentMarket;
 }
 
 interface UserPreferencesContextProps {
   preferences: UserPreferences;
   updatePreferences: (newPreferences: UserPreferences) => void;
-  resetOnboarding?: () => void; // Added this method
+  resetOnboarding?: () => void;
+  isFirstVisit?: boolean;
+  setIsFirstVisit?: (value: boolean) => void;
+  saveOnboardingData?: (data: Partial<OnboardingData>) => void;
 }
 
 const UserPreferencesContext = createContext<UserPreferencesContextProps>({
@@ -89,7 +103,8 @@ const defaultPreferences: UserPreferences = {
   sidebarPreferences: {
     collapsed: false,
     favoriteItems: []
-  }
+  },
+  isFirstVisit: true
 };
 
 export const UserPreferencesProvider: React.FC<UserPreferencesProviderProps> = ({ children }) => {
@@ -98,6 +113,8 @@ export const UserPreferencesProvider: React.FC<UserPreferencesProviderProps> = (
     const storedPreferences = localStorage.getItem('userPreferences');
     return storedPreferences ? { ...defaultPreferences, ...JSON.parse(storedPreferences) } : defaultPreferences;
   });
+  
+  const [isFirstVisit, setIsFirstVisit] = useState<boolean>(preferences.isFirstVisit !== false);
 
   useEffect(() => {
     // Save preferences to localStorage whenever they change
@@ -112,9 +129,24 @@ export const UserPreferencesProvider: React.FC<UserPreferencesProviderProps> = (
   const resetOnboarding = () => {
     updatePreferences({ onboardingCompleted: false });
   };
+  
+  // Add saveOnboardingData function
+  const saveOnboardingData = (data: Partial<OnboardingData>) => {
+    updatePreferences({
+      ...data,
+      onboardingCompleted: true
+    });
+  };
 
   return (
-    <UserPreferencesContext.Provider value={{ preferences, updatePreferences, resetOnboarding }}>
+    <UserPreferencesContext.Provider value={{ 
+      preferences, 
+      updatePreferences, 
+      resetOnboarding, 
+      isFirstVisit, 
+      setIsFirstVisit,
+      saveOnboardingData 
+    }}>
       {children}
     </UserPreferencesContext.Provider>
   );
