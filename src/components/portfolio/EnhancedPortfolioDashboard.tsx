@@ -12,6 +12,7 @@ import PortfolioSummaryCards from './PortfolioSummaryCards';
 import PortfolioGoals from './PortfolioGoals';
 import PortfolioAlerts from './PortfolioAlerts';
 import PortfolioSimulator from './PortfolioSimulator';
+import PropertyComparison from './PropertyComparison';
 
 // Enhanced version of PortfolioDashboard
 const EnhancedPortfolioDashboard: React.FC = () => {
@@ -61,6 +62,10 @@ const EnhancedPortfolioDashboard: React.FC = () => {
             <TrendingUp className="mr-2 h-4 w-4" />
             {t('projections')}
           </TabsTrigger>
+          <TabsTrigger value="comparison">
+            <Building className="mr-2 h-4 w-4" />
+            {t('propertyComparison')}
+          </TabsTrigger>
           <TabsTrigger value="cashflow">
             <Calculator className="mr-1 h-4 w-4" />
             {t('cashFlow')}
@@ -95,6 +100,10 @@ const EnhancedPortfolioDashboard: React.FC = () => {
               </CardContent>
             </Card>
           </div>
+        </TabsContent>
+        
+        <TabsContent value="comparison">
+          <PropertyComparison />
         </TabsContent>
 
         <TabsContent value="cashflow">

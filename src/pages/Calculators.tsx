@@ -10,9 +10,11 @@ import {
   LineChart,
   BarChart,
   PercentIcon,
+  Coins
 } from 'lucide-react';
 import InvestmentCalculator from '@/components/calculators/InvestmentCalculator';
 import RentalYieldCalculator from '@/components/calculators/RentalYieldCalculator';
+import CashOnCashCalculator from '@/components/calculators/CashOnCashCalculator';
 
 const Calculators: React.FC = () => {
   const { t } = useLanguage();
@@ -28,10 +30,14 @@ const Calculators: React.FC = () => {
       </div>
 
       <Tabs defaultValue="investment" className="w-full">
-        <TabsList className="mb-6">
+        <TabsList className="mb-6 flex flex-wrap">
           <TabsTrigger value="investment" className="flex items-center">
             <Building className="h-4 w-4 mr-2" />
             {t('investmentAnalysis')}
+          </TabsTrigger>
+          <TabsTrigger value="cash-on-cash" className="flex items-center">
+            <Coins className="h-4 w-4 mr-2" />
+            {t('cashOnCashReturn')}
           </TabsTrigger>
           <TabsTrigger value="rental-yield" className="flex items-center">
             <PercentIcon className="h-4 w-4 mr-2" />
@@ -53,6 +59,10 @@ const Calculators: React.FC = () => {
         
         <TabsContent value="investment">
           <InvestmentCalculator />
+        </TabsContent>
+
+        <TabsContent value="cash-on-cash">
+          <CashOnCashCalculator />
         </TabsContent>
         
         <TabsContent value="rental-yield">
