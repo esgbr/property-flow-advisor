@@ -1,192 +1,116 @@
 
 import React from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { useLanguage } from '@/contexts/LanguageContext';
-import { Building, Calendar, Home, Landmark, LineChart, PieChart, TrendingUp } from 'lucide-react';
-import PortfolioDashboard from '@/components/portfolio/PortfolioDashboard';
-import { PropertyScanner } from '@/components/property/PropertyScanner';
-import InvestmentOpportunityFeed from '@/components/property/InvestmentOpportunityFeed';
 import { Button } from '@/components/ui/button';
+import { useNavigate } from 'react-router-dom';
+import { useLanguage } from '@/contexts/LanguageContext';
+import { Building, Calculator, Euro, PieChart, BarChart3, Globe } from 'lucide-react';
+import { GermanPropertyRecommendations } from '@/components/german/GermanPropertyRecommendations';
+import { GermanRealEstateNavigation } from '@/components/navigation/GermanRealEstateNavigation';
 
 const Dashboard = () => {
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
+  const navigate = useNavigate();
   
+  // Quick access tools for dashboard
+  const quickTools = [
+    {
+      title: language === 'de' ? 'Grunderwerbsteuer' : 'Transfer Tax',
+      icon: <Euro className="h-6 w-6 text-primary" />,
+      path: '/deutsche-immobilien-tools?tab=grunderwerbsteuer',
+      description: language === 'de' 
+        ? 'Berechnen Sie die Grunderwerbsteuer für verschiedene Bundesländer' 
+        : 'Calculate transfer tax for different German states'
+    },
+    {
+      title: t('calculators'),
+      icon: <Calculator className="h-6 w-6 text-primary" />,
+      path: '/calculators',
+      description: language === 'de' 
+        ? 'Zugriff auf alle verfügbaren Immobilien-Rechner' 
+        : 'Access all available real estate calculators'
+    },
+    {
+      title: t('portfolio'),
+      icon: <Building className="h-6 w-6 text-primary" />,
+      path: '/properties',
+      description: language === 'de' 
+        ? 'Verwalten Sie Ihr Immobilienportfolio' 
+        : 'Manage your property portfolio'
+    },
+    {
+      title: language === 'de' ? 'Deutsche Immobilien' : 'German Real Estate',
+      icon: <Globe className="h-6 w-6 text-primary" />,
+      path: '/german-investor',
+      description: language === 'de' 
+        ? 'Spezielle Tools für den deutschen Markt' 
+        : 'Specialized tools for the German market'
+    }
+  ];
+
   return (
-    <div className="space-y-6 animate-fade-in">
-      <div>
-        <h1 className="text-3xl font-bold flex items-center">
-          <Home className="mr-2 h-6 w-6" />
-          {t('dashboard')}
-        </h1>
-        <p className="text-muted-foreground">{t('trackYourRealEstateInvestments')}</p>
+    <div className="container mx-auto p-4 space-y-6">
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center">
+        <div>
+          <h1 className="text-2xl md:text-3xl font-bold">{t('dashboard')}</h1>
+          <p className="text-muted-foreground">{t('welcomeBack')}</p>
+        </div>
+        <div className="mt-4 md:mt-0">
+          <Button onClick={() => navigate('/german-investor')}>
+            {language === 'de' ? 'Deutsche Immobilien-Tools' : 'German Real Estate Tools'}
+          </Button>
+        </div>
       </div>
 
-      <div className="grid gap-4 md:grid-cols-3">
-        <Card className="md:col-span-2">
-          <CardHeader className="flex flex-row items-center justify-between">
-            <div>
-              <CardTitle>{t('investmentSummary')}</CardTitle>
-              <CardDescription>{t('portfolioOverview')}</CardDescription>
-            </div>
-            <Button variant="outline" size="sm">
-              <LineChart className="mr-2 h-4 w-4" />
-              {t('viewTrends')}
-            </Button>
-          </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-2 gap-4">
-              <div className="border rounded-lg p-3">
-                <div className="text-muted-foreground text-sm">{t('totalValue')}</div>
-                <div className="text-2xl font-bold mt-1">€2,450,000</div>
-                <div className="flex items-center text-xs text-green-600 mt-1">
-                  <TrendingUp className="h-3 w-3 mr-1" /> +8.3%
-                </div>
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        {quickTools.map((tool, index) => (
+          <Card 
+            key={index} 
+            className="hover:shadow-md transition-all cursor-pointer"
+            onClick={() => navigate(tool.path)}
+          >
+            <CardHeader className="pb-2">
+              <div className="flex items-center">
+                {tool.icon}
+                <CardTitle className="ml-2 text-lg">{tool.title}</CardTitle>
               </div>
-              <div className="border rounded-lg p-3">
-                <div className="text-muted-foreground text-sm">{t('totalProperties')}</div>
-                <div className="text-2xl font-bold mt-1">6</div>
-                <div className="flex items-center text-xs text-green-600 mt-1">
-                  <TrendingUp className="h-3 w-3 mr-1" /> +1
-                </div>
-              </div>
-              <div className="border rounded-lg p-3">
-                <div className="text-muted-foreground text-sm">{t('monthlyCashFlow')}</div>
-                <div className="text-2xl font-bold mt-1">€12,500</div>
-                <div className="flex items-center text-xs text-green-600 mt-1">
-                  <TrendingUp className="h-3 w-3 mr-1" /> +4.2%
-                </div>
-              </div>
-              <div className="border rounded-lg p-3">
-                <div className="text-muted-foreground text-sm">{t('totalEquity')}</div>
-                <div className="text-2xl font-bold mt-1">€950,000</div>
-                <div className="flex items-center text-xs text-green-600 mt-1">
-                  <TrendingUp className="h-3 w-3 mr-1" /> +10.5%
-                </div>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <CardTitle>{t('upcomingEvents')}</CardTitle>
-            <CardDescription>{t('propertiesAndInvestments')}</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              <div className="flex items-start space-x-3">
-                <div className="rounded-full bg-primary/10 p-2">
-                  <Calendar className="h-4 w-4 text-primary" />
-                </div>
-                <div>
-                  <p className="text-sm font-medium">{t('propertyInspection')}</p>
-                  <p className="text-xs text-muted-foreground">123 Main St, May 10, 10:00 AM</p>
-                </div>
-              </div>
-              <div className="flex items-start space-x-3">
-                <div className="rounded-full bg-primary/10 p-2">
-                  <Landmark className="h-4 w-4 text-primary" />
-                </div>
-                <div>
-                  <p className="text-sm font-medium">{t('mortgagePaymentDue')}</p>
-                  <p className="text-xs text-muted-foreground">Rental Property A, May 15</p>
-                </div>
-              </div>
-              <div className="flex items-start space-x-3">
-                <div className="rounded-full bg-primary/10 p-2">
-                  <Building className="h-4 w-4 text-primary" />
-                </div>
-                <div>
-                  <p className="text-sm font-medium">{t('propertyTaxDue')}</p>
-                  <p className="text-xs text-muted-foreground">456 Oak Ave, May 20</p>
-                </div>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+            </CardHeader>
+            <CardContent>
+              <p className="text-sm text-muted-foreground">{tool.description}</p>
+            </CardContent>
+          </Card>
+        ))}
       </div>
-
+      
       <Card>
         <CardHeader>
-          <CardTitle>{t('portfolioPerformance')}</CardTitle>
-          <CardDescription>{t('trackInvestmentGrowth')}</CardDescription>
+          <CardTitle>{language === 'de' ? 'Deutsche Immobilien-Tools' : 'German Real Estate Tools'}</CardTitle>
+          <CardDescription>
+            {language === 'de' 
+              ? 'Spezielle Tools für den deutschen Immobilienmarkt' 
+              : 'Specialized tools for the German real estate market'}
+          </CardDescription>
         </CardHeader>
         <CardContent>
-          <Tabs defaultValue="performance">
-            <TabsList>
-              <TabsTrigger value="performance">
-                <LineChart className="h-4 w-4 mr-2" />
-                {t('performance')}
-              </TabsTrigger>
-              <TabsTrigger value="allocation">
-                <PieChart className="h-4 w-4 mr-2" />
-                {t('allocation')}
-              </TabsTrigger>
-            </TabsList>
-            <TabsContent value="performance" className="pt-4">
-              <PortfolioDashboard />
-            </TabsContent>
-            <TabsContent value="allocation" className="pt-4">
-              <div className="grid md:grid-cols-2 gap-6">
-                <div>
-                  <h3 className="text-lg font-medium mb-2">{t('assetAllocation')}</h3>
-                  <div className="h-64 bg-muted/50 rounded-md flex items-center justify-center">
-                    <div className="text-center">
-                      <PieChart className="h-12 w-12 mx-auto text-muted-foreground mb-2" />
-                      <p className="text-sm font-medium">{t('assetAllocationChart')}</p>
-                      <p className="text-xs text-muted-foreground">{t('breakdownByPropertyType')}</p>
-                    </div>
-                  </div>
-                </div>
-                <div className="space-y-4">
-                  <div className="space-y-1">
-                    <div className="flex justify-between text-sm">
-                      <span>{t('residential')}</span>
-                      <span className="font-medium">65%</span>
-                    </div>
-                    <div className="bg-muted h-2 rounded-full overflow-hidden">
-                      <div className="bg-blue-500 h-full rounded-full" style={{ width: '65%' }}></div>
-                    </div>
-                  </div>
-                  <div className="space-y-1">
-                    <div className="flex justify-between text-sm">
-                      <span>{t('commercial')}</span>
-                      <span className="font-medium">20%</span>
-                    </div>
-                    <div className="bg-muted h-2 rounded-full overflow-hidden">
-                      <div className="bg-green-500 h-full rounded-full" style={{ width: '20%' }}></div>
-                    </div>
-                  </div>
-                  <div className="space-y-1">
-                    <div className="flex justify-between text-sm">
-                      <span>{t('mixed')}</span>
-                      <span className="font-medium">10%</span>
-                    </div>
-                    <div className="bg-muted h-2 rounded-full overflow-hidden">
-                      <div className="bg-amber-500 h-full rounded-full" style={{ width: '10%' }}></div>
-                    </div>
-                  </div>
-                  <div className="space-y-1">
-                    <div className="flex justify-between text-sm">
-                      <span>{t('land')}</span>
-                      <span className="font-medium">5%</span>
-                    </div>
-                    <div className="bg-muted h-2 rounded-full overflow-hidden">
-                      <div className="bg-purple-500 h-full rounded-full" style={{ width: '5%' }}></div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </TabsContent>
-          </Tabs>
+          <GermanRealEstateNavigation />
         </CardContent>
       </Card>
-
-      <div className="grid gap-4 md:grid-cols-2">
-        <PropertyScanner />
-        <InvestmentOpportunityFeed />
-      </div>
+      
+      <GermanPropertyRecommendations />
+      
+      <Card>
+        <CardHeader>
+          <CardTitle>{t('yourPortfolio')}</CardTitle>
+          <CardDescription>{t('propertyOverview')}</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="flex justify-center py-10">
+            <Button onClick={() => navigate('/properties')}>
+              {t('viewProperties')}
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
     </div>
   );
 };

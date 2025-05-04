@@ -16,8 +16,10 @@ import {
   Euro,
   Landmark,
   PiggyBank,
-  Home as HomeIcon,
-  Receipt
+  Receipt,
+  Globe,
+  Map,
+  Shield
 } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { cn } from '@/lib/utils';
@@ -52,7 +54,7 @@ const StreamlinedSidebar: React.FC<{
     home: true,
     portfolio: true,
     tools: false,
-    german: false,
+    german: true,
     resources: false,
     settings: false
   });
@@ -70,7 +72,7 @@ const StreamlinedSidebar: React.FC<{
       label: t('home'),
       icon: <Home className="h-5 w-5" />,
       items: [
-        { label: t('dashboard'), icon: <HomeIcon className="h-4 w-4" />, path: '/dashboard' },
+        { label: t('dashboard'), icon: <Home className="h-4 w-4" />, path: '/dashboard' },
         { label: t('welcomePage'), icon: <Home className="h-4 w-4" />, path: '/' }
       ]
     },
@@ -95,10 +97,26 @@ const StreamlinedSidebar: React.FC<{
       label: language === 'de' ? 'Deutsche Tools' : 'German Tools',
       icon: <Euro className="h-5 w-5" />,
       items: [
-        { label: language === 'de' ? 'Immobilien Tools' : 'German Property Tools', icon: <Building className="h-4 w-4" />, path: '/deutsche-immobilien-tools' },
-        { label: language === 'de' ? 'Grunderwerbsteuer' : 'Transfer Tax', icon: <Receipt className="h-4 w-4" />, path: '/deutsche-immobilien-tools?tab=grunderwerbsteuer' },
-        { label: language === 'de' ? 'Mietkauf' : 'Rent-to-Own', icon: <Landmark className="h-4 w-4" />, path: '/deutsche-immobilien-tools?tab=mietkauf' },
-        { label: language === 'de' ? 'AfA-Rechner' : 'Depreciation', icon: <PiggyBank className="h-4 w-4" />, path: '/deutsche-immobilien-tools?tab=afa' }
+        { label: language === 'de' ? 'Immobilien Tools' : 'German Property Tools', 
+          icon: <Building className="h-4 w-4" />, 
+          path: '/german-investor' 
+        },
+        { label: language === 'de' ? 'Grunderwerbsteuer' : 'Transfer Tax', 
+          icon: <Receipt className="h-4 w-4" />, 
+          path: '/deutsche-immobilien-tools?tab=grunderwerbsteuer' 
+        },
+        { label: language === 'de' ? 'Mietkauf' : 'Rent-to-Own', 
+          icon: <Landmark className="h-4 w-4" />, 
+          path: '/deutsche-immobilien-tools?tab=mietkauf' 
+        },
+        { label: language === 'de' ? 'AfA-Rechner' : 'Depreciation', 
+          icon: <PiggyBank className="h-4 w-4" />, 
+          path: '/deutsche-immobilien-tools?tab=afa' 
+        },
+        { label: language === 'de' ? 'Mietspiegel' : 'Rent Index', 
+          icon: <Map className="h-4 w-4" />, 
+          path: '/deutsche-immobilien-tools?tab=mietspiegel' 
+        }
       ]
     },
     {
@@ -173,20 +191,24 @@ const StreamlinedSidebar: React.FC<{
                 </Button>
               </CollapsibleTrigger>
               <CollapsibleContent>
-                {group.items.map((item) => (
-                  <Button
-                    key={item.label}
-                    variant="ghost"
-                    className={cn(
-                      "w-full justify-start pl-8 rounded-none h-9",
-                      location.pathname === item.path.split('?')[0] && "bg-accent text-accent-foreground"
-                    )}
-                    onClick={() => navigate(item.path)}
-                  >
-                    {item.icon}
-                    <span className="ml-2">{item.label}</span>
-                  </Button>
-                ))}
+                {group.items.map((item) => {
+                  const isActive = location.pathname === item.path.split('?')[0] || 
+                                  (location.pathname.includes(item.path.split('?')[0]) && item.path.includes('?'));
+                  return (
+                    <Button
+                      key={item.label}
+                      variant="ghost"
+                      className={cn(
+                        "w-full justify-start pl-8 rounded-none h-9",
+                        isActive && "bg-accent text-accent-foreground"
+                      )}
+                      onClick={() => navigate(item.path)}
+                    >
+                      {item.icon}
+                      <span className="ml-2 text-sm truncate">{item.label}</span>
+                    </Button>
+                  );
+                })}
               </CollapsibleContent>
             </Collapsible>
           )
