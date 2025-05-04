@@ -1,3 +1,4 @@
+
 import React, { createContext, useContext, useState, useEffect } from 'react';
 
 interface LanguageContextProps {
@@ -726,45 +727,60 @@ const englishTranslations = {
   potentialAnnualSavings: "Potential Annual Savings",
   reviewOpportunity: "Review Opportunity",
   section1031Opportunity: "Section 1031 Opportunity",
-  potentialDeferredTax: "Potential Deferred Tax",
-  
-  // Due diligence
-  comprehensiveDueDiligenceChecklist: "Comprehensive due diligence checklist",
-  overallProgress: "Overall Progress",
-  criticalItemsRemaining: "Critical Items Remaining",
-  legal: "Legal",
-  financial: "Financial",
-  physical: "Physical",
-  legalDueDiligence: "Legal Due Diligence",
-  financialDueDiligence: "Financial Due Diligence",
-  physicalDueDiligence: "Physical Due Diligence",
-  addItem: "Add Item",
-  view: "View",
-  complete: "Complete",
-  critical: "Critical",
-  dueDiligenceTemplates: "Due Diligence Templates",
-  singleFamilyTemplate: "Single Family Template",
-  multiUnitTemplate: "Multi-Unit Template",
-  commercialTemplate: "Commercial Template",
-  
-  // Property scanner
-  propertyScanner: "Property Scanner",
-  findUndervaluedProperties: "Find undervalued properties",
-  locationOrZipCode: "Location or Zip Code",
-  minCashFlow: "Min. Cash Flow",
-  minCapRate: "Min. Cap Rate",
-  priceRange: "Price Range",
-  scanning: "Scanning",
-  scanForProperties: "Scan for Properties",
-  
-  // Investment opportunities
-  investmentOpportunities: "Investment Opportunities",
-  latestDealsAndListings: "Latest deals and listings",
-  hotDeal: "Hot Deal",
-  price: "Price",
-  capRate: "Cap Rate",
-  viewDeal: "View Deal",
-  viewMoreListings: "View More Listings",
-  
-  // Market analysis
-  researchMarketsAndIdentifyOpportunities: "Research markets and
+  potentialDeferredTax: "Potential Deferred Tax"
+};
+
+export const LanguageProvider = ({ children }: { children: React.ReactNode }) => {
+  const [language, setLanguage] = useState<string>('en');
+  const [translations, setTranslations] = useState<Record<string, Record<string, string>>>({
+    en: englishTranslations,
+  });
+
+  const updateTranslations = (newTranslations: any) => {
+    setTranslations(prev => {
+      const updatedTranslations = { ...prev };
+      
+      // For each language key in the translations
+      Object.keys(newTranslations).forEach(translationKey => {
+        // For each language 
+        Object.keys(newTranslations[translationKey]).forEach(lang => {
+          // Create language object if it doesn't exist
+          if (!updatedTranslations[lang]) {
+            updatedTranslations[lang] = {};
+          }
+          // Add translation
+          updatedTranslations[lang][translationKey] = newTranslations[translationKey][lang];
+        });
+      });
+      
+      return updatedTranslations;
+    });
+  };
+
+  // Translate function
+  const t = (key: string, vars?: { [key: string]: string | number }): string => {
+    // Get the current language translations
+    const currentLangTranslations = translations[language] || {};
+    const englishFallback = translations['en'] || {};
+    
+    // Get the translation or fall back to English or the key itself
+    let translation = currentLangTranslations[key] || englishFallback[key] || key;
+    
+    // Replace variables if provided
+    if (vars) {
+      Object.entries(vars).forEach(([varKey, value]) => {
+        translation = translation.replace(new RegExp(`{{${varKey}}}`, 'g'), String(value));
+      });
+    }
+    
+    return translation;
+  };
+
+  return (
+    <LanguageContext.Provider value={{ language, setLanguage, t, translations, updateTranslations }}>
+      {children}
+    </LanguageContext.Provider>
+  );
+};
+
+export const useLanguage = () => useContext(LanguageContext);
