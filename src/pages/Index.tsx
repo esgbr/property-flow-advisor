@@ -3,7 +3,7 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { Building, Calculator, ChevronRight, Home, Search, TrendingUp } from 'lucide-react';
+import { Building, Calculator, ChevronRight, Search, TrendingUp, BookOpen } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
 
 const Index = () => {
@@ -107,6 +107,82 @@ const Index = () => {
         </div>
       </section>
 
+      {/* Education Section */}
+      <section className="w-full py-12 md:py-24 lg:py-32 bg-slate-50 dark:bg-slate-900">
+        <div className="container px-4 md:px-6">
+          <div className="flex flex-col items-center justify-center space-y-4 text-center">
+            <div className="space-y-2">
+              <h2 className="text-3xl font-bold tracking-tighter sm:text-4xl">{t('educationHeader')}</h2>
+              <p className="max-w-[900px] text-muted-foreground md:text-xl/relaxed lg:text-base/relaxed xl:text-xl/relaxed">
+                {t('educationDescription')}
+              </p>
+            </div>
+          </div>
+          <div className="mx-auto grid max-w-5xl grid-cols-1 gap-6 md:grid-cols-2 mt-8">
+            <Card>
+              <CardHeader>
+                <BookOpen className="h-6 w-6 mb-2 text-primary" />
+                <CardTitle>{t('investmentBasics')}</CardTitle>
+                <CardDescription>{t('realEstateBasics')}</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <ul className="space-y-2">
+                  <li className="flex items-center">
+                    <div className="h-2 w-2 rounded-full bg-primary mr-2"></div>
+                    <span>{t('propertyTypes')}</span>
+                  </li>
+                  <li className="flex items-center">
+                    <div className="h-2 w-2 rounded-full bg-primary mr-2"></div>
+                    <span>{t('financingTerms')}</span>
+                  </li>
+                  <li className="flex items-center">
+                    <div className="h-2 w-2 rounded-full bg-primary mr-2"></div>
+                    <span>{t('rentalIncome')}</span>
+                  </li>
+                </ul>
+              </CardContent>
+              <CardFooter>
+                <Button asChild variant="link" className="px-0">
+                  <Link to="/education">
+                    {t('explore')} <ChevronRight className="ml-1 h-4 w-4" />
+                  </Link>
+                </Button>
+              </CardFooter>
+            </Card>
+            <Card>
+              <CardHeader>
+                <TrendingUp className="h-6 w-6 mb-2 text-primary" />
+                <CardTitle>{t('advancedInvestmentStrategies')}</CardTitle>
+                <CardDescription>{t('investmentStrategies')}</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <ul className="space-y-2">
+                  <li className="flex items-center">
+                    <div className="h-2 w-2 rounded-full bg-primary mr-2"></div>
+                    <span>{t('buyAndHoldStrategy')}</span>
+                  </li>
+                  <li className="flex items-center">
+                    <div className="h-2 w-2 rounded-full bg-primary mr-2"></div>
+                    <span>{t('fixAndFlipStrategy')}</span>
+                  </li>
+                  <li className="flex items-center">
+                    <div className="h-2 w-2 rounded-full bg-primary mr-2"></div>
+                    <span>{t('cashFlowAnalysis')}</span>
+                  </li>
+                </ul>
+              </CardContent>
+              <CardFooter>
+                <Button asChild variant="link" className="px-0">
+                  <Link to="/education">
+                    {t('explore')} <ChevronRight className="ml-1 h-4 w-4" />
+                  </Link>
+                </Button>
+              </CardFooter>
+            </Card>
+          </div>
+        </div>
+      </section>
+
       {/* CTA Section */}
       <section className="w-full py-12 md:py-24 lg:py-32">
         <div className="container px-4 md:px-6">
@@ -114,7 +190,7 @@ const Index = () => {
             <div className="space-y-2">
               <h2 className="text-3xl font-bold tracking-tighter sm:text-4xl">{t('startInvesting')}</h2>
               <p className="max-w-[600px] text-muted-foreground md:text-xl/relaxed lg:text-base/relaxed xl:text-xl/relaxed">
-                {t('startInvestingDesc')}
+                {t('startInvestingDescription')}
               </p>
             </div>
             <div className="flex flex-col gap-2 min-[400px]:flex-row">
@@ -122,6 +198,11 @@ const Index = () => {
                 <Link to="/dashboard">
                   {t('getStarted')}
                   <ChevronRight className="ml-2 h-4 w-4" />
+                </Link>
+              </Button>
+              <Button asChild variant="outline" size="lg">
+                <Link to="/calculators">
+                  {t('financialTools')}
                 </Link>
               </Button>
             </div>

@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Routes, Route } from 'react-router-dom';
 import { ThemeProvider } from '@/components/theme-provider';
@@ -22,8 +23,8 @@ function App() {
       <LanguageProvider>
         <UserPreferencesProvider>
           <Routes>
+            <Route path="/" element={<Index />} />
             <Route element={<MainLayout />}>
-              <Route path="/" element={<Index />} />
               <Route path="/dashboard" element={<Dashboard />} />
               <Route path="/properties" element={<PropertyList />} />
               <Route path="/property/:id" element={<PropertyDetail />} />

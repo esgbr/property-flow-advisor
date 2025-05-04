@@ -155,6 +155,7 @@ const englishTranslations = {
   cashOnCashReturn: 'Cash on Cash Return',
   totalReturn: 'Total Return',
   appreciationRate: 'Appreciation Rate',
+  year: 'Year',
   years: 'Years',
   
   // Investor Dashboard
@@ -205,11 +206,21 @@ const englishTranslations = {
   returns: 'Returns',
   projection: 'Projection',
   months: 'Months',
-  year: 'Year',
-  years: 'Years',
+  
+  // Portfolio Analytics
   assetAllocation: 'Asset Allocation',
   portfolioMix: 'Portfolio Mix',
   optimizePortfolio: 'Optimize Portfolio',
+  portfolioAnalytics: 'Portfolio Analytics',
+  trackYourInvestmentPerformance: 'Track your investment performance',
+  portfolioInsights: 'Portfolio Insights',
+  getAIRecommendationsBasedOnYourPortfolio: 'Get AI recommendations based on your portfolio',
+  performance: 'Performance',
+  distribution: 'Distribution',
+  cashflow: 'Cashflow',
+  income: 'Income',
+  averageROI: 'Average ROI',
+  averageValue: 'Average Value',
   
   // Marketing
   realEstateInvestmentMadeEasy: 'Real Estate Investment Made Easy',
@@ -241,6 +252,11 @@ const englishTranslations = {
   // Education Section
   educationHeader: 'Education Center',
   educationDescription: 'Learn about real estate investment strategies',
+  investmentBasics: 'Investment Basics',
+  taxation: 'Taxation',
+  legalBasics: 'Legal Basics',
+  propertyManagement: 'Property Management',
+  advancedInvestmentStrategies: 'Advanced Investment Strategies',
   
   // Feature notifications
   featureNotification: 'Feature in Development',
@@ -251,7 +267,6 @@ const englishTranslations = {
   investmentCalculators: 'Investment Calculators',
   analyticalToolsForInvestors: 'Analytical tools to evaluate real estate investment opportunities',
   investment: 'Investment',
-  mortgage: 'Mortgage',
   taxPlanning: 'Tax Planning',
   marketResearch: 'Market Research',
   realEstateInvestmentCalculator: 'Real Estate Investment Calculator',
@@ -301,12 +316,56 @@ const englishTranslations = {
   marketResearchToolsComingSoon: 'Our market research tools are coming soon to help you find the best investment opportunities.',
   resetToDefaults: 'Reset to Defaults',
   
+  // Security
+  securityAlert: 'Security Alert',
+  securityAlertDescription: 'Your investment data is not secured with a PIN. Set up a PIN to protect your sensitive financial information.',
+  setupPIN: 'Setup PIN',
+  dismiss: 'Dismiss',
+  securityEnabled: 'Security Enabled',
+  securityEnabledDescription: 'Your investment data is protected with a PIN. Your session will automatically lock after 15 minutes of inactivity.',
+  sessionExpired: 'Session Expired',
+  sessionExpiredDescription: 'Your session has been locked due to inactivity. Please enter your PIN to continue.',
+  
+  // New Real Estate Investment Features
+  capRateAnalysis: 'Cap Rate Analysis',
+  cashOnCashAnalysis: 'Cash on Cash Analysis',
+  mortgageComparison: 'Mortgage Comparison',
+  refinancingAnalysis: 'Refinancing Analysis',
+  taxBenefitsCalculator: 'Tax Benefits Calculator',
+  appreciationProjections: 'Appreciation Projections',
+  rentalYieldCalculator: 'Rental Yield Calculator',
+  repairCostEstimator: 'Repair Cost Estimator',
+  investmentPropertyFinder: 'Investment Property Finder',
+  comparablePropertiesAnalysis: 'Comparable Properties Analysis',
+  marketTrendAnalyzer: 'Market Trend Analyzer',
+  wholesaleCalculator: 'Wholesale Calculator',
+  fixAndFlipAnalyzer: 'Fix and Flip Analyzer',
+  brrrCalculator: 'BRRR Strategy Calculator',
+  leasingCalculator: 'Leasing Calculator',
+  vacancyRateAnalysis: 'Vacancy Rate Analysis',
+  operatingExpenseCalculator: 'Operating Expense Calculator',
+  
   // Education Content
-  investmentBasics: 'Investment Basics',
-  taxation: 'Taxation',
-  legalBasics: 'Legal Basics',
-  propertyManagement: 'Property Management',
-  advancedInvestmentStrategies: 'Advanced Investment Strategies',
+  realEstateBasics: 'Real Estate Basics',
+  propertyTypes: 'Property Types',
+  understandingPropertyTypes: 'Understanding Property Types',
+  keyTerminology: 'Key Terminology',
+  financingTerms: 'Financing Terms',
+  investmentTerms: 'Investment Terms',
+  investmentStrategies: 'Investment Strategies',
+  buyAndHoldStrategy: 'Buy and Hold Strategy',
+  fixAndFlipStrategy: 'Fix and Flip Strategy',
+  learningResources: 'Learning Resources',
+  recommendedReading: 'Recommended Reading',
+  onlineCourses: 'Online Courses',
+  residentialProperties: 'Residential Properties',
+  commercialProperties: 'Commercial Properties',
+  mixedUseProperties: 'Mixed-Use Properties',
+  industrialProperties: 'Industrial Properties',
+  land: 'Land',
+  rentalIncome: 'Rental Income',
+  buildingEquity: 'Building Equity',
+  taxBenefits: 'Tax Benefits'
 };
 
 // German translations
@@ -336,7 +395,7 @@ const germanTranslations = {
   password: 'Passwort',
   confirmPassword: 'Passwort bestätigen',
   submit: 'Absenden',
-   back: 'Zurück',
+  back: 'Zurück',
   next: 'Weiter',
   finish: 'Abschließen',
   continue: 'Fortsetzen',
@@ -451,6 +510,7 @@ const germanTranslations = {
   cashOnCashReturn: 'Cash-on-Cash-Rendite',
   totalReturn: 'Gesamtrendite',
   appreciationRate: 'Wertsteigerungsrate',
+  year: 'Jahr',
   years: 'Jahre',
   
   // Investor Dashboard
@@ -501,11 +561,21 @@ const germanTranslations = {
   returns: 'Renditen',
   projection: 'Projektion',
   months: 'Monate',
-  year: 'Jahr',
-  years: 'Jahre',
+  
+  // Portfolio Analytics
   assetAllocation: 'Vermögensaufteilung',
   portfolioMix: 'Portfolio-Mix',
   optimizePortfolio: 'Portfolio optimieren',
+  portfolioAnalytics: 'Portfolio-Analysen',
+  trackYourInvestmentPerformance: 'Verfolgen Sie Ihre Investitionsleistung',
+  portfolioInsights: 'Portfolio-Einblicke',
+  getAIRecommendationsBasedOnYourPortfolio: 'Erhalten Sie KI-Empfehlungen basierend auf Ihrem Portfolio',
+  performance: 'Leistung',
+  distribution: 'Verteilung',
+  cashflow: 'Cashflow',
+  income: 'Einkommen',
+  averageROI: 'Durchschnittlicher ROI',
+  averageValue: 'Durchschnittswert',
   
   // Marketing
   realEstateInvestmentMadeEasy: 'Immobilieninvestition leicht gemacht',
@@ -537,6 +607,11 @@ const germanTranslations = {
   // Education Section
   educationHeader: 'Bildungszentrum',
   educationDescription: 'Erfahren Sie mehr über Immobilien Anlagestrategien',
+  investmentBasics: 'Grundlagen der Investition',
+  taxation: 'Besteuerung',
+  legalBasics: 'Rechtliche Grundlagen',
+  propertyManagement: 'Immobilienverwaltung',
+  advancedInvestmentStrategies: 'Fortgeschrittene Anlagestrategien',
   
    // Feature notifications
   featureNotification: 'Funktion in Entwicklung',
@@ -547,7 +622,6 @@ const germanTranslations = {
   investmentCalculators: 'Investitionsrechner',
   analyticalToolsForInvestors: 'Analytische Werkzeuge zur Bewertung von Immobilieninvestitionsmöglichkeiten',
   investment: 'Investition',
-  mortgage: 'Hypothek',
   taxPlanning: 'Steuerplanung',
   marketResearch: 'Marktforschung',
   realEstateInvestmentCalculator: 'Immobilien-Investitionsrechner',
@@ -597,12 +671,56 @@ const germanTranslations = {
   marketResearchToolsComingSoon: 'Unsere Marktforschungswerkzeuge sind in Kürze verfügbar, um Ihnen zu helfen, die besten Investitionsmöglichkeiten zu finden.',
   resetToDefaults: 'Auf Standardwerte zurücksetzen',
   
+  // Security
+  securityAlert: 'Sicherheitswarnung',
+  securityAlertDescription: 'Ihre Investitionsdaten sind nicht mit einer PIN gesichert. Richten Sie eine PIN ein, um Ihre sensiblen Finanzdaten zu schützen.',
+  setupPIN: 'PIN einrichten',
+  dismiss: 'Verwerfen',
+  securityEnabled: 'Sicherheit aktiviert',
+  securityEnabledDescription: 'Ihre Investitionsdaten sind mit einer PIN geschützt. Ihre Sitzung wird nach 15 Minuten Inaktivität automatisch gesperrt.',
+  sessionExpired: 'Sitzung abgelaufen',
+  sessionExpiredDescription: 'Ihre Sitzung wurde aufgrund von Inaktivität gesperrt. Bitte geben Sie Ihre PIN ein, um fortzufahren.',
+  
+  // New Real Estate Investment Features
+  capRateAnalysis: 'Cap-Rate-Analyse',
+  cashOnCashAnalysis: 'Cash-on-Cash-Analyse',
+  mortgageComparison: 'Hypothekenvergleich',
+  refinancingAnalysis: 'Refinanzierungsanalyse',
+  taxBenefitsCalculator: 'Steuervorteile Rechner',
+  appreciationProjections: 'Wertsteigerungsprognosen',
+  rentalYieldCalculator: 'Mietrendite-Rechner',
+  repairCostEstimator: 'Reparaturkosten-Schätzer',
+  investmentPropertyFinder: 'Investitionsimmobilien-Finder',
+  comparablePropertiesAnalysis: 'Analyse vergleichbarer Immobilien',
+  marketTrendAnalyzer: 'Markttrend-Analysator',
+  wholesaleCalculator: 'Großhandels-Rechner',
+  fixAndFlipAnalyzer: 'Sanieren und Verkaufen-Analysator',
+  brrrCalculator: 'BRRR-Strategie-Rechner',
+  leasingCalculator: 'Leasing-Rechner',
+  vacancyRateAnalysis: 'Leerstandsraten-Analyse',
+  operatingExpenseCalculator: 'Betriebskosten-Rechner',
+  
   // Education Content
-  investmentBasics: 'Grundlagen der Investition',
-  taxation: 'Besteuerung',
-  legalBasics: 'Rechtliche Grundlagen',
-  propertyManagement: 'Immobilienverwaltung',
-  advancedInvestmentStrategies: 'Fortgeschrittene Anlagestrategien',
+  realEstateBasics: 'Grundlagen der Immobilien',
+  propertyTypes: 'Immobilientypen',
+  understandingPropertyTypes: 'Immobilientypen verstehen',
+  keyTerminology: 'Schlüsselterminologie',
+  financingTerms: 'Finanzierungsbegriffe',
+  investmentTerms: 'Investitionsbegriffe',
+  investmentStrategies: 'Anlagestrategien',
+  buyAndHoldStrategy: 'Kaufen-und-Halten-Strategie',
+  fixAndFlipStrategy: 'Sanieren-und-Verkaufen-Strategie',
+  learningResources: 'Lernressourcen',
+  recommendedReading: 'Empfohlene Lektüre',
+  onlineCourses: 'Online-Kurse',
+  residentialProperties: 'Wohnimmobilien',
+  commercialProperties: 'Gewerbeimmobilien',
+  mixedUseProperties: 'Gemischt genutzte Immobilien',
+  industrialProperties: 'Industrieimmobilien',
+  land: 'Grundstück',
+  rentalIncome: 'Mieteinnahmen',
+  buildingEquity: 'Eigenkapitalaufbau',
+  taxBenefits: 'Steuervorteile'
 };
 
 // French translations
@@ -747,6 +865,7 @@ const frenchTranslations = {
   cashOnCashReturn: 'Retour sur investissement en espèces',
   totalReturn: 'Retour total',
   appreciationRate: 'Taux d\'appréciation',
+  year: 'An',
   years: 'Ans',
   
   // Investor Dashboard
@@ -797,11 +916,21 @@ const frenchTranslations = {
   returns: 'Retours',
   projection: 'Projection',
   months: 'Mois',
-  year: 'An',
-  years: 'Ans',
+  
+  // Portfolio Analytics
   assetAllocation: 'Répartition des actifs',
   portfolioMix: 'Composition du portefeuille',
   optimizePortfolio: 'Optimiser le portefeuille',
+  portfolioAnalytics: 'Analytique de portefeuille',
+  trackYourInvestmentPerformance: 'Suivez la performance de votre investissement',
+  portfolioInsights: 'Aperçus du portefeuille',
+  getAIRecommendationsBasedOnYourPortfolio: 'Obtenez des recommandations IA basées sur votre portefeuille',
+  performance: 'Performance',
+  distribution: 'Distribution',
+  cashflow: 'Flux de trésorerie',
+  income: 'Revenu',
+  averageROI: 'ROI moyen',
+  averageValue: 'Valeur moyenne',
   
   // Marketing
   realEstateInvestmentMadeEasy: 'L\'investissement immobilier simplifié',
@@ -833,6 +962,11 @@ const frenchTranslations = {
   // Education Section
   educationHeader: 'Centre d\'éducation',
   educationDescription: 'Apprenez les stratégies d\'investissement immobilier',
+  investmentBasics: 'Principes de base de l\'investissement',
+  taxation: 'Fiscalité',
+  legalBasics: 'Bases juridiques',
+  propertyManagement: 'Gestion immobilière',
+  advancedInvestmentStrategies: 'Stratégies d\'investissement avancées',
   
   // Feature notifications
   featureNotification: 'Fonctionnalité en développement',
@@ -843,7 +977,6 @@ const frenchTranslations = {
   investmentCalculators: 'Calculateurs d\'investissement',
   analyticalToolsForInvestors: 'Outils analytiques pour évaluer les opportunités d\'investissement immobilier',
   investment: 'Investissement',
-  mortgage: 'Hypothèque',
   taxPlanning: 'Planification fiscale',
   marketResearch: 'Étude de marché',
   realEstateInvestmentCalculator: 'Calculateur d\'investissement immobilier',
@@ -893,12 +1026,56 @@ const frenchTranslations = {
   marketResearchToolsComingSoon: 'Nos outils de recherche de marché arrivent bientôt pour vous aider à trouver les meilleures opportunités d\'investissement.',
   resetToDefaults: 'Réinitialiser aux valeurs par défaut',
   
+  // Security
+  securityAlert: 'Alerte de sécurité',
+  securityAlertDescription: 'Vos données d\'investissement ne sont pas sécurisées par un code PIN. Configurez un code PIN pour protéger vos informations financières sensibles.',
+  setupPIN: 'Configurer le code PIN',
+  dismiss: 'Ignorer',
+  securityEnabled: 'Sécurité activée',
+  securityEnabledDescription: 'Vos données d\'investissement sont protégées par un code PIN. Votre session sera automatiquement verrouillée après 15 minutes d\'inactivité.',
+  sessionExpired: 'Session expirée',
+  sessionExpiredDescription: 'Votre session a été verrouillée en raison de l\'inactivité. Veuillez entrer votre code PIN pour continuer.',
+
+  // New Real Estate Investment Features
+  capRateAnalysis: 'Analyse du taux de capitalisation',
+  cashOnCashAnalysis: 'Analyse du rendement sur investissement',
+  mortgageComparison: 'Comparaison d\'hypothèques',
+  refinancingAnalysis: 'Analyse de refinancement',
+  taxBenefitsCalculator: 'Calculateur d\'avantages fiscaux',
+  appreciationProjections: 'Projections d\'appréciation',
+  rentalYieldCalculator: 'Calculateur de rendement locatif',
+  repairCostEstimator: 'Estimateur de coûts de réparation',
+  investmentPropertyFinder: 'Chercheur de propriétés d\'investissement',
+  comparablePropertiesAnalysis: 'Analyse de propriétés comparables',
+  marketTrendAnalyzer: 'Analyseur de tendances du marché',
+  wholesaleCalculator: 'Calculateur de vente en gros',
+  fixAndFlipAnalyzer: 'Analyseur de rénovation et revente',
+  brrrCalculator: 'Calculateur de stratégie BRRR',
+  leasingCalculator: 'Calculateur de location',
+  vacancyRateAnalysis: 'Analyse du taux d\'inoccupation',
+  operatingExpenseCalculator: 'Calculateur de frais d\'exploitation',
+  
   // Education Content
-  investmentBasics: 'Principes de base de l\'investissement',
-  taxation: 'Fiscalité',
-  legalBasics: 'Bases juridiques',
-  propertyManagement: 'Gestion immobilière',
-  advancedInvestmentStrategies: 'Stratégies d\'investissement avancées',
+  realEstateBasics: 'Principes fondamentaux de l\'immobilier',
+  propertyTypes: 'Types de propriétés',
+  understandingPropertyTypes: 'Comprendre les types de propriétés',
+  keyTerminology: 'Terminologie clé',
+  financingTerms: 'Termes de financement',
+  investmentTerms: 'Termes d\'investissement',
+  investmentStrategies: 'Stratégies d\'investissement',
+  buyAndHoldStrategy: 'Stratégie d\'achat et de conservation',
+  fixAndFlipStrategy: 'Stratégie de rénovation et revente',
+  learningResources: 'Ressources d\'apprentissage',
+  recommendedReading: 'Lectures recommandées',
+  onlineCourses: 'Cours en ligne',
+  residentialProperties: 'Propriétés résidentielles',
+  commercialProperties: 'Propriétés commerciales',
+  mixedUseProperties: 'Propriétés à usage mixte',
+  industrialProperties: 'Propriétés industrielles',
+  land: 'Terrain',
+  rentalIncome: 'Revenu locatif',
+  buildingEquity: 'Constitution de capital',
+  taxBenefits: 'Avantages fiscaux'
 };
 
 export interface LanguageProviderProps {
@@ -987,18 +1164,12 @@ export const LanguageProvider: React.FC<LanguageProviderProps> = ({ children }) 
   );
 };
 
-export const useLanguage = (): LanguageContextProps & { translations: any, updateTranslations: (newTranslations: any) => void } => {
+export const useLanguage = (): LanguageContextProps => {
   const context = useContext(LanguageContext);
-  const { updateTranslations, translations } = useContext(LanguageContext) as any;
   
   if (!context) {
     throw new Error('useLanguage must be used within a LanguageProvider');
   }
   
-  return {
-    ...context,
-    translations,
-    updateTranslations
-  };
+  return context;
 };
-
