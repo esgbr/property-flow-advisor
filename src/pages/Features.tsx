@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -26,11 +26,31 @@ import {
   BookOpen
 } from 'lucide-react';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { useLocation } from 'react-router-dom';
+import { useAccessibility } from '@/components/accessibility/A11yProvider';
 
 const Features = () => {
   const { t, language } = useLanguage();
   const isMobile = useIsMobile();
-  const [activeTab, setActiveTab] = useState('grunderwerbsteuer');
+  const location = useLocation();
+  const { largeText } = useAccessibility();
+  
+  // Get tab from URL query parameter
+  const getInitialTab = () => {
+    const searchParams = new URLSearchParams(location.search);
+    const tabParam = searchParams.get('tab');
+    return tabParam || 'grunderwerbsteuer';
+  };
+  
+  const [activeTab, setActiveTab] = useState(getInitialTab);
+  
+  // Update URL when tab changes
+  useEffect(() => {
+    const searchParams = new URLSearchParams(location.search);
+    searchParams.set('tab', activeTab);
+    const newRelativePathQuery = `${location.pathname}?${searchParams.toString()}`;
+    window.history.replaceState(null, '', newRelativePathQuery);
+  }, [activeTab, location.pathname, location.search]);
   
   // German states with their Grunderwerbsteuer rates
   const germanStates = [
@@ -63,10 +83,15 @@ const Features = () => {
   const [afaRate, setAfaRate] = useState('2');
   const [buildingCostPercentage, setBuildingCostPercentage] = useState('70');
 
+  // Reset form when changing tabs
+  useEffect(() => {
+    setTransferTax(0);
+  }, [activeTab]);
+
   // Calculate transfer tax
   const calculateTransferTax = () => {
     if (!propertyPrice || !selectedState) {
-      toast.error(t('pleaseEnterAllFields'));
+      toast.error(t('pleaseEnterAllFields') || 'Please enter all fields');
       return;
     }
     
@@ -76,14 +101,14 @@ const Features = () => {
     if (stateData) {
       const taxAmount = (price * stateData.tax) / 100;
       setTransferTax(taxAmount);
-      toast.success(t('calculationSuccess'));
+      toast.success(t('calculationSuccess') || 'Calculation completed successfully');
     }
   };
   
   // Calculate Mietkauf (rent-to-own)
   const calculateMietkauf = () => {
     if (!mietkaufPrice || !mietkaufRent || !mietkaufDuration) {
-      toast.error(t('pleaseEnterAllFields'));
+      toast.error(t('pleaseEnterAllFields') || 'Please enter all fields');
       return;
     }
     
@@ -104,7 +129,7 @@ const Features = () => {
   // Calculate AfA (depreciation)
   const calculateAfa = () => {
     if (!afaValue) {
-      toast.error(t('pleaseEnterAllFields'));
+      toast.error(t('pleaseEnterAllFields') || 'Please enter all fields');
       return;
     }
     
@@ -122,11 +147,45 @@ const Features = () => {
         : `Yearly depreciation: ${yearlyDepreciation.toLocaleString('en-US')}€`
     );
   };
+
+  // Tab configuration with icons and labels
+  const tabConfig = [
+    {
+      id: 'grunderwerbsteuer',
+      icon: <Receipt className="h-4 w-4 mr-2" />,
+      label: language === 'de' ? 'Grunderwerbsteuer' : 'Transfer Tax',
+    },
+    {
+      id: 'mietkauf',
+      icon: <Landmark className="h-4 w-4 mr-2" />,
+      label: language === 'de' ? 'Mietkauf' : 'Rent-to-Own',
+    },
+    {
+      id: 'afa',
+      icon: <PiggyBank className="h-4 w-4 mr-2" />,
+      label: language === 'de' ? 'AfA-Rechner' : 'Depreciation',
+    },
+    {
+      id: 'mietspiegel',
+      icon: <Map className="h-4 w-4 mr-2" />,
+      label: language === 'de' ? 'Mietspiegel' : 'Rent Index',
+    },
+    {
+      id: 'energieausweis',
+      icon: <LineChart className="h-4 w-4 mr-2" />,
+      label: language === 'de' ? 'Energieausweis' : 'Energy Certificate',
+    },
+    {
+      id: 'nebenkosten',
+      icon: <Calculator className="h-4 w-4 mr-2" />,
+      label: language === 'de' ? 'Nebenkosten' : 'Additional Costs',
+    },
+  ];
   
   return (
     <div className="space-y-6 animate-fade-in">
       <div>
-        <h1 className="text-3xl font-bold">
+        <h1 className={`text-3xl font-bold ${largeText ? 'text-4xl' : ''}`}>
           {language === 'de' ? 'Deutsche Immobilien Tools' : 'German Real Estate Tools'}
         </h1>
         <p className="text-muted-foreground">
@@ -139,30 +198,17 @@ const Features = () => {
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
         <div className={`mb-6 ${isMobile ? 'overflow-x-auto' : ''}`}>
           <TabsList className={isMobile ? 'flex w-max space-x-1' : ''}>
-            <TabsTrigger value="grunderwerbsteuer" className="flex items-center">
-              <Receipt className="h-4 w-4 mr-2" />
-              {language === 'de' ? 'Grunderwerbsteuer' : 'Transfer Tax'}
-            </TabsTrigger>
-            <TabsTrigger value="mietkauf" className="flex items-center">
-              <Landmark className="h-4 w-4 mr-2" />
-              {language === 'de' ? 'Mietkauf' : 'Rent-to-Own'}
-            </TabsTrigger>
-            <TabsTrigger value="afa" className="flex items-center">
-              <PiggyBank className="h-4 w-4 mr-2" />
-              {language === 'de' ? 'AfA-Rechner' : 'Depreciation'}
-            </TabsTrigger>
-            <TabsTrigger value="mietspiegel" className="flex items-center">
-              <Map className="h-4 w-4 mr-2" />
-              {language === 'de' ? 'Mietspiegel' : 'Rent Index'}
-            </TabsTrigger>
-            <TabsTrigger value="energieausweis" className="flex items-center">
-              <LineChart className="h-4 w-4 mr-2" />
-              {language === 'de' ? 'Energieausweis' : 'Energy Certificate'}
-            </TabsTrigger>
-            <TabsTrigger value="nebenkosten" className="flex items-center">
-              <Calculator className="h-4 w-4 mr-2" />
-              {language === 'de' ? 'Nebenkosten' : 'Additional Costs'}
-            </TabsTrigger>
+            {tabConfig.map(tab => (
+              <TabsTrigger 
+                key={tab.id} 
+                value={tab.id} 
+                className="flex items-center"
+                aria-label={tab.label}
+              >
+                {tab.icon}
+                <span className={largeText ? 'text-base' : ''}>{tab.label}</span>
+              </TabsTrigger>
+            ))}
           </TabsList>
         </div>
 
@@ -192,6 +238,7 @@ const Features = () => {
                       placeholder="z.B. 350000"
                       value={propertyPrice}
                       onChange={(e) => setPropertyPrice(e.target.value)}
+                      aria-required="true"
                     />
                   </div>
 
@@ -200,7 +247,7 @@ const Features = () => {
                       {language === 'de' ? 'Bundesland' : 'State'}
                     </Label>
                     <Select value={selectedState} onValueChange={setSelectedState}>
-                      <SelectTrigger>
+                      <SelectTrigger id="state" aria-required="true">
                         <SelectValue placeholder={language === 'de' ? 'Bundesland wählen' : 'Select state'} />
                       </SelectTrigger>
                       <SelectContent>
@@ -219,7 +266,7 @@ const Features = () => {
                 </Button>
 
                 {transferTax > 0 && (
-                  <div className="mt-4 p-4 border rounded-md bg-muted">
+                  <div className="mt-4 p-4 border rounded-md bg-muted" aria-live="polite">
                     <h3 className="font-semibold">
                       {language === 'de' ? 'Ergebnis:' : 'Result:'}
                     </h3>
@@ -264,6 +311,7 @@ const Features = () => {
                       placeholder="z.B. 350000"
                       value={mietkaufPrice}
                       onChange={(e) => setMietkaufPrice(e.target.value)}
+                      aria-required="true"
                     />
                   </div>
 
@@ -277,6 +325,7 @@ const Features = () => {
                       placeholder="z.B. 1200"
                       value={mietkaufRent}
                       onChange={(e) => setMietkaufRent(e.target.value)}
+                      aria-required="true"
                     />
                   </div>
 
@@ -290,6 +339,7 @@ const Features = () => {
                       placeholder="z.B. 15"
                       value={mietkaufDuration}
                       onChange={(e) => setMietkaufDuration(e.target.value)}
+                      aria-required="true"
                     />
                   </div>
                 </div>
@@ -328,6 +378,7 @@ const Features = () => {
                       placeholder="z.B. 350000"
                       value={afaValue}
                       onChange={(e) => setAfaValue(e.target.value)}
+                      aria-required="true"
                     />
                   </div>
 
@@ -336,7 +387,7 @@ const Features = () => {
                       {language === 'de' ? 'AfA-Satz (%)' : 'Depreciation Rate (%)'}
                     </Label>
                     <Select value={afaRate} onValueChange={setAfaRate}>
-                      <SelectTrigger>
+                      <SelectTrigger id="afaRate">
                         <SelectValue placeholder={language === 'de' ? 'AfA-Satz wählen' : 'Select depreciation rate'} />
                       </SelectTrigger>
                       <SelectContent>
@@ -385,7 +436,7 @@ const Features = () => {
             <CardContent>
               <div className="flex items-center justify-center py-8">
                 <div className="text-center">
-                  <Search className="h-10 w-10 mx-auto text-muted-foreground mb-2" />
+                  <Search className="h-10 w-10 mx-auto text-muted-foreground mb-2" aria-hidden="true" />
                   <p className="text-muted-foreground">
                     {language === 'de' ? 'Kommt bald' : 'Coming Soon'}
                   </p>
@@ -411,7 +462,7 @@ const Features = () => {
             <CardContent>
               <div className="flex items-center justify-center py-8">
                 <div className="text-center">
-                  <LineChart className="h-10 w-10 mx-auto text-muted-foreground mb-2" />
+                  <LineChart className="h-10 w-10 mx-auto text-muted-foreground mb-2" aria-hidden="true" />
                   <p className="text-muted-foreground">
                     {language === 'de' ? 'Kommt bald' : 'Coming Soon'}
                   </p>
@@ -437,7 +488,7 @@ const Features = () => {
             <CardContent>
               <div className="flex items-center justify-center py-8">
                 <div className="text-center">
-                  <Calculator className="h-10 w-10 mx-auto text-muted-foreground mb-2" />
+                  <Calculator className="h-10 w-10 mx-auto text-muted-foreground mb-2" aria-hidden="true" />
                   <p className="text-muted-foreground">
                     {language === 'de' ? 'Kommt bald' : 'Coming Soon'}
                   </p>

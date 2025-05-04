@@ -11,6 +11,11 @@ if (!rootElement) {
   throw new Error("Could not find root element");
 }
 
+// Add global error handling for debugging
+window.addEventListener('error', (event) => {
+  console.error('Global error caught:', event.error);
+});
+
 createRoot(rootElement).render(
   <BrowserRouter>
     <App />
