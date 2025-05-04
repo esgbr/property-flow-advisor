@@ -8,6 +8,7 @@ import { useMarketFilter, MarketSpecificFeature } from '@/hooks/use-market-filte
 import AdvancedROICalculator from '@/components/calculators/AdvancedROICalculator';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
+import { InvestmentMarket } from '@/contexts/UserPreferencesContext';
 
 const AdvancedCalculatorsPage: React.FC = () => {
   const { t } = useLanguage();

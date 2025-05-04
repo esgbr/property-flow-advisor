@@ -2,7 +2,7 @@
 import { useUserPreferences } from '@/contexts/UserPreferencesContext';
 import { InvestmentMarket } from '@/contexts/UserPreferencesContext';
 
-// Update the type definition to include 'global'
+// Market-specific feature type
 export type MarketSpecificFeature = {
   id: string;
   markets: InvestmentMarket[];
