@@ -10,11 +10,41 @@ export function ThemeProvider({ children, ...props }: ThemeProviderProps) {
 }
 
 export function useTheme() {
-  const { theme, setTheme } = React.useContext(
+  const context = React.useContext(
     React.createContext({
-      theme: undefined,
+      theme: undefined as string | undefined,
       setTheme: (_theme: string) => {},
     })
   );
+  
+  const [theme, setThemeState] = React.useState<string | undefined>(
+    typeof window !== 'undefined' 
+      ? localStorage.getItem('real-estate-theme') || 'light' 
+      : 'light'
+  );
+  
+  const setTheme = React.useCallback((newTheme: string) => {
+    setThemeState(newTheme);
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('real-estate-theme', newTheme);
+      document.documentElement.setAttribute('data-theme', newTheme);
+      
+      // Also set the class for dark mode
+      if (newTheme === 'dark') {
+        document.documentElement.classList.add('dark');
+      } else {
+        document.documentElement.classList.remove('dark');
+      }
+    }
+  }, []);
+  
+  // Initialize theme from localStorage on component mount
+  React.useEffect(() => {
+    const savedTheme = localStorage.getItem('real-estate-theme');
+    if (savedTheme) {
+      setTheme(savedTheme);
+    }
+  }, [setTheme]);
+
   return { theme, setTheme };
 }

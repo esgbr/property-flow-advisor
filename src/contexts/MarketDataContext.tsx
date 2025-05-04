@@ -2,6 +2,7 @@
 import React, { createContext, useContext, useState, useMemo, ReactNode } from 'react';
 import { useMarketFilter } from '@/hooks/use-market-filter';
 import { useComponentPerformance } from '@/utils/performanceUtils';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 interface PriceData {
   month: string;
@@ -35,7 +36,7 @@ const MarketDataContext = createContext<MarketDataContextProps | undefined>(unde
 
 export const MarketDataProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   useComponentPerformance('MarketDataProvider');
-  const { t } = useMarketFilter();
+  const { t } = useLanguage();
   const [selectedTimeRange, setSelectedTimeRange] = useState<'1y' | '3y' | '5y' | 'max'>('1y');
   const [selectedMetric, setSelectedMetric] = useState<'price' | 'rent' | 'yield'>('price');
   const [comparisonMarket, setComparisonMarket] = useState<string | null>(null);

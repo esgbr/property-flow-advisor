@@ -7,7 +7,16 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import { 
   Building, 
   Home, 
-  Loader2 
+  Loader2,
+  BarChart3,
+  Calculator,
+  Euro,
+  Briefcase,
+  Globe,
+  TrendingUp,
+  Users,
+  FileText,
+  MapPin
 } from 'lucide-react';
 import { useMarketFilter } from '@/hooks/use-market-filter';
 import { Badge } from '@/components/ui/badge';
@@ -96,7 +105,7 @@ const Index: React.FC = () => {
       id: 'market',
       title: t('Market Explorer'),
       description: t('Market Explorer Description'),
-      icon: <Map className="h-8 w-8 text-primary" />,
+      icon: <MapPin className="h-8 w-8 text-primary" />,
       action: () => navigate('/market-explorer'),
       markets: ['global']
     },

@@ -70,14 +70,14 @@ const WelcomeModal = () => {
         <OnboardingFlow 
           onComplete={handleComplete} 
           onSkip={handleSkip}
-          initialData={preferences ? {
+          initialData={{
             name: preferences.name || '',
-            experienceLevel: preferences.experienceLevel,
+            experienceLevel: preferences.experienceLevel || 'beginner',
             interests: preferences.interests || [],
             investmentGoals: preferences.investmentGoals || [],
             preferredPropertyTypes: preferences.preferredPropertyTypes || [],
             investmentMarket: preferences.investmentMarket || ''
-          } : undefined}
+          }}
         />
       </DialogContent>
     </Dialog>

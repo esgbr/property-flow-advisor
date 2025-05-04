@@ -22,11 +22,18 @@ const MainLayout = () => {
       setTheme(preferences.theme);
       // Add data attribute to help with styling
       document.documentElement.setAttribute('data-theme', preferences.theme);
+      
+      // Also toggle the dark mode class
+      if (preferences.theme === 'dark') {
+        document.documentElement.classList.add('dark');
+      } else {
+        document.documentElement.classList.remove('dark');
+      }
     }
   }, [preferences.theme, theme, setTheme]);
   
   return (
-    <div className={`min-h-screen flex w-full bg-background text-foreground`}>
+    <div className={`min-h-screen flex w-full bg-background text-foreground ${theme === 'dark' ? 'dark' : ''}`}>
       <SkipToContent contentId="main-content" />
       <SidebarProvider>
         <AppSidebar />

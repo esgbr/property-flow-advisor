@@ -53,6 +53,7 @@ const MarketTrendsChart: React.FC<MarketTrendsChartProps> = ({ className = '' })
       name: `${marketName} ${currentYear}`,
       color: 'var(--secondary)',
       opacities: {
+        stroke: 1,
         fill: 0.1
       }
     });
