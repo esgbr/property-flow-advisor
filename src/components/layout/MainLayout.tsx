@@ -14,6 +14,7 @@ import { toast } from 'sonner';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { AlertTriangle, ShieldCheck } from 'lucide-react';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import MobileNavigation from '@/components/navigation/MobileNavigation';
 
 const MainLayout = () => {
   const { isLocked, pin, lockApp } = useAppLock();
@@ -129,7 +130,7 @@ const MainLayout = () => {
         <SidebarController>
           <div className="flex flex-col flex-1">
             <Navbar />
-            <main className={`flex-1 ${isMobile ? 'p-3' : 'p-6'}`}>
+            <main className={`flex-1 ${isMobile ? 'p-3 pb-20' : 'p-6'}`}>
               {showSecurityAlert && (
                 <Alert className="mb-6 border-amber-500 bg-amber-500/10">
                   <AlertTriangle className="h-4 w-4 text-amber-500" />
@@ -162,10 +163,9 @@ const MainLayout = () => {
                 </Alert>
               )}
               
-              <div className={isMobile ? 'mb-16' : ''}>
-                <Outlet />
-              </div>
+              <Outlet />
             </main>
+            {isMobile && <MobileNavigation />}
           </div>
           <div className="fixed bottom-4 right-4 z-50 flex flex-col gap-2">
             <FeedbackModal variant="icon" size="md" />

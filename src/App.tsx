@@ -29,8 +29,8 @@ function App() {
     <ThemeProvider defaultTheme="light" storageKey="real-estate-theme">
       <LanguageProvider>
         <UserPreferencesProvider>
-          <RewardsProvider>
-            <AppLockProvider>
+          <AppLockProvider>
+            <RewardsProvider>
               <Routes>
                 <Route path="/" element={<Index />} />
                 <Route element={<MainLayout />}>
@@ -44,14 +44,14 @@ function App() {
                   <Route path="/education" element={<Education />} />
                   <Route path="/settings" element={<Settings />} />
                   <Route path="/profile" element={<UserProfile />} />
-                  <Route path="/deutsche-immobilien-tools" element={<Features />} />
+                  <Route path="/deutsche-immobilien-tools" element={<DeutscheImmobilienTools />} />
                   <Route path="/german-investor" element={<GermanRealEstateInvestor />} />
                   <Route path="/features" element={<FeaturesDashboard />} />
                 </Route>
               </Routes>
               <Toaster position="top-right" />
-            </AppLockProvider>
-          </RewardsProvider>
+            </RewardsProvider>
+          </AppLockProvider>
         </UserPreferencesProvider>
       </LanguageProvider>
     </ThemeProvider>

@@ -9,10 +9,13 @@ const config: CapacitorConfig = {
     url: 'https://6176f48f-b391-4c71-b68c-e2f6bdb01db7.lovableproject.com?forceHideBadge=true',
     cleartext: true
   },
-  ios: {
-    contentInset: 'always',
-    scrollEnabled: true,
-    limitsNavigationsToAppBoundDomains: true
+  android: {
+    buildOptions: {
+      keystorePath: undefined,
+      keystoreAlias: undefined,
+      keystorePassword: undefined,
+      keystoreAliasPassword: undefined,
+    }
   }
 };
 
