@@ -5,7 +5,7 @@ import { InvestmentMarket } from '@/contexts/UserPreferencesContext';
 // Update the type definition to include 'global'
 export type MarketSpecificFeature = {
   id: string;
-  markets: (InvestmentMarket | 'global')[];
+  markets: InvestmentMarket[];
   title?: string;
   description?: string;
   icon?: React.ReactNode;

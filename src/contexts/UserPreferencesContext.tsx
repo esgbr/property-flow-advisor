@@ -1,9 +1,8 @@
-
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { useToast } from '@/components/ui/use-toast';
 import { OnboardingData } from '@/components/onboarding/OnboardingFlow';
 
-export type InvestmentMarket = 'germany' | 'austria' | 'switzerland' | 'france' | 'usa' | 'canada' | 'other' | '';
+export type InvestmentMarket = 'germany' | 'austria' | 'switzerland' | 'france' | 'usa' | 'canada' | 'other' | 'global' | '';
 
 interface UserPreferences {
   onboardingCompleted: boolean;
