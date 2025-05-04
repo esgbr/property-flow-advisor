@@ -1,3 +1,4 @@
+
 import React, { createContext, useContext, useState, useEffect } from 'react';
 
 interface LanguageContextProps {
@@ -607,7 +608,7 @@ const germanTranslations = {
 // French translations
 const frenchTranslations = {
   // General
-   welcome: 'Bienvenue',
+  welcome: 'Bienvenue',
   welcomeBack: 'Bon retour',
   loading: 'Chargement...',
   save: 'Enregistrer',
@@ -631,7 +632,7 @@ const frenchTranslations = {
   password: 'Mot de passe',
   confirmPassword: 'Confirmer le mot de passe',
   submit: 'Soumettre',
-   back: 'Retour',
+  back: 'Retour',
   next: 'Suivant',
   finish: 'Terminer',
   continue: 'Continuer',
@@ -808,3 +809,196 @@ const frenchTranslations = {
   powerfulTools: 'Outils puissants pour les investisseurs immobiliers',
   comprehensiveToolsDescription: 'Tout ce dont vous avez besoin pour analyser, suivre et développer vos investissements immobiliers',
   startInvesting: 'Commencez votre parcours d\'investissement dès aujourd\'hui',
+  startInvestingDescription: 'Rejoignez des milliers d\'investisseurs qui réussissent à créer de la richesse grâce à l\'immobilier',
+  getStarted: 'Commencer',
+  exploreProperties: 'Explorer les propriétés',
+
+  // Financial Analysis
+  financialAnalysis: 'Analyse financière',
+  cashFlowAnalysis: 'Analyse des flux de trésorerie',
+  mortgageAnalysis: 'Analyse hypothécaire',
+  rentalIncomeAnalysis: 'Analyse des revenus locatifs',
+  expenseAnalysis: 'Analyse des dépenses',
+  taxAnalysis: 'Analyse fiscale',
+  investmentAnalysis: 'Analyse des investissements',
+  
+  // Portfolio Cards
+  portfolioManagement: 'Gestion de portefeuille',
+  portfolioManagementDesc: 'Suivez et gérez toutes vos propriétés en un seul endroit',
+  financialTools: 'Outils financiers',
+  financialToolsDesc: 'Calculez le ROI, les paiements hypothécaires et plus',
+  marketAnalysis: 'Analyse de marché',
+  marketAnalysisDesc: 'Recherchez des marchés et identifiez des opportunités',
+  
+  // Education Section
+  educationHeader: 'Centre d\'éducation',
+  educationDescription: 'Apprenez les stratégies d\'investissement immobilier',
+  
+  // Feature notifications
+  featureNotification: 'Fonctionnalité en développement',
+  featureComingSoon: 'fonctionnalité à venir bientôt!',
+  toThe: 'au',
+  
+  // Calculator Page
+  investmentCalculators: 'Calculateurs d\'investissement',
+  analyticalToolsForInvestors: 'Outils analytiques pour évaluer les opportunités d\'investissement immobilier',
+  investment: 'Investissement',
+  mortgage: 'Hypothèque',
+  taxPlanning: 'Planification fiscale',
+  marketResearch: 'Étude de marché',
+  realEstateInvestmentCalculator: 'Calculateur d\'investissement immobilier',
+  analyzePropertyInvestments: 'Analysez les rendements potentiels et les flux de trésorerie pour les investissements immobiliers',
+  downPayment: 'Acompte',
+  ofPropertyValue: 'de la valeur de la propriété',
+  loanAmount: 'Montant du prêt',
+  mortgagePayment: 'Paiement hypothécaire',
+  month: 'mois',
+  monthlyRentalIncome: 'Revenu locatif mensuel',
+  vacancyLoss: 'Perte de vacance',
+  netOperatingIncome: 'Revenu net d\'exploitation',
+  investmentReturns: 'Rendements des investissements',
+  totalInterestPaid: 'Intérêts totaux payés',
+  totalLoanCost: 'Coût total du prêt',
+  mortgageCalculation: 'Calcul hypothécaire',
+  breakEvenPoint: 'Point d\'équilibre',
+  notProfitable: 'Non rentable',
+  assumptions: 'Hypothèses',
+  propertyAppreciation: 'Appréciation de la propriété',
+  rentalGrowth: 'Croissance des loyers',
+  expenseInflation: 'Inflation des dépenses',
+  sellingCosts: 'Frais de vente',
+  annually: 'annuellement',
+  totalInvestment: 'Investissement total',
+  annualCashFlow: 'Flux de trésorerie annuel',
+  saveCalculationsDescription: 'Enregistrez vos calculs et suivez différents scénarios d\'investissement avec un compte gratuit.',
+  createAccount: 'Créer un compte',
+  expertConsultationDescription: 'Obtenez des conseils personnalisés d\'experts en investissement immobilier.',
+  bookConsultation: 'Réserver une consultation',
+  unlockPremiumAnalysisTools: 'Débloquez des outils avancés pour une analyse d\'investissement détaillée',
+  savePreviousCalculations: 'Enregistrer les calculs précédents',
+  trackYourScenarios: 'Comparez différents scénarios d\'investissement',
+  needHelp: 'Besoin d\'aide?',
+  consultWithExperts: 'Discutez de votre stratégie d\'investissement avec des experts',
+  advancedAnalysisTools: 'Outils d\'analyse avancés',
+  sensitivityAnalysis: 'Analyse de sensibilité',
+  comparativePropertyAnalysis: 'Analyse comparative de propriété',
+  advancedTaxStrategies: 'Optimisation fiscale avancée',
+  upgradeToPremium: 'Passer à Premium',
+  comingSoon: 'À venir',
+  mortgageCalculatorDescription: 'Calculez les paiements hypothécaires et comparez différentes options de prêt',
+  mortgageCalculatorComingSoon: 'Notre calculateur hypothécaire détaillé arrive bientôt. Restez à l\'écoute!',
+  taxPlanningToolsDescription: 'Optimisez les stratégies fiscales pour vos investissements immobiliers',
+  taxPlanningToolsComingSoon: 'Les outils de planification fiscale sont en développement et seront bientôt disponibles.',
+  marketResearchToolsDescription: 'Recherchez des marchés et identifiez des opportunités d\'investissement',
+  marketResearchToolsComingSoon: 'Nos outils de recherche de marché arrivent bientôt pour vous aider à trouver les meilleures opportunités d\'investissement.',
+  resetToDefaults: 'Réinitialiser aux valeurs par défaut',
+  
+  // Education Content
+  investmentBasics: 'Principes de base de l\'investissement',
+  taxation: 'Fiscalité',
+  legalBasics: 'Bases juridiques',
+  propertyManagement: 'Gestion immobilière',
+  advancedInvestmentStrategies: 'Stratégies d\'investissement avancées',
+};
+
+export interface LanguageProviderProps {
+  children: React.ReactNode;
+}
+
+export const LanguageProvider: React.FC<LanguageProviderProps> = ({ children }) => {
+  const [language, setLanguage] = useState<string>('en');
+  const [translations, setTranslations] = useState<any>({
+    en: englishTranslations,
+    de: germanTranslations,
+    fr: frenchTranslations,
+  });
+
+  useEffect(() => {
+    const savedLanguage = localStorage.getItem('language');
+    if (savedLanguage) {
+      setLanguage(savedLanguage);
+    }
+  }, []);
+
+  const t = (key: string, vars?: { [key: string]: string | number }): string => {
+    // Get the translation based on the current language
+    let translation = key;
+    
+    try {
+      const langTranslations = translations[language] || translations.en;
+      
+      if (langTranslations && langTranslations[key]) {
+        translation = langTranslations[key];
+        
+        // Replace variables if they exist
+        if (vars) {
+          Object.keys(vars).forEach(varKey => {
+            translation = translation.replace(new RegExp(`{${varKey}}`, 'g'), String(vars[varKey]));
+          });
+        }
+      } else if (translations.en && translations.en[key]) {
+        // Fallback to English if the key exists there
+        translation = translations.en[key];
+        
+        // Replace variables if they exist
+        if (vars) {
+          Object.keys(vars).forEach(varKey => {
+            translation = translation.replace(new RegExp(`{${varKey}}`, 'g'), String(vars[varKey]));
+          });
+        }
+      }
+    } catch (error) {
+      console.error('Translation error:', error);
+    }
+    
+    return translation;
+  };
+
+  const updateTranslations = (newTranslations: any) => {
+    setTranslations(prevTranslations => {
+      const updatedTranslations = { ...prevTranslations };
+      
+      // Update translations for each language
+      Object.keys(newTranslations).forEach(key => {
+        const translationItem = newTranslations[key];
+        
+        // Update each language with the new translation
+        Object.keys(translationItem).forEach(lang => {
+          if (!updatedTranslations[lang]) {
+            updatedTranslations[lang] = {};
+          }
+          
+          updatedTranslations[lang][key] = translationItem[lang];
+        });
+      });
+      
+      return updatedTranslations;
+    });
+  };
+  
+  useEffect(() => {
+    localStorage.setItem('language', language);
+  }, [language]);
+
+  return (
+    <LanguageContext.Provider value={{ language, t, setLanguage }}>
+      {children}
+    </LanguageContext.Provider>
+  );
+};
+
+export const useLanguage = (): LanguageContextProps & { translations: any, updateTranslations: (newTranslations: any) => void } => {
+  const context = useContext(LanguageContext);
+  const { updateTranslations, translations } = useContext(LanguageContext) as any;
+  
+  if (!context) {
+    throw new Error('useLanguage must be used within a LanguageProvider');
+  }
+  
+  return {
+    ...context,
+    translations,
+    updateTranslations
+  };
+};
+
