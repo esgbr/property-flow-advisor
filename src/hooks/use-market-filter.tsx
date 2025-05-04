@@ -2,9 +2,10 @@
 import { useUserPreferences } from '@/contexts/UserPreferencesContext';
 import { InvestmentMarket } from '@/contexts/UserPreferencesContext';
 
+// Update the type definition to include 'global'
 export type MarketSpecificFeature = {
   id: string;
-  markets: InvestmentMarket[];
+  markets: (InvestmentMarket | 'global')[];
   title?: string;
   description?: string;
   icon?: React.ReactNode;
@@ -25,7 +26,7 @@ export function useMarketFilter() {
     
     // Show features that match the user's market or are set to be available in all markets
     return feature.markets.includes(userMarket as InvestmentMarket) || 
-           feature.markets.includes('global' as InvestmentMarket);
+           feature.markets.includes('global');
   };
   
   // Function to filter an array of market-specific features

@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -6,7 +5,7 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useMarketFilter } from '@/hooks/use-market-filter';
-import { Building, ChartBar, Filter, Globe, Map, MapPin, Search, Trending, TrendingUp } from 'lucide-react';
+import { Building, ChartBar, Filter, Globe, Map, MapPin, Search, TrendingUp } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Slider } from '@/components/ui/slider';
@@ -161,7 +160,7 @@ const MarketExplorerPage: React.FC = () => {
             {t('hotAreas')}
           </TabsTrigger>
           <TabsTrigger value="insights">
-            <Trending className="mr-1 h-4 w-4" />
+            <TrendingUp className="mr-1 h-4 w-4" />
             {t('marketInsights')}
           </TabsTrigger>
         </TabsList>

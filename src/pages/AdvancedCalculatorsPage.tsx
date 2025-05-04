@@ -1,9 +1,10 @@
+
 import React, { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { Calculator, ChevronDown, ChevronUp, DollarSign, Home, Percent, Coins, Building } from 'lucide-react';
-import { useMarketFilter } from '@/hooks/use-market-filter';
+import { useMarketFilter, MarketSpecificFeature } from '@/hooks/use-market-filter';
 import AdvancedROICalculator from '@/components/calculators/AdvancedROICalculator';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
@@ -15,7 +16,7 @@ const AdvancedCalculatorsPage: React.FC = () => {
   const [expandedCalculator, setExpandedCalculator] = useState<string | null>(null);
 
   // Define calculators with market specificity
-  const calculators = [
+  const calculators: MarketSpecificFeature[] = [
     {
       id: 'roi',
       title: t('advancedROICalculator'),
@@ -69,7 +70,7 @@ const AdvancedCalculatorsPage: React.FC = () => {
 
   // Filter calculators based on user's market
   const filteredCalculators = calculators.filter(calc => 
-    shouldShowFeature({ id: calc.id, markets: calc.markets })
+    shouldShowFeature(calc)
   );
 
   const toggleCalculator = (id: string) => {
