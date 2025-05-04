@@ -1,8 +1,8 @@
 
 import React, { useEffect, memo } from 'react';
-import { Outlet } from 'react-router-dom';
+import { Outlet, useLocation } from 'react-router-dom';
 import { SidebarProvider } from '@/components/ui/sidebar';
-import AppSidebar from './AppSidebar';
+import AppSidebar from '@/components/layout/AppSidebar';
 import Navbar from './Navbar';
 import { useUserPreferences } from '@/contexts/UserPreferencesContext';
 import { useTheme } from '@/components/theme-provider';
@@ -10,11 +10,28 @@ import { useComponentPerformance } from '@/utils/performanceUtils';
 import SkipToContent from '@/components/accessibility/SkipToContent';
 import PageLoader from '@/components/ui/page-loader';
 import { Suspense } from 'react';
+import { useAccessibility } from '@/components/accessibility/A11yProvider';
 
-const MainLayout = () => {
+const MainLayout: React.FC = () => {
   useComponentPerformance('MainLayout');
-  const { preferences } = useUserPreferences();
+  const { preferences, updatePreferences } = useUserPreferences();
   const { theme, setTheme } = useTheme();
+  const location = useLocation();
+  const { reduceMotion, highContrast, largeText } = useAccessibility();
+  
+  // Track page visits
+  useEffect(() => {
+    const currentPath = location.pathname;
+    const visitedPages = preferences.visitedPages || [];
+    
+    if (!visitedPages.includes(currentPath)) {
+      updatePreferences({ 
+        visitedPages: [...visitedPages, currentPath],
+        lastVisitedPage: currentPath,
+        lastActive: new Date().toISOString()
+      });
+    }
+  }, [location.pathname, preferences.visitedPages, updatePreferences]);
   
   // Synchronize theme preferences with theme provider
   useEffect(() => {
@@ -22,15 +39,15 @@ const MainLayout = () => {
       setTheme(preferences.theme);
       // Add data attribute to help with styling
       document.documentElement.setAttribute('data-theme', preferences.theme);
-      
-      // Also toggle the dark mode class
-      if (preferences.theme === 'dark') {
-        document.documentElement.classList.add('dark');
-      } else {
-        document.documentElement.classList.remove('dark');
-      }
     }
   }, [preferences.theme, theme, setTheme]);
+
+  // Apply accessibility classes to root element
+  useEffect(() => {
+    document.documentElement.classList.toggle('reduce-motion', reduceMotion);
+    document.documentElement.classList.toggle('high-contrast', highContrast);
+    document.documentElement.classList.toggle('large-text', largeText);
+  }, [reduceMotion, highContrast, largeText]);
   
   return (
     <div className={`min-h-screen flex w-full bg-background text-foreground ${theme === 'dark' ? 'dark' : ''}`}>

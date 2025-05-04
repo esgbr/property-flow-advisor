@@ -28,6 +28,14 @@ const AccessibilitySettingsButton: React.FC<AccessibilitySettingsButtonProps> = 
   // Count active accessibility settings to show badge
   const activeSettings = [reduceMotion, highContrast, largeText, screenReader].filter(Boolean).length;
   
+  // Handle keyboard events for accessibility
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault();
+      navigate('/accessibility');
+    }
+  };
+  
   return (
     <TooltipProvider>
       <Tooltip>
@@ -36,12 +44,16 @@ const AccessibilitySettingsButton: React.FC<AccessibilitySettingsButtonProps> = 
             variant={variant}
             size={size}
             onClick={() => navigate('/accessibility')}
+            onKeyDown={handleKeyDown}
             className="relative"
             aria-label={t('accessibilitySettings') || 'Accessibility Settings'}
           >
-            <Settings className="h-5 w-5" />
+            <Settings className="h-5 w-5" aria-hidden="true" />
             {activeSettings > 0 && (
-              <span className="absolute -top-1 -right-1 bg-primary text-primary-foreground rounded-full w-4 h-4 text-xs flex items-center justify-center">
+              <span 
+                className="absolute -top-1 -right-1 bg-primary text-primary-foreground rounded-full w-4 h-4 text-xs flex items-center justify-center"
+                aria-label={`${activeSettings} active accessibility features`}
+              >
                 {activeSettings}
               </span>
             )}

@@ -16,7 +16,8 @@ import {
   TrendingUp,
   Users,
   FileText,
-  MapPin
+  MapPin,
+  Settings
 } from 'lucide-react';
 import { useMarketFilter } from '@/hooks/use-market-filter';
 import { Badge } from '@/components/ui/badge';
@@ -25,6 +26,8 @@ import ErrorBoundary from '@/components/ErrorBoundary';
 import PageLoader from '@/components/ui/page-loader';
 import { useComponentPerformance } from '@/utils/performanceUtils';
 import useLazyComponent from '@/hooks/use-lazy-load';
+import { useAccessibility } from '@/components/accessibility/A11yProvider';
+import AccessibilitySettingsButton from '@/components/accessibility/AccessibilitySettingsButton';
 
 // Lazy load components for better initial loading performance
 const FeatureGrid = lazy(() => import('@/components/home/FeatureGrid'));
@@ -45,6 +48,7 @@ const Index: React.FC = () => {
   const { t, language } = useLanguage();
   const { shouldShowFeature, userMarket } = useMarketFilter();
   const [isLoading, setIsLoading] = useState(true);
+  const { largeText } = useAccessibility();
 
   // Simulate loading state for demonstration
   useEffect(() => {
@@ -140,6 +144,14 @@ const Index: React.FC = () => {
       icon: <FileText className="h-8 w-8 text-primary" />,
       action: () => navigate('/documents'),
       markets: ['global']
+    },
+    {
+      id: 'accessibility',
+      title: t('Accessibility Settings'),
+      description: t('Customize your experience to make the application more accessible'),
+      icon: <Settings className="h-8 w-8 text-primary" />,
+      action: () => navigate('/accessibility'),
+      markets: ['global']
     }
   ];
 
@@ -157,10 +169,12 @@ const Index: React.FC = () => {
       <div className="container mx-auto px-4 py-16">
         <header className="text-center mb-16">
           <div className="flex justify-center mb-4">
-            <Building className="h-16 w-16 text-primary" />
+            <Building className="h-16 w-16 text-primary" aria-hidden="true" />
           </div>
-          <h1 className="text-4xl md:text-5xl font-bold mb-4">{t('Welcome to PropertyFlow')}</h1>
-          <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
+          <h1 className={`text-4xl md:text-5xl font-bold mb-4 ${largeText ? 'text-5xl md:text-6xl' : ''}`}>
+            {t('Welcome to PropertyFlow')}
+          </h1>
+          <p className={`text-xl text-muted-foreground max-w-2xl mx-auto ${largeText ? 'text-2xl' : ''}`}>
             {t('Property Flow Description')}
           </p>
           
@@ -174,13 +188,14 @@ const Index: React.FC = () => {
           
           <div className="flex flex-wrap justify-center gap-4 mt-8">
             <Button size="lg" onClick={() => navigate('/dashboard')}>
-              <Home className="mr-2 h-5 w-5" />
+              <Home className="mr-2 h-5 w-5" aria-hidden="true" />
               {t('Go to Dashboard')}
             </Button>
             <Button size="lg" variant="outline" onClick={() => navigate('/properties')}>
-              <Building className="mr-2 h-5 w-5" />
+              <Building className="mr-2 h-5 w-5" aria-hidden="true" />
               {t('View Properties')}
             </Button>
+            <AccessibilitySettingsButton variant="secondary" size="lg" />
           </div>
         </header>
 
@@ -191,8 +206,10 @@ const Index: React.FC = () => {
         </ErrorBoundary>
 
         <section className="text-center mb-16">
-          <h2 className="text-3xl font-bold mb-6">{t('Invest With Confidence')}</h2>
-          <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
+          <h2 className={`text-3xl font-bold mb-6 ${largeText ? 'text-4xl' : ''}`}>
+            {t('Invest With Confidence')}
+          </h2>
+          <p className={`text-xl text-muted-foreground max-w-3xl mx-auto ${largeText ? 'text-2xl' : ''}`}>
             {t('Invest With Confidence Description')}
           </p>
           <Button 
@@ -206,6 +223,14 @@ const Index: React.FC = () => {
 
         <footer className="border-t pt-8 text-center text-muted-foreground">
           <p>&copy; 2025 PropertyFlow. {t('All Rights Reserved')}</p>
+          <div className="mt-4 flex justify-center gap-4">
+            <Button variant="link" onClick={() => navigate('/accessibility')}>
+              {t('Accessibility')}
+            </Button>
+            <Button variant="link" onClick={() => navigate('/settings')}>
+              {t('Settings')}
+            </Button>
+          </div>
         </footer>
       </div>
     </div>

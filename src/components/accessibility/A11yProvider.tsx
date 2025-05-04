@@ -1,5 +1,6 @@
 
 import React, { createContext, useContext, useState, useEffect } from 'react';
+import { toast } from 'sonner';
 
 interface AccessibilityContextType {
   reduceMotion: boolean;
@@ -46,6 +47,21 @@ export const A11yProvider: React.FC<{ children: React.ReactNode }> = ({ children
       prefersReducedMotion.removeEventListener('change', handleChange);
     };
   }, []);
+
+  // Check for prefers-contrast media query
+  useEffect(() => {
+    const prefersContrast = window.matchMedia('(prefers-contrast: more)');
+    setHighContrast(prefersContrast.matches);
+    
+    const handleChange = (event: MediaQueryListEvent) => {
+      setHighContrast(event.matches);
+    };
+    
+    prefersContrast.addEventListener('change', handleChange);
+    return () => {
+      prefersContrast.removeEventListener('change', handleChange);
+    };
+  }, []);
   
   // Apply accessibility settings to the document
   useEffect(() => {
@@ -83,25 +99,57 @@ export const A11yProvider: React.FC<{ children: React.ReactNode }> = ({ children
           screenReader: savedScreenReader
         } = JSON.parse(savedPreferences);
         
-        setReduceMotion((prev) => savedReduceMotion ?? prev);
-        setHighContrast((prev) => savedHighContrast ?? prev);
-        setLargeText((prev) => savedLargeText ?? prev);
-        setScreenReader((prev) => savedScreenReader ?? prev);
+        if (savedReduceMotion !== undefined) setReduceMotion(savedReduceMotion);
+        if (savedHighContrast !== undefined) setHighContrast(savedHighContrast);
+        if (savedLargeText !== undefined) setLargeText(savedLargeText);
+        if (savedScreenReader !== undefined) setScreenReader(savedScreenReader);
       }
     } catch (error) {
       console.error('Failed to load accessibility preferences', error);
     }
   }, []);
   
+  const toggleReduceMotion = () => {
+    setReduceMotion(prev => {
+      const newValue = !prev;
+      toast.success(newValue ? 'Reduced motion enabled' : 'Reduced motion disabled');
+      return newValue;
+    });
+  };
+  
+  const toggleHighContrast = () => {
+    setHighContrast(prev => {
+      const newValue = !prev;
+      toast.success(newValue ? 'High contrast enabled' : 'High contrast disabled');
+      return newValue;
+    });
+  };
+  
+  const toggleLargeText = () => {
+    setLargeText(prev => {
+      const newValue = !prev;
+      toast.success(newValue ? 'Large text enabled' : 'Large text disabled');
+      return newValue;
+    });
+  };
+  
+  const toggleScreenReader = () => {
+    setScreenReader(prev => {
+      const newValue = !prev;
+      toast.success(newValue ? 'Screen reader optimizations enabled' : 'Screen reader optimizations disabled');
+      return newValue;
+    });
+  };
+  
   const value = {
     reduceMotion,
     highContrast,
     largeText,
     screenReader,
-    toggleReduceMotion: () => setReduceMotion(prev => !prev),
-    toggleHighContrast: () => setHighContrast(prev => !prev),
-    toggleLargeText: () => setLargeText(prev => !prev),
-    toggleScreenReader: () => setScreenReader(prev => !prev)
+    toggleReduceMotion,
+    toggleHighContrast,
+    toggleLargeText,
+    toggleScreenReader
   };
   
   return (
