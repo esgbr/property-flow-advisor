@@ -1,120 +1,55 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { germanInvestmentTools } from '@/components/navigation/GermanInvestorNavigation';
+import GermanInvestorNavigation from '@/components/navigation/GermanInvestorNavigation';
+import GermanInvestorToolbar from '@/components/navigation/GermanInvestorToolbar';
 import {
   Building,
   Euro,
   Calculator,
   Map,
-  FileText,
-  BarChart,
-  Shield,
-  Globe,
-  Briefcase,
-  LineChart,
-  PieChart
+  Search,
+  Star,
+  Clock,
+  Filter
 } from 'lucide-react';
-
-// Feature list for German real estate investors
-const featuresList = [
-  {
-    id: 'grunderwerbsteuer',
-    titleDe: 'Grunderwerbsteuer-Rechner',
-    titleEn: 'Transfer Tax Calculator',
-    descriptionDe: 'Berechnung der Grunderwerbsteuer für verschiedene Bundesländer',
-    descriptionEn: 'Calculate property transfer tax for different German states',
-    icon: <Euro className="h-8 w-8 text-primary" />,
-    path: '/deutsche-immobilien-tools?tab=grunderwerbsteuer'
-  },
-  {
-    id: 'mietkauf',
-    titleDe: 'Mietkauf-Rechner',
-    titleEn: 'Rent-to-Own Calculator',
-    descriptionDe: 'Analyse von Mietkauf-Modellen für Immobilien',
-    descriptionEn: 'Analysis of rent-to-own models for properties',
-    icon: <Building className="h-8 w-8 text-primary" />,
-    path: '/deutsche-immobilien-tools?tab=mietkauf'
-  },
-  {
-    id: 'afa',
-    titleDe: 'AfA-Rechner',
-    titleEn: 'Depreciation Calculator',
-    descriptionDe: 'Berechnung der steuerlichen Absetzung für Immobilien',
-    descriptionEn: 'Calculate tax depreciation for real estate',
-    icon: <Calculator className="h-8 w-8 text-primary" />,
-    path: '/deutsche-immobilien-tools?tab=afa'
-  },
-  {
-    id: 'mietspiegel',
-    titleDe: 'Mietspiegel-Analyse',
-    titleEn: 'Rent Index Analysis',
-    descriptionDe: 'Vergleich von Mietpreisen mit lokalen Mietspiegeln',
-    descriptionEn: 'Compare rental prices with local rent indices',
-    icon: <Map className="h-8 w-8 text-primary" />,
-    path: '/deutsche-immobilien-tools?tab=mietspiegel'
-  },
-  {
-    id: 'energieausweis',
-    titleDe: 'Energieausweis-Analyse',
-    titleEn: 'Energy Certificate Analysis',
-    descriptionDe: 'Analyse und Vergleich von Energieausweisen',
-    descriptionEn: 'Analysis and comparison of energy certificates',
-    icon: <FileText className="h-8 w-8 text-primary" />,
-    path: '/deutsche-immobilien-tools?tab=energieausweis'
-  },
-  {
-    id: 'nebenkosten',
-    titleDe: 'Nebenkosten-Rechner',
-    titleEn: 'Additional Costs Calculator',
-    descriptionDe: 'Berechnung von Nebenkosten für Mietobjekte',
-    descriptionEn: 'Calculate additional costs for rental properties',
-    icon: <Calculator className="h-8 w-8 text-primary" />,
-    path: '/deutsche-immobilien-tools?tab=nebenkosten'
-  },
-  {
-    id: 'kfw',
-    titleDe: 'KfW-Förderassistent',
-    titleEn: 'KfW Funding Assistant',
-    descriptionDe: 'Identifizierung von KfW-Fördermöglichkeiten',
-    descriptionEn: 'Identify KfW funding opportunities',
-    icon: <Briefcase className="h-8 w-8 text-primary" />,
-    path: '/deutsche-immobilien-tools?tab=kfw'
-  },
-  {
-    id: 'mietpreisbremse',
-    titleDe: 'Mietpreisbremse-Prüfer',
-    titleEn: 'Rent Control Compliance Tool',
-    descriptionDe: 'Überprüfung der Einhaltung der Mietpreisbremse',
-    descriptionEn: 'Check compliance with German rent control regulations',
-    icon: <Shield className="h-8 w-8 text-primary" />,
-    path: '/deutsche-immobilien-tools?tab=mietpreisbremse'
-  },
-  {
-    id: 'steueroptimierung',
-    titleDe: 'Steueroptimierung',
-    titleEn: 'Tax Optimization',
-    descriptionDe: 'Optimierung von Immobilieninvestitionen unter deutschem Steuerrecht',
-    descriptionEn: 'Optimize real estate investments under German tax law',
-    icon: <PieChart className="h-8 w-8 text-primary" />,
-    path: '/deutsche-immobilien-tools?tab=steueroptimierung'
-  },
-  {
-    id: 'renditerechner',
-    titleDe: 'Renditerechner',
-    titleEn: 'Yield Calculator',
-    descriptionDe: 'Berechnung der Rendite für verschiedene Immobilientypen',
-    descriptionEn: 'Calculate yield for different property types',
-    icon: <LineChart className="h-8 w-8 text-primary" />,
-    path: '/deutsche-immobilien-tools?tab=renditerechner'
-  }
-];
 
 const GermanRealEstateInvestor: React.FC = () => {
   const { language } = useLanguage();
   const navigate = useNavigate();
+  const [searchQuery, setSearchQuery] = useState('');
+  
+  // Filter tools based on search query
+  const filteredTools = searchQuery 
+    ? germanInvestmentTools.filter(tool => 
+        (language === 'de' ? tool.titleDe.toLowerCase() : tool.titleEn.toLowerCase())
+          .includes(searchQuery.toLowerCase()) ||
+        (language === 'de' ? tool.descriptionDe.toLowerCase() : tool.descriptionEn.toLowerCase())
+          .includes(searchQuery.toLowerCase())
+      )
+    : germanInvestmentTools;
+    
+  const recentlyUsedTools = [
+    'grunderwerbsteuer',
+    'mietkauf',
+    'afa'
+  ];
+  
+  const favoriteTools = [
+    'grunderwerbsteuer',
+    'mietspiegel',
+    'renditerechner'
+  ];
+  
+  const filterToolsById = (idList: string[]) => {
+    return germanInvestmentTools.filter(tool => idList.includes(tool.id));
+  };
 
   return (
     <div className="container mx-auto px-4 py-8">
@@ -129,27 +64,105 @@ const GermanRealEstateInvestor: React.FC = () => {
         </p>
       </div>
       
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {featuresList.map((feature) => (
-          <Card key={feature.id} className="hover:shadow-md transition-shadow">
-            <CardHeader>
-              <div className="mb-2">{feature.icon}</div>
-              <CardTitle>{language === 'de' ? feature.titleDe : feature.titleEn}</CardTitle>
-              <CardDescription>
-                {language === 'de' ? feature.descriptionDe : feature.descriptionEn}
-              </CardDescription>
-            </CardHeader>
-            <CardFooter>
+      <div className="flex flex-col md:flex-row gap-4 mb-8">
+        <div className="relative flex-grow">
+          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+          <Input 
+            placeholder={language === 'de' ? 'Tools durchsuchen...' : 'Search tools...'}
+            className="pl-9"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+          />
+        </div>
+        
+        <div className="flex gap-2">
+          <Button variant="outline" size="icon">
+            <Filter className="h-4 w-4" />
+          </Button>
+          <Button variant="outline" size="icon">
+            <Star className="h-4 w-4" />
+          </Button>
+        </div>
+      </div>
+      
+      <Tabs defaultValue="all">
+        <TabsList className="mb-6">
+          <TabsTrigger value="all">
+            {language === 'de' ? 'Alle Tools' : 'All Tools'}
+          </TabsTrigger>
+          <TabsTrigger value="recent">
+            <Clock className="h-4 w-4 mr-2" />
+            {language === 'de' ? 'Zuletzt verwendet' : 'Recently Used'}
+          </TabsTrigger>
+          <TabsTrigger value="favorites">
+            <Star className="h-4 w-4 mr-2" />
+            {language === 'de' ? 'Favoriten' : 'Favorites'}
+          </TabsTrigger>
+        </TabsList>
+        
+        <TabsContent value="all">
+          {searchQuery && filteredTools.length === 0 ? (
+            <div className="text-center py-12">
+              <Search className="h-12 w-12 mx-auto text-muted-foreground" />
+              <h2 className="mt-4 text-xl font-medium">
+                {language === 'de' ? 'Keine Tools gefunden' : 'No tools found'}
+              </h2>
+              <p className="mt-2 text-muted-foreground">
+                {language === 'de' 
+                  ? `Es wurden keine Tools für "${searchQuery}" gefunden` 
+                  : `No tools found matching "${searchQuery}"`
+                }
+              </p>
               <Button 
                 variant="outline" 
-                className="w-full"
-                onClick={() => navigate(feature.path)}
+                className="mt-4"
+                onClick={() => setSearchQuery('')}
               >
-                {language === 'de' ? 'Öffnen' : 'Open'}
+                {language === 'de' ? 'Suche zurücksetzen' : 'Clear search'}
               </Button>
-            </CardFooter>
-          </Card>
-        ))}
+            </div>
+          ) : (
+            <GermanInvestorNavigation 
+              variant="grid" 
+              maxItems={filteredTools.length}
+            />
+          )}
+        </TabsContent>
+        
+        <TabsContent value="recent">
+          <div className="mb-6">
+            <h2 className="text-lg font-medium mb-4">
+              {language === 'de' ? 'Zuletzt verwendete Tools' : 'Recently Used Tools'}
+            </h2>
+            <GermanInvestorNavigation
+              variant="list"
+              maxItems={filterToolsById(recentlyUsedTools).length}
+            />
+          </div>
+        </TabsContent>
+        
+        <TabsContent value="favorites">
+          <div className="mb-6">
+            <h2 className="text-lg font-medium mb-4">
+              {language === 'de' ? 'Ihre Favoriten' : 'Your Favorites'}
+            </h2>
+            <GermanInvestorNavigation
+              variant="list"
+              maxItems={filterToolsById(favoriteTools).length}
+            />
+          </div>
+        </TabsContent>
+      </Tabs>
+      
+      <div className="mt-8 p-4 bg-muted rounded-lg">
+        <h2 className="text-lg font-medium mb-2">
+          {language === 'de' ? 'Schnellzugriff' : 'Quick Access'}
+        </h2>
+        <GermanInvestorToolbar 
+          variant="horizontal"
+          size="sm"
+          maxItems={6}
+        />
       </div>
     </div>
   );

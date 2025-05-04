@@ -22,6 +22,7 @@ const config: CapacitorConfig = {
     contentInset: 'always',
     scheme: 'app.lovable.propertyflow',
     limitsNavigationsToAppBoundDomains: true,
+    backgroundColor: '#ffffff',
   },
   // General app settings
   plugins: {
@@ -29,10 +30,21 @@ const config: CapacitorConfig = {
       launchShowDuration: 2000,
       backgroundColor: "#ffffff",
       androidSplashResourceName: "splash",
-      androidScaleType: "CENTER_CROP"
+      androidScaleType: "CENTER_CROP",
+      showSpinner: true,
+      spinnerColor: "#9b87f5",
     },
     PushNotifications: {
       presentationOptions: ["badge", "sound", "alert"]
+    },
+    Keyboard: {
+      resize: "body",
+      style: "dark",
+      resizeOnFullScreen: true
+    },
+    LocalNotifications: {
+      smallIcon: "ic_stat_icon_config_sample",
+      iconColor: "#9b87f5"
     }
   }
 };
