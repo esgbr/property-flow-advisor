@@ -1,16 +1,19 @@
-
 import React, { createContext, useContext, useState, useEffect } from 'react';
 
 interface LanguageContextProps {
   language: string;
   t: (key: string, vars?: { [key: string]: string | number }) => string;
   setLanguage: (lang: string) => void;
+  translations: Record<string, Record<string, string>>;
+  updateTranslations: (newTranslations: any) => void;
 }
 
 const LanguageContext = createContext<LanguageContextProps>({
   language: 'en',
   t: (key: string) => key,
-  setLanguage: () => {}
+  setLanguage: () => {},
+  translations: {},
+  updateTranslations: () => {}
 });
 
 // English translations - Default language
@@ -1084,7 +1087,7 @@ export interface LanguageProviderProps {
 
 export const LanguageProvider: React.FC<LanguageProviderProps> = ({ children }) => {
   const [language, setLanguage] = useState<string>('en');
-  const [translations, setTranslations] = useState<any>({
+  const [translations, setTranslations] = useState<Record<string, Record<string, string>>>({
     en: englishTranslations,
     de: germanTranslations,
     fr: frenchTranslations,
@@ -1158,7 +1161,7 @@ export const LanguageProvider: React.FC<LanguageProviderProps> = ({ children }) 
   }, [language]);
 
   return (
-    <LanguageContext.Provider value={{ language, t, setLanguage }}>
+    <LanguageContext.Provider value={{ language, t, setLanguage, translations, updateTranslations }}>
       {children}
     </LanguageContext.Provider>
   );

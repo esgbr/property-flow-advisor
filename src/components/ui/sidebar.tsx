@@ -1,4 +1,3 @@
-
 import * as React from "react";
 
 export interface SidebarProps extends React.HTMLAttributes<HTMLDivElement> {
@@ -58,15 +57,18 @@ export const SidebarTrigger = React.forwardRef<
   return (
     <button
       ref={(node) => {
-        if (ref) {
-          if (typeof ref === "function") {
-            ref(node);
-          } else {
-            ref.current = node;
-          }
+        // Handle both the external ref and the internal trigger ref
+        if (typeof ref === 'function') {
+          ref(node);
+        } else if (ref) {
+          ref.current = node;
         }
-        if (trigger) {
-          trigger.current = node;
+        
+        // Set the trigger ref without direct assignment to read-only property
+        if (trigger && node) {
+          // Use a ref setter function to update the current property
+          const setRef = trigger as { current: HTMLButtonElement | null };
+          setRef.current = node;
         }
       }}
       onClick={() => setOpen(!open)}
