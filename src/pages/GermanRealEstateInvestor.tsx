@@ -17,13 +17,16 @@ import {
   Search,
   Star,
   Clock,
-  Filter
+  Filter,
+  X
 } from 'lucide-react';
+import { useMarketFilter } from '@/hooks/use-market-filter';
 
 const GermanRealEstateInvestor: React.FC = () => {
   const { language } = useLanguage();
   const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState('');
+  const { userMarket } = useMarketFilter();
   
   // Filter tools based on search query
   const filteredTools = searchQuery 
@@ -31,7 +34,7 @@ const GermanRealEstateInvestor: React.FC = () => {
         (language === 'de' ? tool.titleDe.toLowerCase() : tool.titleEn.toLowerCase())
           .includes(searchQuery.toLowerCase()) ||
         (language === 'de' ? tool.descriptionDe?.toLowerCase() : tool.descriptionEn?.toLowerCase())
-          .includes(searchQuery.toLowerCase())
+          ?.includes(searchQuery.toLowerCase())
       )
     : germanInvestmentTools;
     
@@ -73,13 +76,21 @@ const GermanRealEstateInvestor: React.FC = () => {
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
           />
+          {searchQuery && (
+            <button 
+              className="absolute right-2 top-1/2 transform -translate-y-1/2" 
+              onClick={() => setSearchQuery('')}
+            >
+              <X className="h-4 w-4 text-muted-foreground" />
+            </button>
+          )}
         </div>
         
         <div className="flex gap-2">
-          <Button variant="outline" size="icon">
+          <Button variant="outline" size="icon" title={language === 'de' ? 'Filter' : 'Filter'}>
             <Filter className="h-4 w-4" />
           </Button>
-          <Button variant="outline" size="icon">
+          <Button variant="outline" size="icon" title={language === 'de' ? 'Favoriten' : 'Favorites'}>
             <Star className="h-4 w-4" />
           </Button>
         </div>

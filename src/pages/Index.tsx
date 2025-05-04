@@ -4,52 +4,119 @@ import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { useLanguage } from '@/contexts/LanguageContext';
-import { Building, Calculator, BarChart3, Home, BookOpen, Euro, Globe, Map } from 'lucide-react';
+import { 
+  Building, 
+  Calculator, 
+  BarChart3, 
+  Home, 
+  BookOpen, 
+  Euro, 
+  Globe, 
+  Map, 
+  TrendingUp, 
+  Users, 
+  FileText, 
+  Briefcase 
+} from 'lucide-react';
+import { useMarketFilter } from '@/hooks/use-market-filter';
+import { Badge } from '@/components/ui/badge';
 
 const Index: React.FC = () => {
   const navigate = useNavigate();
   const { t, language } = useLanguage();
+  const { shouldShowFeature, userMarket } = useMarketFilter();
 
   const features = [
     {
-      title: t('portfolio Management'),
-      description: t('portfolio Management Description'),
+      id: 'portfolio',
+      title: t('Portfolio Management'),
+      description: t('Portfolio Management Description'),
       icon: <Building className="h-8 w-8 text-primary" />,
-      action: () => navigate('/properties')
+      action: () => navigate('/properties'),
+      markets: ['global']
     },
     {
-      title: t('investment Analysis'),
-      description: t('investment Analysis Description'),
+      id: 'investment',
+      title: t('Investment Analysis'),
+      description: t('Investment Analysis Description'),
       icon: <BarChart3 className="h-8 w-8 text-primary" />,
-      action: () => navigate('/investor-dashboard')
+      action: () => navigate('/investor-dashboard'),
+      markets: ['global']
     },
     {
-      title: t('financial Calculators'),
-      description: t('financial Calculators Description'),
+      id: 'calculators',
+      title: t('Financial Calculators'),
+      description: t('Financial Calculators Description'),
       icon: <Calculator className="h-8 w-8 text-primary" />,
-      action: () => navigate('/calculators')
+      action: () => navigate('/calculators'),
+      markets: ['global']
     },
     {
+      id: 'german-tools',
       title: language === 'de' ? 'Deutsche Immobilien-Tools' : 'German Real Estate Tools',
       description: language === 'de' 
         ? 'Spezielle Tools für den deutschen Immobilienmarkt, inkl. Grunderwerbsteuer, Mietkauf und AfA-Rechner.'
         : 'Specialized tools for the German real estate market, including transfer tax, rent-to-own and depreciation calculators.',
       icon: <Euro className="h-8 w-8 text-primary" />,
-      action: () => navigate('/deutsche-immobilien-tools')
+      action: () => navigate('/deutsche-immobilien-tools'),
+      markets: ['germany', 'austria', 'switzerland']
     },
     {
-      title: t('market Explorer'),
-      description: t('market Explorer Description'),
+      id: 'us-tools',
+      title: language === 'de' ? 'US-Immobilien-Tools' : 'US Real Estate Tools',
+      description: language === 'de'
+        ? 'Spezielle Tools für den US-Immobilienmarkt, inkl. 1031 Exchange, Property Tax und Depreciation Calculator.'
+        : 'Specialized tools for the US real estate market, including 1031 exchange, property tax and depreciation calculators.',
+      icon: <Briefcase className="h-8 w-8 text-primary" />,
+      action: () => navigate('/us-real-estate-tools'),
+      markets: ['usa', 'canada']
+    },
+    {
+      id: 'market',
+      title: t('Market Explorer'),
+      description: t('Market Explorer Description'),
       icon: <Map className="h-8 w-8 text-primary" />,
-      action: () => navigate('/market-explorer')
+      action: () => navigate('/market-explorer'),
+      markets: ['global']
     },
     {
-      title: t('global Insights'),
-      description: t('global Insights Description'),
+      id: 'insights',
+      title: t('Global Insights'),
+      description: t('Global Insights Description'),
       icon: <Globe className="h-8 w-8 text-primary" />,
-      action: () => navigate('/market-analysis')
+      action: () => navigate('/market-analysis'),
+      markets: ['global']
+    },
+    {
+      id: 'performance',
+      title: t('Performance Analytics'),
+      description: t('Track and analyze the performance of your real estate investments'),
+      icon: <TrendingUp className="h-8 w-8 text-primary" />,
+      action: () => navigate('/portfolio-analytics'),
+      markets: ['global']
+    },
+    {
+      id: 'tenant',
+      title: t('Tenant Management'),
+      description: t('Manage tenant relationships, leases, and communications'),
+      icon: <Users className="h-8 w-8 text-primary" />,
+      action: () => navigate('/tenant-management'),
+      markets: ['global']
+    },
+    {
+      id: 'documents',
+      title: t('Document Center'),
+      description: t('Store and organize all your real estate documents securely'),
+      icon: <FileText className="h-8 w-8 text-primary" />,
+      action: () => navigate('/documents'),
+      markets: ['global']
     }
   ];
+
+  // Filter features based on user's market preference
+  const filteredFeatures = features.filter(feature => 
+    !feature.markets || shouldShowFeature({ id: feature.id, markets: feature.markets })
+  );
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-background to-background/80">
@@ -58,26 +125,35 @@ const Index: React.FC = () => {
           <div className="flex justify-center mb-4">
             <Building className="h-16 w-16 text-primary" />
           </div>
-          <h1 className="text-4xl md:text-5xl font-bold mb-4">{t('welcome To PropertyFlow')}</h1>
+          <h1 className="text-4xl md:text-5xl font-bold mb-4">{t('Welcome to PropertyFlow')}</h1>
           <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-            {t('property Flow Description')}
+            {t('Property Flow Description')}
           </p>
+          
+          {userMarket && (
+            <div className="mt-4">
+              <Badge variant="outline" className="text-sm font-medium">
+                {t('Market')}: {userMarket.charAt(0).toUpperCase() + userMarket.slice(1)}
+              </Badge>
+            </div>
+          )}
+          
           <div className="flex flex-wrap justify-center gap-4 mt-8">
             <Button size="lg" onClick={() => navigate('/dashboard')}>
               <Home className="mr-2 h-5 w-5" />
-              {t('go Dashboard')}
+              {t('Go to Dashboard')}
             </Button>
             <Button size="lg" variant="outline" onClick={() => navigate('/properties')}>
               <Building className="mr-2 h-5 w-5" />
-              {t('view Properties')}
+              {t('View Properties')}
             </Button>
           </div>
         </header>
 
         <section className="mb-16">
-          <h2 className="text-3xl font-bold text-center mb-12">{t('key Features')}</h2>
+          <h2 className="text-3xl font-bold text-center mb-12">{t('Key Features')}</h2>
           <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
-            {features.map((feature, index) => (
+            {filteredFeatures.map((feature, index) => (
               <Card key={index} className="border shadow-sm hover:shadow-md transition-all">
                 <CardHeader>
                   <div className="mb-4">{feature.icon}</div>
@@ -86,7 +162,7 @@ const Index: React.FC = () => {
                 </CardHeader>
                 <CardFooter>
                   <Button variant="ghost" className="w-full" onClick={feature.action}>
-                    {t('explore')}
+                    {t('Explore')}
                   </Button>
                 </CardFooter>
               </Card>
@@ -95,21 +171,21 @@ const Index: React.FC = () => {
         </section>
 
         <section className="text-center mb-16">
-          <h2 className="text-3xl font-bold mb-6">{t('invest With Confidence')}</h2>
+          <h2 className="text-3xl font-bold mb-6">{t('Invest With Confidence')}</h2>
           <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
-            {t('invest With Confidence Description')}
+            {t('Invest With Confidence Description')}
           </p>
           <Button 
             size="lg" 
             className="mt-6"
             onClick={() => navigate('/investor-dashboard')}
           >
-            {t('start Investing')}
+            {t('Start Investing')}
           </Button>
         </section>
 
         <footer className="border-t pt-8 text-center text-muted-foreground">
-          <p>&copy; 2025 PropertyFlow. {t('all Rights Reserved')}</p>
+          <p>&copy; 2025 PropertyFlow. {t('All Rights Reserved')}</p>
         </footer>
       </div>
     </div>

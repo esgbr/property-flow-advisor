@@ -51,11 +51,26 @@ export function useMarketFilter() {
     }
   };
   
+  // Get available markets for filtering
+  const getAvailableMarkets = (): {id: string, name: string}[] => {
+    return [
+      { id: 'germany', name: 'Germany' },
+      { id: 'austria', name: 'Austria' },
+      { id: 'switzerland', name: 'Switzerland' },
+      { id: 'france', name: 'France' },
+      { id: 'usa', name: 'USA' },
+      { id: 'canada', name: 'Canada' },
+      { id: 'global', name: 'Global' },
+      { id: 'other', name: 'Other' }
+    ];
+  };
+  
   return {
     shouldShowFeature,
     filterFeaturesByMarket,
     userMarket,
-    getMarketDisplayName
+    getMarketDisplayName,
+    getAvailableMarkets
   };
 }
 
