@@ -386,7 +386,7 @@ const englishTranslations = {
   breakEvenRatio: "Break-Even Ratio",
   netPresentValue: "Net Present Value (NPV)",
   internalRateOfReturn: "Internal Rate of Return (IRR)",
-  grossRentMultiplier: "Gross Rent Multiplier (GRM)",
+  grossRentMultiplier: "Gross Rent Multipliplier (GRM)",
   returnOnEquity: "Return on Equity (ROE)",
   returnOnInvestment: "Return on Investment (ROI)",
   
@@ -422,8 +422,6 @@ const englishTranslations = {
   
   // Export calculation
   exportCalculation: "Export Calculation",
-  
-  // Investment analysis - already defined above, so removing this duplicate
   
   // Monthly cash flow - already defined above, so skipping this duplicate
   
