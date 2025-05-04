@@ -1,3 +1,4 @@
+
 import React, { createContext, useState, useContext, useEffect } from 'react';
 
 // Define InvestmentMarket type explicitly as a string union type
@@ -46,7 +47,7 @@ export interface UserPreferences {
   isFirstVisit?: boolean;
 }
 
-// Define OnboardingData type for WelcomeModal
+// Define OnboardingData type for WelcomeModal - fixing the error by making sure advanced is included
 export interface OnboardingData {
   name: string;
   experienceLevel: 'beginner' | 'intermediate' | 'advanced' | 'expert';

@@ -1,29 +1,26 @@
-import React, { Suspense, lazy } from 'react';
+
+import React, { Suspense, lazy, useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card } from '@/components/ui/card';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { 
   Building, 
-  Calculator, 
-  BarChart3, 
   Home, 
-  BookOpen, 
-  Euro, 
-  Globe, 
-  Map, 
-  TrendingUp, 
-  Users, 
-  FileText, 
-  Briefcase,
   Loader2 
 } from 'lucide-react';
 import { useMarketFilter } from '@/hooks/use-market-filter';
 import { Badge } from '@/components/ui/badge';
 import { InvestmentMarket } from '@/contexts/UserPreferencesContext';
 import ErrorBoundary from '@/components/ErrorBoundary';
+import PageLoader from '@/components/ui/page-loader';
+import { useComponentPerformance } from '@/utils/performanceUtils';
+import useLazyComponent from '@/hooks/use-lazy-load';
 
-// Define navigation item type for better type safety
+// Lazy load components for better initial loading performance
+const FeatureGrid = lazy(() => import('@/components/home/FeatureGrid'));
+
+// Define Feature type for better type safety
 interface Feature {
   id: string;
   title: string;
@@ -33,19 +30,21 @@ interface Feature {
   markets: InvestmentMarket[];
 }
 
-const LoadingSpinner = () => (
-  <div className="flex justify-center py-8">
-    <Loader2 className="animate-spin h-8 w-8 text-primary" />
-  </div>
-);
-
-// Lazy load the feature grid component
-const FeatureGrid = lazy(() => import('@/components/home/FeatureGrid'));
-
 const Index: React.FC = () => {
+  useComponentPerformance('IndexPage');
   const navigate = useNavigate();
   const { t, language } = useLanguage();
   const { shouldShowFeature, userMarket } = useMarketFilter();
+  const [isLoading, setIsLoading] = useState(true);
+
+  // Simulate loading state for demonstration
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setIsLoading(false);
+    }, 800);
+    
+    return () => clearTimeout(timer);
+  }, []);
 
   // Properly typed features array
   const features: Feature[] = [
@@ -139,6 +138,10 @@ const Index: React.FC = () => {
   const filteredFeatures = features.filter(feature => 
     !feature.markets || shouldShowFeature({ id: feature.id, markets: feature.markets })
   );
+  
+  if (isLoading) {
+    return <PageLoader message={t('Loading PropertyFlow...')} size="lg" />;
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-background to-background/80">
@@ -173,7 +176,7 @@ const Index: React.FC = () => {
         </header>
 
         <ErrorBoundary>
-          <Suspense fallback={<LoadingSpinner />}>
+          <Suspense fallback={<PageLoader size="md" />}>
             <FeatureGrid features={filteredFeatures} />
           </Suspense>
         </ErrorBoundary>
