@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { useLanguage } from '@/contexts/LanguageContext';
-import { Building, Calculator, BarChart3, Home, BookOpen, Euro } from 'lucide-react';
+import { Building, Calculator, BarChart3, Home, BookOpen, Euro, Globe, Map } from 'lucide-react';
 
 const Index: React.FC = () => {
   const navigate = useNavigate();
@@ -12,20 +12,20 @@ const Index: React.FC = () => {
 
   const features = [
     {
-      title: t('portfolioManagement'),
-      description: t('portfolioManagementDescription'),
+      title: t('portfolio Management'),
+      description: t('portfolio Management Description'),
       icon: <Building className="h-8 w-8 text-primary" />,
       action: () => navigate('/properties')
     },
     {
-      title: t('investmentAnalysis'),
-      description: t('investmentAnalysisDescription'),
+      title: t('investment Analysis'),
+      description: t('investment Analysis Description'),
       icon: <BarChart3 className="h-8 w-8 text-primary" />,
       action: () => navigate('/investor-dashboard')
     },
     {
-      title: t('financialCalculators'),
-      description: t('financialCalculatorsDescription'),
+      title: t('financial Calculators'),
+      description: t('financial Calculators Description'),
       icon: <Calculator className="h-8 w-8 text-primary" />,
       action: () => navigate('/calculators')
     },
@@ -36,6 +36,18 @@ const Index: React.FC = () => {
         : 'Specialized tools for the German real estate market, including transfer tax, rent-to-own and depreciation calculators.',
       icon: <Euro className="h-8 w-8 text-primary" />,
       action: () => navigate('/deutsche-immobilien-tools')
+    },
+    {
+      title: t('market Explorer'),
+      description: t('market Explorer Description'),
+      icon: <Map className="h-8 w-8 text-primary" />,
+      action: () => navigate('/market-explorer')
+    },
+    {
+      title: t('global Insights'),
+      description: t('global Insights Description'),
+      icon: <Globe className="h-8 w-8 text-primary" />,
+      action: () => navigate('/market-analysis')
     }
   ];
 
@@ -46,25 +58,25 @@ const Index: React.FC = () => {
           <div className="flex justify-center mb-4">
             <Building className="h-16 w-16 text-primary" />
           </div>
-          <h1 className="text-4xl md:text-5xl font-bold mb-4">{t('welcomeToPropertyFlow')}</h1>
+          <h1 className="text-4xl md:text-5xl font-bold mb-4">{t('welcome To PropertyFlow')}</h1>
           <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-            {t('propertyFlowDescription')}
+            {t('property Flow Description')}
           </p>
           <div className="flex flex-wrap justify-center gap-4 mt-8">
             <Button size="lg" onClick={() => navigate('/dashboard')}>
               <Home className="mr-2 h-5 w-5" />
-              {t('goDashboard')}
+              {t('go Dashboard')}
             </Button>
             <Button size="lg" variant="outline" onClick={() => navigate('/properties')}>
               <Building className="mr-2 h-5 w-5" />
-              {t('viewProperties')}
+              {t('view Properties')}
             </Button>
           </div>
         </header>
 
         <section className="mb-16">
-          <h2 className="text-3xl font-bold text-center mb-12">{t('keyFeatures')}</h2>
-          <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-4">
+          <h2 className="text-3xl font-bold text-center mb-12">{t('key Features')}</h2>
+          <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
             {features.map((feature, index) => (
               <Card key={index} className="border shadow-sm hover:shadow-md transition-all">
                 <CardHeader>
@@ -83,21 +95,21 @@ const Index: React.FC = () => {
         </section>
 
         <section className="text-center mb-16">
-          <h2 className="text-3xl font-bold mb-6">{t('investWithConfidence')}</h2>
+          <h2 className="text-3xl font-bold mb-6">{t('invest With Confidence')}</h2>
           <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
-            {t('investWithConfidenceDescription')}
+            {t('invest With Confidence Description')}
           </p>
           <Button 
             size="lg" 
             className="mt-6"
             onClick={() => navigate('/investor-dashboard')}
           >
-            {t('startInvesting')}
+            {t('start Investing')}
           </Button>
         </section>
 
         <footer className="border-t pt-8 text-center text-muted-foreground">
-          <p>&copy; 2025 PropertyFlow. {t('allRightsReserved')}</p>
+          <p>&copy; 2025 PropertyFlow. {t('all Rights Reserved')}</p>
         </footer>
       </div>
     </div>

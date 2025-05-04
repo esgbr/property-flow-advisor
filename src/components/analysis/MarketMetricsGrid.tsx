@@ -8,9 +8,16 @@ import {
   Home, 
   Building, 
   DollarSign, 
-  Percent
+  Percent,
+  HelpCircle
 } from 'lucide-react';
 import { useMarketFilter } from '@/hooks/use-market-filter';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 const MarketMetricsGrid: React.FC = () => {
   const { t } = useLanguage();
@@ -19,46 +26,52 @@ const MarketMetricsGrid: React.FC = () => {
   // Sample data - in a real app, this would come from an API
   const metrics = [
     {
-      name: t('averageHomePrice'),
+      name: t('average Home Price'),
       value: '€385,000',
       trend: '+2.4%',
       isPositive: true,
-      icon: <Home className="h-5 w-5 text-blue-500" />
+      icon: <Home className="h-5 w-5 text-blue-500" />,
+      tooltip: t('averageSalesPriceExplanation')
     },
     {
-      name: t('rentalYield'),
+      name: t('rental Yield'),
       value: '6.3%',
       trend: '+0.2%',
       isPositive: true,
-      icon: <Percent className="h-5 w-5 text-green-500" />
+      icon: <Percent className="h-5 w-5 text-green-500" />,
+      tooltip: t('rentalYieldExplanation')
     },
     {
-      name: t('averageRentPrice'),
+      name: t('average Rent Price'),
       value: '€1,850',
       trend: '+3.2%',
       isPositive: true,
-      icon: <Building className="h-5 w-5 text-purple-500" />
+      icon: <Building className="h-5 w-5 text-purple-500" />,
+      tooltip: t('averageRentExplanation')
     },
     {
-      name: t('propertyAppreciation'),
+      name: t('property Appreciation'),
       value: '4.7%',
       trend: '-0.3%',
       isPositive: false,
-      icon: <TrendingUp className="h-5 w-5 text-orange-500" />
+      icon: <TrendingUp className="h-5 w-5 text-orange-500" />,
+      tooltip: t('propertyAppreciationExplanation')
     },
     {
-      name: t('mortgageRate'),
+      name: t('mortgage Rate'),
       value: '3.4%',
       trend: '+0.1%',
       isPositive: false,
-      icon: <DollarSign className="h-5 w-5 text-red-500" />
+      icon: <DollarSign className="h-5 w-5 text-red-500" />,
+      tooltip: t('mortgageRateExplanation')
     },
     {
-      name: t('investmentVolume'),
+      name: t('investment Volume'),
       value: '€9.5B',
       trend: '+8.3%',
       isPositive: true,
-      icon: <Building className="h-5 w-5 text-teal-500" />
+      icon: <Building className="h-5 w-5 text-teal-500" />,
+      tooltip: t('investmentVolumeExplanation')
     }
   ];
 
@@ -69,7 +82,19 @@ const MarketMetricsGrid: React.FC = () => {
           <CardContent className="p-6">
             <div className="flex justify-between items-start">
               <div>
-                <p className="text-sm text-muted-foreground">{metric.name}</p>
+                <p className="text-sm text-muted-foreground flex items-center gap-1.5">
+                  {metric.name}
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger className="cursor-help opacity-70 hover:opacity-100">
+                        <HelpCircle className="h-3.5 w-3.5" />
+                      </TooltipTrigger>
+                      <TooltipContent side="right" className="max-w-xs">
+                        <p>{metric.tooltip}</p>
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
+                </p>
                 <p className="text-2xl font-bold mt-1">{metric.value}</p>
               </div>
               <div className="rounded-full p-2 bg-muted">

@@ -46,6 +46,7 @@ export function useMarketFilter() {
       case 'usa': return 'US';
       case 'canada': return 'Canadian';
       case 'global': return 'Global';
+      case 'other': return 'International';
       default: return '';
     }
   };
