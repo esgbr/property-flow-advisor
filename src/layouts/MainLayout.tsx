@@ -19,7 +19,7 @@ const MainLayout = () => {
   }, [preferences.theme, theme, setTheme]);
   
   return (
-    <div className="min-h-screen flex w-full">
+    <div className={`min-h-screen flex w-full ${theme === 'dark' ? 'dark' : ''}`}>
       <SidebarProvider>
         <AppSidebar />
         <div className="flex flex-col flex-1">

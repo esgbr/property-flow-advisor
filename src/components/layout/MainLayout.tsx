@@ -1,4 +1,3 @@
-
 import React, { useEffect } from 'react';
 import { Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { SidebarProvider } from '@/components/ui/sidebar';
@@ -15,6 +14,9 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import { AlertTriangle, ShieldCheck } from 'lucide-react';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import MobileNavigation from '@/components/navigation/MobileNavigation';
+import ErrorBoundary from '@/components/ErrorBoundary';
+import SkipToContent from '@/components/accessibility/SkipToContent';
+import { useTheme } from '@/components/theme-provider';
 
 const MainLayout = () => {
   const { isLocked, pin, lockApp } = useAppLock();
@@ -23,9 +25,17 @@ const MainLayout = () => {
   const { t } = useLanguage();
   const location = useLocation();
   const navigate = useNavigate();
+  const { theme, setTheme } = useTheme();
   const [inactivityTimer, setInactivityTimer] = React.useState<NodeJS.Timeout | null>(null);
   const [showSecurityAlert, setShowSecurityAlert] = React.useState(false);
   
+  // Synchronize theme preferences with theme provider
+  React.useEffect(() => {
+    if (preferences.theme && preferences.theme !== theme) {
+      setTheme(preferences.theme);
+    }
+  }, [preferences.theme, theme, setTheme]);
+
   // Enhanced security - auto-lock on inactivity
   useEffect(() => {
     // Skip if no pin is set or already locked
@@ -126,55 +136,60 @@ const MainLayout = () => {
   };
 
   return (
-    <SidebarProvider>
-      <div className={`min-h-screen flex w-full ${preferences.darkMode ? 'dark' : ''}`}>
-        <SidebarController>
-          <div className="flex flex-col flex-1">
-            <Navbar />
-            <main className={`flex-1 ${isMobile ? 'p-3 pb-20' : 'p-6'}`}>
-              {showSecurityAlert && (
-                <Alert className="mb-6 border-amber-500 bg-amber-500/10">
-                  <AlertTriangle className="h-4 w-4 text-amber-500" />
-                  <AlertTitle className="text-amber-500">{t('securityAlert')}</AlertTitle>
-                  <AlertDescription className="flex flex-col gap-2">
-                    <p>{t('securityAlertDescription')}</p>
-                    <div className="flex gap-2 mt-1">
-                      <button 
-                        onClick={setupPIN}
-                        className="px-3 py-1 text-sm rounded-md bg-primary text-white"
-                      >
-                        {t('setupPIN')}
-                      </button>
-                      <button 
-                        onClick={dismissSecurityAlert}
-                        className="px-3 py-1 text-sm rounded-md bg-muted text-muted-foreground"
-                      >
-                        {t('dismiss')}
-                      </button>
-                    </div>
-                  </AlertDescription>
-                </Alert>
-              )}
-              
-              {pin && (
-                <Alert className="mb-6 border-green-500 bg-green-500/10">
-                  <ShieldCheck className="h-4 w-4 text-green-500" />
-                  <AlertTitle className="text-green-500">{t('securityEnabled')}</AlertTitle>
-                  <AlertDescription>{t('securityEnabledDescription')}</AlertDescription>
-                </Alert>
-              )}
-              
-              <Outlet />
-            </main>
-            {isMobile && <MobileNavigation />}
-          </div>
-          <div className="fixed bottom-4 right-4 z-50 flex flex-col gap-2">
-            <FeedbackModal variant="icon" size="md" />
-          </div>
-        </SidebarController>
-      </div>
-      <WelcomeModal />
-    </SidebarProvider>
+    <>
+      <SkipToContent contentId="main-content" />
+      <SidebarProvider>
+        <div className={`min-h-screen flex w-full ${theme === 'dark' ? 'dark' : ''}`}>
+          <SidebarController>
+            <div className="flex flex-col flex-1">
+              <Navbar />
+              <ErrorBoundary>
+                <main id="main-content" className={`flex-1 ${isMobile ? 'p-3 pb-20' : 'p-6'}`}>
+                  {showSecurityAlert && (
+                    <Alert className="mb-6 border-amber-500 bg-amber-500/10">
+                      <AlertTriangle className="h-4 w-4 text-amber-500" />
+                      <AlertTitle className="text-amber-500">{t('securityAlert')}</AlertTitle>
+                      <AlertDescription className="flex flex-col gap-2">
+                        <p>{t('securityAlertDescription')}</p>
+                        <div className="flex gap-2 mt-1">
+                          <button 
+                            onClick={setupPIN}
+                            className="px-3 py-1 text-sm rounded-md bg-primary text-white"
+                          >
+                            {t('setupPIN')}
+                          </button>
+                          <button 
+                            onClick={dismissSecurityAlert}
+                            className="px-3 py-1 text-sm rounded-md bg-muted text-muted-foreground"
+                          >
+                            {t('dismiss')}
+                          </button>
+                        </div>
+                      </AlertDescription>
+                    </Alert>
+                  )}
+                  
+                  {pin && (
+                    <Alert className="mb-6 border-green-500 bg-green-500/10">
+                      <ShieldCheck className="h-4 w-4 text-green-500" />
+                      <AlertTitle className="text-green-500">{t('securityEnabled')}</AlertTitle>
+                      <AlertDescription>{t('securityEnabledDescription')}</AlertDescription>
+                    </Alert>
+                  )}
+                  
+                  <Outlet />
+                </main>
+              </ErrorBoundary>
+              {isMobile && <MobileNavigation />}
+            </div>
+            <div className="fixed bottom-4 right-4 z-50 flex flex-col gap-2">
+              <FeedbackModal variant="icon" size="md" />
+            </div>
+          </SidebarController>
+        </div>
+        <WelcomeModal />
+      </SidebarProvider>
+    </>
   );
 };
 

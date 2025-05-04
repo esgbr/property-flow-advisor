@@ -1,5 +1,4 @@
-
-import React from 'react';
+import React, { Suspense, lazy } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
@@ -16,13 +15,15 @@ import {
   TrendingUp, 
   Users, 
   FileText, 
-  Briefcase 
+  Briefcase,
+  Loader2 
 } from 'lucide-react';
 import { useMarketFilter } from '@/hooks/use-market-filter';
 import { Badge } from '@/components/ui/badge';
 import { InvestmentMarket } from '@/contexts/UserPreferencesContext';
+import ErrorBoundary from '@/components/ErrorBoundary';
 
-// Feature interface to ensure proper typing
+// Define navigation item type for better type safety
 interface Feature {
   id: string;
   title: string;
@@ -31,6 +32,15 @@ interface Feature {
   action: () => void;
   markets: InvestmentMarket[];
 }
+
+const LoadingSpinner = () => (
+  <div className="flex justify-center py-8">
+    <Loader2 className="animate-spin h-8 w-8 text-primary" />
+  </div>
+);
+
+// Lazy load the feature grid component
+const FeatureGrid = lazy(() => import('@/components/home/FeatureGrid'));
 
 const Index: React.FC = () => {
   const navigate = useNavigate();
@@ -162,25 +172,11 @@ const Index: React.FC = () => {
           </div>
         </header>
 
-        <section className="mb-16">
-          <h2 className="text-3xl font-bold text-center mb-12">{t('Key Features')}</h2>
-          <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
-            {filteredFeatures.map((feature, index) => (
-              <Card key={index} className="border shadow-sm hover:shadow-md transition-all">
-                <CardHeader>
-                  <div className="mb-4">{feature.icon}</div>
-                  <CardTitle>{feature.title}</CardTitle>
-                  <CardDescription>{feature.description}</CardDescription>
-                </CardHeader>
-                <CardFooter>
-                  <Button variant="ghost" className="w-full" onClick={feature.action}>
-                    {t('Explore')}
-                  </Button>
-                </CardFooter>
-              </Card>
-            ))}
-          </div>
-        </section>
+        <ErrorBoundary>
+          <Suspense fallback={<LoadingSpinner />}>
+            <FeatureGrid features={filteredFeatures} />
+          </Suspense>
+        </ErrorBoundary>
 
         <section className="text-center mb-16">
           <h2 className="text-3xl font-bold mb-6">{t('Invest With Confidence')}</h2>
