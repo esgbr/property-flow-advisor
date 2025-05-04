@@ -3,10 +3,13 @@ import React, { useEffect, useState } from 'react';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
 import OnboardingFlow, { OnboardingData } from '@/components/onboarding/OnboardingFlow';
 import { useUserPreferences } from '@/contexts/UserPreferencesContext';
+import { toast } from 'sonner';
+import { useNavigate } from 'react-router-dom';
 
 const WelcomeModal = () => {
-  const { isFirstVisit, setIsFirstVisit, saveOnboardingData, preferences } = useUserPreferences();
+  const { isFirstVisit, setIsFirstVisit, saveOnboardingData, preferences, updatePreferences } = useUserPreferences();
   const [open, setOpen] = useState(false);
+  const navigate = useNavigate();
 
   useEffect(() => {
     // Only show the welcome modal if it's the user's first visit
@@ -29,12 +32,42 @@ const WelcomeModal = () => {
     
     saveOnboardingData(updatedData);
     setOpen(false);
+    
+    // Navigate to appropriate dashboard based on selected market
+    if (data.investmentMarket) {
+      switch (data.investmentMarket) {
+        case 'germany':
+        case 'austria':
+          toast.success('Welcome to German Real Estate Investor Tools!');
+          navigate('/deutsche-immobilien-tools');
+          break;
+        case 'usa':
+        case 'canada':
+          toast.success('Welcome to US Real Estate Investor Tools!');
+          navigate('/us-real-estate-tools');
+          break;
+        default:
+          toast.success('Welcome to your Real Estate Dashboard!');
+          navigate('/dashboard');
+      }
+    } else {
+      navigate('/dashboard');
+    }
   };
 
   const handleSkip = () => {
     setIsFirstVisit(false);
     localStorage.setItem('firstVisit', 'false');
     setOpen(false);
+    
+    // If user skips, we still save what we know
+    updatePreferences({
+      lastUpdated: new Date().toISOString(),
+      onboardingCompleted: true
+    });
+    
+    toast.info('You can always update your preferences in Settings');
+    navigate('/dashboard');
   };
 
   return (

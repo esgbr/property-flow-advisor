@@ -30,7 +30,7 @@ const GermanRealEstateInvestor: React.FC = () => {
     ? germanInvestmentTools.filter(tool => 
         (language === 'de' ? tool.titleDe.toLowerCase() : tool.titleEn.toLowerCase())
           .includes(searchQuery.toLowerCase()) ||
-        (language === 'de' ? tool.descriptionDe.toLowerCase() : tool.descriptionEn.toLowerCase())
+        (language === 'de' ? tool.descriptionDe?.toLowerCase() : tool.descriptionEn?.toLowerCase())
           .includes(searchQuery.toLowerCase())
       )
     : germanInvestmentTools;
