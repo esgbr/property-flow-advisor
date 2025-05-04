@@ -2,7 +2,7 @@
 import React from 'react';
 import { Routes, Route } from 'react-router-dom';
 import { ThemeProvider } from '@/components/theme-provider';
-import MainLayout from '@/layouts/MainLayout';
+import MainLayout from '@/components/layout/MainLayout';
 import Index from '@/pages/Index';
 import Dashboard from '@/pages/Dashboard';
 import PropertyList from '@/pages/PropertyList';
@@ -15,28 +15,33 @@ import Settings from '@/pages/Settings';
 import UserProfile from '@/pages/UserProfile';
 import { LanguageProvider } from '@/contexts/LanguageContext';
 import { UserPreferencesProvider } from '@/contexts/UserPreferencesContext';
+import { AppLockProvider } from '@/contexts/AppLockContext';
 import Calculators from '@/pages/Calculators';
+import { Toaster } from '@/components/ui/sonner';
 
 function App() {
   return (
     <ThemeProvider defaultTheme="light" storageKey="real-estate-theme">
       <LanguageProvider>
         <UserPreferencesProvider>
-          <Routes>
-            <Route path="/" element={<Index />} />
-            <Route element={<MainLayout />}>
-              <Route path="/dashboard" element={<Dashboard />} />
-              <Route path="/properties" element={<PropertyList />} />
-              <Route path="/property/:id" element={<PropertyDetail />} />
-              <Route path="/property/:id/edit" element={<PropertyEdit />} />
-              <Route path="/property/:id/financials" element={<PropertyFinancials />} />
-              <Route path="/investor-dashboard" element={<InvestorDashboard />} />
-              <Route path="/calculators" element={<Calculators />} />
-              <Route path="/education" element={<Education />} />
-              <Route path="/settings" element={<Settings />} />
-              <Route path="/profile" element={<UserProfile />} />
-            </Route>
-          </Routes>
+          <AppLockProvider>
+            <Routes>
+              <Route path="/" element={<Index />} />
+              <Route element={<MainLayout />}>
+                <Route path="/dashboard" element={<Dashboard />} />
+                <Route path="/properties" element={<PropertyList />} />
+                <Route path="/property/:id" element={<PropertyDetail />} />
+                <Route path="/property/:id/edit" element={<PropertyEdit />} />
+                <Route path="/property/:id/financials" element={<PropertyFinancials />} />
+                <Route path="/investor-dashboard" element={<InvestorDashboard />} />
+                <Route path="/calculators" element={<Calculators />} />
+                <Route path="/education" element={<Education />} />
+                <Route path="/settings" element={<Settings />} />
+                <Route path="/profile" element={<UserProfile />} />
+              </Route>
+            </Routes>
+            <Toaster position="top-right" />
+          </AppLockProvider>
         </UserPreferencesProvider>
       </LanguageProvider>
     </ThemeProvider>

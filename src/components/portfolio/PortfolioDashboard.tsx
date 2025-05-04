@@ -1,9 +1,9 @@
 
-import React from 'react';
+import React, { useMemo } from 'react';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useLanguage } from '@/contexts/LanguageContext';
-import { BarChart3, Building, Calculator, Lightbulb, PieChart, TrendingUp } from 'lucide-react';
+import { BarChart3, Building, Calculator, Lightbulb, PieChart, TrendingUp, Info, DollarSign } from 'lucide-react';
 import { useUserPreferences } from '@/contexts/UserPreferencesContext';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/components/ui/use-toast';
@@ -12,7 +12,7 @@ import PortfolioSummaryCards from './PortfolioSummaryCards';
 import PortfolioGoals from './PortfolioGoals';
 import PortfolioAlerts from './PortfolioAlerts';
 
-// Dummy data for visualizations
+// Enhanced dummy data for visualizations with additional investor metrics
 const portfolioSummary = {
   totalValue: 2500000,
   equity: 950000,
@@ -20,13 +20,33 @@ const portfolioSummary = {
   cashFlow: 12500,
   roi: 7.2,
   appreciation: 5.4,
-  debt: 1550000
+  debt: 1550000,
+  // New investor-focused metrics
+  capRate: 6.8,
+  cashOnCash: 8.5,
+  netOperatingIncome: 170000,
+  debtServiceCoverageRatio: 1.75,
+  vacancyRate: 3.2
 };
 
 const PortfolioDashboard: React.FC = () => {
   const { t } = useLanguage();
   const { preferences } = useUserPreferences();
   const { toast } = useToast();
+
+  // Calculate key investor metrics
+  const investorMetrics = useMemo(() => {
+    const leverageRatio = portfolioSummary.debt / portfolioSummary.totalValue;
+    const annualCashFlow = portfolioSummary.cashFlow * 12;
+    const annualROI = (annualCashFlow / portfolioSummary.equity) * 100;
+    
+    return {
+      leverageRatio: leverageRatio.toFixed(2),
+      annualCashFlow: annualCashFlow,
+      annualROI: annualROI.toFixed(1),
+      breakEvenOccupancy: ((portfolioSummary.debt * 0.06) / (portfolioSummary.totalValue * 0.08) * 100).toFixed(1)
+    };
+  }, []);
 
   const handleActionClick = (action: string) => {
     toast({
@@ -48,6 +68,56 @@ const PortfolioDashboard: React.FC = () => {
       </div>
 
       <PortfolioSummaryCards portfolioSummary={portfolioSummary} />
+
+      <Card>
+        <CardHeader>
+          <div className="flex justify-between">
+            <div>
+              <CardTitle>{t('investorMetrics')}</CardTitle>
+              <CardDescription>{t('keyPerformanceIndicators')}</CardDescription>
+            </div>
+            <Button variant="outline" size="sm" onClick={() => handleActionClick(t('exportMetrics'))}>
+              {t('exportData')}
+            </Button>
+          </div>
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <div className="space-y-1">
+              <div className="flex items-center text-muted-foreground text-sm">
+                <DollarSign className="h-4 w-4 mr-1" />
+                {t('capRate')}
+              </div>
+              <p className="text-2xl font-bold">{portfolioSummary.capRate}%</p>
+              <p className="text-xs text-muted-foreground">{t('netIncomeDividedByValue')}</p>
+            </div>
+            <div className="space-y-1">
+              <div className="flex items-center text-muted-foreground text-sm">
+                <Calculator className="h-4 w-4 mr-1" />
+                {t('cashOnCash')}
+              </div>
+              <p className="text-2xl font-bold">{portfolioSummary.cashOnCash}%</p>
+              <p className="text-xs text-muted-foreground">{t('annualCashFlowDividedByInvestment')}</p>
+            </div>
+            <div className="space-y-1">
+              <div className="flex items-center text-muted-foreground text-sm">
+                <TrendingUp className="h-4 w-4 mr-1" />
+                {t('debtServiceCoverage')}
+              </div>
+              <p className="text-2xl font-bold">{portfolioSummary.debtServiceCoverageRatio}</p>
+              <p className="text-xs text-muted-foreground">{t('netOperatingIncomeToDebtRatio')}</p>
+            </div>
+            <div className="space-y-1">
+              <div className="flex items-center text-muted-foreground text-sm">
+                <Info className="h-4 w-4 mr-1" />
+                {t('breakEvenOccupancy')}
+              </div>
+              <p className="text-2xl font-bold">{investorMetrics.breakEvenOccupancy}%</p>
+              <p className="text-xs text-muted-foreground">{t('minimumOccupancyToBreakEven')}</p>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
 
       <Card>
         <CardHeader>

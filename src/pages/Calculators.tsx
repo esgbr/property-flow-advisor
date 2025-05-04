@@ -10,11 +10,13 @@ import {
   LineChart,
   BarChart,
   PercentIcon,
-  Coins
+  Coins,
+  DollarSign
 } from 'lucide-react';
 import InvestmentCalculator from '@/components/calculators/InvestmentCalculator';
 import RentalYieldCalculator from '@/components/calculators/RentalYieldCalculator';
 import CashOnCashCalculator from '@/components/calculators/CashOnCashCalculator';
+import AdvancedROICalculator from '@/components/calculators/AdvancedROICalculator';
 
 const Calculators: React.FC = () => {
   const { t } = useLanguage();
@@ -43,6 +45,10 @@ const Calculators: React.FC = () => {
             <PercentIcon className="h-4 w-4 mr-2" />
             {t('rentalYield')}
           </TabsTrigger>
+          <TabsTrigger value="advanced-roi" className="flex items-center">
+            <DollarSign className="h-4 w-4 mr-2" />
+            {t('advancedROI')}
+          </TabsTrigger>
           <TabsTrigger value="mortgage" className="flex items-center">
             <Home className="h-4 w-4 mr-2" />
             {t('mortgage')}
@@ -67,6 +73,10 @@ const Calculators: React.FC = () => {
         
         <TabsContent value="rental-yield">
           <RentalYieldCalculator />
+        </TabsContent>
+
+        <TabsContent value="advanced-roi">
+          <AdvancedROICalculator />
         </TabsContent>
         
         <TabsContent value="mortgage">

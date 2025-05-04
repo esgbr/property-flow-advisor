@@ -2,8 +2,8 @@
 import React, { useEffect, useState } from 'react';
 import { Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { SidebarProvider } from '@/components/ui/sidebar';
-import AppSidebar from './AppSidebar';
-import Navbar from './Navbar';
+import AppSidebar from '@/layouts/AppSidebar';
+import Navbar from '@/layouts/Navbar';
 import { useAppLock } from '@/contexts/AppLockContext';
 import AppLockScreen from '@/components/AppLockScreen';
 import { useIsMobile } from '@/hooks/use-mobile';
