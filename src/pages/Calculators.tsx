@@ -11,12 +11,14 @@ import {
   BarChart,
   PercentIcon,
   Coins,
-  DollarSign
+  DollarSign,
+  RefreshCw
 } from 'lucide-react';
 import InvestmentCalculator from '@/components/calculators/InvestmentCalculator';
 import RentalYieldCalculator from '@/components/calculators/RentalYieldCalculator';
 import CashOnCashCalculator from '@/components/calculators/CashOnCashCalculator';
 import AdvancedROICalculator from '@/components/calculators/AdvancedROICalculator';
+import PropertyExchangeCalculator from '@/components/calculators/PropertyExchangeCalculator';
 
 const Calculators: React.FC = () => {
   const { t } = useLanguage();
@@ -49,6 +51,10 @@ const Calculators: React.FC = () => {
             <DollarSign className="h-4 w-4 mr-2" />
             {t('advancedROI')}
           </TabsTrigger>
+          <TabsTrigger value="property-exchange" className="flex items-center">
+            <RefreshCw className="h-4 w-4 mr-2" />
+            {t('propertyExchange')}
+          </TabsTrigger>
           <TabsTrigger value="mortgage" className="flex items-center">
             <Home className="h-4 w-4 mr-2" />
             {t('mortgage')}
@@ -77,6 +83,10 @@ const Calculators: React.FC = () => {
 
         <TabsContent value="advanced-roi">
           <AdvancedROICalculator />
+        </TabsContent>
+        
+        <TabsContent value="property-exchange">
+          <PropertyExchangeCalculator />
         </TabsContent>
         
         <TabsContent value="mortgage">

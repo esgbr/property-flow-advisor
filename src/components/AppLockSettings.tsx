@@ -36,8 +36,9 @@ const AppLockSettings = () => {
       } else {
         toast.error('Please set a PIN first');
       }
-    } else {
-      unlockApp();
+    } else if (pin) {
+      // Pass the pin to unlock the app (required by our interface)
+      unlockApp(pin);
       toast.success('App unlocked!');
     }
   };
