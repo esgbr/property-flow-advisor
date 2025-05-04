@@ -1,4 +1,5 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
+
+import React, { createContext, useContext, useState } from 'react';
 
 interface LanguageContextProps {
   language: string;
@@ -425,8 +426,7 @@ const englishTranslations = {
   // Investment analysis
   investmentAnalysis: "Investment Analysis",
   
-  // Monthly cash flow
-  monthlyCashFlow: "Monthly Cash Flow",
+  // Monthly cash flow - already defined above, so skipping this duplicate
   
   // Mortgage calculator
   calculateMortgagePayments: "Calculate mortgage payments",
