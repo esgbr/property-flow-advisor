@@ -1,0 +1,110 @@
+
+/* Accessibility styles */
+
+/* Reduce motion */
+.reduce-motion * {
+  animation-duration: 0.001ms !important;
+  animation-iteration-count: 1 !important;
+  transition-duration: 0.001ms !important;
+  scroll-behavior: auto !important;
+}
+
+/* High contrast mode */
+.high-contrast {
+  --primary: hsl(0, 0%, 100%);
+  --primary-foreground: hsl(0, 0%, 0%);
+  --secondary: hsl(0, 0%, 90%);
+  --secondary-foreground: hsl(0, 0%, 0%);
+  --background: hsl(0, 0%, 0%);
+  --foreground: hsl(0, 0%, 100%);
+  --border: hsl(0, 0%, 80%);
+  --input: hsl(0, 0%, 80%);
+  --ring: hsl(0, 0%, 100%);
+  --card: hsl(0, 0%, 10%);
+  --card-foreground: hsl(0, 0%, 100%);
+  --popover: hsl(0, 0%, 0%);
+  --popover-foreground: hsl(0, 0%, 100%);
+}
+
+.high-contrast * {
+  border-color: var(--border) !important;
+  outline: 1px solid var(--border) !important;
+}
+
+.high-contrast a {
+  text-decoration: underline !important;
+}
+
+.high-contrast button {
+  border: 2px solid var(--border) !important;
+}
+
+/* Large text mode */
+.large-text {
+  font-size: 125% !important;
+  line-height: 1.5 !important;
+}
+
+.large-text h1 {
+  font-size: 2.5em !important;
+}
+
+.large-text h2 {
+  font-size: 2em !important;
+}
+
+.large-text h3 {
+  font-size: 1.75em !important;
+}
+
+.large-text button, 
+.large-text input, 
+.large-text select, 
+.large-text textarea {
+  font-size: 1.2em !important;
+  padding: 0.75em !important;
+}
+
+/* Screen reader optimizations */
+.screen-reader .sr-only {
+  position: static !important;
+  width: auto !important;
+  height: auto !important;
+  padding: 0.5em !important;
+  margin: 0.5em 0 !important;
+  overflow: visible !important;
+  clip: auto !important;
+  white-space: normal !important;
+  border: 1px dashed var(--border) !important;
+  display: block !important;
+  background: var(--background) !important;
+  color: var(--foreground) !important;
+}
+
+.screen-reader *:focus {
+  outline: 4px solid var(--ring) !important;
+  outline-offset: 2px !important;
+}
+
+/* Focus indicators should always be visible */
+:focus-visible {
+  outline: 2px solid var(--ring) !important;
+  outline-offset: 2px !important;
+}
+
+/* Skip link enhancements */
+.skip-link:focus {
+  position: fixed;
+  top: 0.5rem;
+  left: 0.5rem;
+  z-index: 9999;
+  width: auto;
+  height: auto;
+  padding: 1rem;
+  clip: auto;
+  background: var(--background);
+  border: 2px solid var(--primary);
+  color: var(--primary);
+  font-weight: bold;
+  text-decoration: none;
+}

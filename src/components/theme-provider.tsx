@@ -19,11 +19,18 @@ export function ThemeProvider({ children, ...props }: ThemeProviderProps) {
 export function useTheme() {
   const [theme, setThemeState] = React.useState<string | undefined>(
     typeof window !== 'undefined' 
-      ? localStorage.getItem('real-estate-theme') || 'light' 
+      ? localStorage.getItem('real-estate-theme') || 'system' 
       : 'light'
   );
   
-  const isDarkMode = React.useMemo(() => theme === 'dark', [theme]);
+  const isDarkMode = React.useMemo(() => {
+    if (theme === 'system') {
+      return typeof window !== 'undefined' 
+        ? window.matchMedia('(prefers-color-scheme: dark)').matches
+        : false;
+    }
+    return theme === 'dark';
+  }, [theme]);
   
   const setTheme = React.useCallback((newTheme: string) => {
     setThemeState(newTheme);
@@ -32,7 +39,7 @@ export function useTheme() {
       document.documentElement.setAttribute('data-theme', newTheme);
       
       // Set the class for dark mode
-      if (newTheme === 'dark') {
+      if (newTheme === 'dark' || (newTheme === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
         document.documentElement.classList.add('dark');
       } else {
         document.documentElement.classList.remove('dark');
@@ -42,15 +49,19 @@ export function useTheme() {
   
   // Toggle theme function for easier access
   const toggleTheme = React.useCallback(() => {
-    setTheme(theme === 'dark' ? 'light' : 'dark');
-  }, [setTheme, theme]);
+    if (theme === 'system') {
+      setTheme(isDarkMode ? 'light' : 'dark');
+    } else {
+      setTheme(theme === 'dark' ? 'light' : 'dark');
+    }
+  }, [setTheme, theme, isDarkMode]);
   
   // Initialize theme from localStorage on component mount
   React.useEffect(() => {
     // Check for system preference if no theme set
     if (!localStorage.getItem('real-estate-theme')) {
       const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-      setTheme(prefersDark ? 'dark' : 'light');
+      setTheme('system');
     } else {
       const savedTheme = localStorage.getItem('real-estate-theme');
       if (savedTheme) {
@@ -61,14 +72,18 @@ export function useTheme() {
     // Add listener for system theme changes
     const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
     const handleChange = (e: MediaQueryListEvent) => {
-      if (!localStorage.getItem('real-estate-theme')) {
-        setTheme(e.matches ? 'dark' : 'light');
+      if (theme === 'system') {
+        if (e.matches) {
+          document.documentElement.classList.add('dark');
+        } else {
+          document.documentElement.classList.remove('dark');
+        }
       }
     };
     
     mediaQuery.addEventListener('change', handleChange);
     return () => mediaQuery.removeEventListener('change', handleChange);
-  }, [setTheme]);
+  }, [setTheme, theme]);
 
   return { theme, setTheme, isDarkMode, toggleTheme };
 }

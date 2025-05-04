@@ -93,9 +93,9 @@ const MarketTrendsChart: React.FC<MarketTrendsChartProps> = ({ className = '' })
   const yAxisDomain = useMemo(() => 
     selectedMetric === 'yield' ? ['dataMin - 0.5', 'dataMax + 0.5'] : ['auto', 'auto'],
     [selectedMetric]
-  );
+  ) as [string | number, string | number]; // Type assertion to fix the error
 
-  // Fix the return type of formatTooltip to ensure it returns a tuple with exactly 2 elements
+  // Properly defined formatTooltipValue function that returns a tuple
   const formatTooltipValue = (value: any): [string, string] => {
     return [formatYAxisTick(value as number), ''];
   };
