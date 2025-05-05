@@ -774,4 +774,4 @@ const translations: Record<SupportedLanguage, Record<string, string>> = {
     "showLess": "Weniger anzeigen",
     "viewAll": "Alle anzeigen",
     "viewDetails": "Details anzeigen",
-    "createNew": "Neu erstellen
+    "createNew": "Neu erstellen",
