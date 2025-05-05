@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useLanguage } from '@/contexts/LanguageContext';
@@ -29,6 +28,7 @@ import {
 } from 'lucide-react';
 import { useMarketFilter } from '@/hooks/use-market-filter';
 import MarketSpecificFeatures from '@/components/market/MarketSpecificFeatures';
+import WorkflowNavigation from '@/components/workflow/WorkflowNavigation';
 
 const DeutscheImmobilienPage: React.FC = () => {
   const { language } = useLanguage();
@@ -48,13 +48,13 @@ const DeutscheImmobilienPage: React.FC = () => {
       title: 'AfA optimal nutzen',
       description: 'Wie Sie die Abschreibung für Abnutzung steuerlich optimal einsetzen',
       icon: <Calculator className="h-10 w-10 text-primary/80" />,
-      path: '/guides/afa-optimierung'
+      path: '/calculators/afa'
     },
     {
       title: 'Grunderwerbsteuer sparen',
       description: 'Legale Möglichkeiten zur Reduzierung der Grunderwerbsteuer',
       icon: <Euro className="h-10 w-10 text-primary/80" />,
-      path: '/guides/grunderwerbsteuer-sparen'
+      path: '/calculators/grunderwerbsteuer'
     },
     {
       title: 'Vermietung & Steuern',
@@ -88,9 +88,37 @@ const DeutscheImmobilienPage: React.FC = () => {
     }
   ];
 
+  const workflowCards = [
+    {
+      title: { de: 'Steueroptimierungsprozess', en: 'Tax Optimization Process' },
+      description: { 
+        de: 'Schritt-für-Schritt-Anleitung zur Optimierung Ihrer Steuersituation',
+        en: 'Step-by-step guide to optimize your tax situation'
+      },
+      steps: ['overview', 'grunderwerbsteuer', 'afa', 'planning'],
+      workflow: 'steuern' as const,
+      startPath: '/calculators/grunderwerbsteuer'
+    },
+    {
+      title: { de: 'Immobilienanalyse-Workflow', en: 'Property Analysis Workflow' },
+      description: { 
+        de: 'Analysieren Sie potenzielle Immobilieninvestitionen',
+        en: 'Analyze potential real estate investments'
+      },
+      steps: ['market', 'portfolio', 'reports'],
+      workflow: 'analyse' as const,
+      startPath: '/market-explorer'
+    }
+  ];
+
   return (
     <div className="container mx-auto px-4 py-8">
       <SkipToContent contentId="hauptinhalt" />
+      
+      <WorkflowNavigation
+        workflow="immobilien"
+        currentStep="overview"
+      />
       
       <div className="mb-8">
         <div className="flex items-center mb-2">
@@ -187,6 +215,55 @@ const DeutscheImmobilienPage: React.FC = () => {
               </Button>
             </CardFooter>
           </Card>
+        </div>
+        
+        {/* Intelligente Workflows Section */}
+        <div className="mb-8">
+          <h2 className="text-2xl font-bold mb-4">
+            {language === 'de' ? 'Intelligente Workflows' : 'Smart Workflows'}
+          </h2>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {workflowCards.map((workflow, index) => (
+              <Card key={index}>
+                <CardHeader>
+                  <CardTitle>
+                    {workflow.title[language as keyof typeof workflow.title]}
+                  </CardTitle>
+                  <CardDescription>
+                    {workflow.description[language as keyof typeof workflow.description]}
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="flex flex-wrap gap-2">
+                    {workflow.steps.map((step, stepIndex) => (
+                      <React.Fragment key={step}>
+                        <div className="flex items-center">
+                          <div className="w-6 h-6 rounded-full bg-primary/10 flex items-center justify-center text-xs font-medium text-primary">
+                            {stepIndex + 1}
+                          </div>
+                          <span className="ml-1 text-sm">
+                            {step}
+                          </span>
+                        </div>
+                        {stepIndex < workflow.steps.length - 1 && (
+                          <span className="text-muted-foreground mx-1">→</span>
+                        )}
+                      </React.Fragment>
+                    ))}
+                  </div>
+                </CardContent>
+                <CardFooter>
+                  <Button 
+                    className="w-full" 
+                    onClick={() => navigate(workflow.startPath)}
+                  >
+                    {language === 'de' ? 'Workflow starten' : 'Start Workflow'}
+                  </Button>
+                </CardFooter>
+              </Card>
+            ))}
+          </div>
         </div>
         
         <div className="mb-8">

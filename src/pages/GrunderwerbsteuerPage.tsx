@@ -7,6 +7,8 @@ import { Button } from '@/components/ui/button';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { useNavigate } from 'react-router-dom';
 import { useMarketFilter } from '@/hooks/use-market-filter';
+import WorkflowNavigation from '@/components/workflow/WorkflowNavigation';
+import WorkflowSuggestions from '@/components/workflow/WorkflowSuggestions';
 
 const GrunderwerbsteuerPage: React.FC = () => {
   const { language } = useLanguage();
@@ -20,6 +22,11 @@ const GrunderwerbsteuerPage: React.FC = () => {
 
   return (
     <div className="container mx-auto px-4 py-8">
+      <WorkflowNavigation 
+        workflow="steuern" 
+        currentStep="grunderwerbsteuer" 
+      />
+      
       <div className="flex items-center mb-6">
         <Button 
           variant="ghost" 
@@ -51,6 +58,8 @@ const GrunderwerbsteuerPage: React.FC = () => {
           ? 'Hinweis: Diese Berechnung dient nur zu Informationszwecken und ersetzt keine professionelle Steuerberatung.'
           : 'Note: This calculation is for informational purposes only and does not replace professional tax advice.'}
       </div>
+      
+      <WorkflowSuggestions currentTool="grunderwerbsteuer" />
     </div>
   );
 };

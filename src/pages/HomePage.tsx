@@ -36,6 +36,20 @@ const HomePage: React.FC = () => {
     }
   ];
   
+  // Workflow paths für bessere Navigation
+  const workflowPaths = {
+    immobilienAnalyse: [
+      { path: '/deutsche-immobilien', label: language === 'de' ? 'Marktübersicht' : 'Market Overview' },
+      { path: '/market-explorer', label: language === 'de' ? 'Marktanalyse' : 'Market Analysis' },
+      { path: '/portfolio-analytics', label: language === 'de' ? 'Portfolio-Optimierung' : 'Portfolio Optimization' }
+    ],
+    steuerOptimierung: [
+      { path: '/calculators/grunderwerbsteuer', label: language === 'de' ? 'Grunderwerbsteuer' : 'Transfer Tax' },
+      { path: '/calculators/afa', label: language === 'de' ? 'AfA-Rechner' : 'Depreciation' },
+      { path: '/tax-planner', label: language === 'de' ? 'Steuerplaner' : 'Tax Planner' }
+    ]
+  };
+  
   return (
     <div className="container mx-auto px-4 py-8 md:py-12">
       <SkipToContent contentId="main-content" />
@@ -105,6 +119,102 @@ const HomePage: React.FC = () => {
           <Button onClick={() => navigate('/deutsche-immobilien-tools')} size="lg">
             {language === 'de' ? 'Alle deutschen Immobilien-Tools anzeigen' : 'View all German real estate tools'}
           </Button>
+        </div>
+      </div>
+      
+      {/* Workflow Cards für intelligente Übergänge */}
+      <div className="mb-16">
+        <div className="text-center mb-8">
+          <h2 className="text-2xl md:text-3xl font-bold mb-2">
+            {language === 'de' ? 'Intelligente Workflows' : 'Smart Workflows'}
+          </h2>
+          <p className="text-muted-foreground max-w-2xl mx-auto">
+            {language === 'de' 
+              ? 'Optimierte Arbeitsabläufe für Immobilieninvestoren' 
+              : 'Optimized workflows for real estate investors'}
+          </p>
+        </div>
+        
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <Card className="hover:shadow-md transition-all">
+            <CardHeader>
+              <CardTitle>
+                {language === 'de' ? 'Immobilienanalyse-Workflow' : 'Property Analysis Workflow'}
+              </CardTitle>
+              <CardDescription>
+                {language === 'de' 
+                  ? 'Analysieren Sie den Markt und optimieren Sie Ihr Portfolio'
+                  : 'Analyze the market and optimize your portfolio'}
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="flex items-center">
+                {workflowPaths.immobilienAnalyse.map((item, index) => (
+                  <React.Fragment key={index}>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => navigate(item.path)}
+                    >
+                      {item.label}
+                    </Button>
+                    {index < workflowPaths.immobilienAnalyse.length - 1 && (
+                      <ArrowRight className="h-4 w-4 mx-2 text-muted-foreground" />
+                    )}
+                  </React.Fragment>
+                ))}
+              </div>
+            </CardContent>
+            <CardFooter>
+              <Button 
+                variant="default" 
+                className="w-full"
+                onClick={() => navigate(workflowPaths.immobilienAnalyse[0].path)}
+              >
+                {language === 'de' ? 'Workflow starten' : 'Start Workflow'}
+              </Button>
+            </CardFooter>
+          </Card>
+          
+          <Card className="hover:shadow-md transition-all">
+            <CardHeader>
+              <CardTitle>
+                {language === 'de' ? 'Steueroptimierungs-Workflow' : 'Tax Optimization Workflow'}
+              </CardTitle>
+              <CardDescription>
+                {language === 'de' 
+                  ? 'Optimieren Sie Ihre Steuersituation bei Immobilieninvestitionen'
+                  : 'Optimize your tax situation for real estate investments'}
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="flex items-center">
+                {workflowPaths.steuerOptimierung.map((item, index) => (
+                  <React.Fragment key={index}>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => navigate(item.path)}
+                    >
+                      {item.label}
+                    </Button>
+                    {index < workflowPaths.steuerOptimierung.length - 1 && (
+                      <ArrowRight className="h-4 w-4 mx-2 text-muted-foreground" />
+                    )}
+                  </React.Fragment>
+                ))}
+              </div>
+            </CardContent>
+            <CardFooter>
+              <Button 
+                variant="default" 
+                className="w-full"
+                onClick={() => navigate(workflowPaths.steuerOptimierung[0].path)}
+              >
+                {language === 'de' ? 'Workflow starten' : 'Start Workflow'}
+              </Button>
+            </CardFooter>
+          </Card>
         </div>
       </div>
       
