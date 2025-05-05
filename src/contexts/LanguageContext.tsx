@@ -1,4 +1,3 @@
-
 import React, { createContext, useContext, useState } from 'react';
 
 interface LanguageContextProps {
@@ -545,10 +544,135 @@ const englishTranslations = {
   displayLanguageChangedTo: "Display language changed to"
 };
 
+// German translations
+const germanTranslations = {
+  // Navigation
+  dashboard: 'Dashboard',
+  properties: 'Immobilien',
+  investorDashboard: 'Investor Dashboard',
+  calculators: 'Rechner',
+  education: 'Bildung',
+  settings: 'Einstellungen',
+  profile: 'Profil',
+  main: 'Hauptmenü',
+  account: 'Konto',
+  portfolio: 'Portfolio',
+  marketAnalysis: 'Marktanalyse',
+  financing: 'Finanzierung',
+  taxPlanning: 'Steuerplanung',
+  dueDiligence: 'Sorgfaltspflicht',
+
+  // Portfolio dashboard
+  investmentPortfolio: 'Anlageportfolio',
+  trackYourRealEstateInvestments: 'Verfolgen und analysieren Sie Ihre Immobilieninvestitionen',
+  propertyPerformance: 'Immobilienperformance',
+  compareYourInvestments: 'Vergleichen Sie die Performance Ihrer Investitionen',
+  cashFlow: 'Cashflow',
+  roi: 'ROI',
+  appreciation: 'Wertsteigerung',
+  enhancedAnalytics: 'Erweiterte Analysen',
+  enhancedAnalyticsDescription: 'Schalten Sie erweiterte Analysen mit detaillierten Immobilien-Performance-Metriken frei',
+  marketInsights: 'Markteinblicke',
+  marketInsightsDescription: 'Verbinden Sie sich mit Marktdaten, um zu sehen, wie Ihre Immobilien im Vergleich zu lokalen Trends abschneiden',
+  portfolioAlerts: 'Portfolio-Benachrichtigungen',
+  investmentGoals: 'Anlageziele',
+  unlockAnalytics: 'Erweiterte Analysen freischalten',
+  viewDetailed: 'Detaillierte Analyse anzeigen',
+  connectMarketData: 'Marktdaten verbinden',
+
+  // Property metrics
+  totalValue: 'Gesamtwert',
+  equity: 'Eigenkapital',
+  totalProperties: 'Gesamtanzahl der Immobilien',
+  monthlyCashFlow: 'Monatlicher Cashflow',
+  annualCashFlow: 'Jährlicher Cashflow',
+  cashOnCashReturn: 'Cash-on-Cash Rendite',
+  capRate: 'Kapitalisierungsrate',
+  portfolioEquity: 'Portfolio-Eigenkapital',
+  
+  // Onboarding and user profile
+  welcomeToPropertyFlow: 'Willkommen bei PropertyFlow',
+  onboardingWelcomeDescription: 'Lassen Sie uns Ihre Erfahrung personalisieren',
+  welcomeToPropertyFlowAdvisor: 'Willkommen beim PropertyFlow Berater',
+  yourPersonalRealEstateInvestmentCompanion: 'Ihr persönlicher Begleiter für Immobilieninvestitionen',
+  yourName: 'Ihr Name',
+  enterYourName: 'Namen eingeben',
+  chooseLanguage: 'Sprache wählen',
+  investmentMarket: 'Investmentmarkt',
+  whereDoYouPlanToInvest: 'Wo planen Sie zu investieren?',
+  selectAMarket: 'Markt auswählen',
+  germany: 'Deutschland',
+  austria: 'Österreich',
+  switzerland: 'Schweiz',
+  france: 'Frankreich',
+  unitedStates: 'Vereinigte Staaten',
+  canada: 'Kanada',
+  otherMarket: 'Andere Märkte',
+  yourExperienceLevel: 'Ihr Erfahrungslevel',
+  tellUsAboutYourExperience: 'Teilen Sie uns Ihre Erfahrung mit Immobilieninvestitionen mit',
+  beginner: 'Anfänger',
+  intermediate: 'Fortgeschritten',
+  advanced: 'Erfahren',
+  expert: 'Experte',
+  whatAreYourPrimaryInvestmentGoals: 'Was sind Ihre wichtigsten Anlageziele?',
+  propertyPreferences: 'Immobilienpräferenzen',
+  whatTypesOfPropertiesInterestYou: 'Welche Arten von Immobilien interessieren Sie?',
+  yourInterests: 'Ihre Interessen',
+  whatTopicsInterestYou: 'Welche Themen interessieren Sie?',
+  allSet: 'Alles bereit',
+  yourProfileIsReady: 'Ihr Profil ist fertig',
+  skip: 'Überspringen',
+  back: 'Zurück',
+  next: 'Weiter',
+  complete: 'Abschließen',
+  profileCompleted: 'Profil abgeschlossen',
+  weveCustomizedYourExperience: 'Wir haben Ihre Erfahrung angepasst',
+  setupComplete: 'Einrichtung abgeschlossen',
+  yourPreferencesHaveBeenSaved: 'Ihre Einstellungen wurden gespeichert',
+
+  // Investment interests and goals
+  'passive-income': 'Passives Einkommen',
+  'capital-growth': 'Kapitalwachstum',
+  'portfolio-diversification': 'Portfolio-Diversifizierung',
+  'tax-benefits': 'Steuervorteile',
+  'residential': 'Wohnimmobilien',
+  'commercial': 'Gewerbeimmobilien',
+  'industrial': 'Industrieimmobilien',
+  'land': 'Grundstücke',
+  'vacation-rental': 'Ferienimmobilien',
+  'market-analysis': 'Marktanalyse',
+  'property-management': 'Immobilienverwaltung',
+  'financing': 'Finanzierung',
+  'tax-strategies': 'Steuerstrategien',
+  'renovation': 'Renovierung',
+  'legal': 'Rechtliches',
+
+  // Market explorer
+  marketExplorer: 'Marktexplorer',
+  researchMarketsAndIdentifyOpportunities: 'Märkte recherchieren und Chancen identifizieren',
+  overview: 'Überblick',
+  trends: 'Trends',
+  neighborhoodAnalysis: 'Nachbarschaftsanalyse',
+  investmentOpportunities: 'Investitionsmöglichkeiten',
+  Market: 'Markt',
+  Global: 'Global',
+
+  // General UI elements
+  welcome: 'Willkommen',
+  welcomeBack: 'Willkommen zurück',
+  toThe: 'zum',
+  continueMakingSmartInvestments: 'Treffen Sie weiterhin smarte Investitionsentscheidungen mit unseren Tools',
+  accessComprehensiveInvestmentTools: 'Zugang zu umfassenden Tools zur Analyse und Optimierung Ihrer Investitionen',
+  completeInvestmentToolsuite: 'Komplettes Set an Tools für Immobilieninvestoren',
+  languageChanged: 'Sprache geändert',
+  displayLanguageChangedTo: 'Anzeigesprache geändert zu'
+};
+
 export const LanguageProvider = ({ children }: { children: React.ReactNode }) => {
   const [language, setLanguage] = useState<string>('en');
   const [translations, setTranslations] = useState<Record<string, Record<string, string>>>({
     en: englishTranslations,
+    de: germanTranslations
   });
 
   const updateTranslations = (newTranslations: any) => {

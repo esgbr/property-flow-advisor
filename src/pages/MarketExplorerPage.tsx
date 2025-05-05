@@ -1,170 +1,96 @@
-import React, { useState } from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Input } from '@/components/ui/input';
+import React, { useState, useEffect } from 'react';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useMarketFilter } from '@/hooks/use-market-filter';
-import { Building, ChartBar, Filter, Globe, Map, MapPin, Search, TrendingUp } from 'lucide-react';
+import MarketTrendsAnalysis from '@/components/market/MarketTrendsAnalysis';
+import RentalYieldMap from '@/components/analysis/RentalYieldMap';
+import NeighborhoodScorecard from '@/components/analysis/NeighborhoodScorecard';
+import MacroEconomicIndicators from '@/components/analysis/MacroEconomicIndicators';
+import MarketMetricsGrid from '@/components/analysis/MarketMetricsGrid';
 import { Badge } from '@/components/ui/badge';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Slider } from '@/components/ui/slider';
+import MarketOpportunitiesTable from '@/components/analysis/MarketOpportunitiesTable';
+import { InvestmentMarket } from '@/contexts/UserPreferencesContext';
+import { useUserPreferences } from '@/contexts/UserPreferencesContext';
 
 const MarketExplorerPage: React.FC = () => {
   const { t } = useLanguage();
-  const { userMarket } = useMarketFilter();
-  const [searchTerm, setSearchTerm] = useState('');
+  const { userMarket, getAvailableMarkets } = useMarketFilter();
+  const { preferences, updatePreferences } = useUserPreferences();
+  const [selectedMarket, setSelectedMarket] = useState<InvestmentMarket>(
+    preferences.investmentMarket || 'global'
+  );
   const [activeTab, setActiveTab] = useState('overview');
-  const [selectedMarket, setSelectedMarket] = useState(userMarket || 'germany');
-  const [priceRange, setPriceRange] = useState([100000, 500000]);
-  const [yieldRange, setYieldRange] = useState([3, 8]);
+  const [mapLoaded, setMapLoaded] = useState(false);
+  const [showAnalytics, setShowAnalytics] = useState(false);
+  
+  const markets = getAvailableMarkets();
 
-  const marketData = {
-    germany: {
-      averagePrice: '€3,500/sqm',
-      averageRent: '€12/sqm',
-      yieldRange: '3.5% - 5.2%',
-      growth: '+2.8%',
-      hotAreas: ['Berlin', 'Munich', 'Hamburg', 'Frankfurt'],
-      keyInsights: [
-        'Strong tenant protection laws',
-        'Low home ownership rate (51%)',
-        'Attractive depreciation model (AfA)',
-        'Property transfer tax varies by state (3.5% - 6.5%)'
-      ]
-    },
-    usa: {
-      averagePrice: '$260/sqft',
-      averageRent: '$1.70/sqft',
-      yieldRange: '5.0% - 7.5%',
-      growth: '+3.5%',
-      hotAreas: ['Austin', 'Denver', 'Tampa', 'Phoenix'],
-      keyInsights: [
-        '1031 exchange for tax-deferred property swaps',
-        'Higher homeownership rate (65%)',
-        'Property taxes vary by location (0.5% - 2.2%)',
-        '30-year fixed mortgages common'
-      ]
-    },
-    austria: {
-      averagePrice: '€3,200/sqm',
-      averageRent: '€10/sqm',
-      yieldRange: '3.2% - 4.8%',
-      growth: '+2.3%',
-      hotAreas: ['Vienna', 'Salzburg', 'Innsbruck', 'Graz'],
-      keyInsights: [
-        'Strong rental market in Vienna',
-        'Transfer tax rate of 3.5%',
-        'New construction often exempt from rental controls',
-        'Mortgage terms typically shorter than US'
-      ]
-    },
-    canada: {
-      averagePrice: 'C$740/sqft',
-      averageRent: 'C$2.80/sqft',
-      yieldRange: '4.2% - 6.0%',
-      growth: '+2.1%',
-      hotAreas: ['Toronto', 'Vancouver', 'Montreal', 'Calgary'],
-      keyInsights: [
-        'Foreign buyer taxes in some provinces',
-        'Property transfer tax varies by province',
-        'Capital gains tax (50% inclusion rate)',
-        'Mortgage stress test for buyers'
-      ]
-    },
-    france: {
-      averagePrice: '€4,200/sqm',
-      averageRent: '€16/sqm',
-      yieldRange: '2.8% - 4.0%',
-      growth: '+1.8%',
-      hotAreas: ['Paris', 'Lyon', 'Nice', 'Bordeaux'],
-      keyInsights: [
-        'Notary fees around 7-8% for existing properties',
-        'Strong tenant protection laws',
-        'Non-resident tax considerations',
-        'Wealth tax on high-value real estate'
-      ]
-    },
-    switzerland: {
-      averagePrice: 'CHF 10,500/sqm',
-      averageRent: 'CHF 25/sqm',
-      yieldRange: '2.5% - 3.5%',
-      growth: '+1.5%',
-      hotAreas: ['Zurich', 'Geneva', 'Basel', 'Lausanne'],
-      keyInsights: [
-        'Restrictions on foreign ownership',
-        'Very low mortgage interest rates',
-        'High down payment requirements (20-30%)',
-        'Low vacancy rates in major cities'
-      ]
+  // Update user preferences when selected market changes
+  useEffect(() => {
+    if (selectedMarket !== preferences.investmentMarket) {
+      updatePreferences({ 
+        ...preferences,
+        investmentMarket: selectedMarket 
+      });
     }
+  }, [selectedMarket]);
+
+  // Simulating map loading
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setMapLoaded(true);
+    }, 1200);
+    return () => clearTimeout(timer);
+  }, []);
+
+  // Delay showing analytics to prevent layout shift
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setShowAnalytics(true);
+    }, 300);
+    return () => clearTimeout(timer);
+  }, []);
+
+  // Handle market change in select dropdown
+  const handleMarketChange = (value: string) => {
+    setSelectedMarket(value as InvestmentMarket);
   };
 
-  const currentMarketData = marketData[selectedMarket as keyof typeof marketData] || marketData.germany;
-  
-  // Filter cities based on search term
-  const allCities = Object.values(marketData).flatMap(market => market.hotAreas);
-  const filteredCities = allCities.filter(city => 
-    city.toLowerCase().includes(searchTerm.toLowerCase())
-  );
-
   return (
-    <div className="container mx-auto px-4 py-6 space-y-6 animate-fade-in">
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+    <div className="space-y-6">
+      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center space-y-4 sm:space-y-0">
         <div>
-          <h1 className="text-3xl font-bold flex items-center">
-            <Globe className="mr-2 h-6 w-6" />
-            {t('marketExplorer')}
-          </h1>
-          <p className="text-muted-foreground">{t('exploreRealEstateMarkets')}</p>
+          <h1 className="text-3xl font-bold tracking-tight">{t('marketExplorer')}</h1>
+          <p className="text-muted-foreground">{t('researchMarketsAndIdentifyOpportunities')}</p>
         </div>
         
-        <div className="flex gap-2">
-          <div className="relative">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-            <Input 
-              placeholder={t('searchMarkets')} 
-              className="pl-9 w-[200px]"
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-            />
-          </div>
-          <Select value={selectedMarket} onValueChange={setSelectedMarket}>
+        <div className="flex items-center space-x-2">
+          <Select value={selectedMarket} onValueChange={handleMarketChange}>
             <SelectTrigger className="w-[180px]">
-              <SelectValue placeholder={t('selectMarket')} />
+              <SelectValue placeholder={t('selectAMarket')} />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="germany">Germany</SelectItem>
-              <SelectItem value="usa">United States</SelectItem>
-              <SelectItem value="austria">Austria</SelectItem>
-              <SelectItem value="canada">Canada</SelectItem>
-              <SelectItem value="france">France</SelectItem>
-              <SelectItem value="switzerland">Switzerland</SelectItem>
+              {markets.map(market => (
+                <SelectItem key={market.id} value={market.id}>
+                  {market.name}
+                </SelectItem>
+              ))}
             </SelectContent>
           </Select>
         </div>
       </div>
-
-      <Tabs value={activeTab} onValueChange={setActiveTab}>
-        <TabsList className="mb-4">
-          <TabsTrigger value="overview">
-            <ChartBar className="mr-1 h-4 w-4" />
-            {t('marketOverview')}
-          </TabsTrigger>
-          <TabsTrigger value="trends">
-            <TrendingUp className="mr-1 h-4 w-4" />
-            {t('trends')}
-          </TabsTrigger>
-          <TabsTrigger value="areas">
-            <Map className="mr-1 h-4 w-4" />
-            {t('hotAreas')}
-          </TabsTrigger>
-          <TabsTrigger value="insights">
-            <TrendingUp className="mr-1 h-4 w-4" />
-            {t('marketInsights')}
-          </TabsTrigger>
+      
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
+        <TabsList>
+          <TabsTrigger value="overview">{t('overview')}</TabsTrigger>
+          <TabsTrigger value="trends">{t('marketTrends')}</TabsTrigger>
+          <TabsTrigger value="neighborhoods">{t('neighborhoodAnalysis')}</TabsTrigger>
+          <TabsTrigger value="opportunities">{t('investmentOpportunities')}</TabsTrigger>
         </TabsList>
-
+        
         {/* Market Overview Tab */}
         <TabsContent value="overview">
           <div className="grid md:grid-cols-2 gap-4 mb-6">
@@ -282,99 +208,34 @@ const MarketExplorerPage: React.FC = () => {
           </Card>
         </TabsContent>
 
-        {/* Hot Areas Tab */}
-        <TabsContent value="areas">
+        {/* Neighborhood Analysis Tab */}
+        <TabsContent value="neighborhoods">
           <Card>
             <CardHeader>
-              <CardTitle>{t('hotInvestmentAreas')}</CardTitle>
-              <CardDescription>{t('promisingLocationsForInvestment')}</CardDescription>
+              <CardTitle>{t('neighborhoodAnalysis')}</CardTitle>
+              <CardDescription>{t('analyzeNeighborhoods')}</CardDescription>
             </CardHeader>
             <CardContent>
               <div className="grid sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-                {(searchTerm ? filteredCities : currentMarketData.hotAreas).map((city, index) => (
-                  <Card key={index} className="hover:shadow-md transition-shadow">
-                    <CardHeader className="pb-2">
-                      <CardTitle className="text-lg flex items-center">
-                        <MapPin className="h-4 w-4 mr-2" />
-                        {city}
-                      </CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                      <div className="space-y-1">
-                        <div className="flex justify-between items-center">
-                          <span className="text-sm text-muted-foreground">{t('popularity')}</span>
-                          <div className="flex">
-                            {Array(5).fill(0).map((_, i) => (
-                              <div key={i} className={`w-2 h-2 rounded-full mx-0.5 ${i < 4 ? 'bg-primary' : 'bg-gray-200'}`} />
-                            ))}
-                          </div>
-                        </div>
-                        <div className="flex justify-between">
-                          <span className="text-sm text-muted-foreground">{t('growth')}</span>
-                          <span className="text-sm font-medium text-green-600">+3.2%</span>
-                        </div>
-                      </div>
-                      <Button variant="ghost" size="sm" className="mt-2 w-full">
-                        {t('exploreArea')}
-                      </Button>
-                    </CardContent>
-                  </Card>
-                ))}
+                <RentalYieldMap />
+                <NeighborhoodScorecard />
+                <MacroEconomicIndicators />
+                <MarketMetricsGrid />
               </div>
-              
-              {searchTerm && filteredCities.length === 0 && (
-                <div className="text-center py-8">
-                  <p className="text-muted-foreground">{t('noMatchingAreas')}</p>
-                </div>
-              )}
             </CardContent>
           </Card>
         </TabsContent>
 
-        {/* Market Insights Tab */}
-        <TabsContent value="insights">
+        {/* Investment Opportunities Tab */}
+        <TabsContent value="opportunities">
           <Card>
             <CardHeader>
-              <CardTitle>{t('marketInsights')}</CardTitle>
-              <CardDescription>{t('latestResearchAndAnalysis')}</CardDescription>
+              <CardTitle>{t('investmentOpportunities')}</CardTitle>
+              <CardDescription>{t('identifyInvestmentOpportunities')}</CardDescription>
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
-                <div className="border rounded-lg p-4">
-                  <div className="flex items-center gap-2 mb-2">
-                    <Badge variant="outline">{t('research')}</Badge>
-                    <span className="text-sm text-muted-foreground">May 2025</span>
-                  </div>
-                  <h3 className="text-lg font-medium mb-1">{t('marketAnalysisTitle')}</h3>
-                  <p className="text-muted-foreground mb-3">{t('marketAnalysisDescription')}</p>
-                  <Button variant="ghost" size="sm" className="text-primary">
-                    {t('readMore')}
-                  </Button>
-                </div>
-                
-                <div className="border rounded-lg p-4">
-                  <div className="flex items-center gap-2 mb-2">
-                    <Badge variant="outline">{t('forecast')}</Badge>
-                    <span className="text-sm text-muted-foreground">April 2025</span>
-                  </div>
-                  <h3 className="text-lg font-medium mb-1">{t('marketForecastTitle')}</h3>
-                  <p className="text-muted-foreground mb-3">{t('marketForecastDescription')}</p>
-                  <Button variant="ghost" size="sm" className="text-primary">
-                    {t('readMore')}
-                  </Button>
-                </div>
-                
-                <div className="border rounded-lg p-4">
-                  <div className="flex items-center gap-2 mb-2">
-                    <Badge variant="outline">{t('trends')}</Badge>
-                    <span className="text-sm text-muted-foreground">March 2025</span>
-                  </div>
-                  <h3 className="text-lg font-medium mb-1">{t('emergingTrendsTitle')}</h3>
-                  <p className="text-muted-foreground mb-3">{t('emergingTrendsDescription')}</p>
-                  <Button variant="ghost" size="sm" className="text-primary">
-                    {t('readMore')}
-                  </Button>
-                </div>
+                <MarketOpportunitiesTable />
               </div>
             </CardContent>
           </Card>
