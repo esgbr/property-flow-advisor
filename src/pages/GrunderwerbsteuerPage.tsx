@@ -1,24 +1,26 @@
 
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { GrunderwerbsteuerRechner } from '@/components/german/GrunderwerbsteuerRechner';
 import { ArrowLeft, Info } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { useNavigate } from 'react-router-dom';
-import { useMarketFilter } from '@/hooks/use-market-filter';
+import { useWorkflow } from '@/hooks/use-workflow';
 import WorkflowNavigation from '@/components/workflow/WorkflowNavigation';
 import WorkflowSuggestions from '@/components/workflow/WorkflowSuggestions';
 
 const GrunderwerbsteuerPage: React.FC = () => {
   const { language } = useLanguage();
   const navigate = useNavigate();
-  const { setUserMarket } = useMarketFilter();
+  const workflow = useWorkflow('steuer');
   
-  // Setze den Markt auf Deutschland für diese Seite
-  React.useEffect(() => {
-    setUserMarket('germany');
-  }, [setUserMarket]);
+  // Set the document title for better SEO and user experience
+  useEffect(() => {
+    document.title = language === 'de' 
+      ? 'Grunderwerbsteuer-Rechner | Immobilienkauf Steuerberechnung' 
+      : 'Real Estate Transfer Tax Calculator | Property Purchase Tax';
+  }, [language]);
 
   return (
     <div className="container mx-auto px-4 py-8">
