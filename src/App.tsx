@@ -19,12 +19,14 @@ import DeutscheImmobilienPage from '@/pages/DeutscheImmobilienPage';
 import GermanRealEstateInvestor from '@/pages/GermanRealEstateInvestor';
 import PortfolioAnalyticsPage from '@/pages/PortfolioAnalyticsPage';
 import MarketExplorerPage from '@/pages/MarketExplorerPage';
+import AfaCalculatorPage from '@/pages/AfaCalculatorPage';
+import GrunderwerbsteuerPage from '@/pages/GrunderwerbsteuerPage';
 
 const App: React.FC = () => {
   return (
     <ThemeProvider>
       <UserPreferencesProvider>
-        <LanguageProvider defaultLanguage="de">
+        <LanguageProvider>
           <AppLockProvider>
             <Router>
               <Routes>
@@ -52,6 +54,8 @@ const App: React.FC = () => {
                     <Calculators />
                   </AuthGuard>
                 } />
+                <Route path="/calculators/afa" element={<AfaCalculatorPage />} />
+                <Route path="/calculators/grunderwerbsteuer" element={<GrunderwerbsteuerPage />} />
                 <Route path="/settings" element={
                   <AuthGuard>
                     <SettingsPage />
