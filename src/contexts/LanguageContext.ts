@@ -4,7 +4,8 @@
 
 import {
   LanguageProvider,
-  useLanguage
+  useLanguage,
+  availableLanguages
 } from './FixedLanguageContext';
 
 // Re-export the value exports

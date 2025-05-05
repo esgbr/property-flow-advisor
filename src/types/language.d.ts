@@ -16,3 +16,11 @@ export interface LanguageContextProps {
   translations: Record<string, Record<string, string>>;
   availableLanguages: SupportedLanguage[];
 }
+
+export interface LanguageInfo {
+  code: LanguageCode;
+  name: string;
+  nativeName: string;
+  flag: string;
+  enabled: boolean;
+}
