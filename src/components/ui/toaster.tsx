@@ -28,7 +28,7 @@ export function Toaster() {
           : latestToast.description || '';
           
         if (message) {
-          // Fix: Convert any non-string message to string before announcing
+          // Convert any non-string message to string before announcing
           const isDestructive = latestToast.variant === 'destructive';
           announce(String(message), isDestructive);
         }
