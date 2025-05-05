@@ -1,191 +1,116 @@
 
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { Link } from 'react-router-dom';
-import {
-  Card,
-  CardContent,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from '@/components/ui/card';
-import { sampleProperties } from '@/data/sampleData';
-import { Home, Plus, FileText, Search } from 'lucide-react';
-import { Badge } from '@/components/ui/badge';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
-import { useLanguage } from '@/contexts/LanguageContext';
+import { Link } from 'react-router-dom';
+import { useUserPreferences } from '@/contexts/UserPreferencesContext';
 import { useAccessibility } from '@/components/accessibility/A11yProvider';
+import { Search, Filter, SortAsc, SortDesc } from 'lucide-react';
 
 const Properties = () => {
-  const { t } = useLanguage();
-  const { highContrast } = useAccessibility();
-  const [searchTerm, setSearchTerm] = useState('');
+  const [search, setSearch] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-
-  // Filter properties based on search term
-  const filteredProperties = searchTerm
-    ? sampleProperties.filter(property => 
-        property.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        property.city.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        property.country.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        property.propertyType.toLowerCase().includes(searchTerm.toLowerCase())
-      )
-    : sampleProperties;
-
+  const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc');
+  const { preferences } = useUserPreferences();
+  const { highContrast, largeText } = useAccessibility();
+  
+  // Sample properties data - in a real app, this would come from an API
+  const properties = [
+    { id: 1, name: 'Riverside Apartment', location: 'Berlin, Germany', price: '€350,000', type: 'Apartment' },
+    { id: 2, name: 'Mountain View Villa', location: 'Munich, Germany', price: '€780,000', type: 'Villa' },
+    { id: 3, name: 'City Center Penthouse', location: 'Frankfurt, Germany', price: '€1,200,000', type: 'Penthouse' },
+    { id: 4, name: 'Suburban Family Home', location: 'Hamburg, Germany', price: '€450,000', type: 'House' },
+  ];
+  
+  // Filter properties based on search
+  const filteredProperties = properties.filter(
+    (property) => 
+      property.name.toLowerCase().includes(search.toLowerCase()) ||
+      property.location.toLowerCase().includes(search.toLowerCase()) ||
+      property.type.toLowerCase().includes(search.toLowerCase())
+  );
+  
   const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setSearchTerm(e.target.value);
-    // Simulate loading state briefly for UX feedback
-    setIsLoading(true);
-    setTimeout(() => setIsLoading(false), 300);
+    setSearch(e.target.value);
   };
-
-  // Handle keyboard navigation for cards
-  const handleKeyDown = (e: React.KeyboardEvent<HTMLDivElement>, propertyId: string) => {
+  
+  const handleSort = () => {
+    setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc');
+  };
+  
+  const handleKeyDown = (e: React.KeyboardEvent, id: number) => {
     if (e.key === 'Enter' || e.key === ' ') {
       e.preventDefault();
-      window.location.href = `/property/${propertyId}`;
+      window.location.href = `/property/${id}`;
     }
   };
 
   return (
-    <div className="space-y-6 animate-fade-in">
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-        <div>
-          <h1 className="text-3xl font-bold">Properties</h1>
-          <p className="text-muted-foreground">Manage your property portfolio</p>
+    <div className="container mx-auto py-6">
+      <h1 className={`text-3xl font-bold mb-6 ${largeText ? 'text-4xl' : ''}`}>Properties</h1>
+      
+      <div className="flex flex-col sm:flex-row gap-4 mb-6">
+        <div className="relative flex-1">
+          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground" />
+          <Input
+            type="text"
+            placeholder="Search properties..."
+            value={search}
+            onChange={handleSearch}
+            className="pl-10"
+            aria-label="Search properties"
+          />
         </div>
-        <Button as={Link} to="/property/new" className="flex items-center">
-          <Plus className="mr-2 h-4 w-4" aria-hidden="true" /> 
-          Add Property
+        <Button variant="outline" className="flex gap-2 items-center">
+          <Filter size={18} />
+          Filter
+        </Button>
+        <Button variant="outline" className="flex gap-2 items-center" onClick={handleSort}>
+          {sortDirection === 'asc' ? <SortAsc size={18} /> : <SortDesc size={18} />}
+          Sort
         </Button>
       </div>
-
-      <div className="relative">
-        <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" aria-hidden="true" />
-        <Input
-          type="text"
-          placeholder="Search properties by title, city, country, or type..."
-          className="pl-10 w-full max-w-md"
-          value={searchTerm}
-          onChange={handleSearch}
-          aria-label="Search properties"
-        />
-      </div>
-
+      
       {isLoading ? (
-        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-          {[1, 2, 3].map((_, index) => (
-            <Card key={index} className="opacity-60">
-              <div className="h-48 w-full bg-muted animate-pulse" />
-              <CardHeader className="pb-2">
-                <div className="h-6 w-3/4 bg-muted animate-pulse rounded" />
-                <div className="h-4 w-1/2 bg-muted animate-pulse rounded mt-2" />
-              </CardHeader>
-              <CardContent className="pb-2">
-                <div className="grid grid-cols-2 gap-2">
-                  {[1, 2, 3, 4].map((_, i) => (
-                    <div key={i}>
-                      <div className="h-3 w-1/2 bg-muted animate-pulse rounded" />
-                      <div className="h-4 w-3/4 bg-muted animate-pulse rounded mt-1" />
-                    </div>
-                  ))}
-                </div>
-              </CardContent>
-              <CardFooter className="flex justify-between">
-                <div className="h-9 w-20 bg-muted animate-pulse rounded" />
-                <div className="h-9 w-20 bg-muted animate-pulse rounded" />
-              </CardFooter>
-            </Card>
-          ))}
+        <div className="flex justify-center items-center h-64">
+          <p>Loading properties...</p>
         </div>
       ) : filteredProperties.length > 0 ? (
-        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {filteredProperties.map((property) => (
             <Card 
               key={property.id} 
-              className={`card-hover overflow-hidden transition-transform hover:shadow-lg focus-within:ring-2 ${highContrast ? 'border-2' : ''}`}
-              tabIndex={0}
-              onKeyDown={(e) => handleKeyDown(e, property.id)}
-              aria-label={`${property.title}, ${property.propertyType} in ${property.city}, ${property.country}`}
+              className={`hover:shadow-lg transition-shadow ${highContrast ? 'border-2' : ''}`}
             >
-              <div className="h-48 w-full relative">
-                {property.imageUrl ? (
-                  <img
-                    src={property.imageUrl}
-                    alt={`Photo of ${property.title}`}
-                    className="h-full w-full object-cover"
-                    loading="lazy"
-                  />
-                ) : (
-                  <div className="h-full w-full bg-muted flex items-center justify-center">
-                    <Home className="h-12 w-12 text-muted-foreground" aria-hidden="true" />
-                  </div>
-                )}
-                <div className="absolute top-2 right-2">
-                  <Badge variant={property.status === 'sold' ? "destructive" : property.status === 'active' ? "default" : "secondary"} className="capitalize">
-                    {property.status.replace('_', ' ')}
-                  </Badge>
-                </div>
-              </div>
-              <CardHeader className="pb-2">
-                <CardTitle className="text-lg">{property.title}</CardTitle>
-                <p className="text-sm text-muted-foreground">{property.city}, {property.country}</p>
+              <CardHeader className="p-4 pb-2">
+                <CardTitle className={largeText ? 'text-2xl' : 'text-xl'}>{property.name}</CardTitle>
               </CardHeader>
-              <CardContent className="pb-2">
-                <div className="grid grid-cols-2 gap-2 text-sm">
-                  <div>
-                    <span className="text-muted-foreground">Price:</span>
-                    <p className="font-medium">€{property.purchasePrice.toLocaleString()}</p>
-                  </div>
-                  <div>
-                    <span className="text-muted-foreground">Type:</span>
-                    <p className="font-medium">{property.propertyType}</p>
-                  </div>
-                  <div>
-                    <span className="text-muted-foreground">Area:</span>
-                    <p className="font-medium">{property.squareMeters} m²</p>
-                  </div>
-                  <div>
-                    <span className="text-muted-foreground">Rooms:</span>
-                    <p className="font-medium">{property.rooms}</p>
-                  </div>
+              <CardContent className="p-4 pt-0">
+                <p className="text-muted-foreground mb-4">{property.location}</p>
+                <div className="flex justify-between items-center">
+                  <p className="font-bold">{property.price}</p>
+                  <Button 
+                    asChild
+                    className={`${highContrast ? 'border-2' : ''}`}
+                    onKeyDown={(e) => handleKeyDown(e, property.id)}
+                  >
+                    <Link to={`/property/${property.id}`}>View Details</Link>
+                  </Button>
                 </div>
               </CardContent>
-              <CardFooter className="flex justify-between">
-                <Button variant="outline" size="sm" asChild>
-                  <Link to={`/property/${property.id}`}>
-                    <FileText className="mr-2 h-4 w-4" aria-hidden="true" /> Details
-                  </Link>
-                </Button>
-                <Button variant="default" size="sm" asChild>
-                  <Link to={`/property/${property.id}/financials`}>
-                    Analyze
-                  </Link>
-                </Button>
-              </CardFooter>
             </Card>
           ))}
         </div>
       ) : (
-        <div className="flex flex-col items-center justify-center p-8 border border-dashed rounded-lg">
-          <Home className="h-12 w-12 text-muted-foreground mb-4" aria-hidden="true" />
-          <h3 className="text-lg font-medium mb-1">No properties found</h3>
-          <p className="text-muted-foreground text-center mb-4">
-            No properties match your search criteria. Try adjusting your filters.
-          </p>
-          <Button variant="outline" onClick={() => setSearchTerm('')}>
+        <div className="text-center py-10 border rounded-lg">
+          <p className="text-muted-foreground">No properties found matching your search.</p>
+          <Button 
+            variant="link" 
+            onClick={() => setSearch('')} 
+            className="mt-2"
+          >
             Clear search
-          </Button>
-        </div>
-      )}
-
-      {filteredProperties.length > 0 && (
-        <div className="flex justify-between items-center pt-4 border-t">
-          <p className="text-sm text-muted-foreground">
-            Showing {filteredProperties.length} of {sampleProperties.length} properties
-          </p>
-          <Button variant="outline" size="sm" onClick={() => setSearchTerm('')} disabled={!searchTerm}>
-            Clear filters
           </Button>
         </div>
       )}

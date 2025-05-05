@@ -1,211 +1,130 @@
 
-import { useEffect, useRef, useState, useCallback } from 'react';
+import { useState, useCallback } from 'react';
 
-// Hook to trap focus within a component (e.g., for modals)
-export const useFocusTrap = (active = true) => {
-  const containerRef = useRef<HTMLDivElement>(null);
+interface Announcement {
+  message: string;
+  politeness: 'polite' | 'assertive';
+  id: number;
+}
 
-  useEffect(() => {
-    if (!active) return;
+// Counter for unique IDs
+let announcementId = 0;
+
+/**
+ * Hook for making announcements to screen readers
+ * @returns Object with announce function
+ */
+export function useAnnouncement() {
+  const [announcements, setAnnouncements] = useState<Announcement[]>([]);
+
+  const announce = useCallback((message: string, politeness: 'polite' | 'assertive' = 'polite') => {
+    const id = announcementId++;
     
-    const container = containerRef.current;
-    if (!container) return;
-
-    // Find all focusable elements
-    const getFocusableElements = () => container.querySelectorAll<HTMLElement>(
-      'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
-    );
+    // Add the announcement to state
+    setAnnouncements(prev => [...prev, { message, politeness, id }]);
     
-    const handleFocusTrap = (e: KeyboardEvent) => {
-      if (e.key !== 'Tab') return;
-
-      const focusableElements = getFocusableElements();
-      if (focusableElements.length === 0) return;
-      
-      const firstElement = focusableElements[0];
-      const lastElement = focusableElements[focusableElements.length - 1];
-
-      if (e.shiftKey) {
-        if (document.activeElement === firstElement) {
-          lastElement.focus();
-          e.preventDefault();
-        }
-      } else {
-        if (document.activeElement === lastElement) {
-          firstElement.focus();
-          e.preventDefault();
-        }
-      }
-    };
-
-    // Focus first element on mount
-    const focusableElements = getFocusableElements();
-    if (focusableElements.length > 0) {
-      // Store the previously focused element to restore later
-      const previouslyFocused = document.activeElement as HTMLElement;
-      
-      // Focus the first focusable element in the container
-      focusableElements[0].focus();
-      
-      // Store the previously focused element to restore on unmount
-      container.dataset.previouslyFocused = previouslyFocused?.id || '';
-    }
-
-    // Add event listener for keyboard navigation
-    document.addEventListener('keydown', handleFocusTrap);
-    
-    return () => {
-      document.removeEventListener('keydown', handleFocusTrap);
-      
-      // Restore focus when the trap is removed
-      const previouslyFocusedId = container.dataset.previouslyFocused;
-      if (previouslyFocusedId) {
-        const previousElement = document.getElementById(previouslyFocusedId);
-        previousElement?.focus();
-      }
-    };
-  }, [active]);
-
-  return containerRef;
-};
-
-// Hook to announce messages to screen readers
-export const useAnnouncement = () => {
-  const [announcer, setAnnouncer] = useState<HTMLElement | null>(null);
-
-  useEffect(() => {
-    let element = document.getElementById('a11y-announcer');
-    
-    if (!element) {
-      element = document.createElement('div');
-      element.id = 'a11y-announcer';
-      element.style.position = 'absolute';
-      element.style.width = '1px';
-      element.style.height = '1px';
-      element.style.padding = '0';
-      element.style.overflow = 'hidden';
-      element.style.clip = 'rect(0, 0, 0, 0)';
-      element.style.whiteSpace = 'nowrap';
-      element.style.border = '0';
-      document.body.appendChild(element);
-    }
-    
-    setAnnouncer(element);
-    
-    return () => {
-      // Don't remove the announcer on component unmount
-      // as it might be used by other components
-    };
-  }, []);
-
-  const announce = useCallback((
-    message: string, 
-    politeness: 'assertive' | 'polite' = 'polite',
-    timeout = 50
-  ) => {
-    if (!announcer) return;
-    
-    // Update ARIA live attribute to match politeness level
-    announcer.setAttribute('aria-live', politeness);
-    announcer.setAttribute('aria-atomic', 'true');
-    
-    // Clear announcer to ensure it will announce the same message 
-    // multiple times if needed
-    announcer.textContent = '';
-    
-    // Slight delay to ensure the DOM update is processed
+    // Remove the announcement after a delay to prevent stacking
     setTimeout(() => {
-      announcer!.textContent = message;
-    }, timeout);
-  }, [announcer]);
-  
-  return { announce };
-};
-
-// Helper to add proper ARIA attributes to interactive elements
-export const ariaAttributes = {
-  button: (label: string) => ({
-    role: 'button',
-    'aria-label': label,
-    tabIndex: 0
-  }),
-  toggle: (label: string, expanded: boolean) => ({
-    'aria-label': label,
-    'aria-expanded': expanded,
-    'aria-controls': label.toLowerCase().replace(/\s+/g, '-')
-  }),
-  tooltip: (content: string) => ({
-    'aria-label': content,
-    'data-tooltip': content
-  }),
-  // Additional ARIA helpers
-  listbox: (label: string, expanded: boolean) => ({
-    role: 'listbox',
-    'aria-label': label,
-    'aria-expanded': expanded,
-  }),
-  option: (selected: boolean, label: string) => ({
-    role: 'option',
-    'aria-selected': selected,
-    'aria-label': label
-  }),
-  tablist: () => ({
-    role: 'tablist'
-  }),
-  tab: (selected: boolean, controls: string) => ({
-    role: 'tab',
-    'aria-selected': selected,
-    'aria-controls': controls,
-    tabIndex: selected ? 0 : -1
-  }),
-  tabpanel: (id: string, labelledBy: string) => ({
-    role: 'tabpanel',
-    id,
-    'aria-labelledby': labelledBy,
-    tabIndex: 0
-  }),
-  modal: (labelledBy: string) => ({
-    role: 'dialog',
-    'aria-modal': true,
-    'aria-labelledby': labelledBy
-  })
-};
-
-// Hook to detect mouse vs. keyboard navigation
-export const useUserInteractionMode = () => {
-  const [isKeyboardMode, setIsKeyboardMode] = useState(false);
-  
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Tab') {
-        setIsKeyboardMode(true);
-        document.body.classList.add('keyboard-user');
-      }
-    };
+      setAnnouncements(prev => prev.filter(a => a.id !== id));
+    }, 3000);
     
-    const handleMouseDown = () => {
-      setIsKeyboardMode(false);
-      document.body.classList.remove('keyboard-user');
-    };
+    // Create and remove a live region for immediate announcements
+    const liveRegion = document.createElement('div');
+    liveRegion.setAttribute('aria-live', politeness);
+    liveRegion.setAttribute('aria-atomic', 'true');
+    liveRegion.classList.add('sr-only');
+    document.body.appendChild(liveRegion);
     
-    document.addEventListener('keydown', handleKeyDown);
-    document.addEventListener('mousedown', handleMouseDown);
+    // Wait a small delay to ensure the live region is registered
+    setTimeout(() => {
+      liveRegion.textContent = message;
+    }, 50);
     
-    return () => {
-      document.removeEventListener('keydown', handleKeyDown);
-      document.removeEventListener('mousedown', handleMouseDown);
-    };
+    // Remove the live region after announcement
+    setTimeout(() => {
+      document.body.removeChild(liveRegion);
+    }, 3000);
+    
+    return id;
   }, []);
-  
-  return { isKeyboardMode };
-};
 
-// Focus visible utility for keyboard accessibility
-export const useFocusVisible = () => {
-  const { isKeyboardMode } = useUserInteractionMode();
-  
   return {
-    focusVisibleClass: isKeyboardMode ? 'focus-visible' : '',
-    isFocusVisible: isKeyboardMode
+    announce,
+    announcements
   };
-};
+}
+
+/**
+ * Get a descriptive label for a route from its path
+ * @param path The route path
+ * @returns A formatted readable label
+ */
+export function getRouteLabel(path: string): string {
+  // Handle root path
+  if (path === '/') return 'Home';
+  
+  // Remove leading slash and query parameters
+  let cleanPath = path.startsWith('/') ? path.slice(1) : path;
+  cleanPath = cleanPath.split('?')[0];
+  
+  // Handle route parameters
+  cleanPath = cleanPath.replace(/:[^/]+/g, 'item');
+  
+  // Format into readable text
+  return cleanPath
+    .split('/')
+    .map(segment => segment.charAt(0).toUpperCase() + segment.slice(1).replace(/-/g, ' '))
+    .join(' - ');
+}
+
+/**
+ * Formats a number for screen readers
+ * @param value The number to format
+ * @param options Formatting options
+ * @returns A screen reader friendly string
+ */
+export function formatNumberForScreenReader(
+  value: number, 
+  options: { 
+    currency?: string;
+    percentage?: boolean;
+    decimal?: boolean;
+  } = {}
+): string {
+  if (options.currency) {
+    return `${value} ${options.currency}`;
+  }
+  
+  if (options.percentage) {
+    return `${value} percent`;
+  }
+  
+  if (options.decimal && !Number.isInteger(value)) {
+    const parts = value.toString().split('.');
+    return `${parts[0]} point ${parts[1]}`;
+  }
+  
+  return value.toString();
+}
+
+/**
+ * Check if reduced motion should be enabled
+ * @returns Boolean indicating if reduced motion should be used
+ */
+export function shouldUseReducedMotion(): boolean {
+  if (typeof window === 'undefined') return false;
+  
+  // Check user preference in localStorage
+  const userPreference = localStorage.getItem('a11y-preferences');
+  if (userPreference) {
+    try {
+      const { reduceMotion } = JSON.parse(userPreference);
+      if (typeof reduceMotion === 'boolean') return reduceMotion;
+    } catch (e) {
+      // Continue checking system preference if parsing fails
+    }
+  }
+  
+  // Check system preference
+  return window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+}

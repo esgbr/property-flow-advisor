@@ -1,6 +1,6 @@
 
 import React, { useEffect, memo, useState, useCallback } from 'react';
-import { Outlet, useLocation } from 'react-router-dom';
+import { Outlet, useLocation, Link } from 'react-router-dom';
 import { SidebarProvider } from '@/components/ui/sidebar';
 import AppSidebar from '@/components/layout/AppSidebar';
 import Navbar from './Navbar';
@@ -12,6 +12,7 @@ import PageLoader from '@/components/ui/page-loader';
 import { Suspense } from 'react';
 import { useAccessibility } from '@/components/accessibility/A11yProvider';
 import { useAnnouncement } from '@/utils/accessibilityUtils';
+import { ArrowUp } from 'lucide-react';
 
 const MainLayout: React.FC = () => {
   useComponentPerformance('MainLayout');
@@ -75,16 +76,22 @@ const MainLayout: React.FC = () => {
   
   const scrollToTop = useCallback(() => {
     window.scrollTo({ top: 0, behavior: reduceMotion ? 'auto' : 'smooth' });
-  }, [reduceMotion]);
+    announce('Scrolled back to top of page', 'polite');
+  }, [reduceMotion, announce]);
   
   useEffect(() => {
     const handleScroll = () => {
       setShowBackToTop(window.scrollY > 300);
     };
     
-    window.addEventListener('scroll', handleScroll);
+    window.addEventListener('scroll', handleScroll, { passive: true });
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
+
+  // Set the document title based on current route
+  useEffect(() => {
+    document.title = `PropertyFlow - ${pageTitle}`;
+  }, [pageTitle]);
   
   return (
     <div className={`min-h-screen flex w-full bg-background text-foreground ${theme === 'dark' ? 'dark' : ''}`}>
@@ -95,11 +102,11 @@ const MainLayout: React.FC = () => {
           <Navbar />
           <main 
             id="main-content" 
-            className="flex-1 p-6 focus:outline-none" 
+            className={`flex-1 p-6 focus:outline-none ${largeText ? 'p-4' : ''}`}
             tabIndex={-1}
             aria-label={`${pageTitle} page content`}
           >
-            <Suspense fallback={<PageLoader message="Loading content..." />}>
+            <Suspense fallback={<PageLoader message={`Loading ${pageTitle}...`} />}>
               <Outlet />
             </Suspense>
           </main>
@@ -107,12 +114,13 @@ const MainLayout: React.FC = () => {
           {showBackToTop && (
             <button
               onClick={scrollToTop}
-              className={`fixed bottom-4 right-4 bg-primary text-primary-foreground p-2 rounded-full shadow-lg ${highContrast ? 'border-2' : ''} focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary`}
               aria-label="Back to top"
+              className={`fixed bottom-4 right-4 bg-primary text-primary-foreground p-3 rounded-full shadow-lg 
+                ${highContrast ? 'border-2 border-background' : ''} 
+                focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary
+                hover:bg-primary/90 transition-colors z-50`}
             >
-              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <path d="m18 15-6-6-6 6"/>
-              </svg>
+              <ArrowUp size={20} />
             </button>
           )}
         </div>
