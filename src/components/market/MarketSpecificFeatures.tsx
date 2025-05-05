@@ -151,7 +151,7 @@ const MarketSpecificFeatures: React.FC<MarketSpecificFeaturesProps> = ({
 }) => {
   const { t } = useLanguage();
   const navigate = useNavigate();
-  const { userMarket, getMarketDisplayName } = useMarketFilter();
+  const { userMarket } = useMarketFilter();
   
   // Get features for current market
   const features = userMarket ? marketSpecificFeatures[userMarket as InvestmentMarket] || [] : [];
@@ -164,7 +164,8 @@ const MarketSpecificFeatures: React.FC<MarketSpecificFeaturesProps> = ({
     return null;
   }
   
-  const marketName = getMarketDisplayName();
+  // Korrigierte Zeile - Nur ein Argument übergeben
+  const marketName = userMarket ? useMarketFilter().getMarketDisplayName() : '';
 
   return (
     <Card className="border-primary/20 bg-primary/5">
