@@ -192,7 +192,7 @@ const translations: Record<SupportedLanguage, Record<string, string>> = {
     northDistrict: 'North District',
     projectedCapRate: 'projected cap rate',
     marketTrendAlert: 'Market Trend Alert',
-    interestRateChangeImpact: 'Interest rate changes could impact your investment portfolio',
+    interestRateChangesCouldImpact: 'Interest rate changes could impact your investment portfolio',
     rateChange: 'rate change',
     analyzeImpact: 'Analyze Impact',
     portfolioDiversificationAlert: 'Portfolio Diversification Alert',
