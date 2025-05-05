@@ -28,7 +28,8 @@ export function Toaster() {
           : latestToast.description || '';
           
         if (message) {
-          announce(message, latestToast.variant === 'destructive' ? 'assertive' : 'polite');
+          // Fix: Convert any non-string message to string before announcing
+          announce(String(message), latestToast.variant === 'destructive' ? 'assertive' : 'polite');
         }
       }
     }

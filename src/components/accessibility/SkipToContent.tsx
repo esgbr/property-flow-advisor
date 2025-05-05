@@ -1,16 +1,21 @@
 
-import React, { KeyboardEvent, useRef, useEffect } from 'react';
+import React, { KeyboardEvent, useRef, useEffect, useState } from 'react';
 import { useAccessibility } from './A11yProvider';
 import { useAnnouncement } from '@/utils/accessibilityUtils';
 
 interface SkipToContentProps {
   contentId: string;
+  label?: string;
 }
 
-const SkipToContent: React.FC<SkipToContentProps> = ({ contentId }) => {
+const SkipToContent: React.FC<SkipToContentProps> = ({ 
+  contentId, 
+  label = "Skip to content" 
+}) => {
   const { largeText, highContrast, screenReader } = useAccessibility();
   const { announce } = useAnnouncement();
   const skipLinkRef = useRef<HTMLAnchorElement>(null);
+  const [isVisible, setIsVisible] = useState(false);
   
   // Ensure the skip link is always the first focusable element when the page loads
   useEffect(() => {
@@ -66,26 +71,32 @@ const SkipToContent: React.FC<SkipToContentProps> = ({ contentId }) => {
       }
     }, 100);
   };
+
+  // Show and hide the skip link visually when it has focus
+  const handleFocus = () => setIsVisible(true);
+  const handleBlur = () => setIsVisible(false);
   
   return (
     <a
       ref={skipLinkRef}
       href={`#${contentId}`}
       className={`
-        sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 focus:z-50 
-        focus:p-4 focus:bg-primary focus:text-primary-foreground 
+        fixed top-0 left-0 z-50 transform -translate-y-full transition-transform duration-200
+        p-4 bg-primary text-primary-foreground rounded-md shadow-lg
         focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary 
-        focus:rounded-md focus:shadow-lg transition-colors
+        ${isVisible ? 'translate-y-2' : ''}
         ${largeText ? 'text-lg p-5' : ''}
-        ${highContrast ? 'focus:border-2 focus:border-background focus:outline-4 focus:outline-white' : ''}
+        ${highContrast ? 'border-2 border-background focus:outline-4 focus:outline-white' : ''}
       `}
-      aria-label="Skip to main content"
+      aria-label={label}
       data-testid="skip-to-content"
       onKeyDown={handleKeyDown}
       onClick={handleClick}
+      onFocus={handleFocus}
+      onBlur={handleBlur}
       tabIndex={0}
     >
-      Skip to content
+      {label}
     </a>
   );
 };

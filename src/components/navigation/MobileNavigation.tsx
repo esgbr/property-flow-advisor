@@ -7,111 +7,46 @@ import {
   Building, 
   Calculator, 
   Settings, 
-  Euro,
   BarChart3,
-  Landmark,
-  PiggyBank,
-  Map
+  Menu,
+  User,
+  Search
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useUserPreferences } from '@/contexts/UserPreferencesContext';
+import { useAccessibility } from '@/components/accessibility/A11yProvider';
+import { Button } from '@/components/ui/button';
+import {
+  Sheet,
+  SheetContent,
+  SheetDescription,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from "@/components/ui/sheet";
 
 export const MobileNavigation: React.FC = () => {
   const { t, language } = useLanguage();
   const location = useLocation();
   const navigate = useNavigate();
   const { preferences } = useUserPreferences();
+  const { highContrast, largeText } = useAccessibility();
   
-  // Base navigation items for all users
-  const baseNavItems = [
+  // Simplified navigation items
+  const navItems = [
     { icon: <Home className="h-5 w-5" />, label: t('dashboard'), path: '/dashboard' },
     { icon: <Building className="h-5 w-5" />, label: t('properties'), path: '/properties' },
     { icon: <BarChart3 className="h-5 w-5" />, label: t('investorDashboard'), path: '/investor-dashboard' },
-    { icon: <Settings className="h-5 w-5" />, label: t('settings'), path: '/settings' }
-  ];
-  
-  // German-specific navigation item
-  const germanNavItem = { 
-    icon: <Euro className="h-5 w-5" />, 
-    label: language === 'de' ? 'DE Tools' : 'DE Tools', 
-    path: '/deutsche-immobilien-tools'
-  };
-  
-  // USA-specific navigation item
-  const usaNavItem = { 
-    icon: <Calculator className="h-5 w-5" />, 
-    label: 'US Tools', 
-    path: '/us-real-estate-tools'
-  };
-  
-  // Final navigation items based on user preferences
-  const navItems = [...baseNavItems];
-  
-  // Add market-specific navigation item
-  if (!preferences.investmentMarket || preferences.investmentMarket === 'germany' || preferences.investmentMarket === 'austria') {
-    navItems.splice(3, 0, germanNavItem);
-  } else if (preferences.investmentMarket === 'usa' || preferences.investmentMarket === 'canada') {
-    navItems.splice(3, 0, usaNavItem);
-  }
-
-  // Add quick access to popular German tools if on German investor page
-  const isGermanInvestorPage = location.pathname === '/german-investor' || location.pathname === '/deutsche-immobilien-tools';
-  
-  // Show German tools quick access only for users with Germany as their investment market
-  const showGermanQuickTools = isGermanInvestorPage && 
-    (!preferences.investmentMarket || preferences.investmentMarket === 'germany' || preferences.investmentMarket === 'austria');
-  
-  // German quick access tools shown when on German pages
-  const germanQuickTools = [
-    { icon: <Euro className="h-5 w-5" />, 
-      label: language === 'de' ? 'Steuer' : 'Tax', 
-      path: '/deutsche-immobilien-tools?tab=grunderwerbsteuer' 
-    },
-    { icon: <Landmark className="h-5 w-5" />, 
-      label: language === 'de' ? 'Mietkauf' : 'Rent-to-Own', 
-      path: '/deutsche-immobilien-tools?tab=mietkauf' 
-    },
-    { icon: <PiggyBank className="h-5 w-5" />, 
-      label: language === 'de' ? 'AfA' : 'Deprec.', 
-      path: '/deutsche-immobilien-tools?tab=afa' 
-    },
-    { icon: <Map className="h-5 w-5" />, 
-      label: language === 'de' ? 'Mietspiegel' : 'Rent Index', 
-      path: '/deutsche-immobilien-tools?tab=mietspiegel' 
-    },
+    { icon: <Search className="h-5 w-5" />, label: t('search'), path: '/search' },
+    { icon: <User className="h-5 w-5" />, label: t('profile'), path: '/profile' }
   ];
 
   return (
-    <div className="fixed bottom-0 left-0 right-0 z-50 bg-background border-t border-border shadow-lg">
-      {showGermanQuickTools && (
-        <div className="grid grid-cols-4 h-12 border-b border-border/30">
-          {germanQuickTools.map((item) => {
-            const isActive = location.pathname + location.search === item.path;
-            return (
-              <button
-                key={item.path}
-                className={cn(
-                  "flex flex-col items-center justify-center space-y-0.5 transition-colors",
-                  isActive 
-                    ? "text-primary" 
-                    : "text-muted-foreground hover:text-foreground"
-                )}
-                onClick={() => navigate(item.path)}
-                aria-label={item.label}
-              >
-                {React.cloneElement(item.icon, { 
-                  className: cn(
-                    item.icon.props.className,
-                    isActive ? "text-primary" : "text-muted-foreground"
-                  )
-                })}
-                <span className="text-xs truncate max-w-[90%]">{item.label}</span>
-              </button>
-            );
-          })}
-        </div>
-      )}
-      <div className="grid grid-cols-5 h-16">
+    <div className={cn(
+      "fixed bottom-0 left-0 right-0 z-50 bg-background border-t shadow-lg",
+      highContrast ? "border-t-2" : "border-t"
+    )}>
+      <div className={cn("grid grid-cols-5 h-16", largeText ? "h-20" : "h-16")}>
         {navItems.map((item) => {
           const isActive = location.pathname === item.path || location.pathname.startsWith(item.path + '/');
           return (
@@ -125,18 +60,90 @@ export const MobileNavigation: React.FC = () => {
               )}
               onClick={() => navigate(item.path)}
               aria-label={item.label}
+              aria-current={isActive ? "page" : undefined}
             >
-              {React.cloneElement(item.icon, { 
-                className: cn(
-                  item.icon.props.className,
-                  isActive ? "text-primary" : "text-muted-foreground"
-                )
-              })}
-              <span className="text-xs truncate max-w-[90%]">{item.label}</span>
+              <div className={cn(
+                "rounded-full p-1",
+                isActive ? "bg-primary/10" : ""
+              )}>
+                {React.cloneElement(item.icon, { 
+                  className: cn(
+                    item.icon.props.className,
+                    isActive ? "text-primary" : "text-muted-foreground"
+                  )
+                })}
+              </div>
+              <span className={cn(
+                "truncate max-w-[90%]", 
+                largeText ? "text-sm" : "text-xs"
+              )}>
+                {item.label}
+              </span>
             </button>
           );
         })}
       </div>
+      
+      {/* More button sheet for additional options */}
+      <Sheet>
+        <SheetTrigger asChild>
+          <Button
+            variant="ghost" 
+            size="sm" 
+            className={cn(
+              "absolute right-4 -top-10 bg-background shadow-md rounded-t-md border-t border-l border-r",
+              highContrast ? "border-2" : ""
+            )}
+          >
+            <Menu className="h-4 w-4 mr-2" />
+            <span className={largeText ? "text-base" : ""}>
+              {t('more')}
+            </span>
+          </Button>
+        </SheetTrigger>
+        <SheetContent side="bottom" className={highContrast ? "border-t-2" : ""}>
+          <SheetHeader>
+            <SheetTitle className={largeText ? "text-xl" : ""}>
+              {t('moreOptions')}
+            </SheetTitle>
+            <SheetDescription className={largeText ? "text-base" : ""}>
+              {t('accessAdditionalFeatures')}
+            </SheetDescription>
+          </SheetHeader>
+          <div className="grid grid-cols-3 gap-4 py-6">
+            <Button 
+              variant="outline" 
+              className="h-20 flex flex-col"
+              onClick={() => {
+                navigate('/settings');
+              }}
+            >
+              <Settings className="h-6 w-6 mb-2" />
+              {t('settings')}
+            </Button>
+            <Button 
+              variant="outline" 
+              className="h-20 flex flex-col"
+              onClick={() => {
+                navigate('/calculators');
+              }}
+            >
+              <Calculator className="h-6 w-6 mb-2" />
+              {t('calculators')}
+            </Button>
+            <Button 
+              variant="outline" 
+              className="h-20 flex flex-col"
+              onClick={() => {
+                navigate('/accessibility');
+              }}
+            >
+              <Settings className="h-6 w-6 mb-2" />
+              {t('accessibility')}
+            </Button>
+          </div>
+        </SheetContent>
+      </Sheet>
     </div>
   );
 };
