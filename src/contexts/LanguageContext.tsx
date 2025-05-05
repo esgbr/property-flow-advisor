@@ -736,7 +736,7 @@ const translations: Record<SupportedLanguage, Record<string, string>> = {
     // General UI
     "appName": "PropertyFlow",
     "dashboard": "Dashboard",
-    "investorDashboard": "Investor Dashboard",
+    "investorDashboard": "Investoren Dashboard",
     "properties": "Immobilien",
     "settings": "Einstellungen",
     "profile": "Profil",
@@ -774,4 +774,4 @@ const translations: Record<SupportedLanguage, Record<string, string>> = {
     "showLess": "Weniger anzeigen",
     "viewAll": "Alle anzeigen",
     "viewDetails": "Details anzeigen",
-    "createNew": "Neu erstellen
+    "createNew": "Neu erstellen",
