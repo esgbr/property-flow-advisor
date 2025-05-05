@@ -1,6 +1,6 @@
 
 import React, { useEffect, useState } from 'react';
-import { useLanguage, SupportedLanguage } from '@/contexts/FixedLanguageContext';
+import { useLanguage, SupportedLanguage } from '@/contexts/LanguageContext';
 import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import { Globe, Check, X } from 'lucide-react';

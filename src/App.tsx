@@ -1,7 +1,7 @@
 import { Routes, Route, Navigate } from 'react-router-dom';
 import { Toaster } from '@/components/ui/toaster';
 import { UserPreferencesProvider } from '@/contexts/UserPreferencesContext';
-import { LanguageProvider } from '@/contexts/FixedLanguageContext';
+import { LanguageProvider } from '@/contexts/LanguageContext';
 import { MarketDataProvider } from '@/contexts/MarketDataContext';
 import { AppLockProvider } from '@/contexts/AppLockContext';
 import { RewardsProvider } from '@/contexts/RewardsContext';
