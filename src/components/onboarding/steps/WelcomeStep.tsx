@@ -10,7 +10,10 @@ const WelcomeStep: React.FC<OnboardingStepProps> = ({ data, updateData }) => {
   const { t, language, setLanguage } = useLanguage();
   
   const handleLanguageChange = (value: string) => {
-    setLanguage(value as SupportedLanguage);
+    // Only set language if it's a valid SupportedLanguage
+    if (value === 'en' || value === 'de' || value === 'fr' || value === 'es' || value === 'it') {
+      setLanguage(value as SupportedLanguage);
+    }
   };
   
   return (

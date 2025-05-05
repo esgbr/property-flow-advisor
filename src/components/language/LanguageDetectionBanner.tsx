@@ -33,9 +33,12 @@ const LanguageDetectionBanner: React.FC<LanguageDetectionBannerProps> = ({ onDis
       browserLang !== language
     ) {
       // Ensure browserLang is a valid SupportedLanguage type
-      const typedLang = browserLang as SupportedLanguage;
-      setDetectedLanguage(typedLang);
-      setShowBanner(true);
+      if (browserLang === 'en' || browserLang === 'de' || browserLang === 'fr' || 
+          browserLang === 'es' || browserLang === 'it') {
+        const typedLang = browserLang as SupportedLanguage;
+        setDetectedLanguage(typedLang);
+        setShowBanner(true);
+      }
     }
   }, []);
   
