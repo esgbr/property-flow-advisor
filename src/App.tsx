@@ -27,7 +27,7 @@ function App() {
                 <MotionConfig reducedMotion="user">
                   <Helmet>
                     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-                    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self'; connect-src 'self' https://api.example.com" />
+                    <meta httpEquiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self'; connect-src 'self' https://api.example.com" />
                     <meta name="description" content="PropertyFlow - Real Estate Investment Platform" />
                   </Helmet>
                   
