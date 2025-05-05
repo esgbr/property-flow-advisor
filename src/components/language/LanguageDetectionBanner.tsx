@@ -1,6 +1,6 @@
 
 import React, { useEffect, useState } from 'react';
-import { useLanguage } from '@/contexts/LanguageContext';
+import { useLanguage, SupportedLanguage } from '@/contexts/LanguageContext';
 import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import { Globe, Check, X } from 'lucide-react';
@@ -12,7 +12,7 @@ interface LanguageDetectionBannerProps {
 
 const LanguageDetectionBanner: React.FC<LanguageDetectionBannerProps> = ({ onDismiss }) => {
   const { language, setLanguage, t, availableLanguages } = useLanguage();
-  const [detectedLanguage, setDetectedLanguage] = useState<string | null>(null);
+  const [detectedLanguage, setDetectedLanguage] = useState<SupportedLanguage | null>(null);
   const [showBanner, setShowBanner] = useState(false);
   
   useEffect(() => {
@@ -32,7 +32,9 @@ const LanguageDetectionBanner: React.FC<LanguageDetectionBannerProps> = ({ onDis
       isLanguageSupported(browserLang, supportedLanguageCodes) && 
       browserLang !== language
     ) {
-      setDetectedLanguage(browserLang);
+      // Ensure browserLang is a valid SupportedLanguage type
+      const typedLang = browserLang as SupportedLanguage;
+      setDetectedLanguage(typedLang);
       setShowBanner(true);
     }
   }, []);

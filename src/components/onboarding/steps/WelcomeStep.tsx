@@ -3,11 +3,15 @@ import React from 'react';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { useLanguage } from '@/contexts/LanguageContext';
+import { useLanguage, SupportedLanguage } from '@/contexts/LanguageContext';
 import { OnboardingStepProps } from '../types';
 
 const WelcomeStep: React.FC<OnboardingStepProps> = ({ data, updateData }) => {
   const { t, language, setLanguage } = useLanguage();
+  
+  const handleLanguageChange = (value: string) => {
+    setLanguage(value as SupportedLanguage);
+  };
   
   return (
     <div className="flex flex-col items-center text-center space-y-4">
@@ -29,7 +33,7 @@ const WelcomeStep: React.FC<OnboardingStepProps> = ({ data, updateData }) => {
         <Tabs 
           defaultValue={language} 
           className="mt-1" 
-          onValueChange={(value) => setLanguage(value)}
+          onValueChange={handleLanguageChange}
         >
           <TabsList className="grid grid-cols-2">
             <TabsTrigger value="en">English</TabsTrigger>

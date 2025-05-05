@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -6,7 +5,7 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Building, Check, ChevronRight, Globe, Lightbulb, UserCheck } from 'lucide-react';
 import { useUserPreferences } from '@/contexts/UserPreferencesContext';
 import { InvestmentMarket, OnboardingData } from '@/contexts/UserPreferencesContext';
-import { useLanguage } from '@/contexts/LanguageContext';
+import { useLanguage, SupportedLanguage } from '@/contexts/LanguageContext';
 import { Progress } from '@/components/ui/progress';
 import { toast } from 'sonner';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
@@ -58,7 +57,7 @@ const OnboardingWizard: React.FC = () => {
   };
   
   const handleLanguageChange = (lang: string) => {
-    setLanguage(lang);
+    setLanguage(lang as SupportedLanguage);
     // Also store in preferences
     updatePreferences({ language: lang });
   };
