@@ -4,19 +4,23 @@
 
 import {
   LanguageProvider,
-  useLanguage,
-  SupportedLanguage,
-  LanguageInfo,
-  availableLanguages
+  useLanguage
 } from './FixedLanguageContext';
 
+import type {
+  SupportedLanguage,
+  LanguageInfo
+} from './FixedLanguageContext';
+
+// Re-export the value exports
 export {
   LanguageProvider,
   useLanguage,
-  SupportedLanguage,
-  LanguageInfo,
   availableLanguages
-};
+} from './FixedLanguageContext';
+
+// Re-export the type exports with 'export type'
+export type { SupportedLanguage, LanguageInfo };
 
 // Re-export the default export
 export { LanguageProvider as default };
