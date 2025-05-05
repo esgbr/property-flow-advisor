@@ -81,7 +81,7 @@ const SkipToContent: React.FC<SkipToContentProps> = ({
       ref={skipLinkRef}
       href={`#${contentId}`}
       className={`
-        fixed top-0 left-0 z-50 transform -translate-y-full transition-transform duration-200
+        fixed top-0 left-0 z-[100] transform -translate-y-full transition-transform duration-200
         p-4 bg-primary text-primary-foreground rounded-md shadow-lg
         focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary 
         ${isVisible ? 'translate-y-2' : ''}

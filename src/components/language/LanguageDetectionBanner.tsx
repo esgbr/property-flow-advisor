@@ -5,6 +5,7 @@ import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import { Globe, Check, X } from 'lucide-react';
 import { detectBrowserLanguage, isLanguageSupported } from '@/utils/languageDetector';
+import { useToast } from '@/components/ui/use-toast';
 
 interface LanguageDetectionBannerProps {
   onDismiss?: () => void;
@@ -14,6 +15,7 @@ const LanguageDetectionBanner: React.FC<LanguageDetectionBannerProps> = ({ onDis
   const { language, setLanguage, t, availableLanguages } = useLanguage();
   const [detectedLanguage, setDetectedLanguage] = useState<SupportedLanguage | null>(null);
   const [showBanner, setShowBanner] = useState(false);
+  const { toast } = useToast();
   
   useEffect(() => {
     // Check if we should show language detection banner
@@ -40,11 +42,16 @@ const LanguageDetectionBanner: React.FC<LanguageDetectionBannerProps> = ({ onDis
         setShowBanner(true);
       }
     }
-  }, []);
+  }, [language, availableLanguages]);
   
   const handleAccept = () => {
     if (detectedLanguage) {
       setLanguage(detectedLanguage);
+      
+      toast({
+        title: t('languageUpdated'),
+        description: t('displayLanguageChanged'),
+      });
     }
     dismissBanner();
   };
@@ -69,9 +76,9 @@ const LanguageDetectionBanner: React.FC<LanguageDetectionBannerProps> = ({ onDis
   const detectedLanguageInfo = availableLanguages.find(lang => lang.code === detectedLanguage);
   
   return (
-    <Alert className="mb-4 border-primary/20 bg-primary/5">
+    <Alert className="mb-4 border-primary/20 bg-primary/5 overflow-hidden">
       <div className="flex items-start">
-        <Globe className="h-5 w-5 mt-0.5 text-primary mr-2" />
+        <Globe className="h-5 w-5 mt-0.5 text-primary mr-2" aria-hidden="true" />
         <div className="flex-grow">
           <AlertTitle className="mb-2">{t('browserLanguageDetected')}</AlertTitle>
           <AlertDescription className="mb-3">
@@ -80,13 +87,23 @@ const LanguageDetectionBanner: React.FC<LanguageDetectionBannerProps> = ({ onDis
               {detectedLanguageInfo?.flag} {detectedLanguageInfo?.name}
             </span>
           </AlertDescription>
-          <div className="flex gap-2">
-            <Button size="sm" className="flex items-center" onClick={handleAccept}>
-              <Check className="h-4 w-4 mr-1" />
+          <div className="flex gap-2 flex-wrap">
+            <Button 
+              size="sm" 
+              className="flex items-center" 
+              onClick={handleAccept}
+              aria-label={`${t('switchTo')} ${detectedLanguageInfo?.name}`}
+            >
+              <Check className="h-4 w-4 mr-1" aria-hidden="true" />
               {t('showBrowserLanguage')}
             </Button>
-            <Button size="sm" variant="outline" onClick={handleDecline}>
-              <X className="h-4 w-4 mr-1" />
+            <Button 
+              size="sm" 
+              variant="outline" 
+              onClick={handleDecline}
+              aria-label={t('keepCurrentLanguage')}
+            >
+              <X className="h-4 w-4 mr-1" aria-hidden="true" />
               {t('close')}
             </Button>
           </div>

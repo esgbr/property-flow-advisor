@@ -1,3 +1,4 @@
+
 import { Routes, Route, Navigate } from 'react-router-dom';
 import { Toaster } from '@/components/ui/toaster';
 import { UserPreferencesProvider } from '@/contexts/UserPreferencesContext';
@@ -13,6 +14,7 @@ import InvestorDashboard from '@/pages/InvestorDashboard';
 import FinancingPlansPage from '@/pages/FinancingPlansPage';
 import { MotionConfig } from 'framer-motion';
 import { A11yProvider } from '@/components/accessibility/A11yProvider';
+import { Helmet } from 'react-helmet';
 
 function App() {
   return (
@@ -23,6 +25,12 @@ function App() {
             <RewardsProvider>
               <A11yProvider>
                 <MotionConfig reducedMotion="user">
+                  <Helmet>
+                    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+                    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self'; connect-src 'self' https://api.example.com" />
+                    <meta name="description" content="PropertyFlow - Real Estate Investment Platform" />
+                  </Helmet>
+                  
                   <WelcomeModal />
                   <Toaster />
                   

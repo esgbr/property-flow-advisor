@@ -38,7 +38,7 @@ const WelcomeStep: React.FC<OnboardingStepProps> = ({ data, updateData }) => {
           className="mt-1" 
           onValueChange={handleLanguageChange}
         >
-          <TabsList className="grid grid-cols-2">
+          <TabsList className="grid grid-cols-2 w-full">
             <TabsTrigger value="en">English</TabsTrigger>
             <TabsTrigger value="de">Deutsch</TabsTrigger>
           </TabsList>
