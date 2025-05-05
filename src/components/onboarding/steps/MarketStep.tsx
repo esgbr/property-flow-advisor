@@ -19,12 +19,13 @@ const MarketStep: React.FC<OnboardingStepProps> = ({ data, updateData }) => {
   return (
     <div className="space-y-6">
       <div className="flex justify-center mb-4">
-        <Globe className="h-16 w-16 text-primary opacity-80" />
+        <Globe className="h-16 w-16 text-primary opacity-80" aria-hidden="true" />
       </div>
       
       <Select
         value={data.investmentMarket}
         onValueChange={handleMarketChange}
+        aria-label={t('selectAMarket')}
       >
         <SelectTrigger>
           <SelectValue placeholder={t('selectAMarket')} />

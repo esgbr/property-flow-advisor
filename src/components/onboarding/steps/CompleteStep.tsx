@@ -29,7 +29,7 @@ const CompleteStep: React.FC<OnboardingStepProps> = ({ data }) => {
   return (
     <div className="flex flex-col items-center text-center space-y-4">
       <div className="rounded-full bg-primary/10 p-3">
-        <Check className="h-8 w-8 text-primary" />
+        <Check className="h-8 w-8 text-primary" aria-hidden="true" />
       </div>
       <h3 className="text-xl font-medium">{t('profileCompleted')}</h3>
       <p className="text-muted-foreground">

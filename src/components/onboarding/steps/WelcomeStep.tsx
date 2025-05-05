@@ -35,6 +35,7 @@ const WelcomeStep: React.FC<OnboardingStepProps> = ({ data, updateData }) => {
           aria-required="true"
           autoFocus
           autoComplete="name"
+          aria-label={t('yourName')}
         />
       </div>
       
@@ -45,13 +46,14 @@ const WelcomeStep: React.FC<OnboardingStepProps> = ({ data, updateData }) => {
           className="mt-1" 
           onValueChange={handleLanguageChange}
           id="languageSelector"
+          aria-label={t('chooseLanguage')}
         >
           <TabsList className="grid grid-cols-3 w-full">
             {enabledLanguages.slice(0, 3).map(lang => (
               <TabsTrigger 
                 key={lang.code} 
                 value={lang.code}
-                aria-label={`${lang.name} (${lang.nativeName})`}
+                aria-label={`${t('switchTo')} ${lang.name} (${lang.nativeName})`}
               >
                 <span className="mr-1" aria-hidden="true">{lang.flag}</span> {lang.nativeName}
               </TabsTrigger>

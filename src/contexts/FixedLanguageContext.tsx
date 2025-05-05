@@ -1,3 +1,4 @@
+
 import React, { createContext, useState, useContext, useEffect, ReactNode } from 'react';
 import { useUserPreferences } from './UserPreferencesContext';
 import { detectBrowserLanguage, isLanguageSupported, getBestMatchLanguage } from '@/utils/languageDetector';
@@ -70,7 +71,30 @@ const basicTranslations: Record<SupportedLanguage, Record<string, string>> = {
     "welcomeToGermanRealEstateTools": "Welcome to German Real Estate Investor Tools!",
     "welcomeToUSRealEstateTools": "Welcome to US Real Estate Investor Tools!",
     "welcomeToYourRealEstateDashboard": "Welcome to your Real Estate Dashboard!",
-    "updatePreferencesSettings": "You can always update your preferences in Settings"
+    "updatePreferencesSettings": "You can always update your preferences in Settings",
+    "accessibility": "Accessibility",
+    "security": "Security",
+    "securityAlert": "Security Alert",
+    "securityAlertDescription": "We recommend setting up a PIN code for additional security",
+    "setupPIN": "Set up PIN",
+    "dismiss": "Dismiss",
+    "securityEnabled": "Security Enabled",
+    "securityEnabledDescription": "Your account is protected with a PIN code",
+    "lock": "Lock",
+    "logout": "Logout",
+    "notifications": "Notifications",
+    "userMenu": "User menu",
+    "profile": "Profile",
+    "germany": "Germany",
+    "austria": "Austria", 
+    "switzerland": "Switzerland",
+    "france": "France",
+    "unitedStates": "United States",
+    "canada": "Canada",
+    "otherMarket": "Other Market",
+    "selectAMarket": "Select a market",
+    "profileCompleted": "Profile Completed",
+    "weveCustomizedYourExperience": "We've customized your experience based on your preferences."
   },
   de: {
     // Common German translations
@@ -117,7 +141,30 @@ const basicTranslations: Record<SupportedLanguage, Record<string, string>> = {
     "welcomeToGermanRealEstateTools": "Willkommen bei den deutschen Immobilien-Investor-Tools!",
     "welcomeToUSRealEstateTools": "Willkommen bei den US-Immobilien-Investor-Tools!",
     "welcomeToYourRealEstateDashboard": "Willkommen in Ihrem Immobilien-Dashboard!",
-    "updatePreferencesSettings": "Sie können Ihre Einstellungen jederzeit in den Einstellungen aktualisieren"
+    "updatePreferencesSettings": "Sie können Ihre Einstellungen jederzeit in den Einstellungen aktualisieren",
+    "accessibility": "Barrierefreiheit",
+    "security": "Sicherheit",
+    "securityAlert": "Sicherheitshinweis",
+    "securityAlertDescription": "Wir empfehlen die Einrichtung eines PIN-Codes für zusätzliche Sicherheit",
+    "setupPIN": "PIN einrichten",
+    "dismiss": "Ablehnen",
+    "securityEnabled": "Sicherheit aktiviert",
+    "securityEnabledDescription": "Ihr Konto ist mit einem PIN-Code geschützt",
+    "lock": "Sperren",
+    "logout": "Abmelden",
+    "notifications": "Benachrichtigungen",
+    "userMenu": "Benutzermenü",
+    "profile": "Profil",
+    "germany": "Deutschland",
+    "austria": "Österreich", 
+    "switzerland": "Schweiz",
+    "france": "Frankreich",
+    "unitedStates": "Vereinigte Staaten",
+    "canada": "Kanada",
+    "otherMarket": "Anderer Markt",
+    "selectAMarket": "Wählen Sie einen Markt aus",
+    "profileCompleted": "Profil abgeschlossen",
+    "weveCustomizedYourExperience": "Wir haben Ihre Erfahrung basierend auf Ihren Präferenzen angepasst."
   },
   fr: {
     // Enhanced French translations
@@ -137,7 +184,20 @@ const basicTranslations: Record<SupportedLanguage, Record<string, string>> = {
     "save": "Enregistrer",
     "cancel": "Annuler",
     "loading": "Chargement...",
-    "comingSoon": "Bientôt disponible"
+    "comingSoon": "Bientôt disponible",
+    "accessibility": "Accessibilité",
+    "security": "Sécurité",
+    "securityAlert": "Alerte de sécurité",
+    "securityAlertDescription": "Nous recommandons de configurer un code PIN pour plus de sécurité",
+    "setupPIN": "Configurer un PIN",
+    "dismiss": "Ignorer",
+    "securityEnabled": "Sécurité activée",
+    "securityEnabledDescription": "Votre compte est protégé par un code PIN",
+    "lock": "Verrouiller",
+    "logout": "Déconnexion",
+    "notifications": "Notifications",
+    "userMenu": "Menu utilisateur",
+    "profile": "Profil"
   },
   es: {
     // Minimal Spanish translations
@@ -146,7 +206,20 @@ const basicTranslations: Record<SupportedLanguage, Record<string, string>> = {
     "close": "Cerrar",
     "overview": "Resumen",
     "translationStatus": "Estado de traducción",
-    "preferences": "Preferencias"
+    "preferences": "Preferencias",
+    "accessibility": "Accesibilidad",
+    "security": "Seguridad",
+    "securityAlert": "Alerta de seguridad",
+    "securityAlertDescription": "Recomendamos configurar un código PIN para mayor seguridad",
+    "setupPIN": "Configurar PIN",
+    "dismiss": "Descartar",
+    "securityEnabled": "Seguridad habilitada",
+    "securityEnabledDescription": "Su cuenta está protegida con un código PIN",
+    "lock": "Bloquear",
+    "logout": "Cerrar sesión",
+    "notifications": "Notificaciones",
+    "userMenu": "Menú de usuario",
+    "profile": "Perfil"
   },
   it: {
     // Minimal Italian translations
@@ -155,7 +228,20 @@ const basicTranslations: Record<SupportedLanguage, Record<string, string>> = {
     "close": "Chiudere",
     "overview": "Panoramica",
     "translationStatus": "Stato della traduzione",
-    "preferences": "Preferenze"
+    "preferences": "Preferenze",
+    "accessibility": "Accessibilità",
+    "security": "Sicurezza",
+    "securityAlert": "Avviso di sicurezza",
+    "securityAlertDescription": "Si consiglia di impostare un codice PIN per una maggiore sicurezza",
+    "setupPIN": "Configura PIN",
+    "dismiss": "Ignora",
+    "securityEnabled": "Sicurezza abilitata",
+    "securityEnabledDescription": "Il tuo account è protetto con un codice PIN",
+    "lock": "Bloccare",
+    "logout": "Disconnettersi",
+    "notifications": "Notifiche",
+    "userMenu": "Menu utente",
+    "profile": "Profilo"
   }
 };
 

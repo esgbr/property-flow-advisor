@@ -33,7 +33,7 @@ const Navbar: React.FC = () => {
           <Button 
             variant="ghost" 
             size="icon" 
-            aria-label={t('notifications') || 'Notifications'}
+            aria-label={t('notifications')}
           >
             <BellIcon className="h-5 w-5" />
           </Button>
@@ -43,7 +43,7 @@ const Navbar: React.FC = () => {
               <Button 
                 variant="ghost" 
                 className="relative h-8 w-8 rounded-full" 
-                aria-label={t('userMenu') || 'User menu'}
+                aria-label={t('userMenu')}
               >
                 <Avatar className="h-8 w-8">
                   <AvatarFallback>JD</AvatarFallback>
@@ -61,13 +61,13 @@ const Navbar: React.FC = () => {
               </DropdownMenuLabel>
               <DropdownMenuSeparator />
               <DropdownMenuItem asChild>
-                <Link to="/settings">{t('settings') || 'Settings'}</Link>
+                <Link to="/settings">{t('settings')}</Link>
               </DropdownMenuItem>
               <DropdownMenuItem asChild>
-                <Link to="/profile">{t('profile') || 'Profile'}</Link>
+                <Link to="/profile">{t('profile')}</Link>
               </DropdownMenuItem>
               <DropdownMenuItem asChild>
-                <Link to="/accessibility">{t('accessibility') || 'Accessibility'}</Link>
+                <Link to="/accessibility">{t('accessibility')}</Link>
               </DropdownMenuItem>
               {isMobile && (
                 <DropdownMenuItem>
@@ -76,10 +76,10 @@ const Navbar: React.FC = () => {
               )}
               <DropdownMenuSeparator />
               <DropdownMenuItem>
-                {t('lock') || 'Lock'}
+                {t('lock')}
               </DropdownMenuItem>
               <DropdownMenuItem>
-                {t('logout') || 'Logout'}
+                {t('logout')}
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>

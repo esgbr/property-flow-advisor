@@ -1,3 +1,4 @@
+
 import React, { useEffect, lazy, Suspense } from 'react';
 import { Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { SidebarProvider } from '@/components/ui/sidebar';
@@ -26,7 +27,7 @@ const SecurityAlert = ({ onSetupPIN, onDismiss }) => {
   const { t } = useLanguage();
   
   return (
-    <Alert className="mb-6 border-amber-500 bg-amber-500/10">
+    <Alert className="mb-6 border-amber-500 bg-amber-500/10" role="alert">
       <AlertTriangle className="h-4 w-4 text-amber-500" aria-hidden="true" />
       <AlertTitle className="text-amber-500">{t('securityAlert')}</AlertTitle>
       <AlertDescription className="flex flex-col gap-2">
@@ -34,13 +35,15 @@ const SecurityAlert = ({ onSetupPIN, onDismiss }) => {
         <div className="flex gap-2 mt-1">
           <button 
             onClick={onSetupPIN}
-            className="px-3 py-1 text-sm rounded-md bg-primary text-white"
+            className="px-3 py-1 text-sm rounded-md bg-primary text-primary-foreground"
+            aria-label={t('setupPIN')}
           >
             {t('setupPIN')}
           </button>
           <button 
             onClick={onDismiss}
             className="px-3 py-1 text-sm rounded-md bg-muted text-muted-foreground"
+            aria-label={t('dismiss')}
           >
             {t('dismiss')}
           </button>
@@ -55,7 +58,7 @@ const SecurityConfirmation = () => {
   const { t } = useLanguage();
   
   return (
-    <Alert className="mb-6 border-green-500 bg-green-500/10">
+    <Alert className="mb-6 border-green-500 bg-green-500/10" role="status">
       <ShieldCheck className="h-4 w-4 text-green-500" aria-hidden="true" />
       <AlertTitle className="text-green-500">{t('securityEnabled')}</AlertTitle>
       <AlertDescription>{t('securityEnabledDescription')}</AlertDescription>
