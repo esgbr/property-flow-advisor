@@ -48,7 +48,7 @@ const SkipToContent: React.FC<SkipToContentProps> = ({
         contentElement.focus();
         // Announce the action for screen readers
         if (screenReader) {
-          announce('Skipped to main content', 'assertive');
+          announce('Skipped to main content', true);
         }
         
         // Scroll to the content element
@@ -66,7 +66,7 @@ const SkipToContent: React.FC<SkipToContentProps> = ({
         
         // Announce the action for screen readers
         if (screenReader) {
-          announce('Skipped to main content', 'assertive');
+          announce('Skipped to main content', true);
         }
       }
     }, 100);

@@ -47,18 +47,22 @@ const clearAnnouncer = (delay = 3000): void => {
 /**
  * Announce a message to screen readers
  * @param message - The message to be announced
- * @param assertive - Whether to use assertive (true) or polite (false) priority
+ * @param assertive - Whether to use assertive (true) or polite (false) priority,
+ *                   or can be the string 'assertive' or 'polite'
  * @param delay - How long to wait before clearing the announcement
  */
 export const announce = (
   message: string,
-  assertive = false,
+  assertive: boolean | 'assertive' | 'polite' = false,
   delay = 3000
 ): void => {
   if (!message) return;
   
+  // Convert string values to boolean
+  const isAssertive = assertive === true || assertive === 'assertive';
+  
   // Get or create the announcer element
-  const element = getAnnouncer(assertive);
+  const element = getAnnouncer(isAssertive);
   
   // Set message text
   element.textContent = message;
