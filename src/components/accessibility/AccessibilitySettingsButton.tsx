@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Settings, Eye } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
@@ -11,6 +11,7 @@ import {
   TooltipTrigger,
 } from '@/components/ui/tooltip';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { useAnnouncement } from '@/utils/accessibilityUtils';
 
 interface AccessibilitySettingsButtonProps {
   variant?: 'default' | 'outline' | 'ghost' | 'link' | 'secondary' | 'destructive';
@@ -24,6 +25,8 @@ const AccessibilitySettingsButton: React.FC<AccessibilitySettingsButtonProps> = 
   const navigate = useNavigate();
   const { t } = useLanguage();
   const { reduceMotion, highContrast, largeText, screenReader } = useAccessibility();
+  const { announce } = useAnnouncement();
+  const [isFocused, setIsFocused] = useState(false);
   
   // Count active accessibility settings to show badge
   const activeSettings = [reduceMotion, highContrast, largeText, screenReader].filter(Boolean).length;
@@ -33,7 +36,14 @@ const AccessibilitySettingsButton: React.FC<AccessibilitySettingsButtonProps> = 
     if (e.key === 'Enter' || e.key === ' ') {
       e.preventDefault();
       navigate('/accessibility');
+      announce('Navigating to accessibility settings', 'polite');
     }
+  };
+  
+  // Handle button activation
+  const handleClick = () => {
+    navigate('/accessibility');
+    announce('Navigating to accessibility settings', 'polite');
   };
 
   // Get descriptive text for active settings
@@ -62,12 +72,15 @@ const AccessibilitySettingsButton: React.FC<AccessibilitySettingsButtonProps> = 
           <Button
             variant={variant}
             size={size}
-            onClick={() => navigate('/accessibility')}
+            onClick={handleClick}
             onKeyDown={handleKeyDown}
+            onFocus={() => setIsFocused(true)}
+            onBlur={() => setIsFocused(false)}
             className={`relative hover:scale-105 transition-transform hover:bg-primary/10 
               ${highContrast ? 'border-2' : ''} 
               ${activeSettings > 0 ? 'ring-1 ring-primary' : ''}
               ${screenReader ? 'bg-primary/5' : ''}
+              ${isFocused ? 'ring-2 ring-primary ring-offset-2' : ''}
             `}
             aria-label={getActiveSettingsDescription()}
             data-testid="accessibility-settings-button"

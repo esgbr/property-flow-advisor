@@ -39,6 +39,15 @@
   border: 2px solid var(--border) !important;
 }
 
+.high-contrast table {
+  border: 2px solid var(--border) !important;
+}
+
+.high-contrast th,
+.high-contrast td {
+  border: 1px solid var(--border) !important;
+}
+
 /* Large text mode */
 .large-text {
   font-size: 125% !important;
@@ -63,6 +72,17 @@
 .large-text textarea {
   font-size: 1.2em !important;
   padding: 0.75em !important;
+}
+
+/* Increased target size for touch interfaces */
+.large-text button,
+.large-text .clickable,
+.large-text [role="button"],
+.large-text a {
+  min-height: 44px !important;
+  min-width: 44px !important;
+  margin: 2px !important;
+  padding: 10px !important;
 }
 
 /* Screen reader optimizations */
@@ -107,4 +127,71 @@
   color: var(--primary);
   font-weight: bold;
   text-decoration: none;
+}
+
+/* Keyboard navigation indicators */
+.keyboard-focus-visible *:focus {
+  box-shadow: 0 0 0 3px rgba(66, 153, 225, 0.6) !important;
+}
+
+/* Focus ring for links */
+a:focus-visible {
+  outline-color: var(--primary) !important;
+}
+
+/* Enhanced hover and focus states for better interaction */
+.interactive-element {
+  position: relative;
+}
+
+.interactive-element::after {
+  content: '';
+  position: absolute;
+  bottom: -2px;
+  left: 0;
+  width: 100%;
+  height: 2px;
+  background-color: currentColor;
+  transform: scaleX(0);
+  transition: transform 0.2s ease-in-out;
+}
+
+.interactive-element:hover::after,
+.interactive-element:focus::after {
+  transform: scaleX(1);
+}
+
+/* Enhanced visibility for current focused element */
+[data-focus-visible-added] {
+  outline: 3px solid var(--ring) !important;
+  outline-offset: 2px !important;
+  z-index: 1 !important;
+}
+
+/* Remove animations based on user preference */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001s !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001s !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* Enhance link readability */
+.high-contrast a:link {
+  color: #4da6ff !important;
+}
+
+.high-contrast a:visited {
+  color: #b580ff !important;
+}
+
+.high-contrast a:hover,
+.high-contrast a:focus {
+  color: #80bfff !important;
+  text-decoration: underline !important;
+  outline: 2px solid currentColor !important;
 }

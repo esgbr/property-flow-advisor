@@ -1,5 +1,5 @@
 
-import React, { KeyboardEvent } from 'react';
+import React, { KeyboardEvent, useRef, useEffect } from 'react';
 import { useAccessibility } from './A11yProvider';
 import { useAnnouncement } from '@/utils/accessibilityUtils';
 
@@ -10,10 +10,33 @@ interface SkipToContentProps {
 const SkipToContent: React.FC<SkipToContentProps> = ({ contentId }) => {
   const { largeText, highContrast, screenReader } = useAccessibility();
   const { announce } = useAnnouncement();
+  const skipLinkRef = useRef<HTMLAnchorElement>(null);
+  
+  // Ensure the skip link is always the first focusable element when the page loads
+  useEffect(() => {
+    const handleInitialFocus = (e: KeyboardEvent) => {
+      // Only handle Tab key
+      if (e.key === 'Tab' && !e.shiftKey) {
+        if (document.activeElement === document.body) {
+          if (skipLinkRef.current) {
+            skipLinkRef.current.focus();
+            e.preventDefault();
+          }
+        }
+      }
+    };
+
+    // Add event listener to detect initial tab navigation
+    document.addEventListener('keydown', handleInitialFocus as any);
+    
+    return () => {
+      document.removeEventListener('keydown', handleInitialFocus as any);
+    };
+  }, []);
   
   const handleKeyDown = (e: KeyboardEvent<HTMLAnchorElement>) => {
     // Handle space key for activation
-    if (e.key === ' ') {
+    if (e.key === ' ' || e.key === 'Enter') {
       e.preventDefault();
       const contentElement = document.getElementById(contentId);
       if (contentElement) {
@@ -22,21 +45,31 @@ const SkipToContent: React.FC<SkipToContentProps> = ({ contentId }) => {
         if (screenReader) {
           announce('Skipped to main content', 'assertive');
         }
+        
+        // Scroll to the content element
+        contentElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
       }
     }
   };
   
   const handleClick = () => {
-    // Announce the action for screen readers
-    if (screenReader) {
-      setTimeout(() => {
-        announce('Skipped to main content', 'assertive');
-      }, 100);
-    }
+    // Focus the content after a short delay to allow the browser to navigate
+    setTimeout(() => {
+      const contentElement = document.getElementById(contentId);
+      if (contentElement) {
+        contentElement.focus();
+        
+        // Announce the action for screen readers
+        if (screenReader) {
+          announce('Skipped to main content', 'assertive');
+        }
+      }
+    }, 100);
   };
   
   return (
     <a
+      ref={skipLinkRef}
       href={`#${contentId}`}
       className={`
         sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 focus:z-50 
