@@ -17,11 +17,12 @@ const WelcomeStep: React.FC<OnboardingStepProps> = ({ data, updateData }) => {
   };
   
   return (
-    <div className="flex flex-col items-center text-center space-y-4 overflow-y-auto max-h-[70vh] p-2">
-      <h3 className="text-xl font-medium">{t('welcomeToPropertyFlowAdvisor')}</h3>
+    <div className="flex flex-col items-center text-center space-y-6 overflow-y-auto max-h-[70vh] p-4">
+      <h2 className="text-2xl font-medium">{t('welcomeToPropertyFlowAdvisor')}</h2>
       <p className="text-muted-foreground">{t('yourPersonalRealEstateInvestmentCompanion')}</p>
+      
       <div className="w-full">
-        <Label htmlFor="name">{t('yourName')}</Label>
+        <Label htmlFor="name" className="mb-1 block">{t('yourName')}</Label>
         <Input
           id="name"
           placeholder={t('enterYourName')}
@@ -29,23 +30,29 @@ const WelcomeStep: React.FC<OnboardingStepProps> = ({ data, updateData }) => {
           onChange={(e) => updateData({ ...data, name: e.target.value })}
           className="mt-1"
           aria-required="true"
+          autoFocus
         />
       </div>
       
-      <div className="w-full mt-4">
-        <Label htmlFor="language-selector">{t('chooseLanguage')}</Label>
+      <div className="w-full mt-2">
+        <Label htmlFor="language-selector" className="mb-1 block">{t('chooseLanguage')}</Label>
         <Tabs 
           defaultValue={language} 
           className="mt-1" 
           onValueChange={handleLanguageChange}
           id="language-selector"
         >
-          <TabsList className="grid grid-cols-2 w-full">
+          <TabsList className="grid grid-cols-3 w-full">
             <TabsTrigger value="en">English</TabsTrigger>
             <TabsTrigger value="de">Deutsch</TabsTrigger>
+            <TabsTrigger value="fr">Français</TabsTrigger>
           </TabsList>
         </Tabs>
       </div>
+      
+      <p className="text-sm text-muted-foreground mt-4">
+        {t('selectYourPreferredLanguage')}
+      </p>
     </div>
   );
 };

@@ -6,11 +6,13 @@ import { OnboardingData } from '@/components/onboarding/types';
 import { useUserPreferences } from '@/contexts/UserPreferencesContext';
 import { toast } from 'sonner';
 import { useNavigate } from 'react-router-dom';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 const WelcomeModal = () => {
   const { isFirstVisit, setIsFirstVisit, saveOnboardingData, preferences, updatePreferences } = useUserPreferences();
   const [open, setOpen] = useState(false);
   const navigate = useNavigate();
+  const { t } = useLanguage();
 
   useEffect(() => {
     // Only show the welcome modal if it's the user's first visit
@@ -34,16 +36,16 @@ const WelcomeModal = () => {
       switch (data.investmentMarket) {
         case 'germany':
         case 'austria':
-          toast.success('Welcome to German Real Estate Investor Tools!');
+          toast.success(t('welcomeToGermanRealEstateTools'));
           navigate('/deutsche-immobilien-tools');
           break;
         case 'usa':
         case 'canada':
-          toast.success('Welcome to US Real Estate Investor Tools!');
+          toast.success(t('welcomeToUSRealEstateTools'));
           navigate('/us-real-estate-tools');
           break;
         default:
-          toast.success('Welcome to your Real Estate Dashboard!');
+          toast.success(t('welcomeToYourRealEstateDashboard'));
           navigate('/dashboard');
       }
     } else {
@@ -61,7 +63,7 @@ const WelcomeModal = () => {
       onboardingCompleted: true
     });
     
-    toast.info('You can always update your preferences in Settings');
+    toast.info(t('updatePreferencesSettings'));
     navigate('/dashboard');
   };
 

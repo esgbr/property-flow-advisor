@@ -30,13 +30,13 @@ const LiquidityPlanning: React.FC = () => {
           {t('liquidityPlanning')}
         </CardTitle>
       </CardHeader>
-      <CardContent className="flex flex-col items-center justify-center min-h-[300px] space-y-4 overflow-auto">
-        <div className="text-center space-y-2 max-w-md">
+      <CardContent className="flex flex-col items-center justify-center min-h-[300px] p-6 space-y-4 overflow-auto">
+        <div className="text-center space-y-4 max-w-md">
           <AlertCircle 
             className="mx-auto h-12 w-12 text-amber-500 mb-2" 
             aria-hidden="true" 
           />
-          <p className="text-lg font-medium">{t('comingSoon')}</p>
+          <h3 className="text-lg font-medium">{t('comingSoon')}</h3>
           <p className="text-muted-foreground">
             {t('liquidityPlanningDescription')}
           </p>

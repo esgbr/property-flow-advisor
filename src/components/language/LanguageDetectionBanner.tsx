@@ -27,7 +27,9 @@ const LanguageDetectionBanner: React.FC<LanguageDetectionBannerProps> = ({ onDis
     
     // Detect browser language
     const browserLang = detectBrowserLanguage();
-    const supportedLanguageCodes = availableLanguages.map(lang => lang.code);
+    const supportedLanguageCodes = availableLanguages
+      .filter(lang => lang.enabled)
+      .map(lang => lang.code);
     
     // Only show banner if detected language is supported and different from current
     if (

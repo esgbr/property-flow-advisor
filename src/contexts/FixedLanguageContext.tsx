@@ -1,4 +1,3 @@
-
 import React, { createContext, useState, useContext, useEffect, ReactNode } from 'react';
 import { useUserPreferences } from './UserPreferencesContext';
 import { detectBrowserLanguage, isLanguageSupported, getBestMatchLanguage } from '@/utils/languageDetector';
@@ -35,11 +34,15 @@ const basicTranslations: Record<SupportedLanguage, Record<string, string>> = {
     "cancel": "Cancel",
     "close": "Close",
     "loading": "Loading...",
+    "overview": "Overview",
+    "translationStatus": "Translation Status",
+    "preferences": "Preferences",
     "welcomeToPropertyFlowAdvisor": "Welcome to PropertyFlow Advisor",
     "yourPersonalRealEstateInvestmentCompanion": "Your personal real estate investment companion",
     "yourName": "Your Name",
     "enterYourName": "Enter your name",
     "chooseLanguage": "Choose Language",
+    "selectYourPreferredLanguage": "Select your preferred language for the application",
     "languageSettings": "Language Settings",
     "manageLanguagePreferences": "Manage language preferences",
     "currentLanguage": "Current Language",
@@ -63,7 +66,11 @@ const basicTranslations: Record<SupportedLanguage, Record<string, string>> = {
     "notifyMeWhenLiquidityPlanningIsAvailable": "Notify me when liquidity planning is available",
     "notifyWhenAvailable": "Notify me when available",
     "notificationSaved": "Notification saved",
-    "liquidityPlanningNotifyConfirmation": "We'll notify you when liquidity planning becomes available"
+    "liquidityPlanningNotifyConfirmation": "We'll notify you when liquidity planning becomes available",
+    "welcomeToGermanRealEstateTools": "Welcome to German Real Estate Investor Tools!",
+    "welcomeToUSRealEstateTools": "Welcome to US Real Estate Investor Tools!",
+    "welcomeToYourRealEstateDashboard": "Welcome to your Real Estate Dashboard!",
+    "updatePreferencesSettings": "You can always update your preferences in Settings"
   },
   de: {
     // Common German translations
@@ -74,11 +81,15 @@ const basicTranslations: Record<SupportedLanguage, Record<string, string>> = {
     "cancel": "Abbrechen",
     "close": "Schließen",
     "loading": "Wird geladen...",
+    "overview": "Übersicht",
+    "translationStatus": "Übersetzungsstatus",
+    "preferences": "Präferenzen",
     "welcomeToPropertyFlowAdvisor": "Willkommen beim PropertyFlow Berater",
     "yourPersonalRealEstateInvestmentCompanion": "Ihr persönlicher Immobilieninvestment-Begleiter",
     "yourName": "Ihr Name",
     "enterYourName": "Geben Sie Ihren Namen ein",
     "chooseLanguage": "Sprache wählen",
+    "selectYourPreferredLanguage": "Wählen Sie Ihre bevorzugte Sprache für die Anwendung",
     "languageSettings": "Spracheinstellungen",
     "manageLanguagePreferences": "Spracheinstellungen verwalten",
     "currentLanguage": "Aktuelle Sprache",
@@ -102,25 +113,49 @@ const basicTranslations: Record<SupportedLanguage, Record<string, string>> = {
     "notifyMeWhenLiquidityPlanningIsAvailable": "Benachrichtigen Sie mich, wenn die Liquiditätsplanung verfügbar ist",
     "notifyWhenAvailable": "Bei Verfügbarkeit benachrichtigen",
     "notificationSaved": "Benachrichtigung gespeichert",
-    "liquidityPlanningNotifyConfirmation": "Wir benachrichtigen Sie, sobald die Liquiditätsplanung verfügbar ist"
+    "liquidityPlanningNotifyConfirmation": "Wir benachrichtigen Sie, sobald die Liquiditätsplanung verfügbar ist",
+    "welcomeToGermanRealEstateTools": "Willkommen bei den deutschen Immobilien-Investor-Tools!",
+    "welcomeToUSRealEstateTools": "Willkommen bei den US-Immobilien-Investor-Tools!",
+    "welcomeToYourRealEstateDashboard": "Willkommen in Ihrem Immobilien-Dashboard!",
+    "updatePreferencesSettings": "Sie können Ihre Einstellungen jederzeit in den Einstellungen aktualisieren"
   },
   fr: {
-    // Minimal French translations
+    // Enhanced French translations
     "dashboard": "Tableau de bord",
     "settings": "Paramètres",
-    "close": "Fermer"
+    "close": "Fermer",
+    "overview": "Aperçu",
+    "translationStatus": "État de la traduction",
+    "preferences": "Préférences",
+    "welcomeToPropertyFlowAdvisor": "Bienvenue sur PropertyFlow Advisor",
+    "yourPersonalRealEstateInvestmentCompanion": "Votre compagnon personnel d'investissement immobilier",
+    "yourName": "Votre nom",
+    "enterYourName": "Entrez votre nom",
+    "chooseLanguage": "Choisir la langue",
+    "selectYourPreferredLanguage": "Sélectionnez votre langue préférée pour l'application",
+    "appName": "PropertyFlow",
+    "save": "Enregistrer",
+    "cancel": "Annuler",
+    "loading": "Chargement...",
+    "comingSoon": "Bientôt disponible"
   },
   es: {
     // Minimal Spanish translations
     "dashboard": "Panel de control",
     "settings": "Configuración",
-    "close": "Cerrar"
+    "close": "Cerrar",
+    "overview": "Resumen",
+    "translationStatus": "Estado de traducción",
+    "preferences": "Preferencias"
   },
   it: {
     // Minimal Italian translations
     "dashboard": "Dashboard",
     "settings": "Impostazioni",
-    "close": "Chiudere"
+    "close": "Chiudere",
+    "overview": "Panoramica",
+    "translationStatus": "Stato della traduzione",
+    "preferences": "Preferenze"
   }
 };
 

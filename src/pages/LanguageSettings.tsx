@@ -6,6 +6,7 @@ import LanguageStatus from '@/components/language/LanguageStatus';
 import LanguageSwitcher from '@/components/LanguageSwitcher';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import SkipToContent from '@/components/accessibility/SkipToContent';
+import LanguageDetectionBanner from '@/components/language/LanguageDetectionBanner';
 
 const LanguageSettings = () => {
   const { t } = useLanguage();
@@ -22,11 +23,13 @@ const LanguageSettings = () => {
         <LanguageSwitcher />
       </div>
       
+      <LanguageDetectionBanner />
+      
       <Tabs defaultValue="overview" className="space-y-6" id="language-settings-content">
-        <TabsList>
-          <TabsTrigger value="overview">Overview</TabsTrigger>
-          <TabsTrigger value="translations">Translation Status</TabsTrigger>
-          <TabsTrigger value="preferences">Preferences</TabsTrigger>
+        <TabsList className="w-full md:w-auto flex flex-wrap">
+          <TabsTrigger value="overview">{t('overview')}</TabsTrigger>
+          <TabsTrigger value="translations">{t('translationStatus')}</TabsTrigger>
+          <TabsTrigger value="preferences">{t('preferences')}</TabsTrigger>
         </TabsList>
         
         <TabsContent value="overview" className="focus:outline-none">
@@ -61,7 +64,7 @@ const LanguageSettings = () => {
           </div>
         </TabsContent>
         
-        <TabsContent value="translations" className="focus:outline-none">
+        <TabsContent value="translations" className="focus:outline-none overflow-x-auto">
           <LanguageStatus />
         </TabsContent>
         
