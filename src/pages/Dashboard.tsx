@@ -1,354 +1,207 @@
 
-import React, { useState, useEffect } from 'react';
-import { Button } from '@/components/ui/button';
-import { 
-  Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle 
-} from '@/components/ui/card';
-import { useNavigate } from 'react-router-dom';
-import { useLanguage } from '@/contexts/LanguageContext';
-import { Building, Calculator, ChartBar, Globe, Home, Info, Plus, Settings } from 'lucide-react';
-import { PropertyScanner } from '@/components/property/PropertyScanner';
-import InvestmentOpportunityFeed from '@/components/property/InvestmentOpportunityFeed';
-import EnhancedPortfolioDashboard from '@/components/portfolio/EnhancedPortfolioDashboard';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Separator } from '@/components/ui/separator';
-import MarketAwareDashboard from '@/components/market/MarketAwareDashboard';
+import React, { useEffect, useState } from 'react';
 import { useUserPreferences } from '@/contexts/UserPreferencesContext';
+import { useLanguage } from '@/contexts/LanguageContext';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { toast } from 'sonner';
+import { Button } from '@/components/ui/button';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import LanguageDetectionBanner from '@/components/language/LanguageDetectionBanner';
+import MarketSpecificFeatures from '@/components/market/MarketSpecificFeatures';
+import OnboardingTests from '@/tests/OnboardingTests';
+import PropertyAnalyticsVisualizations from '@/components/analytics/PropertyAnalyticsVisualizations';
+import MarketGrowthForecast from '@/components/analytics/MarketGrowthForecast';
 
-const Dashboard = () => {
-  const navigate = useNavigate();
+const Dashboard: React.FC = () => {
+  const { preferences } = useUserPreferences();
   const { t } = useLanguage();
-  const { preferences, updatePreferences } = useUserPreferences();
   const [activeTab, setActiveTab] = useState('overview');
-  const [showWelcomeMessage, setShowWelcomeMessage] = useState(false);
   
-  // Show welcome message if this is the first visit to dashboard after onboarding
+  // Load user's last active tab if available
   useEffect(() => {
-    const today = new Date().toDateString();
-    
-    if (preferences.onboardingCompleted && preferences.name && preferences.todayWelcomed !== today) {
-      setShowWelcomeMessage(true);
-      updatePreferences({ todayWelcomed: today });
-      
-      // Show welcome toast
-      toast.success(`Welcome ${preferences.name}!`, {
-        description: "Your personalized dashboard is ready to explore"
-      });
+    const lastTab = localStorage.getItem('dashboardLastTab');
+    if (lastTab) {
+      setActiveTab(lastTab);
     }
-  }, [preferences.onboardingCompleted, preferences.name, preferences.todayWelcomed]);
-
+  }, []);
+  
+  // Save active tab preference
+  const handleTabChange = (value: string) => {
+    setActiveTab(value);
+    localStorage.setItem('dashboardLastTab', value);
+  };
+  
   return (
-    <div className="space-y-8 animate-fade-in">
-      <div className="flex justify-between items-center">
-        <h1 className="text-3xl font-bold">{t('dashboard')}</h1>
-        <div className="flex gap-2">
-          {preferences.experienceLevel && ['intermediate', 'advanced', 'expert'].includes(preferences.experienceLevel) && (
-            <Button onClick={() => navigate('/property/add')}>
-              <Plus className="mr-2 h-4 w-4" />
-              {t('addProperty')}
-            </Button>
-          )}
-          <Button variant="outline" onClick={() => navigate('/settings')}>
-            <Settings className="mr-2 h-4 w-4" />
-            {t('settings')}
-          </Button>
+    <div className="space-y-6 p-6">
+      {/* Language detection banner */}
+      <LanguageDetectionBanner />
+      
+      {/* Welcome message */}
+      <div className="flex flex-col md:flex-row md:justify-between">
+        <div>
+          <h1 className="text-3xl font-bold">
+            {preferences.name ? `${t('welcome')}, ${preferences.name}!` : t('dashboard')}
+          </h1>
+          <p className="text-muted-foreground">
+            {t('completeInvestmentToolsuite')}
+          </p>
         </div>
-      </div>
-
-      {/* Welcome alert with personalized greeting */}
-      {showWelcomeMessage && preferences.name && (
-        <Alert className="border-primary/20 bg-primary/5">
-          <Home className="h-4 w-4 text-primary" />
-          <AlertTitle>{t('welcomeBack')}, {preferences.name}!</AlertTitle>
-          <AlertDescription className="flex flex-col gap-2">
-            <p>{preferences.experienceLevel === 'beginner' 
-              ? t('beginnerWelcomeMessage') 
-              : t('dashboardGreeting')}
+        {preferences.experienceLevel && (
+          <div className="mt-2 md:mt-0">
+            <p className="text-sm text-muted-foreground">
+              {t('experienceLevel')}:{' '}
+              <span className="font-medium text-foreground capitalize">
+                {t(preferences.experienceLevel)}
+              </span>
             </p>
-            {preferences.experienceLevel === 'beginner' && (
-              <Button 
-                variant="link" 
-                className="p-0 h-auto w-auto justify-start" 
-                onClick={() => navigate('/education')}
-              >
-                {t('viewBeginnerTutorials')}
-              </Button>
-            )}
-          </AlertDescription>
-        </Alert>
-      )}
-
-      {/* Market aware content */}
-      <MarketAwareDashboard />
-
-      <Tabs value={activeTab} onValueChange={setActiveTab}>
+          </div>
+        )}
+      </div>
+      
+      {/* Market-specific features */}
+      <MarketSpecificFeatures />
+      
+      {/* Main content tabs */}
+      <Tabs value={activeTab} onValueChange={handleTabChange} className="space-y-6">
         <TabsList>
-          <TabsTrigger value="overview">
-            <Home className="mr-2 h-4 w-4" />
-            {t('overview')}
-          </TabsTrigger>
-          <TabsTrigger value="portfolio">
-            <Building className="mr-2 h-4 w-4" />
-            {t('portfolio')}
-          </TabsTrigger>
-          <TabsTrigger value="market">
-            <Globe className="mr-2 h-4 w-4" />
-            {t('market')}
-          </TabsTrigger>
-          <TabsTrigger value="analytics">
-            <ChartBar className="mr-2 h-4 w-4" />
-            {t('analytics')}
-          </TabsTrigger>
+          <TabsTrigger value="overview">{t('overview')}</TabsTrigger>
+          <TabsTrigger value="analytics">{t('propertyAnalytics')}</TabsTrigger>
+          <TabsTrigger value="forecast">{t('dataVisualization')}</TabsTrigger>
+          <TabsTrigger value="tests">{t('testAutomation')}</TabsTrigger>
         </TabsList>
-        
+      
         <TabsContent value="overview">
-          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 mt-6">
+          <div className="grid gap-6 md:grid-cols-2">
+            {/* Quick stats */}
             <Card>
               <CardHeader>
-                <CardTitle>{t('propertySummary')}</CardTitle>
-                <CardDescription>{t('yourPortfolioAtaGlance')}</CardDescription>
+                <CardTitle>{t('portfolioOverview')}</CardTitle>
+                <CardDescription>{t('yourRealEstatePortfolioAtAGlance')}</CardDescription>
               </CardHeader>
               <CardContent>
-                <div className="space-y-4">
-                  <div className="flex justify-between items-center">
-                    <div className="space-y-1">
-                      <p className="text-sm text-muted-foreground">{t('totalProperties')}</p>
-                      <p className="text-3xl font-bold">6</p>
-                    </div>
-                    <Building className="h-8 w-8 text-primary opacity-80" />
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-1">
+                    <p className="text-sm text-muted-foreground">{t('totalProperties')}</p>
+                    <p className="text-2xl font-semibold">3</p>
                   </div>
-                  <Separator />
-                  <div className="space-y-2">
-                    <div className="flex justify-between">
-                      <span className="text-sm">{t('residential')}</span>
-                      <span className="text-sm">4</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-sm">{t('commercial')}</span>
-                      <span className="text-sm">2</span>
-                    </div>
+                  <div className="space-y-1">
+                    <p className="text-sm text-muted-foreground">{t('totalValue')}</p>
+                    <p className="text-2xl font-semibold">€1.2M</p>
+                  </div>
+                  <div className="space-y-1">
+                    <p className="text-sm text-muted-foreground">{t('monthlyCashFlow')}</p>
+                    <p className="text-2xl font-semibold text-green-600">€2,450</p>
+                  </div>
+                  <div className="space-y-1">
+                    <p className="text-sm text-muted-foreground">{t('annualCashFlow')}</p>
+                    <p className="text-2xl font-semibold text-green-600">€29,400</p>
                   </div>
                 </div>
               </CardContent>
-              <CardFooter>
-                <Button variant="ghost" className="w-full" onClick={() => navigate('/properties')}>
-                  {t('viewAllProperties')}
-                </Button>
-              </CardFooter>
             </Card>
             
+            {/* Alerts */}
             <Card>
               <CardHeader>
-                <CardTitle>{t('financialOverview')}</CardTitle>
-                <CardDescription>{t('keyFinancialMetrics')}</CardDescription>
+                <CardTitle>{t('recentAlerts')}</CardTitle>
+                <CardDescription>{t('importantNotificationsAboutYourProperties')}</CardDescription>
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">
-                  <div className="flex justify-between items-center">
-                    <div className="space-y-1">
-                      <p className="text-sm text-muted-foreground">{t('totalValue')}</p>
-                      <p className="text-3xl font-bold">€2.5M</p>
-                    </div>
-                    <Calculator className="h-8 w-8 text-primary opacity-80" />
-                  </div>
-                  <Separator />
-                  <div className="space-y-2">
-                    <div className="flex justify-between">
-                      <span className="text-sm">{t('monthlyIncome')}</span>
-                      <span className="text-sm text-green-600">€12,500</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-sm">{t('averageROI')}</span>
-                      <span className="text-sm">7.2%</span>
-                    </div>
-                  </div>
-                </div>
-              </CardContent>
-              <CardFooter>
-                <Button variant="ghost" className="w-full" onClick={() => navigate('/portfolio-analytics')}>
-                  {t('viewFinancialDetails')}
-                </Button>
-              </CardFooter>
-            </Card>
-
-            <Card>
-              <CardHeader>
-                <CardTitle>{t('recentActivity')}</CardTitle>
-                <CardDescription>{t('latestUpdatesAndNotifications')}</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  <div className="border-l-4 border-green-500 pl-3 py-1">
-                    <p className="font-medium">{t('rentCollected')}</p>
-                    <p className="text-sm text-muted-foreground">€1,200 - Berlin Apartment</p>
-                    <p className="text-xs text-muted-foreground">3 {t('daysAgo')}</p>
-                  </div>
-                  <div className="border-l-4 border-amber-500 pl-3 py-1">
-                    <p className="font-medium">{t('maintenanceScheduled')}</p>
-                    <p className="text-sm text-muted-foreground">Munich Property</p>
-                    <p className="text-xs text-muted-foreground">1 {t('weekAgo')}</p>
-                  </div>
-                  <div className="border-l-4 border-blue-500 pl-3 py-1">
-                    <p className="font-medium">{t('propertyViewsIncreased')}</p>
-                    <p className="text-sm text-muted-foreground">+15% {t('lastMonth')}</p>
-                    <p className="text-xs text-muted-foreground">2 {t('weeksAgo')}</p>
-                  </div>
-                </div>
-              </CardContent>
-              <CardFooter>
-                <Button variant="ghost" className="w-full">
-                  {t('viewAllActivity')}
-                </Button>
-              </CardFooter>
-            </Card>
-          </div>
-
-          <div className="grid gap-6 md:grid-cols-2 mt-6">
-            <PropertyScanner />
-            <InvestmentOpportunityFeed />
-          </div>
-          
-          <div className="mt-6">
-            <Card>
-              <CardHeader className="flex flex-row items-center justify-between">
-                <div>
-                  <CardTitle>{t('quickActions')}</CardTitle>
-                  <CardDescription>{t('commonTasksAndCalculators')}</CardDescription>
-                </div>
-              </CardHeader>
-              <CardContent>
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                  <Card className="hover:border-primary/50 cursor-pointer transition-all" 
-                        onClick={() => navigate('/advanced-calculators')}>
-                    <CardContent className="p-4 text-center">
-                      <Calculator className="h-8 w-8 mx-auto mb-2 text-primary" />
-                      <p className="text-sm font-medium">{t('investmentCalculator')}</p>
-                    </CardContent>
-                  </Card>
+                  <Alert>
+                    <AlertTitle>{t('refinancingOpportunity')}</AlertTitle>
+                    <AlertDescription className="text-sm">
+                      {t('propertyEligibleRefinancing')}. 3.2% {t('potentialRate')}.
+                    </AlertDescription>
+                    <Button variant="link" className="p-0 h-auto mt-2">
+                      {t('viewDetails')}
+                    </Button>
+                  </Alert>
                   
-                  <Card className="hover:border-primary/50 cursor-pointer transition-all"
-                        onClick={() => navigate('/property-comparator')}>
-                    <CardContent className="p-4 text-center">
-                      <Building className="h-8 w-8 mx-auto mb-2 text-primary" />
-                      <p className="text-sm font-medium">{t('compareProperties')}</p>
-                    </CardContent>
-                  </Card>
-                  
-                  <Card className="hover:border-primary/50 cursor-pointer transition-all"
-                        onClick={() => navigate('/market-explorer')}>
-                    <CardContent className="p-4 text-center">
-                      <Globe className="h-8 w-8 mx-auto mb-2 text-primary" />
-                      <p className="text-sm font-medium">{t('exploreMarkets')}</p>
-                    </CardContent>
-                  </Card>
-                  
-                  <Card className="hover:border-primary/50 cursor-pointer transition-all"
-                        onClick={() => navigate('/portfolio-analytics')}>
-                    <CardContent className="p-4 text-center">
-                      <ChartBar className="h-8 w-8 mx-auto mb-2 text-primary" />
-                      <p className="text-sm font-medium">{t('portfolioAnalytics')}</p>
-                    </CardContent>
-                  </Card>
+                  <Alert>
+                    <AlertTitle>{t('marketTrendAlert')}</AlertTitle>
+                    <AlertDescription className="text-sm">
+                      {t('interestRateChangeImpact')}. +0.25% {t('rateChange')}.
+                    </AlertDescription>
+                    <Button variant="link" className="p-0 h-auto mt-2">
+                      {t('analyzeImpact')}
+                    </Button>
+                  </Alert>
                 </div>
               </CardContent>
             </Card>
-          </div>
-        </TabsContent>
-        
-        <TabsContent value="portfolio">
-          <div className="mt-6">
-            <EnhancedPortfolioDashboard />
-          </div>
-        </TabsContent>
-        
-        <TabsContent value="market">
-          <div className="mt-6 space-y-6">
-            <Card>
-              <CardHeader>
-                <CardTitle>{t('marketTrends')}</CardTitle>
-                <CardDescription>{t('realEstateMarketUpdates')}</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="flex items-center justify-center h-64">
-                  <div className="text-center space-y-2">
-                    <Globe className="h-12 w-12 mx-auto text-primary/60" />
-                    <h3 className="font-semibold text-lg">{t('marketExplorer')}</h3>
-                    <p className="text-sm text-muted-foreground max-w-md">
-                      {t('marketExplorerDescription')}
-                    </p>
-                    <Button onClick={() => navigate('/market-explorer')}>
-                      {t('exploreMarkets')}
+            
+            {/* Experience-based recommendations */}
+            {preferences.experienceLevel === 'beginner' && (
+              <Card className="md:col-span-2">
+                <CardHeader>
+                  <CardTitle>{t('beginnerInvestorTips')}</CardTitle>
+                  <CardDescription>{t('helpfulResourcesForBeginningInvestors')}</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="grid md:grid-cols-3 gap-4">
+                    <Button variant="outline" className="h-auto py-4 flex flex-col items-center justify-center">
+                      <span className="font-medium">{t('cashFlowCalculation')}</span>
+                      <span className="text-sm text-muted-foreground mt-1">{t('learnToCalculateRentalCashFlow')}</span>
+                    </Button>
+                    <Button variant="outline" className="h-auto py-4 flex flex-col items-center justify-center">
+                      <span className="font-medium">{t('investmentBasics')}</span>
+                      <span className="text-sm text-muted-foreground mt-1">{t('understandFundamentalConcepts')}</span>
+                    </Button>
+                    <Button variant="outline" className="h-auto py-4 flex flex-col items-center justify-center">
+                      <span className="font-medium">{t('mortgageCalculator')}</span>
+                      <span className="text-sm text-muted-foreground mt-1">{t('estimateYourMortgagePayments')}</span>
                     </Button>
                   </div>
-                </div>
-              </CardContent>
-            </Card>
+                </CardContent>
+              </Card>
+            )}
             
-            <InvestmentOpportunityFeed />
+            {preferences.experienceLevel === 'expert' && (
+              <Card className="md:col-span-2">
+                <CardHeader>
+                  <CardTitle>{t('advancedInvestorTools')}</CardTitle>
+                  <CardDescription>{t('specializedToolsForExperiencedInvestors')}</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="grid md:grid-cols-3 gap-4">
+                    <Button variant="outline" className="h-auto py-4 flex flex-col items-center justify-center">
+                      <span className="font-medium">{t('taxOptimization')}</span>
+                      <span className="text-sm text-muted-foreground mt-1">{t('advancedTaxStrategies')}</span>
+                    </Button>
+                    <Button variant="outline" className="h-auto py-4 flex flex-col items-center justify-center">
+                      <span className="font-medium">{t('investmentAnalysis')}</span>
+                      <span className="text-sm text-muted-foreground mt-1">{t('detailedInvestmentMetrics')}</span>
+                    </Button>
+                    <Button variant="outline" className="h-auto py-4 flex flex-col items-center justify-center">
+                      <span className="font-medium">{t('portfolioOptimization')}</span>
+                      <span className="text-sm text-muted-foreground mt-1">{t('maximizeReturnsAcrossHoldings')}</span>
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
           </div>
         </TabsContent>
         
         <TabsContent value="analytics">
-          <div className="mt-6 space-y-6">
-            <Card>
-              <CardHeader>
-                <CardTitle>{t('portfolioAnalytics')}</CardTitle>
-                <CardDescription>{t('insightfulDataAboutYourPortfolio')}</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="flex items-center justify-center h-64">
-                  <div className="text-center space-y-2">
-                    <ChartBar className="h-12 w-12 mx-auto text-primary/60" />
-                    <h3 className="font-semibold text-lg">{t('advancedAnalytics')}</h3>
-                    <p className="text-sm text-muted-foreground max-w-md">
-                      {t('advancedAnalyticsDescription')}
-                    </p>
-                    <Button onClick={() => navigate('/portfolio-analytics')}>
-                      {t('viewAdvancedAnalytics')}
-                    </Button>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
+          <div className="space-y-6">
+            <PropertyAnalyticsVisualizations />
+          </div>
+        </TabsContent>
+        
+        <TabsContent value="forecast">
+          <div className="space-y-6">
+            <MarketGrowthForecast />
+          </div>
+        </TabsContent>
+        
+        <TabsContent value="tests">
+          <div className="space-y-6">
+            <OnboardingTests />
           </div>
         </TabsContent>
       </Tabs>
-      
-      {/* Show tips based on experience level */}
-      {preferences.experienceLevel === 'beginner' && (
-        <Card className="bg-blue-50 dark:bg-blue-950 border-blue-200 dark:border-blue-800">
-          <CardHeader className="pb-2">
-            <CardTitle className="flex items-center text-blue-700 dark:text-blue-300">
-              <Info className="h-5 w-5 mr-2" />
-              {t('beginnerTips')}
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-sm">{t('beginnerDashboardTip')}</p>
-          </CardContent>
-          <CardFooter>
-            <Button variant="link" size="sm" className="px-0" onClick={() => navigate('/education')}>
-              {t('learnMoreAboutRealEstateInvesting')}
-            </Button>
-          </CardFooter>
-        </Card>
-      )}
-      
-      {preferences.experienceLevel === 'expert' && (
-        <Card className="bg-primary/5 border-primary/20">
-          <CardHeader className="pb-2">
-            <CardTitle className="flex items-center">
-              <Info className="h-5 w-5 mr-2" />
-              {t('expertInsights')}
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-sm">{t('expertDashboardTip')}</p>
-          </CardContent>
-        </Card>
-      )}
     </div>
   );
 };

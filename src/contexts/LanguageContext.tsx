@@ -1,4 +1,5 @@
-import React, { createContext, useContext, useState } from 'react';
+
+import React, { createContext, useContext, useState, useEffect } from 'react';
 
 interface LanguageContextProps {
   language: string;
@@ -6,15 +7,9 @@ interface LanguageContextProps {
   setLanguage: (lang: string) => void;
   translations: Record<string, Record<string, string>>;
   updateTranslations: (newTranslations: any) => void;
+  detectUserLanguage: () => string;
+  availableLanguages: { code: string; name: string; flag: string; }[];
 }
-
-const LanguageContext = createContext<LanguageContextProps>({
-  language: 'en',
-  t: (key: string) => key,
-  setLanguage: () => {},
-  translations: {},
-  updateTranslations: () => {}
-});
 
 // English translations - Default language
 const englishTranslations = {
@@ -541,7 +536,44 @@ const englishTranslations = {
   languagePreferences: "Language Preferences",
   languagePreferencesDescription: "Advanced options for language preferences",
   languageChanged: "Language Changed",
-  displayLanguageChangedTo: "Display language changed to"
+  displayLanguageChangedTo: "Display language changed to",
+  
+  // Market-specific terms
+  keyMarketMetrics: "Key Market Metrics",
+  averagePrice: "Average Price",
+  averageRent: "Average Rent",
+  yieldRange: "Yield Range",
+  annualGrowth: "Annual Growth",
+  keyInsights: "Key Insights",
+  importantFactorsToConsider: "Important factors to consider",
+  propertiesInMarket: "Properties in {{market}} market",
+  expectedYield: "Expected Yield",
+  findProperties: "Find Properties",
+  realEstateMarketTrends: "Real Estate Market Trends",
+  marketTrendsVisualization: "Market Trends Visualization", 
+  trendsDescription: "Track market trends and performance data",
+  analyzeNeighborhoods: "Analyze neighborhoods and local trends",
+  identifyInvestmentOpportunities: "Identify investment opportunities in this market",
+  
+  // New Features
+  autoDetectLanguage: "Auto-detect language",
+  languageDetected: "Language detected",
+  browserLanguageDetected: "Browser language detected",
+  marketSpecificFeatures: "Market-specific features",
+  marketSpecificTools: "Market-specific tools",
+  viewMarketSpecificTools: "View Market-specific Tools",
+  showBrowserLanguage: "Use browser language",
+  testAutomation: "Test Automation",
+  runTests: "Run Tests",
+  testSucceeded: "Test succeeded",
+  testFailed: "Test failed",
+  overview: "Overview",
+  propertyAnalytics: "Property Analytics",
+  dataVisualization: "Data Visualization",
+  yearlyComparison: "Yearly Comparison",
+  quarterlyPerformance: "Quarterly Performance",
+  marketComparison: "Market Comparison",
+  forecastedGrowth: "Forecasted Growth"
 };
 
 // German translations
@@ -665,61 +697,192 @@ const germanTranslations = {
   accessComprehensiveInvestmentTools: 'Zugang zu umfassenden Tools zur Analyse und Optimierung Ihrer Investitionen',
   completeInvestmentToolsuite: 'Komplettes Set an Tools für Immobilieninvestoren',
   languageChanged: 'Sprache geändert',
-  displayLanguageChangedTo: 'Anzeigesprache geändert zu'
+  displayLanguageChangedTo: 'Anzeigesprache geändert zu',
+  
+  // Market-specific terms
+  keyMarketMetrics: "Wichtige Marktkennzahlen",
+  averagePrice: "Durchschnittspreis",
+  averageRent: "Durchschnittsmiete",
+  yieldRange: "Renditebereich",
+  annualGrowth: "Jährliches Wachstum",
+  keyInsights: "Wichtige Erkenntnisse",
+  importantFactorsToConsider: "Wichtige zu berücksichtigende Faktoren",
+  propertiesInMarket: "Immobilien im {{market}} Markt",
+  expectedYield: "Erwartete Rendite",
+  findProperties: "Immobilien finden",
+  realEstateMarketTrends: "Immobilienmarkttrends",
+  marketTrendsVisualization: "Markttrend-Visualisierung", 
+  trendsDescription: "Verfolgen Sie Markttrends und Performance-Daten",
+  analyzeNeighborhoods: "Analysieren Sie Nachbarschaften und lokale Trends",
+  identifyInvestmentOpportunities: "Identifizieren Sie Investitionsmöglichkeiten in diesem Markt",
+  
+  // New Features
+  autoDetectLanguage: "Sprache automatisch erkennen",
+  languageDetected: "Sprache erkannt",
+  browserLanguageDetected: "Browser-Sprache erkannt",
+  marketSpecificFeatures: "Marktspezifische Funktionen",
+  marketSpecificTools: "Marktspezifische Tools",
+  viewMarketSpecificTools: "Marktspezifische Tools anzeigen",
+  showBrowserLanguage: "Browser-Sprache verwenden",
+  testAutomation: "Test-Automatisierung",
+  runTests: "Tests ausführen",
+  testSucceeded: "Test erfolgreich",
+  testFailed: "Test fehlgeschlagen",
+  overview: "Überblick",
+  propertyAnalytics: "Immobilienanalysen",
+  dataVisualization: "Datenvisualisierung",
+  yearlyComparison: "Jahresvergleich",
+  quarterlyPerformance: "Quartalsentwicklung",
+  marketComparison: "Marktvergleich",
+  forecastedGrowth: "Prognostiziertes Wachstum"
 };
 
-export const LanguageProvider = ({ children }: { children: React.ReactNode }) => {
+// French translations
+const frenchTranslations = {
+  dashboard: 'Tableau de bord',
+  properties: 'Propriétés',
+  investorDashboard: 'Tableau de bord investisseur',
+  calculators: 'Calculatrices',
+  marketExplorer: 'Explorateur de marché',
+  autoDetectLanguage: "Détecter la langue automatiquement",
+  languageDetected: "Langue détectée",
+  overview: "Vue d'ensemble",
+  france: 'France'
+};
+
+// Spanish translations
+const spanishTranslations = {
+  dashboard: 'Panel de control',
+  properties: 'Propiedades',
+  investorDashboard: 'Panel de inversor',
+  calculators: 'Calculadoras',
+  marketExplorer: 'Explorador de mercado',
+  autoDetectLanguage: "Detectar idioma automáticamente",
+  languageDetected: "Idioma detectado",
+  overview: "Visión general"
+};
+
+// Italian translations
+const italianTranslations = {
+  dashboard: 'Cruscotto',
+  properties: 'Proprietà',
+  investorDashboard: 'Cruscotto investitore',
+  calculators: 'Calcolatrici',
+  marketExplorer: 'Esploratore di mercato',
+  autoDetectLanguage: "Rileva lingua automaticamente",
+  languageDetected: "Lingua rilevata",
+  overview: "Panoramica"
+};
+
+const LanguageContext = createContext<LanguageContextProps>({
+  language: 'en',
+  t: (key: string) => key,
+  setLanguage: () => {},
+  translations: { en: englishTranslations },
+  updateTranslations: () => {},
+  detectUserLanguage: () => 'en',
+  availableLanguages: []
+});
+
+export const LanguageProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [language, setLanguage] = useState<string>('en');
   const [translations, setTranslations] = useState<Record<string, Record<string, string>>>({
     en: englishTranslations,
-    de: germanTranslations
+    de: germanTranslations,
+    fr: frenchTranslations,
+    es: spanishTranslations,
+    it: italianTranslations
   });
 
-  const updateTranslations = (newTranslations: any) => {
+  // Available languages with name and flag
+  const availableLanguages = [
+    { code: 'en', name: 'English', flag: '🇬🇧' },
+    { code: 'de', name: 'Deutsch', flag: '🇩🇪' },
+    { code: 'fr', name: 'Français', flag: '🇫🇷' },
+    { code: 'es', name: 'Español', flag: '🇪🇸' },
+    { code: 'it', name: 'Italiano', flag: '🇮🇹' }
+  ];
+
+  // Detect user language from browser settings
+  const detectUserLanguage = (): string => {
+    if (typeof window === 'undefined') return 'en';
+    
+    const browserLang = navigator.language.split('-')[0];
+    
+    // Check if we support this language
+    if (Object.keys(translations).includes(browserLang)) {
+      return browserLang;
+    }
+    
+    // Fallback to English
+    return 'en';
+  };
+
+  // Initialize language from localStorage or browser settings
+  useEffect(() => {
+    const storedLanguage = localStorage.getItem('language');
+    
+    if (storedLanguage) {
+      setLanguage(storedLanguage);
+    } else {
+      const detectedLang = detectUserLanguage();
+      setLanguage(detectedLang);
+      localStorage.setItem('language', detectedLang);
+    }
+  }, []);
+  
+  // Save language preference to localStorage when it changes
+  useEffect(() => {
+    localStorage.setItem('language', language);
+  }, [language]);
+
+  const t = (key: string, vars?: { [key: string]: string | number }) => {
+    // Get translated string or fallback to English or the key itself
+    const currentTranslations = translations[language] || translations.en;
+    let translated = currentTranslations[key] || englishTranslations[key] || key;
+    
+    // Replace variables in the string
+    if (vars) {
+      Object.keys(vars).forEach(varKey => {
+        translated = translated.replace(new RegExp(`{{${varKey}}}`, 'g'), String(vars[varKey]));
+      });
+    }
+    
+    return translated;
+  };
+
+  const updateTranslations = (newTranslations: Record<string, Record<string, string>>) => {
     setTranslations(prev => {
       const updatedTranslations = { ...prev };
       
       // For each language key in the translations
-      Object.keys(newTranslations).forEach(translationKey => {
-        // For each language 
-        Object.keys(newTranslations[translationKey]).forEach(lang => {
-          // Create language object if it doesn't exist
-          if (!updatedTranslations[lang]) {
-            updatedTranslations[lang] = {};
-          }
-          // Add translation
-          updatedTranslations[lang][translationKey] = newTranslations[translationKey][lang];
-        });
+      Object.keys(newTranslations).forEach(langKey => {
+        // Update or add language translations
+        updatedTranslations[langKey] = {
+          ...updatedTranslations[langKey],
+          ...newTranslations[langKey]
+        };
       });
       
       return updatedTranslations;
     });
   };
 
-  // Translate function
-  const t = (key: string, vars?: { [key: string]: string | number }): string => {
-    // Get the current language translations
-    const currentLangTranslations = translations[language] || {};
-    const englishFallback = translations['en'] || {};
-    
-    // Get the translation or fall back to English or the key itself
-    let translation = currentLangTranslations[key] || englishFallback[key] || key;
-    
-    // Replace variables if provided
-    if (vars) {
-      Object.entries(vars).forEach(([varKey, value]) => {
-        translation = translation.replace(new RegExp(`{{${varKey}}}`, 'g'), String(value));
-      });
-    }
-    
-    return translation;
-  };
-
   return (
-    <LanguageContext.Provider value={{ language, setLanguage, t, translations, updateTranslations }}>
+    <LanguageContext.Provider value={{ 
+      language, 
+      t, 
+      setLanguage, 
+      translations, 
+      updateTranslations,
+      detectUserLanguage,
+      availableLanguages
+    }}>
       {children}
     </LanguageContext.Provider>
   );
 };
 
-export const useLanguage = () => useContext(LanguageContext);
+export const useLanguage = (): LanguageContextProps => {
+  return useContext(LanguageContext);
+};

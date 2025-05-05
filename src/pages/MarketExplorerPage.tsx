@@ -1,8 +1,10 @@
+
 import React, { useState, useEffect } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Slider } from '@/components/ui/slider';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useMarketFilter } from '@/hooks/use-market-filter';
 import MarketTrendsAnalysis from '@/components/market/MarketTrendsAnalysis';
@@ -14,6 +16,47 @@ import { Badge } from '@/components/ui/badge';
 import MarketOpportunitiesTable from '@/components/analysis/MarketOpportunitiesTable';
 import { InvestmentMarket } from '@/contexts/UserPreferencesContext';
 import { useUserPreferences } from '@/contexts/UserPreferencesContext';
+import { BarChart2 as ChartBar, Filter } from 'lucide-react';
+
+// Sample market data
+const marketDataMap: Record<string, any> = {
+  germany: {
+    averagePrice: '€425,000',
+    averageRent: '€1,450/mo',
+    yieldRange: '3.8% - 5.2%',
+    growth: '+3.6%',
+    keyInsights: [
+      'Strong rental protections for tenants',
+      'High demand in major cities like Berlin and Munich',
+      'Conservative lending standards',
+      'Growing interest in suburban areas post-pandemic'
+    ]
+  },
+  usa: {
+    averagePrice: '$365,000',
+    averageRent: '$1,850/mo',
+    yieldRange: '5.8% - 7.5%',
+    growth: '+5.9%',
+    keyInsights: [
+      'Varied market conditions across different states',
+      'Property tax considerations vary significantly by location',
+      'Strong opportunity for value-add investments',
+      'Growing focus on sustainable building practices'
+    ]
+  },
+  global: {
+    averagePrice: '€320,000',
+    averageRent: '€1,250/mo',
+    yieldRange: '4.5% - 6.3%',
+    growth: '+4.2%',
+    keyInsights: [
+      'Increasing institutional investment in residential sector',
+      'Remote work driving new location preferences',
+      'Sustainability becoming a key value driver',
+      'Interest rates affecting affordability in many markets'
+    ]
+  }
+};
 
 const MarketExplorerPage: React.FC = () => {
   const { t } = useLanguage();
@@ -25,8 +68,17 @@ const MarketExplorerPage: React.FC = () => {
   const [activeTab, setActiveTab] = useState('overview');
   const [mapLoaded, setMapLoaded] = useState(false);
   const [showAnalytics, setShowAnalytics] = useState(false);
+  const [priceRange, setPriceRange] = useState([200000, 600000]);
+  const [yieldRange, setYieldRange] = useState([3, 7]);
   
   const markets = getAvailableMarkets();
+
+  // Get current market data
+  const getCurrentMarketData = () => {
+    return marketDataMap[selectedMarket] || marketDataMap.global;
+  };
+  
+  const currentMarketData = getCurrentMarketData();
 
   // Update user preferences when selected market changes
   useEffect(() => {
@@ -130,7 +182,7 @@ const MarketExplorerPage: React.FC = () => {
               </CardHeader>
               <CardContent>
                 <ul className="space-y-2">
-                  {currentMarketData.keyInsights.map((insight, index) => (
+                  {currentMarketData.keyInsights.map((insight: string, index: number) => (
                     <li key={index} className="flex items-center">
                       <span className="h-2 w-2 rounded-full bg-primary mr-2" />
                       {insight}

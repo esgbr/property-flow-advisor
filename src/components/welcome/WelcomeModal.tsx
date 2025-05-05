@@ -1,7 +1,8 @@
 
 import React, { useEffect, useState } from 'react';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
-import OnboardingFlow, { OnboardingData } from '@/components/onboarding/OnboardingFlow';
+import OnboardingFlow from '@/components/onboarding/OnboardingFlow';
+import { OnboardingData } from '@/components/onboarding/types';
 import { useUserPreferences } from '@/contexts/UserPreferencesContext';
 import { toast } from 'sonner';
 import { useNavigate } from 'react-router-dom';
