@@ -731,6 +731,7 @@ const translations: Record<SupportedLanguage, Record<string, string>> = {
     "exportAmortizationSchedule": "Export Schedule",
     "loanAmountTotal": "Loan Amount",
     "overview_main": "Overview",
+    
     // Financing
     "activeFinancingPlans": "Active Financing Plans",
     "viewAndManageAllFinancingPlans": "View and manage all financing plans",
@@ -819,8 +820,6 @@ const translations: Record<SupportedLanguage, Record<string, string>> = {
     "financingPlans": "Finanzierungspläne",
     "liquidityPlanning": "Liquiditätsplanung",
     "view": "Anzeigen",
-    "edit": "Bearbeiten",
-    "delete": "Löschen",
     "comingSoon": "Demnächst verfügbar"
   },
   
