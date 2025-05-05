@@ -15,6 +15,7 @@ import MarketExplorerPage from '@/pages/MarketExplorerPage';
 import InvestorDashboard from '@/pages/InvestorDashboard';
 import FinancingPlansPage from '@/pages/FinancingPlansPage';
 import LanguageSettings from '@/pages/LanguageSettings';
+import AuthPage from '@/pages/AuthPage';
 
 function App() {
   // Enhanced CSP policy for better security
@@ -52,7 +53,10 @@ function App() {
                   <Toaster />
                   
                   <Routes>
-                    {/* Make Dashboard the home page */}
+                    {/* Auth routes */}
+                    <Route path="/auth" element={<AuthPage />} />
+                    
+                    {/* Main app routes */}
                     <Route path="/" element={<MainLayout />}>
                       <Route index element={<Dashboard />} />
                       <Route path="dashboard" element={<Dashboard />} />

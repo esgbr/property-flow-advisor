@@ -51,6 +51,9 @@ export interface UserPreferences {
   highContrast?: boolean;
   largeText?: boolean;
   screenReader?: boolean;
+  
+  // Add user role property for admin features
+  role?: 'user' | 'admin';
 }
 
 // Define OnboardingData type for WelcomeModal - fixing the error by making sure advanced is included
@@ -70,6 +73,10 @@ interface UserPreferencesContextProps {
   isFirstVisit?: boolean;
   setIsFirstVisit?: (value: boolean) => void;
   saveOnboardingData?: (data: Partial<OnboardingData>) => void;
+  loginUser?: (email: string, password: string) => Promise<boolean>;
+  registerUser?: (name: string, email: string, password: string) => Promise<boolean>;
+  logoutUser?: () => void;
+  isAuthenticated?: boolean;
 }
 
 const UserPreferencesContext = createContext<UserPreferencesContextProps>({
@@ -115,7 +122,9 @@ const defaultPreferences: UserPreferences = {
   reduceMotion: false,
   highContrast: false,
   largeText: false,
-  screenReader: false
+  screenReader: false,
+  // Default role is user, not admin
+  role: 'user'
 };
 
 export const UserPreferencesProvider: React.FC<UserPreferencesProviderProps> = ({ children }) => {
@@ -126,10 +135,17 @@ export const UserPreferencesProvider: React.FC<UserPreferencesProviderProps> = (
   });
   
   const [isFirstVisit, setIsFirstVisit] = useState<boolean>(preferences.isFirstVisit !== false);
+  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
 
   useEffect(() => {
     // Save preferences to localStorage whenever they change
     localStorage.setItem('userPreferences', JSON.stringify(preferences));
+    
+    // Check for authentication token
+    const authToken = localStorage.getItem('authToken');
+    if (authToken) {
+      setIsAuthenticated(true);
+    }
   }, [preferences]);
 
   const updatePreferences = (newPreferences: UserPreferences) => {
@@ -148,6 +164,65 @@ export const UserPreferencesProvider: React.FC<UserPreferencesProviderProps> = (
       onboardingCompleted: true
     });
   };
+  
+  // Mock login function (would connect to a real backend in production)
+  const loginUser = async (email: string, password: string): Promise<boolean> => {
+    try {
+      // Simulate API call
+      await new Promise(resolve => setTimeout(resolve, 800));
+      
+      // For demo purposes, consider specific emails as admin
+      const isAdmin = email.includes('admin') || email === 'admin@example.com';
+      
+      // Store auth token (in real app, this would come from backend)
+      localStorage.setItem('authToken', 'mock-jwt-token');
+      setIsAuthenticated(true);
+      
+      // Update user preferences
+      updatePreferences({ 
+        ...preferences,
+        email,
+        role: isAdmin ? 'admin' : 'user',
+        name: preferences.name || email.split('@')[0]
+      });
+      
+      return true;
+    } catch (error) {
+      console.error('Login error:', error);
+      return false;
+    }
+  };
+  
+  // Mock register function
+  const registerUser = async (name: string, email: string, password: string): Promise<boolean> => {
+    try {
+      // Simulate API call
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      
+      // Store auth token (in real app, this would come from backend)
+      localStorage.setItem('authToken', 'mock-jwt-token');
+      setIsAuthenticated(true);
+      
+      // Update user preferences
+      updatePreferences({ 
+        ...preferences,
+        name,
+        email,
+        role: 'user'
+      });
+      
+      return true;
+    } catch (error) {
+      console.error('Registration error:', error);
+      return false;
+    }
+  };
+  
+  // Logout function
+  const logoutUser = () => {
+    localStorage.removeItem('authToken');
+    setIsAuthenticated(false);
+  };
 
   return (
     <UserPreferencesContext.Provider value={{ 
@@ -156,7 +231,11 @@ export const UserPreferencesProvider: React.FC<UserPreferencesProviderProps> = (
       resetOnboarding, 
       isFirstVisit, 
       setIsFirstVisit,
-      saveOnboardingData 
+      saveOnboardingData,
+      loginUser,
+      registerUser,
+      logoutUser,
+      isAuthenticated
     }}>
       {children}
     </UserPreferencesContext.Provider>

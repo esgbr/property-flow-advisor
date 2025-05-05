@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useRef, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Bar, BarChart, Line, LineChart, Pie, PieChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -44,6 +44,38 @@ const incomeVsExpenses = [
 const PortfolioAnalytics: React.FC = () => {
   const { t } = useLanguage();
   const { preferences } = useUserPreferences();
+  const chartContainerRef = useRef<HTMLDivElement>(null);
+  const performanceChartRef = useRef<HTMLDivElement>(null);
+  const distributionChartRef = useRef<HTMLDivElement>(null);
+  const cashflowChartRef = useRef<HTMLDivElement>(null);
+  
+  // Fix chart rendering on window resize
+  useEffect(() => {
+    const handleResize = () => {
+      const charts = document.querySelectorAll('.recharts-wrapper');
+      charts.forEach(chart => {
+        if (chart.parentElement) {
+          const parent = chart.parentElement;
+          parent.style.minHeight = '250px';
+          setTimeout(() => {
+            // Force recharts to recalculate dimensions
+            window.dispatchEvent(new Event('resize'));
+          }, 100);
+        }
+      });
+    };
+
+    // Initial render
+    handleResize();
+
+    // Add resize listener
+    window.addEventListener('resize', handleResize);
+    
+    // Clean up
+    return () => {
+      window.removeEventListener('resize', handleResize);
+    };
+  }, []);
 
   // Calculate portfolio metrics
   const totalProperties = sampleProperties.length;
@@ -86,7 +118,7 @@ const PortfolioAnalytics: React.FC = () => {
           </TabsList>
           
           <TabsContent value="performance" className="space-y-4 pt-4">
-            <div className="grid grid-cols-3 gap-2">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
               <div className="bg-muted p-3 rounded-lg">
                 <div className="text-sm font-medium text-muted-foreground">{t('totalValue')}</div>
                 <div className="text-2xl font-bold">€{totalPortfolioValue.toLocaleString()}</div>
@@ -101,20 +133,27 @@ const PortfolioAnalytics: React.FC = () => {
               </div>
             </div>
             
-            <div className="h-64">
+            <div ref={performanceChartRef} className="h-64 w-full">
               <ResponsiveContainer width="100%" height="100%">
-                <LineChart data={monthlyReturn}>
+                <LineChart data={monthlyReturn} margin={{ top: 5, right: 20, bottom: 5, left: 0 }}>
                   <XAxis dataKey="name" />
                   <YAxis unit="%" />
                   <Tooltip formatter={(value) => `${value}%`} />
-                  <Line type="monotone" dataKey="return" stroke="#3b82f6" strokeWidth={2} />
+                  <Line 
+                    type="monotone" 
+                    dataKey="return" 
+                    stroke="#3b82f6" 
+                    strokeWidth={2}
+                    activeDot={{ r: 6 }}
+                    isAnimationActive={true}
+                  />
                 </LineChart>
               </ResponsiveContainer>
             </div>
           </TabsContent>
           
           <TabsContent value="distribution" className="pt-4">
-            <div className="h-64">
+            <div ref={distributionChartRef} className="h-64 w-full">
               <ResponsiveContainer width="100%" height="100%">
                 <PieChart>
                   <Pie
@@ -124,7 +163,9 @@ const PortfolioAnalytics: React.FC = () => {
                     outerRadius={80}
                     fill="#8884d8"
                     dataKey="value"
+                    nameKey="name"
                     label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
+                    isAnimationActive={true}
                   />
                   <Tooltip formatter={(value) => `${value}%`} />
                 </PieChart>
@@ -133,9 +174,12 @@ const PortfolioAnalytics: React.FC = () => {
           </TabsContent>
           
           <TabsContent value="cashflow" className="pt-4">
-            <div className="h-64">
+            <div ref={cashflowChartRef} className="h-64 w-full">
               <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={incomeVsExpenses}>
+                <BarChart 
+                  data={incomeVsExpenses}
+                  margin={{ top: 5, right: 20, bottom: 5, left: 0 }}
+                >
                   <XAxis dataKey="name" />
                   <YAxis />
                   <Tooltip />

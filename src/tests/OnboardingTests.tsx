@@ -6,6 +6,7 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import { Check, X, PlayCircle } from 'lucide-react';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Progress } from '@/components/ui/progress';
+import { useUserPreferences } from '@/contexts/UserPreferencesContext';
 
 // Test result type
 interface TestResult {
@@ -78,9 +79,15 @@ const runMarketFilterTests = (): Promise<TestResult[]> => {
 
 const OnboardingTests: React.FC = () => {
   const { t } = useLanguage();
+  const { preferences } = useUserPreferences();
   const [testResults, setTestResults] = useState<TestResult[]>([]);
   const [isRunning, setIsRunning] = useState(false);
   const [progress, setProgress] = useState(0);
+  
+  // Only render this component for admins
+  if (preferences.role !== 'admin') {
+    return null;
+  }
   
   const runAllTests = async () => {
     setIsRunning(true);
@@ -123,7 +130,7 @@ const OnboardingTests: React.FC = () => {
       <CardHeader className="pb-3">
         <CardTitle className="flex items-center">
           <PlayCircle className="mr-2 h-5 w-5" />
-          {t('testAutomation')}
+          {t('testAutomation')} <span className="ml-2 text-xs bg-primary/10 text-primary px-2 py-0.5 rounded">{t('adminOnly')}</span>
         </CardTitle>
         <CardDescription>Test critical functionality like onboarding flow and market filtering</CardDescription>
       </CardHeader>
