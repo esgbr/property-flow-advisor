@@ -1,8 +1,8 @@
 
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { GermanAfaCalculator } from '@/components/german/GermanAfaCalculator';
-import { ArrowLeft, Info, ArrowRight } from 'lucide-react';
+import { ArrowLeft, Info, ArrowRight, Check, FileDown } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { useNavigate } from 'react-router-dom';
@@ -11,12 +11,16 @@ import WorkflowNavigation from '@/components/workflow/WorkflowNavigation';
 import WorkflowSuggestions from '@/components/workflow/WorkflowSuggestions';
 import RelatedGermanTools from '@/components/german/RelatedGermanTools';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { toast } from 'sonner';
+import { Progress } from '@/components/ui/progress';
+import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 
 const AfaCalculatorPage: React.FC = () => {
-  const { language } = useLanguage();
+  const { language, t } = useLanguage();
   const navigate = useNavigate();
   const workflow = useWorkflow('steuer');
   const isMobile = useIsMobile();
+  const [calculationDone, setCalculationDone] = useState(false);
   
   // Set the document title for better SEO and user experience
   useEffect(() => {
@@ -27,6 +31,34 @@ const AfaCalculatorPage: React.FC = () => {
 
   // Get next workflow step
   const nextStep = workflow.getNextSteps('afa', 1)[0];
+
+  // Handle calculation completion
+  const handleCalculationComplete = (result: any) => {
+    setCalculationDone(true);
+    toast.success(language === 'de' 
+      ? 'AfA-Berechnung abgeschlossen' 
+      : 'Depreciation calculation completed');
+  };
+
+  // Handle continuing to next workflow step
+  const handleContinueWorkflow = () => {
+    if (nextStep) {
+      workflow.goToStep(nextStep.id);
+      toast.info(language === 'de'
+        ? `Nächster Schritt: ${workflow.getStepLabel(nextStep.id)}`
+        : `Next step: ${workflow.getStepLabel(nextStep.id)}`);
+    }
+  };
+
+  // Handle exporting results
+  const handleExportResults = () => {
+    toast.info(language === 'de' 
+      ? 'AfA-Berechnung wird exportiert...' 
+      : 'Exporting depreciation calculation...');
+    // Export logic would go here
+  };
+
+  const progress = workflow.getWorkflowProgress('afa');
 
   return (
     <div className="container mx-auto px-4 py-8">
@@ -59,7 +91,7 @@ const AfaCalculatorPage: React.FC = () => {
         </AlertDescription>
       </Alert>
       
-      <GermanAfaCalculator className="max-w-4xl mx-auto" />
+      <GermanAfaCalculator className="max-w-4xl mx-auto" onCalculationComplete={handleCalculationComplete} />
       
       <div className="mt-6 text-center text-xs text-muted-foreground">
         {language === 'de'
@@ -67,23 +99,62 @@ const AfaCalculatorPage: React.FC = () => {
           : 'Note: This calculation is for informational purposes only and does not replace professional tax advice.'}
       </div>
       
-      {/* Add a next step button when there are next steps */}
-      {nextStep && (
-        <div className={`${isMobile ? 'mt-8' : 'mt-10'} flex justify-center`}>
-          <Button
-            onClick={() => workflow.goToStep(nextStep.id)}
-            size={isMobile ? "sm" : "default"}
-            className="gap-2"
-          >
-            {language === 'de' ? 'Nächster Schritt: ' : 'Next Step: '}
-            <span>{workflow.getStepLabel(nextStep.id)}</span>
-            <ArrowRight className="h-4 w-4" />
-          </Button>
+      {/* Workflow progress indicator */}
+      <div className="mt-8 max-w-lg mx-auto">
+        <div className="flex justify-between text-sm mb-2">
+          <span>{language === 'de' ? 'Fortschritt im Workflow' : 'Workflow Progress'}</span>
+          <span>{Math.round(progress)}%</span>
         </div>
+        <Progress value={progress} className="h-2" />
+      </div>
+      
+      {/* Actions when calculation is done */}
+      {calculationDone && (
+        <Card className="mt-8 max-w-lg mx-auto border-green-200 bg-green-50/50 dark:bg-green-900/10 dark:border-green-800/30">
+          <CardHeader className="pb-2">
+            <CardTitle className="flex items-center">
+              <Check className="h-5 w-5 mr-2 text-green-500" />
+              {language === 'de' ? 'AfA-Berechnung abgeschlossen' : 'Depreciation Calculation Complete'}
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p>{language === 'de' 
+              ? 'Sie können die Ergebnisse exportieren oder zum nächsten Schritt übergehen' 
+              : 'You can export the results or proceed to the next step'}</p>
+          </CardContent>
+          <CardFooter className="flex-col space-y-2 sm:flex-row sm:space-y-0 sm:space-x-2">
+            <Button
+              variant="outline"
+              onClick={handleExportResults}
+              className="w-full sm:w-auto gap-2"
+            >
+              <FileDown className="h-4 w-4" />
+              {language === 'de' ? 'Ergebnisse exportieren' : 'Export Results'}
+            </Button>
+            
+            {nextStep && (
+              <Button
+                onClick={handleContinueWorkflow}
+                className="w-full sm:w-auto gap-2 group"
+              >
+                {language === 'de' ? 'Nächster Schritt: ' : 'Next Step: '}
+                <span>{workflow.getStepLabel(nextStep.id)}</span>
+                <ArrowRight className="h-4 w-4 group-hover:translate-x-1 transition-transform" />
+              </Button>
+            )}
+          </CardFooter>
+        </Card>
       )}
       
       <div className="mt-10 grid grid-cols-1 md:grid-cols-2 gap-8">
-        <WorkflowSuggestions currentTool="afa" />
+        <WorkflowSuggestions 
+          currentTool="afa" 
+          onSelect={(stepId) => {
+            toast.info(language === 'de'
+              ? `Navigation zu: ${workflow.getStepLabel(stepId)}`
+              : `Navigating to: ${workflow.getStepLabel(stepId)}`);
+          }}
+        />
         <RelatedGermanTools currentToolId="afa" maxTools={2} />
       </div>
     </div>

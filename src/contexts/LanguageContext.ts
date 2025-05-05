@@ -5,14 +5,16 @@
 import {
   LanguageProvider,
   useLanguage,
-  availableLanguages
+  availableLanguages,
+  languageDetails
 } from './FixedLanguageContext';
 
 // Re-export the value exports
 export {
   LanguageProvider,
   useLanguage,
-  availableLanguages
+  availableLanguages,
+  languageDetails
 } from './FixedLanguageContext';
 
 // Re-export the type exports with 'export type'

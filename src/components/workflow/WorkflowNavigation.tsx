@@ -10,7 +10,8 @@ import {
   PiggyBank,
   Map,
   ArrowLeft,
-  ArrowRight
+  ArrowRight,
+  CheckCircle
 } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { Button } from '@/components/ui/button';
@@ -19,6 +20,7 @@ import { Progress } from '@/components/ui/progress';
 import { cn } from '@/lib/utils';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { useWorkflow, WorkflowType } from '@/hooks/use-workflow';
+import { toast } from 'sonner';
 
 interface WorkflowProps {
   currentStep: string;
@@ -41,7 +43,7 @@ const WorkflowNavigation: React.FC<WorkflowProps> = ({
   className,
   showProgress = true
 }) => {
-  const { language } = useLanguage();
+  const { language, t } = useLanguage();
   const navigate = useNavigate();
   const isMobile = useIsMobile();
   
@@ -54,7 +56,8 @@ const WorkflowNavigation: React.FC<WorkflowProps> = ({
     goToStep, 
     goToNextStep, 
     goToPreviousStep, 
-    getWorkflowProgress 
+    getWorkflowProgress,
+    markStepComplete 
   } = useWorkflow(workflowType);
   
   const currentIndex = steps.findIndex(step => step.id === currentStep);
@@ -64,6 +67,14 @@ const WorkflowNavigation: React.FC<WorkflowProps> = ({
 
   const nextStep = currentIndex < steps.length - 1 ? steps[currentIndex + 1] : null;
   const prevStep = currentIndex > 0 ? steps[currentIndex - 1] : null;
+  
+  // Complete current step and go to next
+  const handleCompleteAndContinue = () => {
+    markStepComplete(currentStep);
+    if (nextStep) {
+      goToStep(nextStep.id);
+    }
+  };
 
   return (
     <div className={cn("mb-6", className)}>
@@ -81,10 +92,11 @@ const WorkflowNavigation: React.FC<WorkflowProps> = ({
                 <Button 
                   variant={index === currentIndex ? "secondary" : "ghost"}
                   size="sm"
-                  className="h-8"
+                  className={cn("h-8 flex items-center", step.isComplete && "text-green-600 dark:text-green-400")}
                   onClick={() => goToStep(step.id)}
                 >
-                  <span className="ml-1">{step.label[language as keyof typeof step.label]}</span>
+                  {step.isComplete && <CheckCircle className="h-3 w-3 mr-1" />}
+                  <span>{step.label[language as keyof typeof step.label]}</span>
                 </Button>
               </React.Fragment>
             ))}
@@ -106,9 +118,9 @@ const WorkflowNavigation: React.FC<WorkflowProps> = ({
                 variant="outline" 
                 size="sm" 
                 onClick={() => goToStep(prevStep.id)}
-                className="flex items-center"
+                className="flex items-center group"
               >
-                <ArrowLeft className="h-4 w-4 mr-1" />
+                <ArrowLeft className="h-4 w-4 mr-1 group-hover:-translate-x-1 transition-transform" />
                 <span>{prevStep.label[language as keyof typeof prevStep.label]}</span>
               </Button>
             ) : <div />}
@@ -118,10 +130,10 @@ const WorkflowNavigation: React.FC<WorkflowProps> = ({
                 variant="outline" 
                 size="sm" 
                 onClick={() => goToStep(nextStep.id)}
-                className="flex items-center"
+                className="flex items-center group"
               >
                 <span>{nextStep.label[language as keyof typeof nextStep.label]}</span>
-                <ArrowRight className="h-4 w-4 ml-1" />
+                <ArrowRight className="h-4 w-4 ml-1 group-hover:translate-x-1 transition-transform" />
               </Button>
             )}
           </div>
@@ -144,22 +156,32 @@ const WorkflowNavigation: React.FC<WorkflowProps> = ({
                 variant="outline" 
                 size="sm" 
                 onClick={() => goToStep(prevStep.id)}
-                className="flex items-center"
+                className="flex items-center group"
               >
-                <ArrowLeft className="h-4 w-4 mr-1" />
+                <ArrowLeft className="h-4 w-4 mr-1 group-hover:-translate-x-1 transition-transform" />
                 <span>{prevStep.label[language as keyof typeof prevStep.label]}</span>
               </Button>
             ) : <div />}
+            
+            <Button 
+              variant="outline" 
+              size="sm" 
+              onClick={handleCompleteAndContinue}
+              className="flex items-center group"
+            >
+              <CheckCircle className="h-4 w-4 mr-1" />
+              <span>{language === 'de' ? 'Abschließen' : 'Complete'}</span>
+            </Button>
             
             {nextStep && (
               <Button 
                 variant="outline" 
                 size="sm" 
                 onClick={() => goToStep(nextStep.id)}
-                className="flex items-center"
+                className="flex items-center group"
               >
                 <span>{nextStep.label[language as keyof typeof nextStep.label]}</span>
-                <ArrowRight className="h-4 w-4 ml-1" />
+                <ArrowRight className="h-4 w-4 ml-1 group-hover:translate-x-1 transition-transform" />
               </Button>
             )}
           </div>
@@ -176,8 +198,10 @@ const WorkflowNavigation: React.FC<WorkflowProps> = ({
                 size="sm" 
                 variant="secondary"
                 onClick={() => goToStep(nextStep.id)}
+                className="group"
               >
                 {language === 'de' ? 'Weiter' : 'Continue'}
+                <ArrowRight className="h-4 w-4 ml-1 group-hover:translate-x-1 transition-transform" />
               </Button>
             </Card>
           )}

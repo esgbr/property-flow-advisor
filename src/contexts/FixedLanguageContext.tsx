@@ -3,196 +3,279 @@ import React, { createContext, useState, useContext, useEffect } from 'react';
 import { useUserPreferences } from './UserPreferencesContext';
 import { detectBrowserLanguage } from '@/utils/languageDetector';
 
-// Unterstützte Sprachen als String-Literal-Union-Typ
-export type SupportedLanguage = 'de' | 'en' | 'fr';
+// Define supported languages
+export type SupportedLanguage = 'de' | 'en';
 
-// Export für die unterstützten Sprachen
-export const availableLanguages: SupportedLanguage[] = ['de', 'en', 'fr'];
+// Available languages for selection
+export const availableLanguages: SupportedLanguage[] = ['de', 'en'];
 
-// Zusätzliche Informationen zu den Sprachen
+// Language information with additional metadata
 export interface LanguageInfo {
   code: SupportedLanguage;
   name: string;
   nativeName: string;
   flag: string;
+  enabled: boolean;
 }
 
-// Detaillierte Sprachinformationen
+// Detailed language information for UI display
 export const languageDetails: LanguageInfo[] = [
-  { code: 'de', name: 'German', nativeName: 'Deutsch', flag: '🇩🇪' },
-  { code: 'en', name: 'English', nativeName: 'English', flag: '🇬🇧' },
-  { code: 'fr', name: 'French', nativeName: 'Français', flag: '🇫🇷' }
+  { code: 'de', name: 'German', nativeName: 'Deutsch', flag: '🇩🇪', enabled: true },
+  { code: 'en', name: 'English', nativeName: 'English', flag: '🇬🇧', enabled: true }
 ];
 
-// Standardübersetzungen für deutsch
-const defaultTranslations = {
-  welcome: 'Willkommen',
-  login: 'Anmelden',
-  register: 'Registrieren',
-  dashboard: 'Dashboard',
-  settings: 'Einstellungen',
-  profile: 'Profil',
-  notifications: 'Benachrichtigungen',
-  language: 'Sprache',
-  theme: 'Design',
-  logout: 'Abmelden',
-  propertyFlow: 'PropertyFlow',
-  investmentPlatform: 'Ihre umfassende Plattform für Immobilieninvestitionen',
-  createAccount: 'Konto erstellen',
-  analytics: 'Analysen',
-  properties: 'Immobilien',
-  calculators: 'Rechner',
-  cashFlowAnalysisDescription: 'Detaillierte Analyse Ihrer Einnahmen und Ausgaben',
-  portfolioProjections: 'Prognosen für Ihr Immobilienportfolio',
-  success: 'Erfolg',
-  adminWelcomeBack: 'Willkommen zurück, Administrator!',
-  welcomeBack: 'Willkommen zurück',
-  error: 'Fehler',
-  adminAccessRequired: 'Administratorzugriff erforderlich',
-  skipToContent: 'Zum Inhalt springen',
-  toThe: 'zum',
-  investorDashboard: 'Investoren-Dashboard',
-  accessComprehensiveInvestmentTools: 'Zugriff auf umfassende Investment-Tools',
-  continueMakingSmartInvestments: 'Setzen Sie Ihre intelligenten Investitionen fort',
-  completeInvestmentToolsuite: 'Komplette Toolsuite für Immobilieninvestitionen',
-  portfolio: 'Portfolio',
-  marketAnalysis: 'Marktanalyse',
-  financing: 'Finanzierung',
-  taxPlanning: 'Steuerplanung',
-  dueDiligence: 'Due Diligence',
-  investmentPortfolio: 'Investitionsportfolio',
-  trackYourRealEstateInvestments: 'Verfolgen Sie Ihre Immobilieninvestitionen',
-  investorMetrics: 'Investorenkennzahlen',
-  keyPerformanceIndicators: 'Wichtige Leistungsindikatoren',
-  exportMetrics: 'Kennzahlen exportieren',
-  exportData: 'Daten exportieren',
-  capRate: 'Kapitalrendite',
-  netIncomeDividedByValue: 'Nettoeinkommen geteilt durch Immobilienwert',
-  cashOnCash: 'Cash-on-Cash-Rendite',
-  annualCashFlowDividedByInvestment: 'Jährlicher Cashflow geteilt durch Investition',
-  debtServiceCoverage: 'Schuldendienstdeckung',
-  netOperatingIncomeToDebtRatio: 'Verhältnis von Nettobetriebseinkommen zu Schulden',
-  breakEvenOccupancy: 'Break-Even-Belegung',
-  minimumOccupancyToBreakEven: 'Mindestbelegung zum Erreichen der Gewinnschwelle',
-  propertyPerformance: 'Immobilienperformance',
-  compareYourInvestments: 'Vergleichen Sie Ihre Investitionen',
-  cashFlow: 'Cashflow',
-  roi: 'ROI',
-  appreciation: 'Wertsteigerung',
-  enhancedAnalytics: 'Erweiterte Analysen',
-  enhancedAnalyticsDescription: 'Detaillierte Einblicke in die Performance Ihrer Investitionen',
-  unlockAnalytics: 'Analysen freischalten',
-  viewDetailed: 'Detaillierte Ansicht',
-  marketInsights: 'Markteinblicke',
-  marketInsightsDescription: 'Datengestützte Einblicke in Immobilienmärkte',
-  connectMarketData: 'Marktdaten verbinden',
-  featureNotification: 'Funktionshinweis',
-  featureComingSoon: 'wird bald verfügbar sein',
-  monthlyCashFlow: 'Monatlicher Cashflow',
-  annualROI: 'Jährliche Rendite',
-  annualAppreciation: 'Jährliche Wertsteigerung',
-  propertyComparison: 'Immobilienvergleich',
-  marketSpecificTools: 'Marktspezifische Tools',
-  toolsForSpecificMarket: 'Tools für den {market} Markt',
-  open: 'Öffnen',
-  viewMarketSpecificTools: 'Alle marktspezifischen Tools anzeigen',
-  All: 'Alle',
-  Residential: 'Wohnimmobilien',
-  Commercial: 'Gewerbeimmobilien',
-  Yearly: 'Jährlich',
-  Quarterly: 'Vierteljährlich',
-  Monthly: 'Monatlich',
-  Market: 'Markt',
-  'Average Home Price': 'Durchschnittlicher Hauspreis',
-  'Rental Yield': 'Mietrendite',
-  'Average Rent Price': 'Durchschnittlicher Mietpreis',
-  'Property Appreciation': 'Immobilienwertsteigerung',
-  'Mortgage Rate': 'Hypothekenzins',
-  'Investment Volume': 'Investitionsvolumen',
-  'Vacancy Rate': 'Leerstandsrate',
-  'Capitalization Rate': 'Kapitalisierungsrate',
-  'Average Sales Price Explanation': 'Durchschnittlicher Verkaufspreis für Wohnimmobilien in diesem Markt',
-  'Rental Yield Explanation': 'Jährliche Mieteinnahmen geteilt durch Immobilienwert',
-  'Average Rent Explanation': 'Durchschnittliche monatliche Miete für eine Standardwohnung',
-  'Property Appreciation Explanation': 'Jährliche Wertsteigerungsrate für Immobilien',
-  'Mortgage Rate Explanation': 'Aktueller durchschnittlicher Zinssatz für Immobilienkredite',
-  'Investment Volume Explanation': 'Gesamtvolumen der Immobilientransaktionen in diesem Markt',
-  'Vacancy Rate Explanation': 'Prozentualer Anteil leerstehender Immobilien',
-  'Capitalization Rate Explanation': 'Nettobetriebseinkommen geteilt durch Immobilienwert',
-  'market Trends': 'Markttrends',
-  'real Estate Market': 'Immobilienmarkt',
-  'price Index': 'Preisindex',
-  'rent Index': 'Mietindex',
-  'sales Volume': 'Verkaufsvolumen',
-  'portfolioProjections': 'Portfolio-Prognosen',
-  'simulateYourPortfolioGrowth': 'Simulieren Sie das Wachstum Ihres Portfolios',
-  'cashFlowAnalysis': 'Cashflow-Analyse',
-  'cashFlowAnalysisDescription': 'Detaillierte Analyse Ihrer Einnahmen und Ausgaben',
-  'unlockCashFlowAnalysis': 'Cashflow-Analyse freischalten',
-  'assetAllocation': 'Asset-Allokation',
-  'assetAllocationDescription': 'Optimale Verteilung Ihrer Immobilienanlagen',
-  'unlockAssetAllocation': 'Asset-Allokation freischalten',
-  'projections': 'Prognosen',
-  'allocation': 'Allokation',
-  'securityAlert': 'Sicherheitshinweis',
-  'securityAlertDescription': 'Schützen Sie Ihre Daten mit einer PIN oder biometrischer Authentifizierung',
-  'setupPIN': 'PIN einrichten',
-  'dismiss': 'Später',
-  'securityEnabled': 'Sicherheit aktiviert',
-  'securityEnabledDescription': 'Ihre App ist jetzt mit PIN-Schutz gesichert'
+// Translation dictionary
+const translations: Record<string, Record<string, string>> = {
+  de: {
+    welcome: 'Willkommen',
+    login: 'Anmelden',
+    register: 'Registrieren',
+    dashboard: 'Dashboard',
+    settings: 'Einstellungen',
+    profile: 'Profil',
+    notifications: 'Benachrichtigungen',
+    language: 'Sprache',
+    theme: 'Design',
+    logout: 'Abmelden',
+    propertyFlow: 'PropertyFlow',
+    investmentPlatform: 'Ihre umfassende Plattform für Immobilieninvestitionen',
+    createAccount: 'Konto erstellen',
+    analytics: 'Analysen',
+    properties: 'Immobilien',
+    calculators: 'Rechner',
+    cashFlowAnalysisDescription: 'Detaillierte Analyse Ihrer Einnahmen und Ausgaben',
+    portfolioProjections: 'Prognosen für Ihr Immobilienportfolio',
+    success: 'Erfolg',
+    welcomeBack: 'Willkommen zurück',
+    error: 'Fehler',
+    adminAccessRequired: 'Administratorzugriff erforderlich',
+    skipToContent: 'Zum Inhalt springen',
+    toThe: 'zum',
+    investorDashboard: 'Investoren-Dashboard',
+    portfolio: 'Portfolio',
+    marketAnalysis: 'Marktanalyse',
+    financing: 'Finanzierung',
+    taxPlanning: 'Steuerplanung',
+    dueDiligence: 'Due Diligence',
+    investmentPortfolio: 'Investitionsportfolio',
+    cashFlow: 'Cashflow',
+    roi: 'ROI',
+    appreciation: 'Wertsteigerung',
+    enhancedAnalytics: 'Erweiterte Analysen',
+    unlockAnalytics: 'Analysen freischalten',
+    viewDetailed: 'Detaillierte Ansicht',
+    marketInsights: 'Markteinblicke',
+    connectMarketData: 'Marktdaten verbinden',
+    featureNotification: 'Funktionshinweis',
+    featureComingSoon: 'wird bald verfügbar sein',
+    marketSpecificTools: 'Marktspezifische Tools',
+    open: 'Öffnen',
+    securityAlert: 'Sicherheitshinweis',
+    securityAlertDescription: 'Schützen Sie Ihre Daten mit einer PIN oder biometrischer Authentifizierung',
+    setupPIN: 'PIN einrichten',
+    dismiss: 'Später',
+    securityEnabled: 'Sicherheit aktiviert',
+    securityEnabledDescription: 'Ihre App ist jetzt mit PIN-Schutz gesichert',
+    languageChanged: 'Sprache geändert',
+    displayLanguageChanged: 'Die Anzeigesprache wurde geändert',
+    changeLanguage: 'Sprache ändern',
+    next: 'Weiter',
+    back: 'Zurück',
+    loading: 'Laden...',
+    nächsteSchritte: 'Nächste Schritte',
+    getStarted: 'Loslegen',
+    weiter: 'Weiter',
+    beginnHere: 'Hier beginnen',
+    welcomeToPropertyFlowAdvisor: 'Willkommen bei PropertyFlow Advisor',
+    welcomeToGermanRealEstateTools: 'Willkommen bei den deutschen Immobilien-Tools',
+    welcomeToUSRealEstateTools: 'Willkommen bei den US-Immobilien-Tools',
+    welcomeToYourRealEstateDashboard: 'Willkommen auf Ihrem Immobilien-Dashboard',
+    updatePreferencesSettings: 'Sie können Ihre Einstellungen jederzeit ändern',
+    name: 'Name',
+    enterYourName: 'Geben Sie Ihren Namen ein',
+    onboardingComplete: 'Einrichtung abgeschlossen',
+    beginnerInvestor: 'Anfänger-Investor',
+    intermediateInvestor: 'Fortgeschrittener Investor',
+    advancedInvestor: 'Erfahrener Investor',
+    expertInvestor: 'Experten-Investor',
+    germany: 'Deutschland',
+    austria: 'Österreich',
+    switzerland: 'Schweiz',
+    global: 'Global',
+    mainNavigation: 'Hauptnavigation',
+    tools: 'Tools',
+    specializedTools: 'Spezialisierte Tools',
+    planning: 'Planung',
+    more: 'Mehr',
+    new: 'Neu',
+    deutscheImmobilienTools: 'Deutsche Immobilien-Tools',
+    grunderwerbsteuer: 'Grunderwerbsteuer',
+    afa: 'AfA-Rechner',
+    dashboardTitle: 'Dashboard',
+    fortschritt: 'Fortschritt',
+    öffnen: 'Öffnen',
+    nextStep: 'Nächster Schritt',
+    continueWorkflow: 'Workflow fortsetzen',
+    workflowSteps: 'Arbeitsablauf-Schritte',
+    chooseMarket: 'Markt wählen',
+    startCalculation: 'Berechnung starten',
+    calculationResults: 'Ergebnisse der Berechnung',
+    viewDetailedResults: 'Detaillierte Ergebnisse anzeigen',
+    exportResults: 'Ergebnisse exportieren'
+  },
+  en: {
+    welcome: 'Welcome',
+    login: 'Log in',
+    register: 'Register',
+    dashboard: 'Dashboard',
+    settings: 'Settings',
+    profile: 'Profile',
+    notifications: 'Notifications',
+    language: 'Language',
+    theme: 'Theme',
+    logout: 'Log out',
+    propertyFlow: 'PropertyFlow',
+    investmentPlatform: 'Your comprehensive real estate investment platform',
+    createAccount: 'Create account',
+    analytics: 'Analytics',
+    properties: 'Properties',
+    calculators: 'Calculators',
+    cashFlowAnalysisDescription: 'Detailed analysis of your income and expenses',
+    portfolioProjections: 'Projections for your property portfolio',
+    success: 'Success',
+    welcomeBack: 'Welcome back',
+    error: 'Error',
+    adminAccessRequired: 'Admin access required',
+    skipToContent: 'Skip to content',
+    toThe: 'to the',
+    investorDashboard: 'Investor Dashboard',
+    portfolio: 'Portfolio',
+    marketAnalysis: 'Market Analysis',
+    financing: 'Financing',
+    taxPlanning: 'Tax Planning',
+    dueDiligence: 'Due Diligence',
+    investmentPortfolio: 'Investment Portfolio',
+    cashFlow: 'Cash Flow',
+    roi: 'ROI',
+    appreciation: 'Appreciation',
+    enhancedAnalytics: 'Enhanced Analytics',
+    unlockAnalytics: 'Unlock Analytics',
+    viewDetailed: 'View Detailed',
+    marketInsights: 'Market Insights',
+    connectMarketData: 'Connect Market Data',
+    featureNotification: 'Feature Notification',
+    featureComingSoon: 'will be available soon',
+    marketSpecificTools: 'Market Specific Tools',
+    open: 'Open',
+    securityAlert: 'Security Alert',
+    securityAlertDescription: 'Protect your data with a PIN or biometric authentication',
+    setupPIN: 'Setup PIN',
+    dismiss: 'Dismiss',
+    securityEnabled: 'Security Enabled',
+    securityEnabledDescription: 'Your app is now secured with PIN protection',
+    languageChanged: 'Language Changed',
+    displayLanguageChanged: 'The display language has been changed',
+    changeLanguage: 'Change Language',
+    next: 'Next',
+    back: 'Back',
+    loading: 'Loading...',
+    nächsteSchritte: 'Next Steps',
+    getStarted: 'Get Started',
+    weiter: 'Continue',
+    beginnHere: 'Begin Here',
+    welcomeToPropertyFlowAdvisor: 'Welcome to PropertyFlow Advisor',
+    welcomeToGermanRealEstateTools: 'Welcome to German Real Estate Tools',
+    welcomeToUSRealEstateTools: 'Welcome to US Real Estate Tools',
+    welcomeToYourRealEstateDashboard: 'Welcome to Your Real Estate Dashboard',
+    updatePreferencesSettings: 'You can update your preferences at any time',
+    name: 'Name',
+    enterYourName: 'Enter your name',
+    onboardingComplete: 'Setup complete',
+    beginnerInvestor: 'Beginner Investor',
+    intermediateInvestor: 'Intermediate Investor',
+    advancedInvestor: 'Advanced Investor',
+    expertInvestor: 'Expert Investor',
+    germany: 'Germany',
+    austria: 'Austria',
+    switzerland: 'Switzerland',
+    global: 'Global',
+    mainNavigation: 'Main Navigation',
+    tools: 'Tools',
+    specializedTools: 'Specialized Tools',
+    planning: 'Planning',
+    more: 'More',
+    new: 'New',
+    deutscheImmobilienTools: 'German Real Estate Tools',
+    grunderwerbsteuer: 'Property Transfer Tax',
+    afa: 'Depreciation Calculator',
+    dashboardTitle: 'Dashboard',
+    fortschritt: 'Progress',
+    öffnen: 'Open',
+    nextStep: 'Next Step',
+    continueWorkflow: 'Continue Workflow',
+    workflowSteps: 'Workflow Steps',
+    chooseMarket: 'Choose Market',
+    startCalculation: 'Start Calculation',
+    calculationResults: 'Calculation Results',
+    viewDetailedResults: 'View Detailed Results',
+    exportResults: 'Export Results'
+  }
 };
 
-// Erstellen des Context
+// Define context props interface
 interface LanguageContextProps {
-  language: string;
-  setLanguage: (lang: string) => void;
+  language: SupportedLanguage;
+  setLanguage: (lang: SupportedLanguage) => void;
   t: (key: string, params?: Record<string, string>) => string;
-  availableLanguages: SupportedLanguage[];
+  availableLanguages: LanguageInfo[];
+  translations: Record<string, Record<string, string>>;
 }
 
+// Create context with default values
 const LanguageContext = createContext<LanguageContextProps>({
   language: 'de',
   setLanguage: () => {},
   t: (key: string) => key,
-  availableLanguages: availableLanguages
+  availableLanguages: languageDetails,
+  translations
 });
 
 interface LanguageProviderProps {
   children: React.ReactNode;
-  defaultLanguage?: string;
+  defaultLanguage?: SupportedLanguage;
 }
 
 export const LanguageProvider: React.FC<LanguageProviderProps> = ({ 
   children, 
-  defaultLanguage = 'de' // Deutsch als Standard
+  defaultLanguage = 'de' 
 }) => {
   const { preferences, updatePreferences } = useUserPreferences();
-  const [language, setLanguageState] = useState<string>(
-    preferences.language || defaultLanguage || detectBrowserLanguage() || 'de'
+  const [language, setLanguageState] = useState<SupportedLanguage>(
+    (preferences.language as SupportedLanguage) || defaultLanguage || (detectBrowserLanguage() as SupportedLanguage) || 'de'
   );
 
-  // Synchronisiere State mit UserPreferences
+  // Sync with user preferences
   useEffect(() => {
     if (preferences.language && preferences.language !== language) {
-      setLanguageState(preferences.language);
+      setLanguageState(preferences.language as SupportedLanguage);
     }
   }, [preferences.language, language]);
 
-  // Setze Sprache und aktualisiere Preferences
-  const setLanguage = (lang: string) => {
-    if (availableLanguages.includes(lang as SupportedLanguage)) {
+  // Set language and update preferences
+  const setLanguage = (lang: SupportedLanguage) => {
+    if (availableLanguages.includes(lang)) {
       setLanguageState(lang);
       updatePreferences({ language: lang });
     } else {
-      console.warn(`Sprache "${lang}" wird nicht unterstützt. Verwende eine der folgenden: ${availableLanguages.join(', ')}`);
+      console.warn(`Language "${lang}" is not supported. Use one of the following: ${availableLanguages.join(', ')}`);
     }
   };
 
-  // Übersetzungsfunktion mit Parameter-Unterstützung
+  // Translation function with parameter support
   const t = (key: string, params?: Record<string, string>): string => {
-    let translation = defaultTranslations[key as keyof typeof defaultTranslations] || key;
+    let translation = translations[language]?.[key] || key;
     
-    // Parameter-Ersetzung, falls vorhanden
+    // Parameter replacement if present
     if (params) {
       Object.entries(params).forEach(([paramKey, paramValue]) => {
         translation = translation.replace(`{${paramKey}}`, paramValue);
@@ -207,7 +290,8 @@ export const LanguageProvider: React.FC<LanguageProviderProps> = ({
       language, 
       setLanguage, 
       t, 
-      availableLanguages
+      availableLanguages: languageDetails,
+      translations
     }}>
       {children}
     </LanguageContext.Provider>
