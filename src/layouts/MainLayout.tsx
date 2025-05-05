@@ -8,19 +8,17 @@ import { useAppLock } from '@/contexts/AppLockContext';
 import AppLockScreen from '@/components/AppLockScreen';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { useUserPreferences } from '@/contexts/UserPreferencesContext';
-import { useLanguage } from '@/contexts/LanguageContext';
+import { useLanguage } from '@/contexts/FixedLanguageContext';
 import { AlertTriangle, ShieldCheck } from 'lucide-react';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import MobileNavigation from '@/components/navigation/MobileNavigation';
 import ErrorBoundary from '@/components/ErrorBoundary';
 import SkipToContent from '@/components/accessibility/SkipToContent';
 import { AppThemeProvider, useAppTheme } from '@/components/theme-provider';
-import { A11yProvider } from '@/components/accessibility/A11yProvider';
 import AccessibilitySettingsButton from '@/components/accessibility/AccessibilitySettingsButton';
 
 // Lazy load non-critical components
 const FeedbackModal = lazy(() => import('@/components/feedback/FeedbackModal'));
-const WelcomeModal = lazy(() => import('@/components/welcome/WelcomeModal'));
 
 // Security alert component for better reusability
 const SecurityAlert = ({ onSetupPIN, onDismiss }) => {
@@ -188,21 +186,16 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
             </div>
           </SidebarController>
         </div>
-        <Suspense fallback={null}>
-          <WelcomeModal />
-        </Suspense>
       </SidebarProvider>
     </>
   );
 };
 
-// Wrap the MainLayout with the AppThemeProvider and A11yProvider
+// Wrap the MainLayout with the AppThemeProvider
 const ThemedMainLayout = ({ children }: MainLayoutProps) => {
   return (
     <AppThemeProvider>
-      <A11yProvider>
-        <MainLayout>{children}</MainLayout>
-      </A11yProvider>
+      <MainLayout>{children}</MainLayout>
     </AppThemeProvider>
   );
 };
