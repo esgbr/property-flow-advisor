@@ -3,7 +3,7 @@ import React from 'react';
 import { ThemeProvider } from '@/components/theme-provider';
 import { LanguageProvider } from '@/contexts/LanguageContext';
 import { UserPreferencesProvider } from '@/contexts/UserPreferencesContext';
-import { AppLockProvider } from '@/contexts/AppLockProvider';
+import { AppLockProvider } from '@/contexts/AppLockContext';
 import { RewardsProvider } from '@/contexts/RewardsContext';
 import { MarketDataProvider } from '@/contexts/MarketDataContext';
 import { A11yProvider } from '@/components/accessibility/A11yProvider';

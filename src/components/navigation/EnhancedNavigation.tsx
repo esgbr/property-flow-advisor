@@ -1,480 +1,371 @@
 
-import React, { useState, useEffect } from 'react';
+// Use forwardRef to properly type the ref
+import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { Button } from '@/components/ui/button';
-import { 
-  LayoutDashboard, 
-  Building, 
-  Calculator, 
-  Settings, 
-  BarChart, 
-  BookOpen,
-  Globe,
-  Search,
-  Menu,
-  X,
-  ChevronRight,
-  ChevronDown,
-  Home,
-  User,
-  PieChart
-} from 'lucide-react';
-import { useLanguage } from '@/contexts/LanguageContext';
 import { cn } from '@/lib/utils';
-import { useAccessibility } from '../accessibility/A11yProvider';
-import { ThemeToggle } from '@/components/ui/theme-toggle';
-import AccessibilitySettingsButton from '@/components/accessibility/AccessibilitySettingsButton';
-import { useAnnouncement } from '@/utils/announcer';
-import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
+import { useAccessibility } from '@/components/accessibility/A11yProvider';
 import { useFocusTrap } from '@/hooks/use-focus-trap';
 
-interface NavItem {
-  label: string;
-  icon: React.ReactNode;
-  path: string;
-  badge?: string;
-}
+// Import icons
+import {
+  Home,
+  Building,
+  BarChart3,
+  Calculator,
+  Settings,
+  Menu,
+  X,
+  Globe,
+  Briefcase,
+  MapPin,
+  Users,
+  FileText,
+  TrendingUp
+} from 'lucide-react';
 
-interface NavGroup {
+interface NavItem {
   id: string;
   label: string;
+  path: string;
   icon: React.ReactNode;
-  items: NavItem[];
+  description?: string;
+  subItems?: NavItem[];
 }
 
 interface EnhancedNavigationProps {
-  collapsed?: boolean;
-  onToggleCollapse?: () => void;
-  onNavigation?: () => void;
+  layout?: 'vertical' | 'horizontal';
+  variant?: 'default' | 'minimal' | 'expanded';
   className?: string;
 }
 
-const EnhancedNavigation: React.FC<EnhancedNavigationProps> = ({ 
-  collapsed = false, 
-  onToggleCollapse,
-  onNavigation,
-  className 
+const navigationItems: NavItem[] = [
+  {
+    id: 'home',
+    label: 'Home',
+    path: '/',
+    icon: <Home className="h-5 w-5" />,
+    description: 'Return to the home page'
+  },
+  {
+    id: 'dashboard',
+    label: 'Dashboard',
+    path: '/dashboard',
+    icon: <Building className="h-5 w-5" />,
+    description: 'View your property dashboard'
+  },
+  {
+    id: 'properties',
+    label: 'Properties',
+    path: '/properties',
+    icon: <Building className="h-5 w-5" />,
+    description: 'Manage your property portfolio',
+    subItems: [
+      {
+        id: 'property-list',
+        label: 'Property List',
+        path: '/properties',
+        icon: <Building className="h-4 w-4" />
+      },
+      {
+        id: 'property-comparison',
+        label: 'Property Comparison',
+        path: '/property-comparator',
+        icon: <BarChart3 className="h-4 w-4" />
+      }
+    ]
+  },
+  {
+    id: 'analysis',
+    label: 'Analysis',
+    path: '/market-analysis',
+    icon: <BarChart3 className="h-5 w-5" />,
+    description: 'Analyze market trends and data',
+    subItems: [
+      {
+        id: 'market-explorer',
+        label: 'Market Explorer',
+        path: '/market-explorer',
+        icon: <MapPin className="h-4 w-4" />
+      },
+      {
+        id: 'portfolio-analytics',
+        label: 'Portfolio Analytics',
+        path: '/portfolio-analytics',
+        icon: <TrendingUp className="h-4 w-4" />
+      }
+    ]
+  },
+  {
+    id: 'calculators',
+    label: 'Calculators',
+    path: '/calculators',
+    icon: <Calculator className="h-5 w-5" />,
+    description: 'Use financial calculators'
+  },
+  {
+    id: 'tools',
+    label: 'Tools',
+    path: '/tools',
+    icon: <Briefcase className="h-5 w-5" />,
+    description: 'Access specialized tools',
+    subItems: [
+      {
+        id: 'german-tools',
+        label: 'German RE Tools',
+        path: '/deutsche-immobilien-tools',
+        icon: <Globe className="h-4 w-4" />
+      },
+      {
+        id: 'us-tools',
+        label: 'US RE Tools',
+        path: '/us-real-estate-tools',
+        icon: <Globe className="h-4 w-4" />
+      },
+      {
+        id: 'document-center',
+        label: 'Document Center',
+        path: '/documents',
+        icon: <FileText className="h-4 w-4" />
+      },
+      {
+        id: 'tenant-management',
+        label: 'Tenant Management',
+        path: '/tenant-management',
+        icon: <Users className="h-4 w-4" />
+      }
+    ]
+  },
+  {
+    id: 'settings',
+    label: 'Settings',
+    path: '/settings',
+    icon: <Settings className="h-5 w-5" />,
+    description: 'Configure application settings'
+  }
+];
+
+const EnhancedNavigation: React.FC<EnhancedNavigationProps> = ({
+  layout = 'horizontal',
+  variant = 'default',
+  className = '',
 }) => {
-  const { t } = useLanguage();
   const navigate = useNavigate();
   const location = useLocation();
-  const { largeText, highContrast, screenReader } = useAccessibility();
-  const { announce } = useAnnouncement();
-  const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [expandedGroups, setExpandedGroups] = useState<Record<string, boolean>>({
-    dashboard: true,
-    tools: false,
-    market: false,
-    settings: false
-  });
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [expandedItems, setExpandedItems] = useState<string[]>([]);
+  const { highContrast, largeText, reduceMotion } = useAccessibility();
+  const mobileMenuRef = useRef<HTMLDivElement>(null); // Fixed to HTMLDivElement
   
-  // Focus trap for mobile menu
-  const mobileMenuRef = useFocusTrap(mobileMenuOpen);
+  // Use focus trap for the mobile menu
+  const menuFocusTrapRef = useFocusTrap<HTMLDivElement>(isMobileMenuOpen);
   
-  // Update mobile state on resize
+  // Combined refs using a callback ref pattern for the mobile menu
+  const setMenuRef = (element: HTMLDivElement | null) => {
+    if (element) {
+      if (mobileMenuRef) mobileMenuRef.current = element;
+      if (menuFocusTrapRef) menuFocusTrapRef.current = element;
+    }
+  };
+  
+  // Close mobile menu on route change
   useEffect(() => {
-    const handleResize = () => {
-      setIsMobile(window.innerWidth < 768);
-      if (window.innerWidth >= 768) {
-        setMobileMenuOpen(false);
-      }
-    };
-    
-    window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
-  }, []);
+    setIsMobileMenuOpen(false);
+  }, [location.pathname]);
   
-  // Handle escape key to close mobile menu
+  // Close menu on escape key
   useEffect(() => {
     const handleEscape = (e: KeyboardEvent) => {
-      if (e.key === 'Escape' && mobileMenuOpen) {
-        setMobileMenuOpen(false);
-        announce('Navigation menu closed', true);
+      if (e.key === 'Escape' && isMobileMenuOpen) {
+        setIsMobileMenuOpen(false);
       }
     };
     
     document.addEventListener('keydown', handleEscape);
     return () => document.removeEventListener('keydown', handleEscape);
-  }, [mobileMenuOpen, announce]);
-  
-  const toggleGroup = (id: string) => {
-    setExpandedGroups(prev => ({
-      ...prev,
-      [id]: !prev[id]
-    }));
-    
-    // Announce to screen reader
-    if (screenReader) {
-      const isNowExpanded = !expandedGroups[id];
-      const groupName = navigationGroups.find(g => g.id === id)?.label || id;
-      announce(`${groupName} menu ${isNowExpanded ? 'expanded' : 'collapsed'}`, false);
+  }, [isMobileMenuOpen]);
+
+  // Handle overlay click to close menu
+  const handleOverlayClick = (e: React.MouseEvent) => {
+    if (e.target === e.currentTarget) {
+      setIsMobileMenuOpen(false);
     }
   };
-  
-  // Handle navigation to standardize behavior
-  const handleNavigate = (path: string, label: string) => {
-    navigate(path);
-    if (screenReader) {
-      announce(`Navigating to ${label}`, true);
-    }
-    if (isMobile) {
-      setMobileMenuOpen(false);
-    }
-    if (onNavigation) {
-      onNavigation();
-    }
+
+  // Toggle sub-items visibility
+  const toggleExpanded = (id: string) => {
+    setExpandedItems(prev => 
+      prev.includes(id) 
+        ? prev.filter(item => item !== id) 
+        : [...prev, id]
+    );
   };
-  
-  // Streamlined navigation groups
-  const navigationGroups: NavGroup[] = [
-    {
-      id: 'dashboard',
-      label: t('Main'),
-      icon: <LayoutDashboard className="h-5 w-5" />,
-      items: [
-        { 
-          label: t('Home'), 
-          icon: <Home className="h-4 w-4" />, 
-          path: '/' 
-        },
-        { 
-          label: t('Dashboard'), 
-          icon: <LayoutDashboard className="h-4 w-4" />, 
-          path: '/dashboard' 
-        },
-        { 
-          label: t('Properties'), 
-          icon: <Building className="h-4 w-4" />, 
-          path: '/properties' 
-        },
-        { 
-          label: t('Investor Dashboard'), 
-          icon: <BarChart className="h-4 w-4" />, 
-          path: '/investor-dashboard' 
-        },
-      ]
-    },
-    {
-      id: 'tools',
-      label: t('Tools'),
-      icon: <Calculator className="h-5 w-5" />,
-      items: [
-        { 
-          label: t('Calculators'), 
-          icon: <Calculator className="h-4 w-4" />, 
-          path: '/calculators' 
-        },
-        { 
-          label: t('Market Explorer'), 
-          icon: <Search className="h-4 w-4" />, 
-          path: '/market-explorer' 
-        },
-        { 
-          label: t('Portfolio Analytics'), 
-          icon: <PieChart className="h-4 w-4" />, 
-          path: '/portfolio-analytics', 
-          badge: 'new' 
-        }
-      ]
-    },
-    {
-      id: 'market',
-      label: t('Market'),
-      icon: <Globe className="h-5 w-5" />,
-      items: [
-        { 
-          label: t('German Tools'), 
-          icon: <Calculator className="h-4 w-4" />, 
-          path: '/deutsche-immobilien-tools' 
-        },
-        { 
-          label: t('US Tools'), 
-          icon: <Calculator className="h-4 w-4" />, 
-          path: '/us-real-estate-tools' 
-        },
-        { 
-          label: t('Market Analysis'), 
-          icon: <BarChart className="h-4 w-4" />, 
-          path: '/market-analysis' 
-        }
-      ]
-    },
-    {
-      id: 'settings',
-      label: t('Account'),
-      icon: <Settings className="h-5 w-5" />,
-      items: [
-        { 
-          label: t('Profile'), 
-          icon: <User className="h-4 w-4" />, 
-          path: '/profile' 
-        },
-        { 
-          label: t('Settings'), 
-          icon: <Settings className="h-4 w-4" />, 
-          path: '/settings' 
-        },
-        { 
-          label: t('Education'), 
-          icon: <BookOpen className="h-4 w-4" />, 
-          path: '/education' 
-        },
-        { 
-          label: t('Accessibility'), 
-          icon: <User className="h-4 w-4" />, 
-          path: '/accessibility' 
-        }
-      ]
-    }
-  ];
-  
-  if (isMobile) {
-    return (
-      <>
-        {/* Mobile version */}
-        <Button 
-          variant="ghost" 
-          size="icon" 
-          onClick={() => {
-            setMobileMenuOpen(true);
-            announce('Navigation menu opened', true);
-          }} 
-          className={className}
-          aria-label={t('Open navigation menu')}
-        >
-          <Menu className="h-5 w-5" />
-          <span className="sr-only">{t('Open navigation menu')}</span>
-        </Button>
-        
-        {/* Mobile menu overlay */}
-        {mobileMenuOpen && (
-          <div className="fixed inset-0 z-50 flex">
-            {/* Backdrop */}
-            <div 
-              className="fixed inset-0 bg-background/80 backdrop-blur-sm" 
-              onClick={() => {
-                setMobileMenuOpen(false);
-                announce('Navigation menu closed', false);
-              }}
-              aria-hidden="true" 
-            />
-            
-            {/* Drawer */}
-            <div 
-              ref={mobileMenuRef}
-              className={cn(
-                "fixed inset-y-0 left-0 z-50 w-3/4 max-w-xs bg-background border-r",
-                highContrast ? "border-r-2" : "",
-                "p-6 shadow-lg overflow-y-auto"
-              )}
-              role="dialog"
-              aria-modal="true"
-            >
-              <div className="flex items-center justify-between mb-6">
-                <div className="flex items-center gap-2">
-                  <LayoutDashboard className="h-6 w-6 text-primary" />
-                  <span className={cn("font-bold", largeText ? "text-lg" : "")}>PropertyFlow</span>
-                </div>
+
+  // Check if a nav item is active
+  const isActive = (path: string) => {
+    return location.pathname === path || location.pathname.startsWith(`${path}/`);
+  };
+
+  // Get transition classes based on user preferences
+  const getTransitionClass = () => {
+    return reduceMotion ? '' : 'transition-all duration-200';
+  };
+
+  // Render navigation links
+  const renderNavLinks = (items: NavItem[], isSubItem = false) => {
+    return items.map((item) => {
+      const active = isActive(item.path);
+      const hasSubItems = item.subItems && item.subItems.length > 0;
+      const isExpanded = expandedItems.includes(item.id);
+      
+      // Base classes for nav items
+      let navItemClasses = cn(
+        "flex items-center gap-2 rounded-lg px-3 py-2",
+        getTransitionClass(),
+        active 
+          ? "bg-primary text-primary-foreground"
+          : "hover:bg-muted",
+        highContrast && active && "outline outline-2 outline-foreground",
+        isSubItem ? "text-sm ml-6" : "",
+        largeText ? "text-base py-3" : ""
+      );
+      
+      return (
+        <div key={item.id} className={cn("relative", isSubItem ? "my-1" : "my-1")}>
+          <div className="flex items-center">
+            <Tooltip>
+              <TooltipTrigger asChild>
                 <Button 
                   variant="ghost" 
-                  size="icon" 
+                  size={largeText ? "default" : "sm"}
+                  className={navItemClasses}
                   onClick={() => {
-                    setMobileMenuOpen(false);
-                    announce('Navigation menu closed', false);
+                    if (hasSubItems) {
+                      toggleExpanded(item.id);
+                    } else {
+                      navigate(item.path);
+                    }
                   }}
-                  aria-label={t('Close navigation menu')}
+                  aria-expanded={hasSubItems ? isExpanded : undefined}
+                  aria-current={active ? "page" : undefined}
+                >
+                  <span className="flex-shrink-0">{item.icon}</span>
+                  <span className="flex-grow truncate">{item.label}</span>
+                  {hasSubItems && (
+                    <span className={`h-4 w-4 ${isExpanded ? 'rotate-90' : ''} ${getTransitionClass()}`}>
+                      {/* Small chevron icon */}
+                      <svg 
+                        xmlns="http://www.w3.org/2000/svg" 
+                        viewBox="0 0 24 24" 
+                        fill="none" 
+                        stroke="currentColor" 
+                        strokeWidth="2" 
+                        strokeLinecap="round" 
+                        strokeLinejoin="round" 
+                        className="h-4 w-4"
+                      >
+                        <path d="m9 18 6-6-6-6"/>
+                      </svg>
+                    </span>
+                  )}
+                </Button>
+              </TooltipTrigger>
+              {item.description && (
+                <TooltipContent side={layout === 'vertical' ? 'right' : 'bottom'}>
+                  <p>{item.description}</p>
+                </TooltipContent>
+              )}
+            </Tooltip>
+          </div>
+          
+          {/* Sub-items */}
+          {hasSubItems && isExpanded && (
+            <div className={cn(
+              "pl-2 my-1", 
+              getTransitionClass(),
+              reduceMotion ? "" : "animate-in fade-in slide-in-from-left-2"
+            )}>
+              {renderNavLinks(item.subItems, true)}
+            </div>
+          )}
+        </div>
+      );
+    });
+  };
+
+  return (
+    <>
+      {/* Desktop Navigation */}
+      <nav 
+        className={cn(
+          "hidden md:block",
+          layout === 'vertical' ? "w-60" : "w-full",
+          className
+        )}
+        aria-label="Main Navigation"
+      >
+        <div className={cn(
+          "flex",
+          layout === 'vertical' ? "flex-col space-y-1" : "flex-row space-x-1"
+        )}>
+          {renderNavLinks(navigationItems)}
+        </div>
+      </nav>
+
+      {/* Mobile Navigation Button */}
+      <div className="md:hidden">
+        <Button
+          variant="ghost"
+          size="sm"
+          className="p-1"
+          onClick={() => setIsMobileMenuOpen(true)}
+          aria-label="Open navigation menu"
+        >
+          <Menu className="h-6 w-6" />
+        </Button>
+      </div>
+
+      {/* Mobile Menu Overlay */}
+      {isMobileMenuOpen && (
+        <div
+          className={cn(
+            "fixed inset-0 z-50 bg-black/50",
+            reduceMotion ? "" : "animate-in fade-in"
+          )}
+          onClick={handleOverlayClick}
+        >
+          {/* Mobile Menu */}
+          <div
+            ref={setMenuRef}
+            className={cn(
+              "fixed inset-y-0 left-0 z-50 w-3/4 max-w-sm bg-background p-4 shadow-lg",
+              reduceMotion ? "" : "animate-in slide-in-from-left",
+            )}
+          >
+            <div className="flex flex-col h-full">
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="text-lg font-semibold">Menu</h2>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="p-1"
+                  onClick={() => setIsMobileMenuOpen(false)}
+                  aria-label="Close navigation menu"
                 >
                   <X className="h-5 w-5" />
-                  <span className="sr-only">{t('Close navigation menu')}</span>
                 </Button>
               </div>
-              
-              {navigationGroups.map((group) => (
-                <div key={group.id} className="mb-6">
-                  <Button 
-                    variant="ghost" 
-                    className={cn(
-                      "w-full justify-between rounded-md mb-2",
-                      largeText ? "h-12 text-lg" : "h-10"
-                    )}
-                    onClick={() => toggleGroup(group.id)}
-                  >
-                    <div className="flex items-center">
-                      {group.icon}
-                      <span className="ml-2">{group.label}</span>
-                    </div>
-                    {expandedGroups[group.id] ? 
-                      <ChevronDown className="h-4 w-4" /> : 
-                      <ChevronRight className="h-4 w-4" />
-                    }
-                  </Button>
-                  
-                  {expandedGroups[group.id] && (
-                    <div className="ml-2 space-y-1">
-                      {group.items.map((item) => {
-                        const isActive = location.pathname === item.path;
-                        
-                        return (
-                          <Button
-                            key={item.label}
-                            variant="ghost"
-                            className={cn(
-                              "w-full justify-start pl-8 rounded-md",
-                              isActive && "bg-accent text-accent-foreground",
-                              largeText ? "h-11 text-base" : "h-9 text-sm"
-                            )}
-                            onClick={() => handleNavigate(item.path, item.label)}
-                          >
-                            {item.icon}
-                            <span className="ml-2">{item.label}</span>
-                            {item.badge && (
-                              <Badge variant="outline" className="ml-auto text-xs">
-                                {item.badge}
-                              </Badge>
-                            )}
-                          </Button>
-                        );
-                      })}
-                    </div>
-                  )}
+              <div className="flex-grow overflow-y-auto">
+                <div className="flex flex-col space-y-1">
+                  {renderNavLinks(navigationItems)}
                 </div>
-              ))}
-              
-              <div className="flex items-center gap-2 pt-6 mt-6 border-t">
-                <ThemeToggle />
-                <AccessibilitySettingsButton />
               </div>
             </div>
           </div>
-        )}
-      </>
-    );
-  }
-  
-  // Desktop version
-  return (
-    <div className={cn(
-      "h-full flex flex-col bg-card border-r transition-all duration-300",
-      collapsed ? "w-16" : "w-64",
-      highContrast ? "border-r-2" : "",
-      className
-    )}>
-      <div className={cn(
-        "p-4 flex items-center justify-between border-b",
-        highContrast ? "border-b-2" : ""
-      )}>
-        <div className={cn("flex items-center", collapsed && "justify-center w-full")}>
-          <LayoutDashboard className="h-6 w-6 text-primary" />
-          {!collapsed && <span className={cn("ml-2 font-bold", largeText ? "text-lg" : "")}>PropertyFlow</span>}
-        </div>
-        {!collapsed && (
-          <Button variant="ghost" size="icon" onClick={onToggleCollapse} aria-label={t('Collapse sidebar')}>
-            <Menu className="h-5 w-5" />
-          </Button>
-        )}
-      </div>
-      
-      <div className="flex-1 overflow-y-auto py-2">
-        {navigationGroups.map((group) => (
-          collapsed ? (
-            <div key={group.id} className="py-2">
-              <Button
-                variant="ghost"
-                size="icon"
-                className={cn(
-                  "w-full rounded-none h-12",
-                  largeText ? "h-14" : ""
-                )}
-                onClick={() => handleNavigate(group.items[0].path, group.items[0].label)}
-                aria-label={group.label}
-                title={group.label}
-              >
-                {group.icon}
-              </Button>
-            </div>
-          ) : (
-            <div key={group.id} className="mb-2">
-              <Button 
-                variant="ghost" 
-                className={cn(
-                  "w-full justify-between rounded-none p-3",
-                  largeText ? "h-12 text-lg" : "h-10"
-                )}
-                onClick={() => toggleGroup(group.id)}
-                aria-expanded={expandedGroups[group.id]}
-              >
-                <div className="flex items-center">
-                  {group.icon}
-                  <span className="ml-2">{group.label}</span>
-                </div>
-                {expandedGroups[group.id] ? 
-                  <ChevronDown className="h-4 w-4" /> : 
-                  <ChevronRight className="h-4 w-4" />
-                }
-              </Button>
-              
-              {expandedGroups[group.id] && (
-                <div className="space-y-1">
-                  {group.items.map((item) => {
-                    const isActive = location.pathname === item.path;
-                    
-                    return (
-                      <Button
-                        key={item.label}
-                        variant="ghost"
-                        className={cn(
-                          "w-full justify-start pl-8 rounded-none",
-                          isActive && "bg-accent text-accent-foreground",
-                          largeText ? "h-11 text-base" : "h-9 text-sm"
-                        )}
-                        onClick={() => handleNavigate(item.path, item.label)}
-                      >
-                        {item.icon}
-                        <span className="ml-2 truncate">{item.label}</span>
-                        {item.badge && (
-                          <Badge variant="outline" className="ml-auto">
-                            {item.badge}
-                          </Badge>
-                        )}
-                      </Button>
-                    );
-                  })}
-                </div>
-              )}
-            </div>
-          )
-        ))}
-      </div>
-      
-      {/* Toggle collapse button */}
-      {collapsed && (
-        <div className={cn(
-          "p-2 border-t",
-          highContrast ? "border-t-2" : ""
-        )}>
-          <Button 
-            variant="ghost" 
-            size="icon"
-            onClick={onToggleCollapse}
-            className="w-full"
-            aria-label={t('Expand sidebar')}
-          >
-            <ChevronRight className="h-5 w-5" />
-          </Button>
         </div>
       )}
-      
-      {/* Bottom section with theme toggle and accessibility button */}
-      <div className={cn(
-        "p-4 border-t flex items-center",
-        highContrast ? "border-t-2" : "",
-        collapsed ? "justify-center" : "justify-between"
-      )}>
-        <ThemeToggle />
-        {!collapsed && <AccessibilitySettingsButton />}
-      </div>
-    </div>
+    </>
   );
 };
 

@@ -87,7 +87,7 @@ export const EnhancedToaster: React.FC<EnhancedToasterProps> = ({
         },
         unstyled: false,
         duration: duration,
-        invert: false,
+        // Removed the 'invert' property that was causing the error
         // Disable animation if reduce motion is enabled
         animationDuration: reduceMotion ? 0 : 150,
       }}
