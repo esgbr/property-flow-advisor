@@ -26,10 +26,12 @@ function App() {
               <A11yProvider>
                 <MotionConfig reducedMotion="user">
                   <Helmet>
-                    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+                    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0" />
                     <meta httpEquiv="Content-Security-Policy" 
                       content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; 
-                      img-src 'self' data: blob:; font-src 'self'; connect-src 'self' https://api.example.com" />
+                      img-src 'self' data: blob: https://api.mapbox.com; font-src 'self' data:; 
+                      connect-src 'self' https://api.example.com https://*.mapbox.com; 
+                      frame-src 'self'; object-src 'none'; base-uri 'self';" />
                     <meta name="description" content="PropertyFlow - Real Estate Investment Platform" />
                     <title>PropertyFlow</title>
                   </Helmet>

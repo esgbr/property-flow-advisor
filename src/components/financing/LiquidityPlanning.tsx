@@ -2,7 +2,7 @@
 import React from 'react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
-import { TrendingUp, AlertCircle } from 'lucide-react';
+import { TrendingUp, AlertCircle, Bell } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/components/ui/use-toast';
 
@@ -23,9 +23,9 @@ const LiquidityPlanning: React.FC = () => {
   };
   
   return (
-    <Card className="h-full overflow-hidden">
-      <CardHeader>
-        <CardTitle className="flex items-center">
+    <Card className="h-full overflow-hidden shadow-sm hover:shadow-md transition-shadow">
+      <CardHeader className="bg-gradient-to-r from-blue-50 to-white dark:from-slate-800 dark:to-slate-900">
+        <CardTitle className="flex items-center text-lg">
           <TrendingUp className="mr-2 h-5 w-5" aria-hidden="true" />
           {t('liquidityPlanning')}
         </CardTitle>
@@ -42,10 +42,11 @@ const LiquidityPlanning: React.FC = () => {
           </p>
           <Button 
             variant="outline" 
-            className="mt-4"
+            className="mt-4 gap-2 group"
             onClick={handleNotifyAvailability}
             aria-label={t('notifyMeWhenLiquidityPlanningIsAvailable')}
           >
+            <Bell className="h-4 w-4 group-hover:animate-pulse" />
             {t('notifyWhenAvailable')}
           </Button>
         </div>

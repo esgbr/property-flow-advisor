@@ -1,5 +1,5 @@
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, lazy, Suspense } from 'react';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
 import OnboardingFlow from '@/components/onboarding/OnboardingFlow';
 import { OnboardingData } from '@/components/onboarding/types';
@@ -7,6 +7,7 @@ import { useUserPreferences } from '@/contexts/UserPreferencesContext';
 import { toast } from 'sonner';
 import { useNavigate } from 'react-router-dom';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { Loader } from 'lucide-react';
 
 const WelcomeModal = () => {
   const { isFirstVisit, setIsFirstVisit, saveOnboardingData, preferences, updatePreferences } = useUserPreferences();
@@ -30,6 +31,7 @@ const WelcomeModal = () => {
     // Sync user data across platform
     saveOnboardingData(data);
     setOpen(false);
+    setIsFirstVisit(false);
     
     // Navigate to appropriate dashboard based on selected market
     if (data.investmentMarket) {
@@ -69,19 +71,26 @@ const WelcomeModal = () => {
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogContent className="p-0 max-w-screen-md overflow-hidden">
-        <OnboardingFlow 
-          onComplete={handleComplete} 
-          onSkip={handleSkip}
-          initialData={{
-            name: preferences.name || '',
-            experienceLevel: preferences.experienceLevel || 'beginner',
-            interests: preferences.interests || [],
-            investmentGoals: preferences.investmentGoals || [],
-            preferredPropertyTypes: preferences.preferredPropertyTypes || [],
-            investmentMarket: preferences.investmentMarket || ''
-          }}
-        />
+      <DialogContent className="p-0 max-w-screen-md overflow-hidden" aria-labelledby="onboarding-title">
+        <Suspense fallback={
+          <div className="flex items-center justify-center h-96">
+            <Loader className="h-8 w-8 animate-spin text-primary" />
+            <span className="sr-only">{t('loading')}</span>
+          </div>
+        }>
+          <OnboardingFlow 
+            onComplete={handleComplete} 
+            onSkip={handleSkip}
+            initialData={{
+              name: preferences.name || '',
+              experienceLevel: preferences.experienceLevel || 'beginner',
+              interests: preferences.interests || [],
+              investmentGoals: preferences.investmentGoals || [],
+              preferredPropertyTypes: preferences.preferredPropertyTypes || [],
+              investmentMarket: preferences.investmentMarket || ''
+            }}
+          />
+        </Suspense>
       </DialogContent>
     </Dialog>
   );

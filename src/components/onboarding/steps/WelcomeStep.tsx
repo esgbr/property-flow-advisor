@@ -7,7 +7,7 @@ import { useLanguage, SupportedLanguage } from '@/contexts/LanguageContext';
 import { OnboardingStepProps } from '../types';
 
 const WelcomeStep: React.FC<OnboardingStepProps> = ({ data, updateData }) => {
-  const { t, language, setLanguage } = useLanguage();
+  const { t, language, setLanguage, availableLanguages } = useLanguage();
   
   const handleLanguageChange = (value: string) => {
     // Only set language if it's a valid SupportedLanguage
@@ -15,6 +15,9 @@ const WelcomeStep: React.FC<OnboardingStepProps> = ({ data, updateData }) => {
       setLanguage(value as SupportedLanguage);
     }
   };
+  
+  // Get only enabled languages for the tab list
+  const enabledLanguages = availableLanguages.filter(lang => lang.enabled);
   
   return (
     <div className="flex flex-col items-center text-center space-y-6 overflow-y-auto max-h-[70vh] p-4">
@@ -43,9 +46,11 @@ const WelcomeStep: React.FC<OnboardingStepProps> = ({ data, updateData }) => {
           id="language-selector"
         >
           <TabsList className="grid grid-cols-3 w-full">
-            <TabsTrigger value="en">English</TabsTrigger>
-            <TabsTrigger value="de">Deutsch</TabsTrigger>
-            <TabsTrigger value="fr">Français</TabsTrigger>
+            {enabledLanguages.slice(0, 3).map(lang => (
+              <TabsTrigger key={lang.code} value={lang.code}>
+                <span className="mr-1">{lang.flag}</span> {lang.nativeName}
+              </TabsTrigger>
+            ))}
           </TabsList>
         </Tabs>
       </div>

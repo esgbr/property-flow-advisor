@@ -15,7 +15,7 @@ const LanguageSettings = () => {
     <div className="container mx-auto py-8 space-y-6">
       <SkipToContent contentId="language-settings-content" />
       
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between flex-wrap gap-4">
         <div>
           <h1 className="text-3xl font-bold">{t('languageSettings')}</h1>
           <p className="text-muted-foreground">{t('manageLanguagePreferences')}</p>
@@ -40,7 +40,7 @@ const LanguageSettings = () => {
                 <CardDescription>{t('activeLanguageDescription')}</CardDescription>
               </CardHeader>
               <CardContent>
-                <div className="flex items-center gap-4">
+                <div className="flex items-center gap-4 flex-wrap">
                   <LanguageSwitcher />
                   <p>{t('switchLanguageDescription')}</p>
                 </div>

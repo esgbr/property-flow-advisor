@@ -53,6 +53,7 @@ const LanguageDetectionBanner: React.FC<LanguageDetectionBannerProps> = ({ onDis
       toast({
         title: t('languageChanged'),
         description: t('displayLanguageChanged'),
+        duration: 3000,
       });
     }
     dismissBanner();
@@ -78,7 +79,11 @@ const LanguageDetectionBanner: React.FC<LanguageDetectionBannerProps> = ({ onDis
   const detectedLanguageInfo = availableLanguages.find(lang => lang.code === detectedLanguage);
   
   return (
-    <Alert className="mb-4 border-primary/20 bg-primary/5 overflow-hidden">
+    <Alert 
+      className="mb-4 border-primary/20 bg-primary/5 overflow-hidden"
+      role="alert"
+      aria-live="polite"
+    >
       <div className="flex items-start">
         <Globe className="h-5 w-5 mt-0.5 text-primary mr-2" aria-hidden="true" />
         <div className="flex-grow">
