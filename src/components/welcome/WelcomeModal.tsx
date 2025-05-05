@@ -8,12 +8,14 @@ import { toast } from 'sonner';
 import { useNavigate } from 'react-router-dom';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { Loader } from 'lucide-react';
+import { useAnnouncement } from '@/utils/accessibilityUtils';
 
 const WelcomeModal = () => {
   const { isFirstVisit, setIsFirstVisit, saveOnboardingData, preferences, updatePreferences } = useUserPreferences();
   const [isOpen, setIsOpen] = useState(false);
   const navigate = useNavigate();
   const { t } = useLanguage();
+  const { announce } = useAnnouncement();
 
   useEffect(() => {
     // Only show the welcome modal if it's the user's first visit
@@ -21,11 +23,12 @@ const WelcomeModal = () => {
       // Wait a moment before showing the modal for better UX
       const timer = setTimeout(() => {
         setIsOpen(true);
+        announce(t('welcomeToPropertyFlowAdvisor'), true);
       }, 800);
       
       return () => clearTimeout(timer);
     }
-  }, [isFirstVisit]);
+  }, [isFirstVisit, announce, t]);
 
   const handleComplete = (data: OnboardingData) => {
     // Sync user data across platform

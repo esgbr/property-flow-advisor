@@ -15,28 +15,31 @@ const ExperienceStep: React.FC<OnboardingStepProps> = ({ data, updateData }) => 
     });
   };
   
+  const experienceLevels = [
+    { id: 'beginner', label: t('beginner') },
+    { id: 'intermediate', label: t('intermediate') },
+    { id: 'advanced', label: t('advanced') },
+    { id: 'expert', label: t('expert') }
+  ];
+  
   return (
     <RadioGroup
       value={data.experienceLevel}
       onValueChange={handleExperienceChange}
       className="space-y-4"
     >
-      <div className="flex items-center space-x-2">
-        <RadioGroupItem value="beginner" id="beginner" />
-        <Label htmlFor="beginner" className="cursor-pointer">{t('beginner')}</Label>
-      </div>
-      <div className="flex items-center space-x-2">
-        <RadioGroupItem value="intermediate" id="intermediate" />
-        <Label htmlFor="intermediate" className="cursor-pointer">{t('intermediate')}</Label>
-      </div>
-      <div className="flex items-center space-x-2">
-        <RadioGroupItem value="advanced" id="advanced" />
-        <Label htmlFor="advanced" className="cursor-pointer">{t('advanced')}</Label>
-      </div>
-      <div className="flex items-center space-x-2">
-        <RadioGroupItem value="expert" id="expert" />
-        <Label htmlFor="expert" className="cursor-pointer">{t('expert')}</Label>
-      </div>
+      {experienceLevels.map((level) => (
+        <div key={level.id} className="flex items-center space-x-3">
+          <RadioGroupItem value={level.id} id={level.id} aria-labelledby={`label-${level.id}`} />
+          <Label 
+            htmlFor={level.id} 
+            id={`label-${level.id}`} 
+            className="cursor-pointer text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+          >
+            {level.label}
+          </Label>
+        </div>
+      ))}
     </RadioGroup>
   );
 };

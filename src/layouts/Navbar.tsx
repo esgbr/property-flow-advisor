@@ -76,9 +76,6 @@ const Navbar: React.FC = () => {
               )}
               <DropdownMenuSeparator />
               <DropdownMenuItem>
-                {t('lock')}
-              </DropdownMenuItem>
-              <DropdownMenuItem>
                 {t('logout')}
               </DropdownMenuItem>
             </DropdownMenuContent>

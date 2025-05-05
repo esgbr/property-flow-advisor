@@ -5,6 +5,7 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import { Globe } from 'lucide-react';
 import { OnboardingStepProps } from '../types';
 import { InvestmentMarket } from '@/contexts/UserPreferencesContext';
+import { availableMarkets } from '@/utils/marketHelpers';
 
 const MarketStep: React.FC<OnboardingStepProps> = ({ data, updateData }) => {
   const { t, language } = useLanguage();
@@ -14,6 +15,24 @@ const MarketStep: React.FC<OnboardingStepProps> = ({ data, updateData }) => {
       ...data, 
       investmentMarket: value as InvestmentMarket 
     });
+  };
+  
+  const marketSpecificInfoText = {
+    germany: {
+      de: 'Wir haben spezielle Tools für den deutschen Immobilienmarkt, die für Sie angepasst werden.',
+      en: 'We have specialized tools for the German real estate market that will be customized for you.'
+    },
+    usa: {
+      de: 'US-spezifische Tools wie 1031 Exchange und andere werden für Sie verfügbar sein.',
+      en: 'US-specific tools like 1031 Exchange and others will be available to you.'
+    }
+  };
+  
+  const getMarketInfoText = (marketId: string) => {
+    if (marketId in marketSpecificInfoText) {
+      return marketSpecificInfoText[marketId as keyof typeof marketSpecificInfoText][language === 'de' ? 'de' : 'en'];
+    }
+    return null;
   };
   
   return (
@@ -31,32 +50,18 @@ const MarketStep: React.FC<OnboardingStepProps> = ({ data, updateData }) => {
           <SelectValue placeholder={t('selectAMarket')} />
         </SelectTrigger>
         <SelectContent>
-          <SelectItem value="germany">{t('germany')}</SelectItem>
-          <SelectItem value="austria">{t('austria')}</SelectItem>
-          <SelectItem value="switzerland">{t('switzerland')}</SelectItem>
-          <SelectItem value="france">{t('france')}</SelectItem>
-          <SelectItem value="usa">{t('unitedStates')}</SelectItem>
-          <SelectItem value="canada">{t('canada')}</SelectItem>
-          <SelectItem value="other">{t('otherMarket')}</SelectItem>
+          {availableMarkets.map(market => (
+            <SelectItem key={market.id} value={market.id}>
+              {t(market.id) || market.name}
+            </SelectItem>
+          ))}
         </SelectContent>
       </Select>
       
-      {data.investmentMarket === 'germany' && (
+      {data.investmentMarket && getMarketInfoText(data.investmentMarket) && (
         <div className="mt-4 p-3 bg-primary/10 rounded-md">
           <p className="text-sm text-center">
-            {language === 'de' 
-              ? 'Wir haben spezielle Tools für den deutschen Immobilienmarkt, die für Sie angepasst werden.'
-              : 'We have specialized tools for the German real estate market that will be customized for you.'}
-          </p>
-        </div>
-      )}
-      
-      {data.investmentMarket === 'usa' && (
-        <div className="mt-4 p-3 bg-primary/10 rounded-md">
-          <p className="text-sm text-center">
-            {language === 'de' 
-              ? 'US-spezifische Tools wie 1031 Exchange und andere werden für Sie verfügbar sein.'
-              : 'US-specific tools like 1031 Exchange and others will be available to you.'}
+            {getMarketInfoText(data.investmentMarket)}
           </p>
         </div>
       )}

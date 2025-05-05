@@ -36,14 +36,14 @@ const AccessibilitySettingsButton: React.FC<AccessibilitySettingsButtonProps> = 
     if (e.key === 'Enter' || e.key === ' ') {
       e.preventDefault();
       navigate('/accessibility');
-      announce('Navigating to accessibility settings', false);
+      announce('Navigating to accessibility settings', true);
     }
   };
   
   // Handle button activation
   const handleClick = () => {
     navigate('/accessibility');
-    announce('Navigating to accessibility settings', false);
+    announce('Navigating to accessibility settings', true);
   };
 
   // Get descriptive text for active settings

@@ -15,30 +15,51 @@ export const availableMarkets = [
 
 // Helper function to get display name for a market
 export const getMarketDisplayName = (market: InvestmentMarket): string => {
-  switch (market) {
-    case 'germany':
-      return 'German';
-    case 'austria':
-      return 'Austrian';
-    case 'switzerland':
-      return 'Swiss';
-    case 'france':
-      return 'French';
-    case 'usa':
-      return 'US';
-    case 'canada':
-      return 'Canadian';
-    case 'global':
-      return 'Global';
-    case 'other':
-      return 'International';
-    default:
-      return 'International';
-  }
+  const marketDisplayNames: Record<InvestmentMarket, string> = {
+    germany: 'German',
+    austria: 'Austrian',
+    switzerland: 'Swiss',
+    france: 'French',
+    usa: 'US',
+    canada: 'Canadian',
+    global: 'Global',
+    other: 'International'
+  };
+  
+  return marketDisplayNames[market] || 'International';
 };
 
-// Get market by ID
+// Get market by ID with proper fallback
 export const getMarketById = (id: InvestmentMarket) => {
   return availableMarkets.find(market => market.id === id) || 
          { id: 'global' as InvestmentMarket, name: 'Global' };
+};
+
+// Get localized market name
+export const getLocalizedMarketName = (marketId: InvestmentMarket, language: string): string => {
+  const localizedNames: Record<string, Record<InvestmentMarket, string>> = {
+    'de': {
+      germany: 'Deutschland',
+      austria: 'Österreich',
+      switzerland: 'die Schweiz',
+      france: 'Frankreich',
+      usa: 'die USA',
+      canada: 'Kanada',
+      global: 'Global',
+      other: 'Andere Märkte'
+    },
+    'en': {
+      germany: 'Germany',
+      austria: 'Austria',
+      switzerland: 'Switzerland',
+      france: 'France',
+      usa: 'the USA',
+      canada: 'Canada',
+      global: 'Global',
+      other: 'Other Markets'
+    }
+  };
+  
+  const langKey = language in localizedNames ? language : 'en';
+  return localizedNames[langKey][marketId] || marketId;
 };

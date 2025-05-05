@@ -16,6 +16,10 @@ const WelcomeStep: React.FC<OnboardingStepProps> = ({ data, updateData }) => {
     }
   };
   
+  const handleNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    updateData({ ...data, name: e.target.value });
+  };
+  
   // Get only enabled languages for the tab list
   const enabledLanguages = availableLanguages.filter(lang => lang.enabled);
   
@@ -25,12 +29,12 @@ const WelcomeStep: React.FC<OnboardingStepProps> = ({ data, updateData }) => {
       <p className="text-muted-foreground">{t('yourPersonalRealEstateInvestmentCompanion')}</p>
       
       <div className="w-full">
-        <Label htmlFor="userName" className="mb-1 block">{t('yourName')}</Label>
+        <Label htmlFor="userName" className="mb-1 block text-left">{t('yourName')}</Label>
         <Input
           id="userName"
           placeholder={t('enterYourName')}
           value={data.name}
-          onChange={(e) => updateData({ ...data, name: e.target.value })}
+          onChange={handleNameChange}
           className="mt-1"
           aria-required="true"
           autoFocus
@@ -40,7 +44,7 @@ const WelcomeStep: React.FC<OnboardingStepProps> = ({ data, updateData }) => {
       </div>
       
       <div className="w-full mt-2">
-        <Label htmlFor="languageSelector" className="mb-1 block">{t('chooseLanguage')}</Label>
+        <Label htmlFor="languageSelector" className="mb-1 block text-left">{t('chooseLanguage')}</Label>
         <Tabs 
           defaultValue={language} 
           className="mt-1" 

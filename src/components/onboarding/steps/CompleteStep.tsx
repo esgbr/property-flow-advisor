@@ -3,28 +3,11 @@ import React from 'react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { Check } from 'lucide-react';
 import { OnboardingStepProps } from '../types';
+import { getLocalizedMarketName } from '@/utils/marketHelpers';
+import { InvestmentMarket } from '@/contexts/UserPreferencesContext';
 
 const CompleteStep: React.FC<OnboardingStepProps> = ({ data }) => {
   const { t, language } = useLanguage();
-  
-  const getLocalizedMarketName = (marketId: string): string => {
-    switch (marketId) {
-      case 'germany': 
-        return language === 'de' ? 'Deutschland' : 'Germany';
-      case 'usa': 
-        return language === 'de' ? 'die USA' : 'the USA';
-      case 'austria': 
-        return language === 'de' ? 'Österreich' : 'Austria';
-      case 'switzerland':
-        return language === 'de' ? 'die Schweiz' : 'Switzerland';
-      case 'france':
-        return language === 'de' ? 'Frankreich' : 'France';
-      case 'canada':
-        return language === 'de' ? 'Kanada' : 'Canada';
-      default:
-        return marketId;
-    }
-  };
   
   return (
     <div className="flex flex-col items-center text-center space-y-4">
@@ -37,8 +20,8 @@ const CompleteStep: React.FC<OnboardingStepProps> = ({ data }) => {
         {data.investmentMarket && (
           <span className="block mt-2">
             {language === 'de' 
-              ? `Spezifische Tools für ${getLocalizedMarketName(data.investmentMarket)} wurden für Sie vorbereitet.` 
-              : `Specific tools for ${getLocalizedMarketName(data.investmentMarket)} have been prepared for you.`}
+              ? `Spezifische Tools für ${getLocalizedMarketName(data.investmentMarket as InvestmentMarket, 'de')} wurden für Sie vorbereitet.` 
+              : `Specific tools for ${getLocalizedMarketName(data.investmentMarket as InvestmentMarket, 'en')} have been prepared for you.`}
           </span>
         )}
       </p>
