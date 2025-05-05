@@ -87,10 +87,12 @@ export const EnhancedToaster: React.FC<EnhancedToasterProps> = ({
         },
         unstyled: false,
         duration: duration,
-        // Removed the 'invert' property that was causing the error
-        // Disable animation if reduce motion is enabled
-        animationDuration: reduceMotion ? 0 : 150,
+        // Use custom CSS to handle animation duration instead of the invalid animationDuration prop
       }}
+      // Handle animation using CSS custom properties based on reduce motion preference
+      style={reduceMotion ? { 
+        '--toast-animation-duration': '0ms',
+      } as React.CSSProperties : undefined}
     />
   );
 };

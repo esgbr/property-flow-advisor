@@ -1,4 +1,3 @@
-
 // Use forwardRef to properly type the ref
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
@@ -38,6 +37,8 @@ interface EnhancedNavigationProps {
   layout?: 'vertical' | 'horizontal';
   variant?: 'default' | 'minimal' | 'expanded';
   className?: string;
+  collapsed?: boolean; // Add collapsed prop
+  onToggleCollapse?: () => void; // Add toggle callback
 }
 
 const navigationItems: NavItem[] = [
@@ -150,13 +151,15 @@ const EnhancedNavigation: React.FC<EnhancedNavigationProps> = ({
   layout = 'horizontal',
   variant = 'default',
   className = '',
+  collapsed = false, // Default to false for the collapsed state
+  onToggleCollapse, // Add the toggle callback prop
 }) => {
   const navigate = useNavigate();
   const location = useLocation();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [expandedItems, setExpandedItems] = useState<string[]>([]);
   const { highContrast, largeText, reduceMotion } = useAccessibility();
-  const mobileMenuRef = useRef<HTMLDivElement>(null); // Fixed to HTMLDivElement
+  const mobileMenuRef = useRef<HTMLDivElement>(null); 
   
   // Use focus trap for the mobile menu
   const menuFocusTrapRef = useFocusTrap<HTMLDivElement>(isMobileMenuOpen);
@@ -294,21 +297,40 @@ const EnhancedNavigation: React.FC<EnhancedNavigationProps> = ({
     });
   };
 
+  // Add a toggle collapse button if the prop is provided
+  const renderCollapseToggle = () => {
+    if (!onToggleCollapse) return null;
+    
+    return (
+      <Button 
+        variant="ghost" 
+        size="sm" 
+        onClick={onToggleCollapse}
+        className="hidden md:flex"
+        aria-label={collapsed ? "Expand navigation" : "Collapse navigation"}
+      >
+        {collapsed ? <Menu className="h-5 w-5" /> : <X className="h-5 w-5" />}
+      </Button>
+    );
+  };
+
   return (
     <>
       {/* Desktop Navigation */}
       <nav 
         className={cn(
           "hidden md:block",
-          layout === 'vertical' ? "w-60" : "w-full",
+          collapsed ? "w-16" : layout === 'vertical' ? "w-60" : "w-full",
           className
         )}
         aria-label="Main Navigation"
       >
         <div className={cn(
           "flex",
-          layout === 'vertical' ? "flex-col space-y-1" : "flex-row space-x-1"
+          layout === 'vertical' ? "flex-col space-y-1" : "flex-row space-x-1",
+          "items-center" // Center items for better collapsed view
         )}>
+          {renderCollapseToggle()}
           {renderNavLinks(navigationItems)}
         </div>
       </nav>

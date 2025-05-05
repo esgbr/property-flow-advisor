@@ -11,6 +11,7 @@ import { useIsMobile } from '@/hooks/use-mobile';
 import { EnhancedToaster } from '@/components/ui/enhanced-toaster';
 import { ButtonScrollToTop } from '@/components/ui/scroll-to-top';
 import { UserPreferences } from '@/contexts/UserPreferencesContext';
+import { TooltipProvider } from '@/components/ui/tooltip'; // Import TooltipProvider
 
 const EnhancedLayout: React.FC = () => {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
@@ -76,28 +77,30 @@ const EnhancedLayout: React.FC = () => {
       <UserPreferencesProvider>
         <AppLockProvider>
           <A11yProvider>
-            <div className="flex h-screen overflow-hidden">
-              <SkipToContent contentId="main-content" />
-              
-              <EnhancedNavigation 
-                collapsed={sidebarCollapsed}
-                onToggleCollapse={handleToggleSidebar}
-              />
-              
-              <div className="flex flex-col flex-1 overflow-hidden">
-                <main 
-                  id="main-content"
-                  className="flex-1 overflow-y-auto p-4 md:p-6"
-                  tabIndex={-1}
-                >
-                  <Outlet />
-                </main>
+            <TooltipProvider> {/* Add TooltipProvider to wrap everything */}
+              <div className="flex h-screen overflow-hidden">
+                <SkipToContent contentId="main-content" />
                 
-                <ButtonScrollToTop />
+                <EnhancedNavigation 
+                  collapsed={sidebarCollapsed}
+                  onToggleCollapse={handleToggleSidebar}
+                />
+                
+                <div className="flex flex-col flex-1 overflow-hidden">
+                  <main 
+                    id="main-content"
+                    className="flex-1 overflow-y-auto p-4 md:p-6"
+                    tabIndex={-1}
+                  >
+                    <Outlet />
+                  </main>
+                  
+                  <ButtonScrollToTop />
+                </div>
+                
+                <EnhancedToaster />
               </div>
-              
-              <EnhancedToaster />
-            </div>
+            </TooltipProvider>
           </A11yProvider>
         </AppLockProvider>
       </UserPreferencesProvider>
