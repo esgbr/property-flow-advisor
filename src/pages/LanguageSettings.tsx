@@ -5,7 +5,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import LanguageStatus from '@/components/language/LanguageStatus';
 import LanguageSwitcher from '@/components/LanguageSwitcher';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { SkipToContent } from '@/components/accessibility/SkipToContent';
+import SkipToContent from '@/components/accessibility/SkipToContent';
 
 const LanguageSettings = () => {
   const { t } = useLanguage();
