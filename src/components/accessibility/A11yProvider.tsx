@@ -117,11 +117,12 @@ export const A11yProvider: React.FC<{ children: React.ReactNode }> = ({ children
       const newSettings = { ...currentSettings, ...settings };
       localStorage.setItem('a11y-preferences', JSON.stringify(newSettings));
       
-      // Fix: Pass only the accessibility properties to updatePreferences
-      // Instead of creating a nested object, pass the properties directly
-      updatePreferences({
-        accessibilitySettings: settings  // This assumes the UserPreferences type has an accessibilitySettings property
-      });
+      // FIX: Update the user preferences with individual properties instead of using 'accessibilitySettings'
+      // This ensures we're only using properties that exist in the UserPreferences type
+      if (settings.reduceMotion !== undefined) updatePreferences({ reduceMotion: settings.reduceMotion });
+      if (settings.highContrast !== undefined) updatePreferences({ highContrast: settings.highContrast });
+      if (settings.largeText !== undefined) updatePreferences({ largeText: settings.largeText });
+      if (settings.screenReader !== undefined) updatePreferences({ screenReader: settings.screenReader });
     } catch (error) {
       console.error('Failed to save accessibility preferences', error);
     }

@@ -45,6 +45,12 @@ export interface UserPreferences {
   };
   // Adding properties needed for WelcomeModal
   isFirstVisit?: boolean;
+  
+  // Add accessibility settings as individual properties
+  reduceMotion?: boolean;
+  highContrast?: boolean;
+  largeText?: boolean;
+  screenReader?: boolean;
 }
 
 // Define OnboardingData type for WelcomeModal - fixing the error by making sure advanced is included
@@ -104,7 +110,12 @@ const defaultPreferences: UserPreferences = {
     collapsed: false,
     favoriteItems: []
   },
-  isFirstVisit: true
+  isFirstVisit: true,
+  // Initialize accessibility settings
+  reduceMotion: false,
+  highContrast: false,
+  largeText: false,
+  screenReader: false
 };
 
 export const UserPreferencesProvider: React.FC<UserPreferencesProviderProps> = ({ children }) => {
