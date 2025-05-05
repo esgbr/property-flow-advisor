@@ -1,12 +1,12 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { 
   Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle 
 } from '@/components/ui/card';
 import { useNavigate } from 'react-router-dom';
 import { useLanguage } from '@/contexts/LanguageContext';
-import { Building, Calculator, ChartBar, Globe, Home, Info, Plus } from 'lucide-react';
+import { Building, Calculator, ChartBar, Globe, Home, Info, Plus, Settings } from 'lucide-react';
 import { PropertyScanner } from '@/components/property/PropertyScanner';
 import InvestmentOpportunityFeed from '@/components/property/InvestmentOpportunityFeed';
 import EnhancedPortfolioDashboard from '@/components/portfolio/EnhancedPortfolioDashboard';
@@ -14,31 +14,70 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Separator } from '@/components/ui/separator';
 import MarketAwareDashboard from '@/components/market/MarketAwareDashboard';
 import { useUserPreferences } from '@/contexts/UserPreferencesContext';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { toast } from 'sonner';
 
 const Dashboard = () => {
   const navigate = useNavigate();
   const { t } = useLanguage();
-  const { preferences } = useUserPreferences();
+  const { preferences, updatePreferences } = useUserPreferences();
   const [activeTab, setActiveTab] = useState('overview');
+  const [showWelcomeMessage, setShowWelcomeMessage] = useState(false);
+  
+  // Show welcome message if this is the first visit to dashboard after onboarding
+  useEffect(() => {
+    const today = new Date().toDateString();
+    
+    if (preferences.onboardingCompleted && preferences.name && preferences.todayWelcomed !== today) {
+      setShowWelcomeMessage(true);
+      updatePreferences({ todayWelcomed: today });
+      
+      // Show welcome toast
+      toast.success(`Welcome ${preferences.name}!`, {
+        description: "Your personalized dashboard is ready to explore"
+      });
+    }
+  }, [preferences.onboardingCompleted, preferences.name, preferences.todayWelcomed]);
 
   return (
     <div className="space-y-8 animate-fade-in">
       <div className="flex justify-between items-center">
         <h1 className="text-3xl font-bold">{t('dashboard')}</h1>
-        <Button onClick={() => navigate('/property/add')}>
-          <Plus className="mr-2 h-4 w-4" />
-          {t('addProperty')}
-        </Button>
+        <div className="flex gap-2">
+          {preferences.experienceLevel && ['intermediate', 'advanced', 'expert'].includes(preferences.experienceLevel) && (
+            <Button onClick={() => navigate('/property/add')}>
+              <Plus className="mr-2 h-4 w-4" />
+              {t('addProperty')}
+            </Button>
+          )}
+          <Button variant="outline" onClick={() => navigate('/settings')}>
+            <Settings className="mr-2 h-4 w-4" />
+            {t('settings')}
+          </Button>
+        </div>
       </div>
 
-      {/* Welcome card with personalized greeting */}
-      {preferences.name && (
-        <Card className="border-primary/20 bg-primary/5">
-          <CardHeader>
-            <CardTitle>{t('welcomeBack')}, {preferences.name}!</CardTitle>
-            <CardDescription>{t('dashboardGreeting')}</CardDescription>
-          </CardHeader>
-        </Card>
+      {/* Welcome alert with personalized greeting */}
+      {showWelcomeMessage && preferences.name && (
+        <Alert className="border-primary/20 bg-primary/5">
+          <Home className="h-4 w-4 text-primary" />
+          <AlertTitle>{t('welcomeBack')}, {preferences.name}!</AlertTitle>
+          <AlertDescription className="flex flex-col gap-2">
+            <p>{preferences.experienceLevel === 'beginner' 
+              ? t('beginnerWelcomeMessage') 
+              : t('dashboardGreeting')}
+            </p>
+            {preferences.experienceLevel === 'beginner' && (
+              <Button 
+                variant="link" 
+                className="p-0 h-auto w-auto justify-start" 
+                onClick={() => navigate('/education')}
+              >
+                {t('viewBeginnerTutorials')}
+              </Button>
+            )}
+          </AlertDescription>
+        </Alert>
       )}
 
       {/* Market aware content */}
@@ -277,17 +316,39 @@ const Dashboard = () => {
         </TabsContent>
       </Tabs>
       
-      <Card className="bg-primary/5 border-primary/20">
-        <CardHeader className="pb-2">
-          <CardTitle className="flex items-center">
-            <Info className="h-5 w-5 mr-2" />
-            {t('proTips')}
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <p className="text-sm">{t('dashboardProTip')}</p>
-        </CardContent>
-      </Card>
+      {/* Show tips based on experience level */}
+      {preferences.experienceLevel === 'beginner' && (
+        <Card className="bg-blue-50 dark:bg-blue-950 border-blue-200 dark:border-blue-800">
+          <CardHeader className="pb-2">
+            <CardTitle className="flex items-center text-blue-700 dark:text-blue-300">
+              <Info className="h-5 w-5 mr-2" />
+              {t('beginnerTips')}
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="text-sm">{t('beginnerDashboardTip')}</p>
+          </CardContent>
+          <CardFooter>
+            <Button variant="link" size="sm" className="px-0" onClick={() => navigate('/education')}>
+              {t('learnMoreAboutRealEstateInvesting')}
+            </Button>
+          </CardFooter>
+        </Card>
+      )}
+      
+      {preferences.experienceLevel === 'expert' && (
+        <Card className="bg-primary/5 border-primary/20">
+          <CardHeader className="pb-2">
+            <CardTitle className="flex items-center">
+              <Info className="h-5 w-5 mr-2" />
+              {t('expertInsights')}
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="text-sm">{t('expertDashboardTip')}</p>
+          </CardContent>
+        </Card>
+      )}
     </div>
   );
 };

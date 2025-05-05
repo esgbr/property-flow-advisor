@@ -1,9 +1,10 @@
 
-import React, { Suspense, lazy } from 'react';
+import React, { Suspense, lazy, useEffect } from 'react';
 import { Route, Routes, Navigate, useLocation } from 'react-router-dom';
 import PageLoader from '@/components/ui/page-loader';
 import EnhancedLayout from '@/layouts/EnhancedLayout';
 import NotFound from '@/pages/NotFound';
+import { useUserPreferences } from '@/contexts/UserPreferencesContext';
 
 // Lazy load pages for better initial load performance
 const IndexPage = lazy(() => import('@/pages/Index'));
@@ -28,6 +29,7 @@ const PropertyComparatorPage = lazy(() => import('@/pages/PropertyComparatorPage
 const PortfolioAnalyticsPage = lazy(() => import('@/pages/PortfolioAnalyticsPage'));
 const MarketAnalysisDashboardPage = lazy(() => import('@/pages/MarketAnalysisDashboard'));
 const AccessibilitySettingsPage = lazy(() => import('@/components/accessibility/AccessibilitySettings'));
+const OnboardingWizard = lazy(() => import('@/components/onboarding/OnboardingWizard'));
 
 // Loading fallback component
 const PageLoadingFallback: React.FC<{ message?: string }> = ({ message }) => (
@@ -60,14 +62,25 @@ const RouteTracker: React.FC<{ children: React.ReactNode }> = ({ children }) => 
 };
 
 const EnhancedRoutes: React.FC = () => {
+  const { preferences } = useUserPreferences();
+  const needsOnboarding = !preferences.onboardingCompleted;
+  
   return (
     <RouteTracker>
       <Routes>
+        {/* Make Dashboard the home page and redirect legacy index route to it */}
         <Route path="/" element={
-          <PageSuspense message="Welcome to PropertyFlow">
-            <IndexPage />
-          </PageSuspense>
+          needsOnboarding ? (
+            <PageSuspense message="Setting up your experience...">
+              <OnboardingWizard />
+            </PageSuspense>
+          ) : (
+            <Navigate to="/dashboard" replace />
+          )
         } />
+        
+        {/* Legacy index page now redirects to dashboard */}
+        <Route path="/index" element={<Navigate to="/dashboard" replace />} />
         
         <Route element={<EnhancedLayout />}>
           <Route path="/dashboard" element={
