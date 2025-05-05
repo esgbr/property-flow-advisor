@@ -1,98 +1,210 @@
 
-import React, { useState } from 'react';
-import { Outlet } from 'react-router-dom';
-import UnifiedNavigation from '@/components/navigation/UnifiedNavigation';
-import SkipToContent from '@/components/accessibility/SkipToContent';
-import AccessibilitySettingsButton from '@/components/accessibility/AccessibilitySettingsButton';
-import { useAccessibility } from '@/components/accessibility/A11yProvider';
-import { Button } from '@/components/ui/button';
-import { Menu, X } from 'lucide-react';
+import React, { useEffect, lazy, Suspense } from 'react';
+import { Outlet, useLocation, useNavigate } from 'react-router-dom';
+import { SidebarProvider } from '@/components/ui/sidebar';
+import SidebarController from '@/components/layout/SidebarController';
+import Navbar from '@/layouts/Navbar';
+import { useAppLock } from '@/contexts/AppLockContext';
+import AppLockScreen from '@/components/AppLockScreen';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { useUserPreferences } from '@/contexts/UserPreferencesContext';
+import { useLanguage } from '@/contexts/LanguageContext';
+import { AlertTriangle, ShieldCheck } from 'lucide-react';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import MobileNavigation from '@/components/navigation/MobileNavigation';
+import ErrorBoundary from '@/components/ErrorBoundary';
+import SkipToContent from '@/components/accessibility/SkipToContent';
+import { AppThemeProvider, useAppTheme } from '@/components/theme-provider';
+import { A11yProvider } from '@/components/accessibility/A11yProvider';
+import AccessibilitySettingsButton from '@/components/accessibility/AccessibilitySettingsButton';
 
-const MainLayout: React.FC = () => {
-  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
-  const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
-  const { highContrast, largeText } = useAccessibility();
-  const isMobile = useIsMobile();
+// Lazy load non-critical components
+const FeedbackModal = lazy(() => import('@/components/feedback/FeedbackModal'));
+const WelcomeModal = lazy(() => import('@/components/welcome/WelcomeModal'));
+
+// Security alert component for better reusability
+const SecurityAlert = ({ onSetupPIN, onDismiss }) => {
+  const { t } = useLanguage();
   
-  const toggleSidebar = () => {
-    if (isMobile) {
-      setMobileSidebarOpen(!mobileSidebarOpen);
-    } else {
-      setSidebarCollapsed(!sidebarCollapsed);
-    }
-  };
-
   return (
-    <div className="flex min-h-screen bg-background">
-      {/* Skip to content link for keyboard users */}
-      <SkipToContent contentId="main-content" />
-      
-      {/* Desktop navigation */}
-      {!isMobile && (
-        <UnifiedNavigation 
-          collapsed={sidebarCollapsed} 
-          onToggleCollapse={toggleSidebar} 
-          className="hidden md:flex"
-        />
-      )}
-      
-      {/* Mobile navigation overlay */}
-      {isMobile && mobileSidebarOpen && (
-        <div 
-          className="fixed inset-0 bg-background/80 backdrop-blur-sm z-40"
-          onClick={() => setMobileSidebarOpen(false)}
-          aria-hidden="true"
-        />
-      )}
-      
-      {/* Mobile navigation sidebar */}
-      {isMobile && (
-        <div 
-          className={`fixed inset-y-0 left-0 z-50 w-64 transform transition-transform duration-300 ease-in-out ${
-            mobileSidebarOpen ? 'translate-x-0' : '-translate-x-full'
-          }`}
-        >
-          <UnifiedNavigation onToggleCollapse={() => setMobileSidebarOpen(false)} />
-        </div>
-      )}
-      
-      {/* Main content */}
-      <div className="flex-1 flex flex-col">
-        {/* Header for mobile */}
-        <div className={`md:hidden flex items-center p-4 ${highContrast ? 'border-b-2' : 'border-b'}`}>
-          <Button 
-            variant="ghost" 
-            size="icon" 
-            onClick={toggleSidebar}
-            aria-label={mobileSidebarOpen ? 'Close navigation' : 'Open navigation'}
-            className="mr-2"
+    <Alert className="mb-6 border-amber-500 bg-amber-500/10">
+      <AlertTriangle className="h-4 w-4 text-amber-500" aria-hidden="true" />
+      <AlertTitle className="text-amber-500">{t('securityAlert')}</AlertTitle>
+      <AlertDescription className="flex flex-col gap-2">
+        <p>{t('securityAlertDescription')}</p>
+        <div className="flex gap-2 mt-1">
+          <button 
+            onClick={onSetupPIN}
+            className="px-3 py-1 text-sm rounded-md bg-primary text-white"
           >
-            {mobileSidebarOpen ? <X /> : <Menu />}
-          </Button>
-          <div className="flex-1 flex justify-center">
-            <h1 className={`font-bold ${largeText ? 'text-xl' : 'text-lg'}`}>PropertyFlow</h1>
-          </div>
-          <AccessibilitySettingsButton />
+            {t('setupPIN')}
+          </button>
+          <button 
+            onClick={onDismiss}
+            className="px-3 py-1 text-sm rounded-md bg-muted text-muted-foreground"
+          >
+            {t('dismiss')}
+          </button>
         </div>
-        
-        {/* Header for desktop */}
-        <div className={`hidden md:flex items-center justify-between p-4 ${highContrast ? 'border-b-2' : 'border-b'}`}>
-          <h1 className={`font-bold ${largeText ? 'text-xl' : 'text-lg'}`}>PropertyFlow</h1>
-          <AccessibilitySettingsButton />
-        </div>
-        
-        {/* Page content */}
-        <main 
-          id="main-content" 
-          className={`flex-1 p-4 md:p-6 overflow-auto`}
-          tabIndex={-1} // Makes it focusable for skip link
-        >
-          <Outlet />
-        </main>
-      </div>
-    </div>
+      </AlertDescription>
+    </Alert>
   );
 };
 
-export default MainLayout;
+// Security confirmation component
+const SecurityConfirmation = () => {
+  const { t } = useLanguage();
+  
+  return (
+    <Alert className="mb-6 border-green-500 bg-green-500/10">
+      <ShieldCheck className="h-4 w-4 text-green-500" aria-hidden="true" />
+      <AlertTitle className="text-green-500">{t('securityEnabled')}</AlertTitle>
+      <AlertDescription>{t('securityEnabledDescription')}</AlertDescription>
+    </Alert>
+  );
+};
+
+interface MainLayoutProps {
+  children: React.ReactNode;
+}
+
+const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
+  const { isLocked, pin, lockApp } = useAppLock();
+  const isMobile = useIsMobile();
+  const { preferences, updatePreferences } = useUserPreferences();
+  const { t } = useLanguage();
+  const location = useLocation();
+  const navigate = useNavigate();
+  const { isDarkMode } = useAppTheme();
+  
+  const [inactivityTimer, setInactivityTimer] = React.useState<NodeJS.Timeout | null>(null);
+  const [showSecurityAlert, setShowSecurityAlert] = React.useState(false);
+  
+  // Enhanced security - auto-lock on inactivity
+  useEffect(() => {
+    // Skip if no pin is set or already locked
+    if (!pin || isLocked) return;
+    
+    // Clear existing timer
+    if (inactivityTimer) {
+      clearTimeout(inactivityTimer);
+    }
+    
+    // Set new inactivity timer (15 minutes)
+    const timer = setTimeout(() => {
+      if (pin) {
+        lockApp();
+        // Toast notification handled in the lockApp function
+      }
+    }, 15 * 60 * 1000); // 15 minutes
+    
+    setInactivityTimer(timer);
+    
+    // User activity listeners using a single handler for better performance
+    const resetTimer = () => {
+      if (inactivityTimer) {
+        clearTimeout(inactivityTimer);
+        setInactivityTimer(timer);
+      }
+    };
+    
+    // Reset timer on user activity - attaching to window for better mobile support
+    const events = ['mousemove', 'keypress', 'scroll', 'click', 'touchstart'];
+    events.forEach(event => window.addEventListener(event, resetTimer, { passive: true }));
+    
+    return () => {
+      if (inactivityTimer) clearTimeout(inactivityTimer);
+      events.forEach(event => window.removeEventListener(event, resetTimer));
+    };
+  }, [pin, isLocked, lockApp, inactivityTimer, t]);
+
+  // Show the lock screen if the app is locked and a PIN is set
+  if (isLocked && pin) {
+    return <AppLockScreen />;
+  }
+  
+  // Show security alert if no pin is set for advanced/expert users
+  useEffect(() => {
+    if ((preferences.experienceLevel === 'expert' || preferences.experienceLevel === 'advanced') && 
+        !pin && !preferences.dismissedSecurityAlert) {
+      setShowSecurityAlert(true);
+    }
+  }, [preferences.experienceLevel, pin, preferences.dismissedSecurityAlert]);
+  
+  // Track page visits for analytics and personalization
+  useEffect(() => {
+    const currentPath = location.pathname;
+    const visitedPages = preferences.visitedPages || [];
+    
+    if (visitedPages && !visitedPages.includes(currentPath)) {
+      updatePreferences({ 
+        visitedPages: [...visitedPages, currentPath],
+        lastVisitedPage: currentPath,
+        lastActive: new Date().toISOString()
+      });
+    }
+  }, [location.pathname, preferences.visitedPages, updatePreferences]);
+
+  const dismissSecurityAlert = () => {
+    setShowSecurityAlert(false);
+    updatePreferences({ dismissedSecurityAlert: true });
+  };
+
+  const setupPIN = () => {
+    navigate('/settings');
+    setShowSecurityAlert(false);
+  };
+
+  return (
+    <>
+      <SkipToContent contentId="main-content" />
+      <SidebarProvider>
+        <div className={`min-h-screen flex w-full ${isDarkMode ? 'dark' : ''}`}>
+          <SidebarController>
+            <div className="flex flex-col flex-1">
+              <Navbar />
+              <ErrorBoundary>
+                <main 
+                  id="main-content" 
+                  className={`flex-1 ${isMobile ? 'p-3 pb-20' : 'p-6'}`}
+                  tabIndex={-1}
+                >
+                  {showSecurityAlert && (
+                    <SecurityAlert onSetupPIN={setupPIN} onDismiss={dismissSecurityAlert} />
+                  )}
+                  
+                  {pin && <SecurityConfirmation />}
+                  
+                  {children}
+                </main>
+              </ErrorBoundary>
+              {isMobile && <MobileNavigation />}
+            </div>
+            <div className="fixed bottom-4 right-4 z-50 flex flex-col gap-2">
+              <AccessibilitySettingsButton />
+              <Suspense fallback={null}>
+                <FeedbackModal variant="icon" size="md" />
+              </Suspense>
+            </div>
+          </SidebarController>
+        </div>
+        <Suspense fallback={null}>
+          <WelcomeModal />
+        </Suspense>
+      </SidebarProvider>
+    </>
+  );
+};
+
+// Wrap the MainLayout with the AppThemeProvider and A11yProvider
+const ThemedMainLayout = ({ children }: MainLayoutProps) => {
+  return (
+    <AppThemeProvider>
+      <A11yProvider>
+        <MainLayout>{children}</MainLayout>
+      </A11yProvider>
+    </AppThemeProvider>
+  );
+};
+
+export default ThemedMainLayout;
