@@ -3,7 +3,7 @@ import React, { Suspense, lazy, useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
-import { useLanguage } from '@/contexts/LanguageContext';
+import { useLanguage } from '@/contexts/FixedLanguageContext';
 import { 
   Building, 
   Home, 

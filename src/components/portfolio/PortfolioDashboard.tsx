@@ -2,7 +2,7 @@
 import React, { useMemo } from 'react';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { useLanguage } from '@/contexts/LanguageContext';
+import { useLanguage } from '@/contexts/FixedLanguageContext';
 import { BarChart3, Building, Calculator, Lightbulb, PieChart, TrendingUp, Info, DollarSign } from 'lucide-react';
 import { useUserPreferences } from '@/contexts/UserPreferencesContext';
 import { Button } from '@/components/ui/button';
