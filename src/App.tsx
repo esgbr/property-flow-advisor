@@ -1,82 +1,67 @@
 
-import { Routes, Route, Navigate } from 'react-router-dom';
-import { Toaster } from '@/components/ui/toaster';
+import React from 'react';
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { ThemeProvider } from '@/components/theme-provider';
 import { UserPreferencesProvider } from '@/contexts/UserPreferencesContext';
 import { LanguageProvider } from '@/contexts/LanguageContext';
-import { MarketDataProvider } from '@/contexts/MarketDataContext';
 import { AppLockProvider } from '@/contexts/AppLockContext';
-import { RewardsProvider } from '@/contexts/RewardsContext';
-import { MotionConfig } from 'framer-motion';
-import { A11yProvider } from '@/components/accessibility/A11yProvider';
-import { Helmet } from 'react-helmet';
-import MainLayout from '@/components/layout/MainLayout';
+import { Toaster } from '@/components/ui/toaster';
+import HomePage from '@/pages/HomePage';
 import Dashboard from '@/pages/Dashboard';
-import MarketExplorerPage from '@/pages/MarketExplorerPage';
-import InvestorDashboard from '@/pages/InvestorDashboard';
-import FinancingPlansPage from '@/pages/FinancingPlansPage';
-import LanguageSettings from '@/pages/LanguageSettings';
 import AuthPage from '@/pages/AuthPage';
+import SettingsPage from '@/pages/SettingsPage';
+import LanguageSettings from '@/pages/LanguageSettings';
+import Calculators from '@/pages/Calculators';
+import OnboardingPage from '@/pages/OnboardingPage';
+import AuthGuard from '@/components/auth/AuthGuard';
+import LockedPage from '@/pages/LockedPage';
 
-function App() {
-  // Enhanced CSP policy for better security
-  const cspContent = `
-    default-src 'self'; 
-    script-src 'self' 'unsafe-inline' https://cdn.gpteng.co; 
-    style-src 'self' 'unsafe-inline'; 
-    img-src 'self' data: blob: https://api.mapbox.com; 
-    font-src 'self' data:; 
-    connect-src 'self' https://api.example.com https://*.mapbox.com; 
-    frame-src 'self'; 
-    object-src 'none'; 
-    base-uri 'self';
-    form-action 'self';
-    frame-ancestors 'self';
-    upgrade-insecure-requests;
-  `.replace(/\s+/g, ' ').trim();
-
+const App: React.FC = () => {
   return (
-    <UserPreferencesProvider>
-      <LanguageProvider>
-        <MarketDataProvider>
+    <ThemeProvider>
+      <UserPreferencesProvider>
+        <LanguageProvider>
           <AppLockProvider>
-            <RewardsProvider>
-              <A11yProvider>
-                <MotionConfig reducedMotion="user">
-                  <Helmet>
-                    <html lang="en" />
-                    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0" />
-                    <meta httpEquiv="Content-Security-Policy" content={cspContent} />
-                    <meta name="description" content="PropertyFlow - Real Estate Investment Platform" />
-                    <title>PropertyFlow</title>
-                  </Helmet>
-                  
-                  <Toaster />
-                  
-                  <Routes>
-                    {/* Auth routes */}
-                    <Route path="/auth" element={<AuthPage />} />
-                    
-                    {/* Main app routes */}
-                    <Route path="/" element={<MainLayout />}>
-                      <Route index element={<Dashboard />} />
-                      <Route path="dashboard" element={<Dashboard />} />
-                      <Route path="market-explorer" element={<MarketExplorerPage />} />
-                      <Route path="investor-dashboard" element={<InvestorDashboard />} />
-                      <Route path="financing-plans" element={<FinancingPlansPage />} />
-                      <Route path="language-settings" element={<LanguageSettings />} />
-                      
-                      {/* Catch all for 404 */}
-                      <Route path="*" element={<Navigate to="/" replace />} />
-                    </Route>
-                  </Routes>
-                </MotionConfig>
-              </A11yProvider>
-            </RewardsProvider>
+            <Router>
+              <Routes>
+                <Route path="/" element={<HomePage />} />
+                <Route path="/auth" element={<AuthPage />} />
+                <Route path="/onboarding" element={<OnboardingPage />} />
+                <Route path="/locked" element={<LockedPage />} />
+                <Route path="/dashboard" element={
+                  <AuthGuard>
+                    <Dashboard />
+                  </AuthGuard>
+                } />
+                <Route path="/calculators" element={
+                  <AuthGuard>
+                    <Calculators />
+                  </AuthGuard>
+                } />
+                <Route path="/settings" element={
+                  <AuthGuard>
+                    <SettingsPage />
+                  </AuthGuard>
+                } />
+                <Route path="/language-settings" element={
+                  <AuthGuard>
+                    <LanguageSettings />
+                  </AuthGuard>
+                } />
+                <Route path="/admin-tools" element={
+                  <AuthGuard requireAdmin={true}>
+                    <div>Admin Tools</div>
+                  </AuthGuard>
+                } />
+                <Route path="*" element={<div>404 - Seite nicht gefunden</div>} />
+              </Routes>
+              <Toaster />
+            </Router>
           </AppLockProvider>
-        </MarketDataProvider>
-      </LanguageProvider>
-    </UserPreferencesProvider>
+        </LanguageProvider>
+      </UserPreferencesProvider>
+    </ThemeProvider>
   );
-}
+};
 
 export default App;

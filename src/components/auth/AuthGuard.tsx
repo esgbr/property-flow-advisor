@@ -4,6 +4,7 @@ import { Navigate, useLocation, useNavigate } from 'react-router-dom';
 import { useUserPreferences } from '@/contexts/UserPreferencesContext';
 import { useToast } from '@/components/ui/use-toast';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { useAppLock } from '@/contexts/AppLockContext';
 
 interface AuthGuardProps {
   children: React.ReactNode;
@@ -12,13 +13,21 @@ interface AuthGuardProps {
 
 const AuthGuard: React.FC<AuthGuardProps> = ({ children, requireAdmin = false }) => {
   const { isAuthenticated, preferences } = useUserPreferences();
+  const { isLocked, unlockApp } = useAppLock();
   const location = useLocation();
   const navigate = useNavigate();
   const { toast } = useToast();
   const { t } = useLanguage();
   
+  // Prüfe auf verschlüsselten Status
   useEffect(() => {
-    // Check if redirected from auth page and show welcome toast
+    if (isAuthenticated && isLocked) {
+      navigate('/locked', { state: { from: location } });
+    }
+  }, [isAuthenticated, isLocked, navigate, location]);
+  
+  useEffect(() => {
+    // Prüfe, ob von der Auth-Seite umgeleitet und zeige Willkommens-Toast
     if (location.state?.from?.pathname === '/auth' && isAuthenticated) {
       toast({
         title: t('success'),
@@ -27,13 +36,18 @@ const AuthGuard: React.FC<AuthGuardProps> = ({ children, requireAdmin = false })
     }
   }, [location, isAuthenticated, preferences.role, toast, t]);
   
-  // Not authenticated at all
+  // Nicht authentifiziert
   if (!isAuthenticated) {
-    // Save the current location for redirect after login
+    // Speichere den aktuellen Standort für Umleitung nach dem Login
     return <Navigate to="/auth" state={{ from: location }} replace />;
   }
   
-  // Authenticated but not admin and admin is required
+  // Authentifiziert, aber App ist gesperrt
+  if (isLocked) {
+    return <Navigate to="/locked" state={{ from: location }} replace />;
+  }
+  
+  // Authentifiziert, aber kein Admin und Admin ist erforderlich
   if (requireAdmin && preferences.role !== 'admin') {
     toast({
       title: t('error'),
@@ -43,7 +57,7 @@ const AuthGuard: React.FC<AuthGuardProps> = ({ children, requireAdmin = false })
     return <Navigate to="/dashboard" replace />;
   }
   
-  // Authenticated and meets role requirements
+  // Authentifiziert und erfüllt Rollenanforderungen
   return <>{children}</>;
 };
 

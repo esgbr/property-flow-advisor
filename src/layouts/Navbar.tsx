@@ -8,6 +8,7 @@ import { ThemeToggle } from '@/components/ui/theme-toggle';
 import LanguageSwitcher from '@/components/LanguageSwitcher';
 import { useLanguage } from '@/contexts/LanguageContext';
 import UserMenu from '@/components/auth/UserMenu';
+import { useUserPreferences } from '@/contexts/UserPreferencesContext';
 
 interface NavbarProps {
   className?: string;
@@ -16,10 +17,11 @@ interface NavbarProps {
 
 const Navbar: React.FC<NavbarProps> = ({ className, showMobileMenu = true }) => {
   const { t } = useLanguage();
+  const { isAuthenticated } = useUserPreferences();
   
-  // Create a toggleSidebar function that can be used later
+  // Erstelle eine toggleSidebar-Funktion für die Seitenleiste
   const toggleSidebar = () => {
-    // This will be implemented when we have the sidebar component
+    // Dies wird implementiert, wenn wir die Sidebar-Komponente haben
     const sidebar = document.querySelector('[data-sidebar]');
     if (sidebar) {
       sidebar.classList.toggle('sidebar-open');
@@ -41,7 +43,7 @@ const Navbar: React.FC<NavbarProps> = ({ className, showMobileMenu = true }) => 
           </Button>
         )}
         <Link 
-          to="/" 
+          to={isAuthenticated ? "/dashboard" : "/"} 
           className="flex items-center mr-4"
           aria-label={t('home')}
         >
@@ -49,6 +51,7 @@ const Navbar: React.FC<NavbarProps> = ({ className, showMobileMenu = true }) => 
           <span className="font-bold hidden md:block">{t('propertyFlow')}</span>
         </Link>
       </div>
+      
       <div className="flex items-center space-x-2">
         <LanguageSwitcher />
         <ThemeToggle />

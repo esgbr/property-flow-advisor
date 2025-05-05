@@ -1,111 +1,113 @@
 
 import React, { createContext, useContext, useState, useEffect } from 'react';
+import { useUserPreferences } from './UserPreferencesContext';
 
-interface AppLockContextType {
+interface AppLockContextProps {
   isLocked: boolean;
-  pin: string | null;
   lockApp: () => void;
-  unlockApp: (enteredPin: string) => boolean;
-  setPin: (newPin: string) => void;
-  removePin: () => void;
-  validatePin: (enteredPin: string) => boolean;
+  unlockApp: (pin?: string) => boolean;
+  setPIN: (pin: string) => void;
+  hasPIN: boolean;
   supportsFaceId: boolean;
   useFaceId: () => Promise<boolean>;
 }
 
-const AppLockContext = createContext<AppLockContextType | undefined>(undefined);
+const AppLockContext = createContext<AppLockContextProps | undefined>(undefined);
 
 export const AppLockProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [isLocked, setIsLocked] = useState(false);
-  const [pin, setInternalPin] = useState<string | null>(null);
-  const [supportsFaceId, setSupportsFaceId] = useState(false);
-
-  // Check if device supports biometric authentication
+  const [isLocked, setIsLocked] = useState<boolean>(false);
+  const [pin, setPin] = useState<string | null>(null);
+  const { isAuthenticated } = useUserPreferences();
+  const [supportsFaceId, setSupportsFaceId] = useState<boolean>(false);
+  
+  // Überprüfe, ob FaceID unterstützt wird
   useEffect(() => {
     const checkBiometricSupport = async () => {
-      // In a real implementation, we would check if the device supports Face ID/Touch ID
-      // For now, we'll just simulate this based on whether we're on a mobile device
+      // In einer realen App würde hier eine Überprüfung der Gerätefunktionen stattfinden
+      // Hier wird eine einfache Erkennung des Gerätetyps als Fallback verwendet
       const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
-      setSupportsFaceId(isMobile);
+      const isModernDevice = 
+        ('FaceDetector' in window) || 
+        ('PublicKeyCredential' in window) || 
+        ('credentials' in navigator);
+      
+      setSupportsFaceId(isMobile && isModernDevice);
     };
     
     checkBiometricSupport();
   }, []);
-
-  // Load PIN from localStorage on component mount
+  
+  // PIN aus dem lokalen Speicher laden
   useEffect(() => {
-    const savedPin = localStorage.getItem('appPin');
+    const savedPin = localStorage.getItem('appLockPIN');
     if (savedPin) {
-      setInternalPin(savedPin);
+      setPin(savedPin);
     }
   }, []);
-
+  
+  // Sperren der App
   const lockApp = () => {
-    if (pin) {
+    if (isAuthenticated && pin) {
       setIsLocked(true);
     }
   };
-
-  const unlockApp = (enteredPin: string) => {
-    if (validatePin(enteredPin)) {
+  
+  // Entsperren der App mit PIN
+  const unlockApp = (userPin?: string) => {
+    if (userPin && pin && userPin === pin) {
+      setIsLocked(false);
+      return true;
+    } else if (!pin) {
+      // Wenn keine PIN gesetzt ist, trotzdem entsperren
       setIsLocked(false);
       return true;
     }
     return false;
   };
-
-  const validatePin = (enteredPin: string) => {
-    return enteredPin === pin;
+  
+  // PIN setzen
+  const setPIN = (newPin: string) => {
+    setPin(newPin);
+    localStorage.setItem('appLockPIN', newPin);
   };
-
-  const setPin = (newPin: string) => {
-    localStorage.setItem('appPin', newPin);
-    setInternalPin(newPin);
-  };
-
-  const removePin = () => {
-    localStorage.removeItem('appPin');
-    setInternalPin(null);
-    setIsLocked(false);
-  };
-
+  
+  // FaceID verwenden (simuliert)
   const useFaceId = async (): Promise<boolean> => {
-    // In a real implementation, this would trigger the device's biometric authentication
-    // For now, we'll simulate success
+    if (!supportsFaceId) return false;
+    
+    // In einer realen App würde hier die FaceID-API aufgerufen werden
+    // Hier wird ein Erfolg simuliert nach einer kurzen Verzögerung
     return new Promise((resolve) => {
       setTimeout(() => {
-        if (supportsFaceId) {
-          resolve(true);
-        } else {
-          resolve(false);
-        }
-      }, 1000);
+        setIsLocked(false);
+        resolve(true);
+      }, 1500);
     });
   };
-
+  
   return (
-    <AppLockContext.Provider 
-      value={{ 
-        isLocked, 
-        pin, 
-        lockApp, 
-        unlockApp, 
-        setPin, 
-        removePin,
-        validatePin,
-        supportsFaceId,
-        useFaceId
-      }}
-    >
+    <AppLockContext.Provider value={{
+      isLocked,
+      lockApp,
+      unlockApp,
+      setPIN,
+      hasPIN: !!pin,
+      supportsFaceId,
+      useFaceId
+    }}>
       {children}
     </AppLockContext.Provider>
   );
 };
 
-export const useAppLock = (): AppLockContextType => {
+export const useAppLock = () => {
   const context = useContext(AppLockContext);
+  
   if (context === undefined) {
     throw new Error('useAppLock must be used within an AppLockProvider');
   }
+  
   return context;
 };
+
+export default AppLockContext;
