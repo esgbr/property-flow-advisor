@@ -1,3 +1,4 @@
+
 import React, { createContext, useState, useContext, useEffect, ReactNode } from 'react';
 import { useUserPreferences } from './UserPreferencesContext';
 import { detectBrowserLanguage, isLanguageSupported, getBestMatchLanguage } from '@/utils/languageDetector';
@@ -29,6 +30,8 @@ interface LanguageContextType {
   setLanguage: (language: SupportedLanguage) => void;
   t: (key: string, options?: { [key: string]: any }) => string;
   availableLanguages: LanguageInfo[];
+  translations: Record<SupportedLanguage, Record<string, string>>;
+  updateTranslations: (newTranslations: Record<string, Record<SupportedLanguage, string>>) => void;
 }
 
 // Default context
@@ -36,7 +39,9 @@ const LanguageContext = createContext<LanguageContextType>({
   language: 'en',
   setLanguage: () => {},
   t: (key: string) => key,
-  availableLanguages
+  availableLanguages,
+  translations: {} as Record<SupportedLanguage, Record<string, string>>,
+  updateTranslations: () => {}
 });
 
 // Interface for LanguageProvider props
@@ -775,3 +780,137 @@ const translations: Record<SupportedLanguage, Record<string, string>> = {
     "viewAll": "Alle anzeigen",
     "viewDetails": "Details anzeigen",
     "createNew": "Neu erstellen",
+    "saveChanges": "Änderungen speichern",
+    "discardChanges": "Änderungen verwerfen",
+    "update": "Aktualisieren",
+    "apply": "Anwenden",
+    "reset": "Zurücksetzen",
+    "resetAll": "Alle zurücksetzen",
+    "clearAll": "Alle löschen"
+  },
+  
+  fr: {
+    // Add a minimal set of French translations
+    "dashboard": "Tableau de bord",
+    "settings": "Paramètres"
+  },
+  
+  es: {
+    // Add a minimal set of Spanish translations
+    "dashboard": "Panel de control",
+    "settings": "Configuración"
+  },
+  
+  it: {
+    // Add a minimal set of Italian translations
+    "dashboard": "Dashboard",
+    "settings": "Impostazioni"
+  }
+};
+
+export const LanguageProvider: React.FC<LanguageProviderProps> = ({ children }) => {
+  const { userPreferences } = useUserPreferences();
+  const supportedLanguageCodes = availableLanguages.map(lang => lang.code);
+  
+  // Initialize language from user preferences or browser language
+  const [language, setLanguageState] = useState<SupportedLanguage>(() => {
+    // First check user preferences
+    if (userPreferences.language && isLanguageSupported(userPreferences.language, supportedLanguageCodes)) {
+      return userPreferences.language as SupportedLanguage;
+    }
+    
+    // Then fallback to browser language detection
+    return getBestMatchLanguage(supportedLanguageCodes) as SupportedLanguage;
+  });
+  
+  // Extend translations state
+  const [translationsState, setTranslationsState] = useState(translations);
+  
+  // Set language with side effects
+  const setLanguage = (lang: SupportedLanguage) => {
+    setLanguageState(lang);
+    // Store in localStorage for persistence
+    localStorage.setItem('preferredLanguage', lang);
+    // Update user preferences (if we have access to that context)
+    if (userPreferences) {
+      // This assumes the UserPreferencesContext has an updatePreferences method
+      // If not, this should be adjusted accordingly
+      // updateUserPreferences({ ...userPreferences, language: lang });
+    }
+  };
+
+  // Load language from localStorage on component mount
+  useEffect(() => {
+    const storedLang = localStorage.getItem('preferredLanguage') as SupportedLanguage | null;
+    if (storedLang && isLanguageSupported(storedLang, supportedLanguageCodes)) {
+      setLanguageState(storedLang);
+    }
+  }, [supportedLanguageCodes]);
+
+  // Translation function
+  const t = (key: string, options?: { [key: string]: any }): string => {
+    // Get translation from current language
+    let translation = translationsState[language]?.[key];
+    
+    // Fallback to English if translation doesn't exist
+    if (!translation && language !== 'en') {
+      translation = translationsState.en?.[key];
+    }
+    
+    // If still no translation, return the key itself as fallback
+    if (!translation) {
+      return key;
+    }
+    
+    // Handle interpolation if options provided
+    if (options) {
+      return Object.keys(options).reduce(
+        (acc, optionKey) => acc.replace(new RegExp(`{{${optionKey}}}`, 'g'), options[optionKey]),
+        translation
+      );
+    }
+    
+    return translation;
+  };
+
+  // Function to update translations (used by LanguageSwitcher)
+  const updateTranslations = (newTranslations: Record<string, Record<SupportedLanguage, string>>) => {
+    const updatedTranslations = { ...translationsState };
+    
+    // For each key in newTranslations
+    Object.keys(newTranslations).forEach(key => {
+      // For each language in that key
+      Object.keys(newTranslations[key]).forEach(langCode => {
+        const lang = langCode as SupportedLanguage;
+        
+        // Create language object if it doesn't exist
+        if (!updatedTranslations[lang]) {
+          updatedTranslations[lang] = {};
+        }
+        
+        // Update translation
+        updatedTranslations[lang][key] = newTranslations[key][lang];
+      });
+    });
+    
+    setTranslationsState(updatedTranslations);
+  };
+
+  return (
+    <LanguageContext.Provider value={{ 
+      language, 
+      setLanguage, 
+      t, 
+      availableLanguages,
+      translations: translationsState,
+      updateTranslations
+    }}>
+      {children}
+    </LanguageContext.Provider>
+  );
+};
+
+// Custom hook to use the language context
+export const useLanguage = () => useContext(LanguageContext);
+
+export default LanguageContext;
