@@ -23,7 +23,8 @@ export const getMarketDisplayName = (market: InvestmentMarket): string => {
     usa: 'US',
     canada: 'Canadian',
     global: 'Global',
-    other: 'International'
+    other: 'International',
+    '': 'Global' // Adding the missing empty string property
   };
   
   return marketDisplayNames[market] || 'International';
@@ -46,7 +47,8 @@ export const getLocalizedMarketName = (marketId: InvestmentMarket, language: str
       usa: 'die USA',
       canada: 'Kanada',
       global: 'Global',
-      other: 'Andere Märkte'
+      other: 'Andere Märkte',
+      '': 'Global' // Adding the missing empty string property
     },
     'en': {
       germany: 'Germany',
@@ -56,7 +58,8 @@ export const getLocalizedMarketName = (marketId: InvestmentMarket, language: str
       usa: 'the USA',
       canada: 'Canada',
       global: 'Global',
-      other: 'Other Markets'
+      other: 'Other Markets',
+      '': 'Global' // Adding the missing empty string property
     }
   };
   
