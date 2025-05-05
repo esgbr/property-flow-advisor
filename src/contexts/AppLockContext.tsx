@@ -1,6 +1,8 @@
 
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { useUserPreferences } from './UserPreferencesContext';
+import { useToast } from '@/components/ui/use-toast';
+import { useLanguage } from './LanguageContext';
 
 interface AppLockContextProps {
   isLocked: boolean;
@@ -10,6 +12,7 @@ interface AppLockContextProps {
   hasPIN: boolean;
   supportsFaceId: boolean;
   useFaceId: () => Promise<boolean>;
+  pin: string | null; // Hinzugefügt, um Fehler zu beheben
 }
 
 const AppLockContext = createContext<AppLockContextProps | undefined>(undefined);
@@ -19,6 +22,8 @@ export const AppLockProvider: React.FC<{ children: React.ReactNode }> = ({ child
   const [pin, setPin] = useState<string | null>(null);
   const { isAuthenticated } = useUserPreferences();
   const [supportsFaceId, setSupportsFaceId] = useState<boolean>(false);
+  const { toast } = useToast();
+  const { t } = useLanguage();
   
   // Überprüfe, ob FaceID unterstützt wird
   useEffect(() => {
@@ -49,6 +54,10 @@ export const AppLockProvider: React.FC<{ children: React.ReactNode }> = ({ child
   const lockApp = () => {
     if (isAuthenticated && pin) {
       setIsLocked(true);
+      toast({
+        title: t('security'),
+        description: t('appLocked'),
+      });
     }
   };
   
@@ -66,9 +75,14 @@ export const AppLockProvider: React.FC<{ children: React.ReactNode }> = ({ child
   };
   
   // PIN setzen
-  const setPIN = (newPin: string) => {
+  const setPINValue = (newPin: string) => {
     setPin(newPin);
     localStorage.setItem('appLockPIN', newPin);
+    
+    toast({
+      title: t('success'),
+      description: t('pinSetSuccessfully'),
+    });
   };
   
   // FaceID verwenden (simuliert)
@@ -90,10 +104,11 @@ export const AppLockProvider: React.FC<{ children: React.ReactNode }> = ({ child
       isLocked,
       lockApp,
       unlockApp,
-      setPIN,
+      setPIN: setPINValue,
       hasPIN: !!pin,
       supportsFaceId,
-      useFaceId
+      useFaceId,
+      pin // Hinzugefügt, um Fehler zu beheben
     }}>
       {children}
     </AppLockContext.Provider>

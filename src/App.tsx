@@ -50,7 +50,7 @@ const App: React.FC = () => {
                 } />
                 <Route path="/admin-tools" element={
                   <AuthGuard requireAdmin={true}>
-                    <div>Admin Tools</div>
+                    <div>Admin-Tools</div>
                   </AuthGuard>
                 } />
                 <Route path="*" element={<div>404 - Seite nicht gefunden</div>} />

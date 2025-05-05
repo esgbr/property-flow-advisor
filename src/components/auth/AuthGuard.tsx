@@ -13,7 +13,7 @@ interface AuthGuardProps {
 
 const AuthGuard: React.FC<AuthGuardProps> = ({ children, requireAdmin = false }) => {
   const { isAuthenticated, preferences } = useUserPreferences();
-  const { isLocked, unlockApp } = useAppLock();
+  const { isLocked } = useAppLock();
   const location = useLocation();
   const navigate = useNavigate();
   const { toast } = useToast();
