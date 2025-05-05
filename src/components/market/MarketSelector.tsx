@@ -46,9 +46,9 @@ const MarketSelector: React.FC<MarketSelectorProps> = ({
     updatePreferences({ ...preferences, investmentMarket: marketId });
     
     toast.success(
-      t('Market Changed'), 
+      t('marketChanged'), 
       { 
-        description: `${t('Your investment market has been updated to')} ${markets.find(m => m.id === marketId)?.name}.`,
+        description: `${t('yourInvestmentMarketHasBeenUpdatedTo')} ${markets.find(m => m.id === marketId)?.name}.`,
         duration: 3000
       }
     );
@@ -71,9 +71,9 @@ const MarketSelector: React.FC<MarketSelectorProps> = ({
           <Globe className="h-4 w-4 mr-1" />
           {showLabel ? (
             <>
-              <span>{t('Market')}: </span>
+              <span>{t('market')}: </span>
               <span className="font-medium">
-                {markets.find(m => m.id === currentMarket)?.name || t('Global')}
+                {markets.find(m => m.id === currentMarket)?.name || t('global')}
               </span>
             </>
           ) : (
@@ -85,7 +85,7 @@ const MarketSelector: React.FC<MarketSelectorProps> = ({
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align={align} className="w-56">
-        <DropdownMenuLabel>{t('Select Investment Market')}</DropdownMenuLabel>
+        <DropdownMenuLabel>{t('selectInvestmentMarket')}</DropdownMenuLabel>
         <DropdownMenuSeparator />
         
         {markets.map((market) => (
@@ -101,7 +101,7 @@ const MarketSelector: React.FC<MarketSelectorProps> = ({
         
         <DropdownMenuSeparator />
         <DropdownMenuItem onClick={() => navigate('/settings')}>
-          {t('Manage Market Settings')}
+          {t('manageMarketSettings')}
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>

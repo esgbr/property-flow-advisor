@@ -7,7 +7,7 @@
 // Maintain a singleton instance of the announcer element
 let announcer: HTMLElement | null = null;
 
-// Create a singleton polite announcer element
+// Create a singleton announcer element
 const getAnnouncer = (assertive = false): HTMLElement => {
   if (!announcer) {
     announcer = document.createElement('div');
