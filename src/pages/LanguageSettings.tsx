@@ -5,8 +5,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import LanguageStatus from '@/components/language/LanguageStatus';
 import LanguageSwitcher from '@/components/LanguageSwitcher';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import SkipToContent from '@/components/accessibility/SkipToContent';
 import LanguageDetectionBanner from '@/components/language/LanguageDetectionBanner';
+import SkipToContent from '@/components/accessibility/SkipToContent';
 
 const LanguageSettings = () => {
   const { t } = useLanguage();
@@ -17,7 +17,7 @@ const LanguageSettings = () => {
       
       <div className="flex items-center justify-between flex-wrap gap-4">
         <div>
-          <h1 className="text-3xl font-bold">{t('languageSettings')}</h1>
+          <h1 className="text-3xl font-bold" id="language-settings-title">{t('languageSettings')}</h1>
           <p className="text-muted-foreground">{t('manageLanguagePreferences')}</p>
         </div>
         <LanguageSwitcher />
@@ -26,13 +26,13 @@ const LanguageSettings = () => {
       <LanguageDetectionBanner />
       
       <Tabs defaultValue="overview" className="space-y-6" id="language-settings-content">
-        <TabsList className="w-full md:w-auto flex flex-wrap">
+        <TabsList className="w-full md:w-auto flex flex-wrap" aria-labelledby="language-settings-title">
           <TabsTrigger value="overview">{t('overview')}</TabsTrigger>
           <TabsTrigger value="translations">{t('translationStatus')}</TabsTrigger>
           <TabsTrigger value="preferences">{t('preferences')}</TabsTrigger>
         </TabsList>
         
-        <TabsContent value="overview" className="focus:outline-none">
+        <TabsContent value="overview" className="focus:outline-none focus-visible:ring-2">
           <div className="grid gap-6 md:grid-cols-2">
             <Card>
               <CardHeader>
@@ -64,11 +64,11 @@ const LanguageSettings = () => {
           </div>
         </TabsContent>
         
-        <TabsContent value="translations" className="focus:outline-none overflow-x-auto">
+        <TabsContent value="translations" className="focus:outline-none focus-visible:ring-2 overflow-x-auto">
           <LanguageStatus />
         </TabsContent>
         
-        <TabsContent value="preferences" className="focus:outline-none">
+        <TabsContent value="preferences" className="focus:outline-none focus-visible:ring-2">
           <Card>
             <CardHeader>
               <CardTitle>{t('languagePreferences')}</CardTitle>

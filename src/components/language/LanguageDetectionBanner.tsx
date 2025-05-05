@@ -80,14 +80,14 @@ const LanguageDetectionBanner: React.FC<LanguageDetectionBannerProps> = ({ onDis
   
   return (
     <Alert 
-      className="mb-4 border-primary/20 bg-primary/5 overflow-hidden"
+      className="mb-4 border-primary/20 bg-primary/5 overflow-hidden shadow-sm"
       role="alert"
       aria-live="polite"
     >
-      <div className="flex items-start">
-        <Globe className="h-5 w-5 mt-0.5 text-primary mr-2" aria-hidden="true" />
+      <div className="flex items-start gap-2">
+        <Globe className="h-5 w-5 mt-0.5 text-primary flex-shrink-0" aria-hidden="true" />
         <div className="flex-grow">
-          <AlertTitle className="mb-2">{t('browserLanguageDetected')}</AlertTitle>
+          <AlertTitle className="mb-2 text-base font-medium">{t('browserLanguageDetected')}</AlertTitle>
           <AlertDescription className="mb-3">
             {t('languageDetected')}: 
             <span className="ml-1 font-medium">

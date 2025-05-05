@@ -46,7 +46,7 @@ const LiquidityPlanning: React.FC = () => {
             onClick={handleNotifyAvailability}
             aria-label={t('notifyMeWhenLiquidityPlanningIsAvailable')}
           >
-            <Bell className="h-4 w-4 group-hover:animate-pulse" />
+            <Bell className="h-4 w-4 group-hover:animate-pulse" aria-hidden="true" />
             {t('notifyWhenAvailable')}
           </Button>
         </div>

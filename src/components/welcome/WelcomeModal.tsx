@@ -71,10 +71,15 @@ const WelcomeModal = () => {
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogContent className="p-0 max-w-screen-md overflow-hidden" aria-labelledby="onboarding-title">
+      <DialogContent 
+        className="p-0 max-w-screen-md overflow-hidden" 
+        aria-labelledby="onboarding-title"
+        role="dialog"
+        aria-modal="true"
+      >
         <Suspense fallback={
           <div className="flex items-center justify-center h-96">
-            <Loader className="h-8 w-8 animate-spin text-primary" />
+            <Loader className="h-8 w-8 animate-spin text-primary" aria-hidden="true" />
             <span className="sr-only">{t('loading')}</span>
           </div>
         }>
