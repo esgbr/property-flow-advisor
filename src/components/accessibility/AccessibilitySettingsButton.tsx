@@ -51,22 +51,25 @@ const AccessibilitySettingsButton: React.FC<AccessibilitySettingsButtonProps> = 
   
   return (
     <TooltipProvider>
-      <Tooltip>
+      <Tooltip delayDuration={300}>
         <TooltipTrigger asChild>
           <Button
             variant={variant}
             size={size}
             onClick={() => navigate('/accessibility')}
             onKeyDown={handleKeyDown}
-            className={`relative hover:scale-105 transition-transform ${highContrast ? 'border-2' : ''}`}
-            aria-label={t('accessibilitySettings') || 'Accessibility Settings'}
+            className={`relative hover:scale-105 transition-transform hover:bg-primary/10 ${highContrast ? 'border-2' : ''} ${activeSettings > 0 ? 'ring-1 ring-primary/30' : ''}`}
+            aria-label={`${t('accessibilitySettings') || 'Accessibility Settings'}${activeSettings > 0 ? ` (${activeSettings} active)` : ''}`}
             data-testid="accessibility-settings-button"
           >
-            <Settings className="h-5 w-5" aria-hidden="true" />
+            <Settings 
+              className={`h-5 w-5 ${activeSettings > 0 ? 'text-primary' : ''}`} 
+              aria-hidden="true" 
+            />
             {activeSettings > 0 && (
               <span 
                 className={`absolute -top-1 -right-1 bg-primary text-primary-foreground rounded-full w-5 h-5 text-xs flex items-center justify-center ${highContrast ? 'border border-background' : ''}`}
-                aria-label={`${activeSettings} active accessibility features`}
+                aria-hidden="true"
                 title={getActiveSettingsDescription()}
               >
                 {activeSettings}
@@ -74,7 +77,7 @@ const AccessibilitySettingsButton: React.FC<AccessibilitySettingsButtonProps> = 
             )}
           </Button>
         </TooltipTrigger>
-        <TooltipContent side="bottom" className={highContrast ? 'border-2' : ''}>
+        <TooltipContent side="bottom" className={`${highContrast ? 'border-2' : ''} max-w-[200px]`}>
           <p>{t('accessibilitySettings') || 'Accessibility Settings'}</p>
           {activeSettings > 0 && (
             <p className="text-xs text-muted-foreground mt-1">
