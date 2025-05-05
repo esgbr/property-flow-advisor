@@ -5,12 +5,15 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import LanguageStatus from '@/components/language/LanguageStatus';
 import LanguageSwitcher from '@/components/LanguageSwitcher';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { SkipToContent } from '@/components/accessibility/SkipToContent';
 
 const LanguageSettings = () => {
   const { t } = useLanguage();
 
   return (
     <div className="container mx-auto py-8 space-y-6">
+      <SkipToContent contentId="language-settings-content" />
+      
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold">{t('languageSettings')}</h1>
@@ -19,14 +22,14 @@ const LanguageSettings = () => {
         <LanguageSwitcher />
       </div>
       
-      <Tabs defaultValue="overview" className="space-y-6">
+      <Tabs defaultValue="overview" className="space-y-6" id="language-settings-content">
         <TabsList>
           <TabsTrigger value="overview">Overview</TabsTrigger>
           <TabsTrigger value="translations">Translation Status</TabsTrigger>
           <TabsTrigger value="preferences">Preferences</TabsTrigger>
         </TabsList>
         
-        <TabsContent value="overview">
+        <TabsContent value="overview" className="focus:outline-none">
           <div className="grid gap-6 md:grid-cols-2">
             <Card>
               <CardHeader>
@@ -58,11 +61,11 @@ const LanguageSettings = () => {
           </div>
         </TabsContent>
         
-        <TabsContent value="translations">
+        <TabsContent value="translations" className="focus:outline-none">
           <LanguageStatus />
         </TabsContent>
         
-        <TabsContent value="preferences">
+        <TabsContent value="preferences" className="focus:outline-none">
           <Card>
             <CardHeader>
               <CardTitle>{t('languagePreferences')}</CardTitle>

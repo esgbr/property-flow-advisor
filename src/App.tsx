@@ -15,6 +15,7 @@ import FinancingPlansPage from '@/pages/FinancingPlansPage';
 import { MotionConfig } from 'framer-motion';
 import { A11yProvider } from '@/components/accessibility/A11yProvider';
 import { Helmet } from 'react-helmet';
+import LanguageSettings from '@/pages/LanguageSettings';
 
 function App() {
   return (
@@ -48,6 +49,7 @@ function App() {
                     <Route path="/market-explorer" element={<MainLayout><MarketExplorerPage /></MainLayout>} />
                     <Route path="/investor-dashboard" element={<MainLayout><InvestorDashboard /></MainLayout>} />
                     <Route path="/financing-plans" element={<MainLayout><FinancingPlansPage /></MainLayout>} />
+                    <Route path="/language-settings" element={<MainLayout><LanguageSettings /></MainLayout>} />
                     
                     {/* Catch all for 404 */}
                     <Route path="*" element={<Navigate to="/" replace />} />

@@ -16,14 +16,14 @@ const LiquidityPlanning: React.FC = () => {
     
     // Show a toast notification for better user feedback
     toast({
-      title: t('notificationSaved') || 'Notification saved',
-      description: t('liquidityPlanningNotifyConfirmation') || "We'll notify you when liquidity planning becomes available.",
+      title: t('notificationSaved'),
+      description: t('liquidityPlanningNotifyConfirmation'),
       duration: 3000,
     });
   };
   
   return (
-    <Card className="h-full">
+    <Card className="h-full overflow-hidden">
       <CardHeader>
         <CardTitle className="flex items-center">
           <TrendingUp className="mr-2 h-5 w-5" aria-hidden="true" />
@@ -38,16 +38,15 @@ const LiquidityPlanning: React.FC = () => {
           />
           <p className="text-lg font-medium">{t('comingSoon')}</p>
           <p className="text-muted-foreground">
-            {t('liquidityPlanningDescription') || 
-             'Plan your real estate cash flow and optimize your liquidity with our advanced planning tools.'}
+            {t('liquidityPlanningDescription')}
           </p>
           <Button 
             variant="outline" 
             className="mt-4"
             onClick={handleNotifyAvailability}
-            aria-label={t('notifyMeWhenLiquidityPlanningIsAvailable') || 'Notify me when liquidity planning is available'}
+            aria-label={t('notifyMeWhenLiquidityPlanningIsAvailable')}
           >
-            {t('notifyWhenAvailable') || 'Notify me when available'}
+            {t('notifyWhenAvailable')}
           </Button>
         </div>
       </CardContent>

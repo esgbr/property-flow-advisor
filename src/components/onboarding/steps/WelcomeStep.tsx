@@ -17,7 +17,7 @@ const WelcomeStep: React.FC<OnboardingStepProps> = ({ data, updateData }) => {
   };
   
   return (
-    <div className="flex flex-col items-center text-center space-y-4">
+    <div className="flex flex-col items-center text-center space-y-4 overflow-y-auto max-h-[70vh] p-2">
       <h3 className="text-xl font-medium">{t('welcomeToPropertyFlowAdvisor')}</h3>
       <p className="text-muted-foreground">{t('yourPersonalRealEstateInvestmentCompanion')}</p>
       <div className="w-full">
@@ -28,15 +28,17 @@ const WelcomeStep: React.FC<OnboardingStepProps> = ({ data, updateData }) => {
           value={data.name}
           onChange={(e) => updateData({ ...data, name: e.target.value })}
           className="mt-1"
+          aria-required="true"
         />
       </div>
       
       <div className="w-full mt-4">
-        <Label>{t('chooseLanguage')}</Label>
+        <Label htmlFor="language-selector">{t('chooseLanguage')}</Label>
         <Tabs 
           defaultValue={language} 
           className="mt-1" 
           onValueChange={handleLanguageChange}
+          id="language-selector"
         >
           <TabsList className="grid grid-cols-2 w-full">
             <TabsTrigger value="en">English</TabsTrigger>

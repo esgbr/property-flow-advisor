@@ -67,7 +67,7 @@ const WelcomeModal = () => {
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogContent className="p-0 max-w-screen-md">
+      <DialogContent className="p-0 max-w-screen-md overflow-hidden">
         <OnboardingFlow 
           onComplete={handleComplete} 
           onSkip={handleSkip}

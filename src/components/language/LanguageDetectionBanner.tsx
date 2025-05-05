@@ -49,7 +49,7 @@ const LanguageDetectionBanner: React.FC<LanguageDetectionBannerProps> = ({ onDis
       setLanguage(detectedLanguage);
       
       toast({
-        title: t('languageUpdated'),
+        title: t('languageChanged'),
         description: t('displayLanguageChanged'),
       });
     }
