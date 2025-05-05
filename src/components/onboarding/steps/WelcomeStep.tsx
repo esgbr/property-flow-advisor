@@ -25,9 +25,9 @@ const WelcomeStep: React.FC<OnboardingStepProps> = ({ data, updateData }) => {
       <p className="text-muted-foreground">{t('yourPersonalRealEstateInvestmentCompanion')}</p>
       
       <div className="w-full">
-        <Label htmlFor="name" className="mb-1 block">{t('yourName')}</Label>
+        <Label htmlFor="userName" className="mb-1 block">{t('yourName')}</Label>
         <Input
-          id="name"
+          id="userName"
           placeholder={t('enterYourName')}
           value={data.name}
           onChange={(e) => updateData({ ...data, name: e.target.value })}
@@ -39,12 +39,12 @@ const WelcomeStep: React.FC<OnboardingStepProps> = ({ data, updateData }) => {
       </div>
       
       <div className="w-full mt-2">
-        <Label htmlFor="language-selector" className="mb-1 block">{t('chooseLanguage')}</Label>
+        <Label htmlFor="languageSelector" className="mb-1 block">{t('chooseLanguage')}</Label>
         <Tabs 
           defaultValue={language} 
           className="mt-1" 
           onValueChange={handleLanguageChange}
-          id="language-selector"
+          id="languageSelector"
         >
           <TabsList className="grid grid-cols-3 w-full">
             {enabledLanguages.slice(0, 3).map(lang => (

@@ -11,7 +11,7 @@ import { Loader } from 'lucide-react';
 
 const WelcomeModal = () => {
   const { isFirstVisit, setIsFirstVisit, saveOnboardingData, preferences, updatePreferences } = useUserPreferences();
-  const [open, setOpen] = useState(false);
+  const [isOpen, setIsOpen] = useState(false);
   const navigate = useNavigate();
   const { t } = useLanguage();
 
@@ -20,7 +20,7 @@ const WelcomeModal = () => {
     if (isFirstVisit) {
       // Wait a moment before showing the modal for better UX
       const timer = setTimeout(() => {
-        setOpen(true);
+        setIsOpen(true);
       }, 800);
       
       return () => clearTimeout(timer);
@@ -30,7 +30,7 @@ const WelcomeModal = () => {
   const handleComplete = (data: OnboardingData) => {
     // Sync user data across platform
     saveOnboardingData(data);
-    setOpen(false);
+    setIsOpen(false);
     setIsFirstVisit(false);
     
     // Navigate to appropriate dashboard based on selected market
@@ -58,7 +58,7 @@ const WelcomeModal = () => {
   const handleSkip = () => {
     setIsFirstVisit(false);
     localStorage.setItem('firstVisit', 'false');
-    setOpen(false);
+    setIsOpen(false);
     
     // If user skips, we still save what we know
     updatePreferences({
@@ -70,10 +70,10 @@ const WelcomeModal = () => {
   };
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
+    <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogContent 
         className="p-0 max-w-screen-md overflow-hidden" 
-        aria-labelledby="onboarding-title"
+        aria-labelledby="onboardingTitle"
         role="dialog"
         aria-modal="true"
       >

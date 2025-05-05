@@ -1,5 +1,7 @@
 
-// Language detection utility
+/**
+ * Language detection utility functions
+ */
 
 /**
  * Detects the user's browser language
@@ -9,25 +11,25 @@ export function detectBrowserLanguage(): string {
   if (typeof window === 'undefined') return 'en';
 
   // Get browser language
-  const browserLang = navigator.language.toLowerCase();
+  const browserLanguage = navigator.language.toLowerCase();
   
   // Extract primary language code (e.g., 'en-US' -> 'en')
-  const primaryLang = browserLang.split('-')[0];
+  const primaryLanguage = browserLanguage.split('-')[0];
   
-  return primaryLang;
+  return primaryLanguage;
 }
 
 /**
  * Checks if a language is supported by the application
- * @param lang - ISO language code to check
+ * @param language - ISO language code to check
  * @param supportedLanguages - Array of supported language codes
  * @returns boolean indicating if language is supported
  */
 export function isLanguageSupported(
-  lang: string, 
+  language: string, 
   supportedLanguages: string[]
 ): boolean {
-  return supportedLanguages.includes(lang);
+  return supportedLanguages.includes(language);
 }
 
 /**
@@ -41,19 +43,19 @@ export function getBestMatchLanguage(supportedLanguages: string[]): string {
   // Try to get languages from navigator
   if (navigator.languages && navigator.languages.length) {
     // Loop through browser's preferred languages
-    for (const lang of navigator.languages) {
-      const primaryLang = lang.split('-')[0].toLowerCase();
+    for (const language of navigator.languages) {
+      const primaryLanguage = language.split('-')[0].toLowerCase();
       
-      if (isLanguageSupported(primaryLang, supportedLanguages)) {
-        return primaryLang;
+      if (isLanguageSupported(primaryLanguage, supportedLanguages)) {
+        return primaryLanguage;
       }
     }
   }
   
   // Fallback to single language detection
-  const browserLang = detectBrowserLanguage();
-  if (isLanguageSupported(browserLang, supportedLanguages)) {
-    return browserLang;
+  const browserLanguage = detectBrowserLanguage();
+  if (isLanguageSupported(browserLanguage, supportedLanguages)) {
+    return browserLanguage;
   }
   
   // Default fallback
@@ -73,10 +75,10 @@ export function detectLanguageFromText(text: string): string {
   const spanishWords = ['el', 'la', 'los', 'las', 'un', 'una', 'y', 'es', 'yo', 'tu'];
   const italianWords = ['il', 'la', 'i', 'le', 'un', 'una', 'e', 'è', 'io', 'tu'];
   
-  const textLower = text.toLowerCase();
-  const words = textLower.split(/\s+/);
+  const textLowerCase = text.toLowerCase();
+  const words = textLowerCase.split(/\s+/);
   
-  let scores: Record<string, number> = {
+  let languageScores: Record<string, number> = {
     de: 0,
     fr: 0,
     es: 0,
@@ -86,25 +88,25 @@ export function detectLanguageFromText(text: string): string {
   
   // Count language-specific word occurrences
   words.forEach(word => {
-    if (germanWords.includes(word)) scores.de++;
-    if (frenchWords.includes(word)) scores.fr++;
-    if (spanishWords.includes(word)) scores.es++;
-    if (italianWords.includes(word)) scores.it++;
+    if (germanWords.includes(word)) languageScores.de++;
+    if (frenchWords.includes(word)) languageScores.fr++;
+    if (spanishWords.includes(word)) languageScores.es++;
+    if (italianWords.includes(word)) languageScores.it++;
   });
   
   // Find language with highest score
-  let highestLang = 'en';
+  let highestLanguage = 'en';
   let highestScore = 0;
   
-  Object.entries(scores).forEach(([lang, score]) => {
+  Object.entries(languageScores).forEach(([language, score]) => {
     if (score > highestScore) {
       highestScore = score;
-      highestLang = lang;
+      highestLanguage = language;
     }
   });
   
   // If no clear signal, default to English
-  return highestScore > 0 ? highestLang : 'en';
+  return highestScore > 0 ? highestLanguage : 'en';
 }
 
 export default {

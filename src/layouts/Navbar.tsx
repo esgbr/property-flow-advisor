@@ -30,13 +30,21 @@ const Navbar: React.FC = () => {
           <AccessibilitySettingsButton />
           <ThemeToggle />
           
-          <Button variant="ghost" size="icon" aria-label={t('notifications') || 'Notifications'}>
+          <Button 
+            variant="ghost" 
+            size="icon" 
+            aria-label={t('notifications') || 'Notifications'}
+          >
             <BellIcon className="h-5 w-5" />
           </Button>
           
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="ghost" className="relative h-8 w-8 rounded-full" aria-label={t('userMenu') || 'User menu'}>
+              <Button 
+                variant="ghost" 
+                className="relative h-8 w-8 rounded-full" 
+                aria-label={t('userMenu') || 'User menu'}
+              >
                 <Avatar className="h-8 w-8">
                   <AvatarFallback>JD</AvatarFallback>
                 </Avatar>

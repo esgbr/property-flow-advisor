@@ -8,16 +8,16 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import LanguageDetectionBanner from '@/components/language/LanguageDetectionBanner';
 import SkipToContent from '@/components/accessibility/SkipToContent';
 
-const LanguageSettings = () => {
+const LanguageSettings: React.FC = () => {
   const { t } = useLanguage();
 
   return (
     <div className="container mx-auto py-8 space-y-6">
-      <SkipToContent contentId="language-settings-content" />
+      <SkipToContent contentId="languageSettingsContent" />
       
       <div className="flex items-center justify-between flex-wrap gap-4">
         <div>
-          <h1 className="text-3xl font-bold" id="language-settings-title">{t('languageSettings')}</h1>
+          <h1 className="text-3xl font-bold" id="languageSettingsTitle">{t('languageSettings')}</h1>
           <p className="text-muted-foreground">{t('manageLanguagePreferences')}</p>
         </div>
         <LanguageSwitcher />
@@ -25,8 +25,8 @@ const LanguageSettings = () => {
       
       <LanguageDetectionBanner />
       
-      <Tabs defaultValue="overview" className="space-y-6" id="language-settings-content">
-        <TabsList className="w-full md:w-auto flex flex-wrap" aria-labelledby="language-settings-title">
+      <Tabs defaultValue="overview" className="space-y-6" id="languageSettingsContent">
+        <TabsList className="w-full md:w-auto flex flex-wrap" aria-labelledby="languageSettingsTitle">
           <TabsTrigger value="overview">{t('overview')}</TabsTrigger>
           <TabsTrigger value="translations">{t('translationStatus')}</TabsTrigger>
           <TabsTrigger value="preferences">{t('preferences')}</TabsTrigger>

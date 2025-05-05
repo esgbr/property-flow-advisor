@@ -14,7 +14,7 @@ interface LanguageDetectionBannerProps {
 const LanguageDetectionBanner: React.FC<LanguageDetectionBannerProps> = ({ onDismiss }) => {
   const { language, setLanguage, t, availableLanguages } = useLanguage();
   const [detectedLanguage, setDetectedLanguage] = useState<SupportedLanguage | null>(null);
-  const [showBanner, setShowBanner] = useState(false);
+  const [shouldShowBanner, setShouldShowBanner] = useState(false);
   const { toast } = useToast();
   
   useEffect(() => {
@@ -26,22 +26,22 @@ const LanguageDetectionBanner: React.FC<LanguageDetectionBannerProps> = ({ onDis
     }
     
     // Detect browser language
-    const browserLang = detectBrowserLanguage();
+    const browserLanguage = detectBrowserLanguage();
     const supportedLanguageCodes = availableLanguages
       .filter(lang => lang.enabled)
       .map(lang => lang.code);
     
     // Only show banner if detected language is supported and different from current
     if (
-      isLanguageSupported(browserLang, supportedLanguageCodes) && 
-      browserLang !== language
+      isLanguageSupported(browserLanguage, supportedLanguageCodes) && 
+      browserLanguage !== language
     ) {
-      // Ensure browserLang is a valid SupportedLanguage type
-      if (browserLang === 'en' || browserLang === 'de' || browserLang === 'fr' || 
-          browserLang === 'es' || browserLang === 'it') {
-        const typedLang = browserLang as SupportedLanguage;
-        setDetectedLanguage(typedLang);
-        setShowBanner(true);
+      // Ensure browserLanguage is a valid SupportedLanguage type
+      if (browserLanguage === 'en' || browserLanguage === 'de' || browserLanguage === 'fr' || 
+          browserLanguage === 'es' || browserLanguage === 'it') {
+        const typedLanguage = browserLanguage as SupportedLanguage;
+        setDetectedLanguage(typedLanguage);
+        setShouldShowBanner(true);
       }
     }
   }, [language, availableLanguages]);
@@ -64,14 +64,14 @@ const LanguageDetectionBanner: React.FC<LanguageDetectionBannerProps> = ({ onDis
   };
   
   const dismissBanner = () => {
-    setShowBanner(false);
+    setShouldShowBanner(false);
     localStorage.setItem('languageBannerDismissed', 'true');
     if (onDismiss) {
       onDismiss();
     }
   };
   
-  if (!showBanner || !detectedLanguage) {
+  if (!shouldShowBanner || !detectedLanguage) {
     return null;
   }
   

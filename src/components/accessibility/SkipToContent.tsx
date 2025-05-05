@@ -89,7 +89,7 @@ const SkipToContent: React.FC<SkipToContentProps> = ({
         ${highContrast ? 'border-2 border-background focus:outline-4 focus:outline-white' : ''}
       `}
       aria-label={label}
-      data-testid="skip-to-content"
+      data-testid="skipToContent"
       onKeyDown={handleKeyDown}
       onClick={handleClick}
       onFocus={handleFocus}

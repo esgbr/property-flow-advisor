@@ -28,6 +28,9 @@ function App() {
     frame-src 'self'; 
     object-src 'none'; 
     base-uri 'self';
+    form-action 'self';
+    frame-ancestors 'self';
+    upgrade-insecure-requests;
   `.replace(/\s+/g, ' ').trim();
 
   return (
