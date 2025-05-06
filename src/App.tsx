@@ -16,6 +16,7 @@ import AuthGuard from '@/components/auth/AuthGuard';
 import LockedPage from '@/pages/LockedPage';
 import PageLoader from '@/components/ui/page-loader';
 import SecurityPage from "@/pages/SecurityPage";
+import WorkflowOverviewPage from "@/pages/WorkflowOverviewPage";
 
 // Lazy-load less frequently accessed pages for better performance
 const Dashboard = lazy(() => import('@/pages/Dashboard'));
@@ -138,8 +139,5 @@ const App: React.FC = () => {
     </ThemeProvider>
   );
 };
-
-// Create a simple WorkflowOverviewPage component
-const WorkflowOverviewPage = lazy(() => import('@/pages/WorkflowOverviewPage'));
 
 export default App;
