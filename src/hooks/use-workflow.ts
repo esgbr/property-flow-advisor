@@ -12,9 +12,11 @@ export interface WorkflowStepWithStatus {
   label: Record<string, string>;
   isComplete: boolean;
   isActive: boolean;
+  path: string;
   description?: Record<string, string>;
   estimatedTime?: number;
   dependencies?: string[];
+  progress?: number;
 }
 
 // Define types for workflow data
@@ -166,11 +168,23 @@ export const useWorkflow = (workflowType: WorkflowType) => {
   );
 
   // Get workflow progress as percentage
-  const getWorkflowProgress = useCallback(() => {
+  const getWorkflowProgress = useCallback((currentStepId?: string) => {
     const { steps } = workflowDefinitions[workflowType];
     const { completedSteps } = workflowState;
     
     if (steps.length === 0) return 0;
+    
+    if (currentStepId) {
+      const completedCount = completedSteps.length;
+      const totalSteps = steps.length;
+      const currentStepIndex = steps.findIndex(step => step.id === currentStepId);
+      
+      // If the current step is found and not already completed
+      if (currentStepIndex !== -1 && !completedSteps.includes(currentStepId)) {
+        // Add partial progress for the current step
+        return Math.round(((completedCount + 0.5) / totalSteps) * 100);
+      }
+    }
     
     return Math.round((completedSteps.length / steps.length) * 100);
   }, [workflowType, workflowState]);
@@ -182,6 +196,38 @@ export const useWorkflow = (workflowType: WorkflowType) => {
     const { steps } = workflowDefinitions[workflowType];
     return steps.find(step => step.id === workflowState.activeStep) || null;
   }, [workflowType, workflowState.activeStep]);
+  
+  // Get all completed steps
+  const getCompleteSteps = useCallback(() => {
+    const { steps } = workflowDefinitions[workflowType];
+    const { completedSteps } = workflowState;
+    
+    return steps.filter(step => completedSteps.includes(step.id));
+  }, [workflowType, workflowState.completedSteps]);
+  
+  // Get next steps in the workflow
+  const getNextSteps = useCallback((currentStepId: string, limit = 3) => {
+    const steps = getStepsWithStatus();
+    const currentIndex = steps.findIndex(s => s.id === currentStepId);
+    
+    if (currentIndex === -1 || currentIndex >= steps.length - 1) {
+      return [];
+    }
+    
+    return steps.slice(currentIndex + 1, currentIndex + 1 + limit);
+  }, [getStepsWithStatus]);
+  
+  // Helper to get step label based on language
+  const getStepLabel = useCallback((stepId: string, language = 'en') => {
+    const { steps } = workflowDefinitions[workflowType];
+    const step = steps.find(s => s.id === stepId);
+    
+    if (!step || !step.label) {
+      return stepId;
+    }
+    
+    return step.label[language as keyof typeof step.label] || stepId;
+  }, [workflowType]);
   
   return {
     getStepsWithStatus,
@@ -196,6 +242,13 @@ export const useWorkflow = (workflowType: WorkflowType) => {
     activeStep: workflowState.activeStep,
     completedSteps: workflowState.completedSteps,
     getCurrentStep,
-    steps: workflowDefinitions[workflowType]?.steps || []
+    getCompleteSteps,
+    getNextSteps,
+    getStepLabel,
+    steps: workflowDefinitions[workflowType]?.steps || [],
+    title: workflowDefinitions[workflowType]?.title,
+    description: workflowDefinitions[workflowType]?.description
   };
 };
+
+export default useWorkflow;

@@ -1,6 +1,9 @@
 
 import { InvestmentMarket } from '@/contexts/UserPreferencesContext';
 
+// Update this type to include 'other'
+export type ExtendedInvestmentMarket = InvestmentMarket | 'other' | '';
+
 // Central market data for consistent usage across the app
 export const availableMarkets = [
   { id: 'germany' as InvestmentMarket, name: 'Germany (Deutschland)' },
@@ -10,12 +13,12 @@ export const availableMarkets = [
   { id: 'usa' as InvestmentMarket, name: 'United States' },
   { id: 'canada' as InvestmentMarket, name: 'Canada' },
   { id: 'global' as InvestmentMarket, name: 'Global' },
-  { id: 'other' as InvestmentMarket, name: 'Other Markets' }
+  { id: 'other' as ExtendedInvestmentMarket, name: 'Other Markets' }
 ];
 
 // Helper function to get display name for a market
 export const getMarketDisplayName = (market: InvestmentMarket): string => {
-  const marketDisplayNames: Record<InvestmentMarket, string> = {
+  const marketDisplayNames: Record<ExtendedInvestmentMarket, string> = {
     germany: 'German',
     austria: 'Austrian',
     switzerland: 'Swiss',
@@ -24,10 +27,10 @@ export const getMarketDisplayName = (market: InvestmentMarket): string => {
     canada: 'Canadian',
     global: 'Global',
     other: 'International',
-    '': 'Global' // Adding the missing empty string property
+    '': 'Global'
   };
   
-  return marketDisplayNames[market] || 'International';
+  return marketDisplayNames[market as ExtendedInvestmentMarket] || 'International';
 };
 
 // Get market by ID with proper fallback
@@ -38,7 +41,7 @@ export const getMarketById = (id: InvestmentMarket) => {
 
 // Get localized market name
 export const getLocalizedMarketName = (marketId: InvestmentMarket, language: string): string => {
-  const localizedNames: Record<string, Record<InvestmentMarket, string>> = {
+  const localizedNames: Record<string, Record<ExtendedInvestmentMarket, string>> = {
     'de': {
       germany: 'Deutschland',
       austria: 'Österreich',
@@ -48,7 +51,7 @@ export const getLocalizedMarketName = (marketId: InvestmentMarket, language: str
       canada: 'Kanada',
       global: 'Global',
       other: 'Andere Märkte',
-      '': 'Global' // Adding the missing empty string property
+      '': 'Global'
     },
     'en': {
       germany: 'Germany',
@@ -59,10 +62,10 @@ export const getLocalizedMarketName = (marketId: InvestmentMarket, language: str
       canada: 'Canada',
       global: 'Global',
       other: 'Other Markets',
-      '': 'Global' // Adding the missing empty string property
+      '': 'Global'
     }
   };
   
   const langKey = language in localizedNames ? language : 'en';
-  return localizedNames[langKey][marketId] || marketId;
+  return localizedNames[langKey][marketId as ExtendedInvestmentMarket] || marketId;
 };

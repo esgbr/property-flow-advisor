@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
@@ -124,8 +123,8 @@ const WorkflowOverviewPage: React.FC = () => {
     );
   }
   
-  const completedSteps = workflow.getCompleteSteps();
-  const progress = workflow.getWorkflowProgress(currentStep);
+  const completedSteps = workflow.getCompleteSteps ? workflow.getCompleteSteps() : [];
+  const progress = workflow.getWorkflowProgress();
   const isComplete = progress === 100;
   
   return (

@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { WorkflowType } from '@/hooks/use-workflow';
 import { useLanguage } from '@/contexts/LanguageContext';
@@ -15,6 +16,8 @@ export interface WorkflowNavigationProps {
   previousLabel?: string;
   nextLabel?: string;
   title?: string;
+  className?: string;
+  variant?: string;
 }
 
 const WorkflowNavigation: React.FC<WorkflowNavigationProps> = ({
@@ -25,7 +28,9 @@ const WorkflowNavigation: React.FC<WorkflowNavigationProps> = ({
   nextPath,
   previousLabel,
   nextLabel,
-  title
+  title,
+  className,
+  variant
 }) => {
   const { language } = useLanguage();
   const navigate = useNavigate();
@@ -43,7 +48,7 @@ const WorkflowNavigation: React.FC<WorkflowNavigationProps> = ({
   };
   
   return (
-    <Card>
+    <Card className={className}>
       <CardHeader className="pb-3">
         <CardTitle className="text-sm font-medium">
           {title || (language === 'de' ? 'Workflow Navigation' : 'Workflow Navigation')}

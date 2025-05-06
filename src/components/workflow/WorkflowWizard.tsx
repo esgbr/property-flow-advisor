@@ -7,6 +7,7 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import { WorkflowType, useWorkflow } from '@/hooks/use-workflow';
 import { Progress } from '@/components/ui/progress';
 import { useWorkflowState } from '@/contexts/WorkflowStateContext';
+import { workflowDefinitions } from '@/data/workflow-definitions';
 
 interface WorkflowWizardProps {
   workflowType: WorkflowType;
@@ -26,6 +27,7 @@ const WorkflowWizard: React.FC<WorkflowWizardProps> = ({
   const { language } = useLanguage();
   const workflowHook = useWorkflow(workflowType);
   const { getCurrentWorkflowStep, markStepComplete } = useWorkflowState();
+  const workflowDefinition = workflowDefinitions[workflowType];
   
   // Set initial step
   const [currentStepIndex, setCurrentStepIndex] = useState(0);
@@ -67,9 +69,9 @@ const WorkflowWizard: React.FC<WorkflowWizardProps> = ({
   return (
     <Card className={className}>
       <CardHeader>
-        <CardTitle>{workflowHook.title[language as keyof typeof workflowHook.title]}</CardTitle>
+        <CardTitle>{workflowDefinition.title[language as keyof typeof workflowDefinition.title]}</CardTitle>
         <CardDescription>
-          {workflowHook.description[language as keyof typeof workflowHook.description]}
+          {workflowDefinition.description[language as keyof typeof workflowDefinition.description]}
         </CardDescription>
         
         <div className="mt-2">

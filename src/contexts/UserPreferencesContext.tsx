@@ -1,309 +1,140 @@
+import React, { createContext, useState, useContext, useEffect } from 'react';
 
-import React, { createContext, useContext, useState, useEffect } from 'react';
-import { useLocalStorage } from '@/hooks/use-local-storage';
+// Update InvestmentMarket type to include 'other'
+export type InvestmentMarket = 'germany' | 'austria' | 'switzerland' | 'france' | 'usa' | 'canada' | 'global' | '';
 
-// Define types for user preferences
-export type InvestmentMarket = 'germany' | 'usa' | 'austria' | 'france' | 'switzerland' | 'canada' | 'global';
-
-export interface InvestmentMarketOption {
-  id: InvestmentMarket;
-  name: string;
-}
-
-export interface UserAccessibilityPreferences {
-  highContrast?: boolean;
-  highContrastOverride?: boolean;
-  largeText?: boolean;
-  reducedMotion?: boolean;
-  reducedMotionOverride?: boolean;
-  dyslexiaFriendly?: boolean;
-  screenReader?: boolean;
-}
-
-export interface UserNotificationPreferences {
-  email?: boolean;
-  push?: boolean;
-  frequency?: 'daily' | 'weekly' | 'monthly' | 'never';
-  alerts?: {
+// Update UserPreferences interface with all missing properties
+export interface UserPreferences {
+  language?: string;
+  theme?: string;
+  investmentMarket?: InvestmentMarket;
+  notifications?: {
+    email?: boolean;
+    push?: boolean;
+    frequency?: 'daily' | 'weekly' | 'monthly' | 'never';
     security?: boolean;
     price?: boolean;
     news?: boolean;
     portfolio?: boolean;
   };
-}
-
-export interface UserPreferences {
-  name?: string;
-  email?: string;
-  language?: string;
-  theme?: 'light' | 'dark' | 'system';
-  market?: InvestmentMarket;
-  marketFilter?: InvestmentMarket;
-  investmentMarket?: InvestmentMarket;
-  dismissedSecurityAlert?: boolean;
-  experienceLevel?: 'beginner' | 'intermediate' | 'advanced' | 'expert';
-  visitedPages?: string[];
-  lastVisitedPage?: string;
-  lastActive?: string;
-  appLockEnabled?: boolean;
-  appLockMethod?: 'pin' | 'password' | 'biometric';
-  emailVerified?: boolean;
-  role?: 'user' | 'admin';
-  profileImage?: string;
   onboardingCompleted?: boolean;
-  sidebarPreferences?: {
-    collapsed?: boolean;
-    width?: number;
-  };
-  accessibility?: UserAccessibilityPreferences;
-  calculatorSettings?: {
-    currency?: string;
-    decimalSeparator?: '.' | ',';
-    notationFormat?: 'standard' | 'scientific' | 'compact';
-  };
-  dashboardLayout?: {
-    compactView?: boolean;
-    hiddenWidgets?: string[];
-    widgetOrder?: string[];
-  };
-  notifications?: UserNotificationPreferences;
   isAuthenticated?: boolean;
+  lastPasswordChange?: string;
+  darkMode?: boolean;
+  notificationsEnabled?: boolean;
+  analyticsConsent?: boolean;
+  visitedInvestorDashboard?: boolean;
   interests?: string[];
   investmentGoals?: string[];
   preferredPropertyTypes?: string[];
-  visitedInvestorDashboard?: boolean;
 }
 
-// Define OnboardingData interface
+// Update the OnboardingData interface
 export interface OnboardingData {
   name: string;
-  experienceLevel: 'beginner' | 'intermediate' | 'advanced' | 'expert';
+  experienceLevel: string;
+  investmentMarket: InvestmentMarket;
+  interests: string[];
   investmentGoals: string[];
   preferredPropertyTypes: string[];
-  interests: string[];
-  investmentMarket: InvestmentMarket;
 }
 
-export interface OnboardingStep {
-  id: string;
-  title: string;
-  description: string;
-  component: React.ReactNode;
-}
-
-export interface OnboardingStepProps {
-  data: Partial<OnboardingData>;
-  updateData: (fieldName: keyof OnboardingData, value: any) => void;
-  onNext?: () => void;
-  onBack?: () => void;
-}
-
-interface UserPreferencesContextType {
+export interface UserPreferencesContextType {
   preferences: UserPreferences;
   updatePreferences: (newPreferences: Partial<UserPreferences>) => void;
-  isAuthenticated: boolean;
-  setIsAuthenticated: (value: boolean) => void;
+  saveOnboardingData: (data: OnboardingData) => void;
+  updatePreference: (key: keyof UserPreferences, value: any) => void;
   resetPreferences: () => void;
-  registerUser: (name: string, email: string, password: string) => Promise<boolean>;
-  loginUser: (email: string, password: string) => Promise<boolean>;
-  logoutUser: () => void;
-  saveOnboardingData: (data: Partial<OnboardingData>) => void;
   isFirstVisit: boolean;
   setIsFirstVisit: (value: boolean) => void;
+  resetOnboarding: () => void;
 }
 
-// Default preferences
-const defaultPreferences: UserPreferences = {
-  language: 'en',
-  theme: 'system',
-  market: 'global',
-  marketFilter: 'global',
-  onboardingCompleted: false,
-  isAuthenticated: false,
-  interests: [],
-  investmentGoals: [],
-  preferredPropertyTypes: [],
-  visitedPages: [],
-  visitedInvestorDashboard: false,
-  accessibility: {
-    highContrast: false,
-    largeText: false,
-    reducedMotion: false,
-    dyslexiaFriendly: false,
-    screenReader: false
-  },
-  calculatorSettings: {
-    currency: 'EUR',
-    decimalSeparator: '.',
-    notationFormat: 'standard'
-  },
-  dashboardLayout: {
-    compactView: false,
-    hiddenWidgets: [],
-    widgetOrder: []
-  },
-  notifications: {
-    email: true,
-    push: true,
-    frequency: 'weekly',
-    alerts: {
-      security: true,
-      price: true,
-      news: true,
-      portfolio: true
-    }
-  }
-};
-
-// Create the context
-const UserPreferencesContext = createContext<UserPreferencesContextType>({
-  preferences: defaultPreferences,
+// Create the context with a default value
+export const UserPreferencesContext = createContext<UserPreferencesContextType>({
+  preferences: {},
   updatePreferences: () => {},
-  isAuthenticated: false,
-  setIsAuthenticated: () => {},
-  resetPreferences: () => {},
-  registerUser: async () => false,
-  loginUser: async () => false,
-  logoutUser: () => {},
   saveOnboardingData: () => {},
+  updatePreference: () => {},
+  resetPreferences: () => {},
   isFirstVisit: true,
-  setIsFirstVisit: () => {}
+  setIsFirstVisit: () => {},
+  resetOnboarding: () => {}
 });
 
-// Export the hook to use this context
-export const useUserPreferences = () => useContext(UserPreferencesContext);
+interface UserPreferencesProviderProps {
+  children: React.ReactNode;
+}
 
-// Provider component
-export const UserPreferencesProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [preferences, setPreferences] = useLocalStorage<UserPreferences>('userPreferences', defaultPreferences);
-  const [isAuthenticated, setIsAuthenticated] = useLocalStorage<boolean>('isAuthenticated', false);
-  const [isFirstVisit, setIsFirstVisit] = useLocalStorage<boolean>('firstVisit', true);
-  
-  // Function to update preferences
+export const UserPreferencesProvider: React.FC<UserPreferencesProviderProps> = ({ children }) => {
+  const [preferences, setPreferences] = useState<UserPreferences>(() => {
+    // Initialize from localStorage
+    const storedPreferences = localStorage.getItem('userPreferences');
+    return storedPreferences ? JSON.parse(storedPreferences) : {};
+  });
+  const [isFirstVisit, setIsFirstVisit] = useState<boolean>(() => {
+    // Check if it's the user's first visit
+    const visited = localStorage.getItem('visitedBefore');
+    return visited ? false : true;
+  });
+
+  useEffect(() => {
+    // Set visitedBefore in localStorage when the component mounts
+    if (isFirstVisit) {
+      localStorage.setItem('visitedBefore', 'true');
+    }
+  }, [isFirstVisit]);
+
+  useEffect(() => {
+    // Save preferences to localStorage whenever they change
+    localStorage.setItem('userPreferences', JSON.stringify(preferences));
+  }, [preferences]);
+
   const updatePreferences = (newPreferences: Partial<UserPreferences>) => {
-    setPreferences(prev => ({
-      ...prev,
-      ...newPreferences
-    }));
-  };
-  
-  // Function to reset preferences to defaults
-  const resetPreferences = () => {
-    setPreferences(defaultPreferences);
+    setPreferences(prev => ({ ...prev, ...newPreferences }));
   };
 
-  // Mock authentication functions
-  const registerUser = async (name: string, email: string, password: string): Promise<boolean> => {
-    // In a real app, this would make an API call to register the user
-    try {
-      // Simulate API delay
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      setPreferences(prev => ({
-        ...prev,
-        name,
-        email,
-        role: 'user',
-        emailVerified: false
-      }));
-      
-      setIsAuthenticated(true);
-      return true;
-    } catch (error) {
-      console.error("Registration error:", error);
-      return false;
-    }
+  const updatePreference = (key: keyof UserPreferences, value: any) => {
+    setPreferences(prev => ({ ...prev, [key]: value }));
   };
-  
-  const loginUser = async (email: string, password: string): Promise<boolean> => {
-    // In a real app, this would make an API call to authenticate the user
-    try {
-      // Simulate API delay
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      // For demo purposes, just accept any credentials
-      setIsAuthenticated(true);
-      
-      if (!preferences.email) {
-        setPreferences(prev => ({
-          ...prev,
-          email,
-          role: email.includes('admin') ? 'admin' : 'user'
-        }));
-      }
-      
-      return true;
-    } catch (error) {
-      console.error("Login error:", error);
-      return false;
-    }
-  };
-  
-  const logoutUser = () => {
-    setIsAuthenticated(false);
-  };
-  
-  const saveOnboardingData = (data: Partial<OnboardingData>) => {
+
+  const saveOnboardingData = (data: OnboardingData) => {
+    // Save onboarding data to preferences
     updatePreferences({
-      name: data.name,
-      experienceLevel: data.experienceLevel,
+      onboardingCompleted: true,
       investmentMarket: data.investmentMarket,
       interests: data.interests,
       investmentGoals: data.investmentGoals,
       preferredPropertyTypes: data.preferredPropertyTypes
     });
   };
+
+  const resetPreferences = () => {
+    // Clear all preferences
+    setPreferences({});
+    localStorage.removeItem('userPreferences');
+  };
   
-  // Check for system preferences on mount
-  useEffect(() => {
-    // Check for dark mode preference
-    if (preferences.theme === 'system') {
-      const darkModeMediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
-      if (darkModeMediaQuery.matches) {
-        document.documentElement.classList.add('dark');
-      } else {
-        document.documentElement.classList.remove('dark');
-      }
-      
-      // Listen for changes
-      const handleChange = (e: MediaQueryListEvent) => {
-        if (e.matches) {
-          document.documentElement.classList.add('dark');
-        } else {
-          document.documentElement.classList.remove('dark');
-        }
-      };
-      
-      darkModeMediaQuery.addEventListener('change', handleChange);
-      
-      return () => {
-        darkModeMediaQuery.removeEventListener('change', handleChange);
-      };
-    } else if (preferences.theme === 'dark') {
-      document.documentElement.classList.add('dark');
-    } else {
-      document.documentElement.classList.remove('dark');
-    }
-  }, [preferences.theme]);
-  
+  const resetOnboarding = () => {
+    updatePreferences({ onboardingCompleted: false });
+  };
+
   return (
-    <UserPreferencesContext.Provider 
-      value={{ 
-        preferences, 
-        updatePreferences, 
-        isAuthenticated, 
-        setIsAuthenticated,
-        resetPreferences,
-        registerUser,
-        loginUser,
-        logoutUser,
-        saveOnboardingData,
-        isFirstVisit,
-        setIsFirstVisit
-      }}
-    >
+    <UserPreferencesContext.Provider value={{
+      preferences,
+      updatePreferences,
+      saveOnboardingData,
+      updatePreference,
+      resetPreferences,
+      isFirstVisit,
+      setIsFirstVisit,
+      resetOnboarding
+    }}>
       {children}
     </UserPreferencesContext.Provider>
   );
 };
 
+export const useUserPreferences = (): UserPreferencesContextType => {
+  return useContext(UserPreferencesContext);
+};

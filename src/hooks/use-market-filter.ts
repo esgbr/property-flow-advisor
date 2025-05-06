@@ -1,87 +1,79 @@
 
-import { useCallback } from 'react';
-import { useUserPreferences, InvestmentMarket, InvestmentMarketOption } from '@/contexts/UserPreferencesContext';
-import { useLanguage } from '@/contexts/LanguageContext';
+import { useContext } from 'react';
+import { InvestmentMarket, UserPreferencesContext } from '@/contexts/UserPreferencesContext';
+import { getLocalizedMarketName as getLocalizedMarketNameUtil, availableMarkets } from '@/utils/marketHelpers';
+import { ReactNode } from 'react';
 
-interface MarketFilterHook {
-  userMarket: InvestmentMarket;
-  getMarketDisplayName: () => string;
-  getMarketOptions: () => InvestmentMarketOption[];
-  getCurrentMarket: () => InvestmentMarket;
-  setUserMarket: (market: InvestmentMarket) => void;
-  isMarketAvailable: (market: InvestmentMarket) => boolean;
-  getAvailableMarkets: () => InvestmentMarket[];
+export interface FeatureMarketConfig {
+  id: string;
+  path?: string;
+  title?: string;
+  description?: string;
+  icon?: ReactNode;
+  markets?: InvestmentMarket[];
+  excludeMarkets?: InvestmentMarket[];
+  recommended?: boolean;
 }
 
-/**
- * Custom hook for filtering and managing market-specific content
- */
+export interface MarketFilterHook {
+  userMarket: InvestmentMarket;
+  isMarketEnabled: (market: InvestmentMarket) => boolean;
+  getCurrentMarket: () => InvestmentMarket;
+  shouldShowFeature: (feature: FeatureMarketConfig) => boolean;
+  getLocalizedMarketName: () => string;
+  getAvailableMarkets: () => { id: InvestmentMarket; name: string }[];
+}
+
 export const useMarketFilter = (): MarketFilterHook => {
-  const { preferences, updatePreferences } = useUserPreferences();
-  const { language } = useLanguage();
-  
-  // Get current user market from preferences
-  const userMarket: InvestmentMarket = preferences.market || 'global';
-  
-  // Set user market preference
-  const setUserMarket = useCallback((market: InvestmentMarket) => {
-    updatePreferences({ market, marketFilter: market });
-  }, [updatePreferences]);
-  
-  // Get display name for current market
-  const getMarketDisplayName = useCallback(() => {
-    // Market name mappings
-    const marketNames: Record<InvestmentMarket, Record<string, string>> = {
-      'germany': { en: 'Germany', de: 'Deutschland' },
-      'austria': { en: 'Austria', de: 'Österreich' },
-      'switzerland': { en: 'Switzerland', de: 'Schweiz' },
-      'usa': { en: 'United States', de: 'USA' },
-      'canada': { en: 'Canada', de: 'Kanada' },
-      'france': { en: 'France', de: 'Frankreich' },
-      'global': { en: 'Global', de: 'Global' },
-    };
-    
-    const currentLang = language as 'en' | 'de';
-    return marketNames[userMarket]?.[currentLang] || marketNames.global[currentLang];
-  }, [userMarket, language]);
-  
-  // Get list of available markets
-  const getMarketOptions = useCallback((): InvestmentMarketOption[] => {
-    const currentLang = language as 'en' | 'de';
-    
-    return [
-      { id: 'germany', name: currentLang === 'de' ? 'Deutschland' : 'Germany' },
-      { id: 'austria', name: currentLang === 'de' ? 'Österreich' : 'Austria' },
-      { id: 'switzerland', name: currentLang === 'de' ? 'Schweiz' : 'Switzerland' },
-      { id: 'usa', name: currentLang === 'de' ? 'USA' : 'United States' },
-      { id: 'canada', name: currentLang === 'de' ? 'Kanada' : 'Canada' },
-      { id: 'france', name: currentLang === 'de' ? 'Frankreich' : 'France' },
-      { id: 'global', name: currentLang === 'de' ? 'Global' : 'Global' }
-    ];
-  }, [language]);
-  
-  // Get available markets as an array of IDs
-  const getAvailableMarkets = useCallback((): InvestmentMarket[] => {
-    return ['germany', 'austria', 'switzerland', 'usa', 'canada', 'france', 'global'];
-  }, []);
-  
-  // Check if a market is available
-  const isMarketAvailable = useCallback((market: InvestmentMarket): boolean => {
-    return getAvailableMarkets().includes(market);
-  }, [getAvailableMarkets]);
-  
-  // Get current market (for API calls, etc.)
-  const getCurrentMarket = useCallback((): InvestmentMarket => {
+  const { preferences } = useContext(UserPreferencesContext);
+  const userMarket = preferences.investmentMarket || 'global';
+
+  // Check if a market is enabled
+  const isMarketEnabled = (market: InvestmentMarket): boolean => {
+    return market === userMarket || userMarket === 'global';
+  };
+
+  // Get the current market
+  const getCurrentMarket = (): InvestmentMarket => {
     return userMarket;
-  }, [userMarket]);
-  
+  };
+
+  // Determine if a feature should be shown based on market configuration
+  const shouldShowFeature = (feature: FeatureMarketConfig): boolean => {
+    // If no markets specified, show for all markets
+    if (!feature.markets && !feature.excludeMarkets) {
+      return true;
+    }
+
+    // Check if market is excluded
+    if (feature.excludeMarkets && feature.excludeMarkets.includes(userMarket)) {
+      return false;
+    }
+
+    // Check if market is included or global is enabled
+    if (feature.markets) {
+      return feature.markets.includes(userMarket) || feature.markets.includes('global');
+    }
+
+    return true;
+  };
+
+  // Get localized market name
+  const getLocalizedMarketName = (): string => {
+    return getLocalizedMarketNameUtil(userMarket, 'en');
+  };
+
+  // Get available markets
+  const getAvailableMarkets = () => {
+    return availableMarkets;
+  };
+
   return {
     userMarket,
-    getMarketDisplayName,
-    getMarketOptions,
+    isMarketEnabled,
     getCurrentMarket,
-    setUserMarket,
-    isMarketAvailable,
+    shouldShowFeature,
+    getLocalizedMarketName,
     getAvailableMarkets
   };
 };

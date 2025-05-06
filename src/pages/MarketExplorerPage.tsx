@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -64,6 +63,20 @@ const MarketExplorerPage: React.FC = () => {
     toast.success(language === 'de'
       ? 'Marktdaten werden heruntergeladen...'
       : 'Downloading market data...');
+  };
+
+  // Replace goToNextStep with goToStep
+  const handleComplete = () => {
+    if (currentStep) {
+      workflow.markStepComplete(currentStep);
+      const steps = workflow.getStepsWithStatus();
+      const currentIndex = steps.findIndex(s => s.id === currentStep);
+      
+      if (currentIndex !== -1 && currentIndex < steps.length - 1) {
+        const nextStep = steps[currentIndex + 1];
+        workflow.goToStep(nextStep.id);
+      }
+    }
   };
 
   return (
@@ -288,7 +301,7 @@ const MarketExplorerPage: React.FC = () => {
             <Button 
               className="group"
               onClick={() => {
-                workflow.goToNextStep('market');
+                handleComplete();
               }}
             >
               {language === 'de' ? 'Zur Portfolio-Analyse' : 'Go to Portfolio Analysis'}

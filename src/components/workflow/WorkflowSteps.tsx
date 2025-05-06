@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { WorkflowType } from '@/hooks/use-workflow';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -13,6 +14,7 @@ export interface WorkflowStepsProps {
   showCompleted?: boolean;
   variant?: 'default' | 'compact';
   className?: string;
+  onStepClick?: (stepId: string) => void;
 }
 
 const WorkflowSteps: React.FC<WorkflowStepsProps> = ({
@@ -20,7 +22,8 @@ const WorkflowSteps: React.FC<WorkflowStepsProps> = ({
   currentStep,
   showCompleted = true,
   variant = 'default',
-  className
+  className,
+  onStepClick
 }) => {
   const { language } = useLanguage();
   const navigate = useNavigate();
@@ -33,8 +36,12 @@ const WorkflowSteps: React.FC<WorkflowStepsProps> = ({
     ? steps 
     : steps.filter(step => !step.isComplete || step.id === currentStep);
   
-  const handleStepClick = (path: string) => {
-    navigate(path);
+  const handleStepClick = (path: string, id: string) => {
+    if (onStepClick) {
+      onStepClick(id);
+    } else {
+      navigate(path);
+    }
   };
   
   return (
@@ -62,7 +69,7 @@ const WorkflowSteps: React.FC<WorkflowStepsProps> = ({
                 step.isComplete ? "text-muted-foreground" : "",
                 "cursor-pointer transition-colors"
               )}
-              onClick={() => handleStepClick(step.path)}
+              onClick={() => handleStepClick(step.path, step.id)}
             >
               <div className="mr-3">
                 {step.isComplete ? (
