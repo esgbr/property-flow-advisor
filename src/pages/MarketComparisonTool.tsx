@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -121,7 +120,9 @@ const MarketComparisonTool: React.FC = () => {
     const marketNames: Record<InvestmentMarket, Record<string, string>> = {
       germany: { de: 'Deutschland', en: 'Germany' },
       austria: { de: 'Österreich', en: 'Austria' },
+      switzerland: { de: 'Schweiz', en: 'Switzerland' },
       usa: { de: 'USA', en: 'USA' },
+      canada: { de: 'Kanada', en: 'Canada' },
       global: { de: 'Global', en: 'Global' }
     };
     
@@ -248,7 +249,9 @@ const MarketComparisonTool: React.FC = () => {
                 <SelectContent>
                   <SelectItem value="germany">{getLocalizedMarketName('germany', language)}</SelectItem>
                   <SelectItem value="austria">{getLocalizedMarketName('austria', language)}</SelectItem>
+                  <SelectItem value="switzerland">{getLocalizedMarketName('switzerland', language)}</SelectItem>
                   <SelectItem value="usa">{getLocalizedMarketName('usa', language)}</SelectItem>
+                  <SelectItem value="canada">{getLocalizedMarketName('canada', language)}</SelectItem>
                   <SelectItem value="global">{getLocalizedMarketName('global', language)}</SelectItem>
                 </SelectContent>
               </Select>
@@ -267,7 +270,9 @@ const MarketComparisonTool: React.FC = () => {
                 <SelectContent>
                   <SelectItem value="germany">{getLocalizedMarketName('germany', language)}</SelectItem>
                   <SelectItem value="austria">{getLocalizedMarketName('austria', language)}</SelectItem>
+                  <SelectItem value="switzerland">{getLocalizedMarketName('switzerland', language)}</SelectItem>
                   <SelectItem value="usa">{getLocalizedMarketName('usa', language)}</SelectItem>
+                  <SelectItem value="canada">{getLocalizedMarketName('canada', language)}</SelectItem>
                   <SelectItem value="global">{getLocalizedMarketName('global', language)}</SelectItem>
                 </SelectContent>
               </Select>
