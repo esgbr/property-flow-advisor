@@ -1,4 +1,3 @@
-
 import React, { Suspense, lazy, useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -56,6 +55,11 @@ const Index: React.FC = () => {
     
     return () => clearTimeout(timer);
   }, []);
+
+  // Fix setUserMarket usage
+  const handleMarketChange = (market: InvestmentMarket) => {
+    marketFilter.setUserMarket(market);
+  };
 
   // Consolidated features array with removed duplicates and merged similar features
   const features: Feature[] = [

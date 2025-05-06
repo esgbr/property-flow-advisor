@@ -15,6 +15,9 @@ export interface FeatureMarketConfig {
   recommended?: boolean;
 }
 
+// Create a type alias for market-specific features
+export type MarketSpecificFeature = FeatureMarketConfig;
+
 export interface MarketFilterHook {
   userMarket: InvestmentMarket;
   isMarketEnabled: (market: InvestmentMarket) => boolean;
@@ -24,10 +27,14 @@ export interface MarketFilterHook {
   getAvailableMarkets: () => { id: InvestmentMarket; name: string }[];
   getMarketDisplayName: () => string;
   getMarketOptions: () => InvestmentMarketOption[];
+  setUserMarket: (market: InvestmentMarket) => void;
+  filterFeaturesByMarket: <T extends FeatureMarketConfig>(features: T[]) => T[];
+  getRelatedMarkets?: () => InvestmentMarket[];
+  recentMarkets?: InvestmentMarket[];
 }
 
 export const useMarketFilter = (): MarketFilterHook => {
-  const { preferences } = useContext(UserPreferencesContext);
+  const { preferences, updatePreferences } = useContext(UserPreferencesContext);
   const userMarket = preferences.investmentMarket || 'global';
 
   // Check if a market is enabled
@@ -81,6 +88,30 @@ export const useMarketFilter = (): MarketFilterHook => {
     return availableMarkets;
   };
 
+  // Set the user's market preference
+  const setUserMarket = (market: InvestmentMarket) => {
+    updatePreferences({ investmentMarket: market });
+  };
+  
+  // Filter features by market
+  const filterFeaturesByMarket = <T extends FeatureMarketConfig>(features: T[]): T[] => {
+    return features.filter(shouldShowFeature);
+  };
+
+  // Get related markets based on current selection
+  const getRelatedMarkets = (): InvestmentMarket[] => {
+    if (userMarket === 'germany') {
+      return ['austria', 'switzerland'];
+    } else if (userMarket === 'usa') {
+      return ['canada'];
+    } else if (userMarket === 'austria' || userMarket === 'switzerland') {
+      return ['germany'];
+    } else if (userMarket === 'canada') {
+      return ['usa'];
+    }
+    return [];
+  };
+
   return {
     userMarket,
     isMarketEnabled,
@@ -89,7 +120,11 @@ export const useMarketFilter = (): MarketFilterHook => {
     getLocalizedMarketName,
     getAvailableMarkets,
     getMarketDisplayName,
-    getMarketOptions
+    getMarketOptions,
+    setUserMarket,
+    filterFeaturesByMarket,
+    getRelatedMarkets,
+    recentMarkets: preferences.recentMarkets
   };
 };
 

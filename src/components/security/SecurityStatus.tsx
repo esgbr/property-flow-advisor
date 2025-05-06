@@ -44,7 +44,7 @@ export const SecurityStatus: React.FC<SecurityStatusProps> = ({
     if (preferences.appLockMethod === 'biometric') score += 30;
     
     // Notifications for security
-    if (preferences.notifications?.alerts) score += 10;
+    if (preferences.notifications?.security) score += 10;
     
     return Math.min(score, 100);
   };

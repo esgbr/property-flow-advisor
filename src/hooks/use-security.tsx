@@ -46,7 +46,7 @@ export function useSecurity() {
     if (preferences.appLockMethod === 'biometric') score += 30;
     
     // Notifications for security
-    if (preferences.notifications?.alerts) score += 10;
+    if (preferences.notifications?.security) score += 10;
     
     // Determine security level
     let level: 'low' | 'medium' | 'high' = 'low';
@@ -88,7 +88,7 @@ export function useSecurity() {
     }
     
     // Notifications recommendation
-    if (!preferences.notifications?.alerts) {
+    if (!preferences.notifications?.security) {
       recommendations.push({
         id: 'alerts',
         title: language === 'de' ? 'Sicherheitsbenachrichtigungen aktivieren' : 'Enable security alerts',
@@ -100,7 +100,7 @@ export function useSecurity() {
     }
     
     return recommendations;
-  }, [hasPIN, supportsFaceId, isBiometricEnabled, preferences.notifications?.alerts, language]);
+  }, [hasPIN, supportsFaceId, isBiometricEnabled, preferences.notifications?.security, language]);
 
   // Update score and recommendations when dependencies change
   useEffect(() => {

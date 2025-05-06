@@ -67,10 +67,11 @@ const MarketExplorerPage: React.FC = () => {
 
   // Replace goToNextStep with goToStep
   const handleComplete = () => {
-    if (currentStep) {
-      workflow.markStepComplete(currentStep);
+    const activeStep = workflow.getStepsWithStatus().find(step => step.isActive);
+    if (activeStep) {
+      workflow.markStepComplete(activeStep.id);
       const steps = workflow.getStepsWithStatus();
-      const currentIndex = steps.findIndex(s => s.id === currentStep);
+      const currentIndex = steps.findIndex(s => s.id === activeStep.id);
       
       if (currentIndex !== -1 && currentIndex < steps.length - 1) {
         const nextStep = steps[currentIndex + 1];

@@ -2,7 +2,7 @@
 import React, { createContext, useState, useContext, useEffect } from 'react';
 
 // Update InvestmentMarket type to include 'other'
-export type InvestmentMarket = 'germany' | 'austria' | 'switzerland' | 'france' | 'usa' | 'canada' | 'global' | '';
+export type InvestmentMarket = 'germany' | 'austria' | 'switzerland' | 'france' | 'usa' | 'canada' | 'global' | 'other' | '';
 
 // Add InvestmentMarketOption interface
 export interface InvestmentMarketOption {
@@ -23,6 +23,7 @@ export interface UserPreferences {
     price?: boolean;
     news?: boolean;
     portfolio?: boolean;
+    alerts?: boolean;
   };
   onboardingCompleted?: boolean;
   isAuthenticated?: boolean;
@@ -38,6 +39,7 @@ export interface UserPreferences {
   email?: string;
   role?: 'user' | 'admin' | 'guest';
   appLockEnabled?: boolean;
+  appLockMethod?: 'pin' | 'biometric' | 'password';
   emailVerified?: boolean;
   experienceLevel?: 'beginner' | 'intermediate' | 'advanced' | 'expert';
   dismissedSecurityAlert?: boolean;
@@ -50,9 +52,15 @@ export interface UserPreferences {
     theme?: 'light' | 'dark';
   };
   profileImage?: string;
-  marketFilter?: {
-    recentSearches?: string[];
-    favoriteRegions?: string[];
+  marketFilter?: InvestmentMarket;
+  accessibility?: {
+    highContrast?: boolean;
+    largeText?: boolean;
+    reducedMotion?: boolean;
+    dyslexiaFriendly?: boolean;
+    screenReader?: boolean;
+    highContrastOverride?: boolean;
+    reducedMotionOverride?: boolean;
   };
 }
 

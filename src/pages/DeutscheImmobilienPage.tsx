@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useLanguage } from '@/contexts/LanguageContext';
@@ -140,9 +139,9 @@ const DeutscheImmobilienPage: React.FC = () => {
     <div className="container mx-auto px-4 py-8 animate-fade-in">
       <SkipToContent contentId="hauptinhalt" />
       
-      <WorkflowNavigation
-        workflow="immobilien"
-        currentStep="overview"
+      <WorkflowNavigation 
+        workflowType="analyse"
+        currentStep="market"
       />
       
       <div className="mb-8">

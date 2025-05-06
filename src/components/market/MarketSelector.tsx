@@ -22,11 +22,11 @@ const MarketSelector = ({
 }: MarketSelectorProps) => {
   const { language, t } = useLanguage();
   const { preferences, updatePreferences } = useUserPreferences();
-  const { getMarketOptions, getMarketDisplayName } = useMarketFilter();
+  const marketFilter = useMarketFilter();
   
   const handleMarketChange = (market: InvestmentMarket) => {
     updatePreferences({
-      marketFilter: market
+      investmentMarket: market
     });
     
     if (onChange) {
@@ -37,14 +37,14 @@ const MarketSelector = ({
   if (minimal) {
     return (
       <Select 
-        value={preferences.marketFilter} 
+        value={preferences.investmentMarket || 'global'} 
         onValueChange={handleMarketChange}
       >
         <SelectTrigger className="w-[140px]">
           <SelectValue />
         </SelectTrigger>
         <SelectContent>
-          {getMarketOptions().map(option => (
+          {marketFilter.getMarketOptions().map(option => (
             <SelectItem key={option.id} value={option.id}>
               {option.name}
             </SelectItem>
@@ -60,7 +60,7 @@ const MarketSelector = ({
         <Globe className="h-3 w-3 opacity-70" />
         <span className="opacity-70">{t('market')}:</span>
         <span className="font-medium">
-          {getMarketDisplayName()}
+          {marketFilter.getMarketDisplayName()}
         </span>
       </div>
     );
@@ -69,18 +69,18 @@ const MarketSelector = ({
   if (appearance === 'inline') {
     return (
       <div className={cn("flex flex-wrap gap-2", className)}>
-        {getMarketOptions().map(option => (
+        {marketFilter.getMarketOptions().map(option => (
           <button
             key={option.id}
             className={cn(
               "px-2 py-1 text-xs rounded-full border transition-colors",
-              preferences.marketFilter === option.id
+              preferences.investmentMarket === option.id
                 ? "bg-primary text-primary-foreground border-primary"
                 : "bg-background hover:bg-muted/50 border-muted"
             )}
             onClick={() => handleMarketChange(option.id as InvestmentMarket)}
           >
-            {preferences.marketFilter === option.id && (
+            {preferences.investmentMarket === option.id && (
               <Check className="h-3 w-3 inline mr-1" />
             )}
             {option.name}
@@ -96,14 +96,14 @@ const MarketSelector = ({
         {t('selectMarket')}
       </label>
       <Select 
-        value={preferences.marketFilter} 
+        value={preferences.investmentMarket || 'global'} 
         onValueChange={handleMarketChange}
       >
         <SelectTrigger className="w-full">
           <SelectValue />
         </SelectTrigger>
         <SelectContent>
-          {getMarketOptions().map(option => (
+          {marketFilter.getMarketOptions().map(option => (
             <SelectItem key={option.id} value={option.id}>
               {option.name}
             </SelectItem>

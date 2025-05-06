@@ -12,7 +12,8 @@ export const availableMarkets: InvestmentMarketOption[] = [
   { id: 'france' as InvestmentMarket, name: 'France (France)' },
   { id: 'usa' as InvestmentMarket, name: 'United States' },
   { id: 'canada' as InvestmentMarket, name: 'Canada' },
-  { id: 'global' as InvestmentMarket, name: 'Global' }
+  { id: 'global' as InvestmentMarket, name: 'Global' },
+  { id: 'other' as InvestmentMarket, name: 'Other' }
 ];
 
 // Helper function to get display name for a market
@@ -25,6 +26,7 @@ export const getMarketDisplayName = (market: InvestmentMarket): string => {
     usa: 'US',
     canada: 'Canadian',
     global: 'Global',
+    other: 'Other',
     '': 'Global'
   };
   
@@ -48,6 +50,7 @@ export const getLocalizedMarketName = (marketId: InvestmentMarket, language: str
       usa: 'die USA',
       canada: 'Kanada',
       global: 'Global',
+      other: 'Andere',
       '': 'Global'
     },
     'en': {
@@ -58,6 +61,7 @@ export const getLocalizedMarketName = (marketId: InvestmentMarket, language: str
       usa: 'the USA',
       canada: 'Canada',
       global: 'Global',
+      other: 'Other',
       '': 'Global'
     }
   };
