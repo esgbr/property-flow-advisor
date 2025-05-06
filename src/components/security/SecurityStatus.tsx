@@ -108,7 +108,7 @@ export const SecurityStatus: React.FC<SecurityStatusProps> = ({
       
       {showDetails && (
         <div className="mt-2 space-y-1">
-          <Progress value={securityScore} className="h-1.5" indicatorClassName={getScoreBackground()} />
+          <Progress value={securityScore} className="h-1.5" />
           <div className="flex items-center justify-between text-xs text-muted-foreground">
             <span>{securityScore}%</span>
             <span>{language === 'de' ? 'Sicherheitsbewertung' : 'Security rating'}</span>
