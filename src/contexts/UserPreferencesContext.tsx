@@ -20,6 +20,9 @@ export interface UserPreferences {
   experience?: 'beginner' | 'intermediate' | 'advanced';
   experienceLevel?: 'beginner' | 'intermediate' | 'advanced' | 'expert';
   goals?: string[];
+  interests?: string[];
+  investmentGoals?: string[];
+  preferredPropertyTypes?: string[];
   recentMarkets?: InvestmentMarket[];
   marketPreferences?: {
     favoriteRegions?: string[];
@@ -39,6 +42,13 @@ export interface UserPreferences {
     highContrast?: boolean;
     reduceMotion?: boolean;
     screenReader?: boolean;
+  };
+  accessibility?: {
+    fontSize?: 'small' | 'medium' | 'large';
+    highContrast?: boolean;
+    reduceMotion?: boolean;
+    screenReader?: boolean;
+    enabled?: boolean;
   };
   dashboardLayout?: {
     widgets: string[];
@@ -61,6 +71,9 @@ export interface UserPreferences {
     updates: boolean;
     marketing: boolean;
     newsletter: boolean;
+    price?: boolean;
+    news?: boolean;
+    portfolio?: boolean;
   };
   // User profile fields
   name?: string;
@@ -73,14 +86,19 @@ export interface UserPreferences {
     favorites: string[];
   };
   visitedPages?: string[];
+  lastVisitedPage?: string;
 }
 
 export interface OnboardingData {
+  name: string;
   experienceLevel: string;
-  goals: string[];
-  propertyTypes: string[];
+  interests: string[];
+  investmentGoals: string[];
+  preferredPropertyTypes: string[];
   investmentPreference: string;
   investmentMarket: InvestmentMarket;
+  goals: string[];
+  propertyTypes: string[];
 }
 
 interface UserPreferencesContextValue {
@@ -91,9 +109,9 @@ interface UserPreferencesContextValue {
   isAccessibilityEnabled: boolean;
   // Auth related functions
   isAuthenticated?: boolean;
-  loginUser?: (email: string, password: string) => Promise<void>;
+  loginUser?: (email: string, password: string) => Promise<boolean>;
   logoutUser?: () => void;
-  registerUser?: (email: string, password: string, name: string) => Promise<void>;
+  registerUser?: (email: string, password: string, name: string) => Promise<boolean>;
   saveOnboardingData?: (data: OnboardingData) => void;
   isFirstVisit?: boolean;
   setIsFirstVisit?: (value: boolean) => void;
@@ -109,6 +127,9 @@ const defaultPreferences: UserPreferences = {
   experience: 'beginner',
   experienceLevel: 'beginner',
   goals: [],
+  interests: [],
+  investmentGoals: [],
+  preferredPropertyTypes: [],
   recentMarkets: [],
   marketPreferences: {
     favoriteRegions: [],
@@ -129,6 +150,13 @@ const defaultPreferences: UserPreferences = {
     reduceMotion: false,
     screenReader: false
   },
+  accessibility: {
+    fontSize: 'medium',
+    highContrast: false,
+    reduceMotion: false,
+    screenReader: false,
+    enabled: false
+  },
   dashboardLayout: {
     widgets: ['portfolio', 'market', 'tasks', 'news'],
     layout: 'grid'
@@ -142,14 +170,18 @@ const defaultPreferences: UserPreferences = {
     security: true,
     updates: true,
     marketing: false,
-    newsletter: false
+    newsletter: false,
+    price: false,
+    news: false,
+    portfolio: false
   },
   // User profile defaults
   name: 'Demo User',
   email: 'demo@example.com',
   role: 'user',
   emailVerified: true,
-  visitedPages: []
+  visitedPages: [],
+  lastVisitedPage: '/'
 };
 
 // Create context with default values
@@ -188,20 +220,21 @@ export const UserPreferencesProvider: React.FC<{ children: React.ReactNode }> = 
   }, [preferences]);
 
   // Mock auth functions for demo purposes
-  const loginUser = async (email: string, password: string) => {
+  const loginUser = async (email: string, password: string): Promise<boolean> => {
     console.log('Login with:', email, password);
     setIsAuthenticated(true);
     updatePreferences({ 
       email,
       lastPasswordChange: new Date().toISOString()
     });
+    return true;
   };
 
   const logoutUser = () => {
     setIsAuthenticated(false);
   };
 
-  const registerUser = async (email: string, password: string, name: string) => {
+  const registerUser = async (email: string, password: string, name: string): Promise<boolean> => {
     console.log('Register with:', email, password, name);
     setIsAuthenticated(true);
     updatePreferences({ 
@@ -210,6 +243,7 @@ export const UserPreferencesProvider: React.FC<{ children: React.ReactNode }> = 
       emailVerified: false,
       lastPasswordChange: new Date().toISOString()
     });
+    return true;
   };
 
   // Save onboarding data
@@ -220,6 +254,10 @@ export const UserPreferencesProvider: React.FC<{ children: React.ReactNode }> = 
       propertyTypes: data.propertyTypes,
       investmentPreference: data.investmentPreference as any,
       investmentMarket: data.investmentMarket,
+      name: data.name,
+      interests: data.interests,
+      investmentGoals: data.investmentGoals,
+      preferredPropertyTypes: data.preferredPropertyTypes,
       onboardingCompleted: true
     });
   };

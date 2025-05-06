@@ -18,6 +18,11 @@ interface MarketMetric {
   marketSentiment: number;
 }
 
+interface MarketComparisonMarket {
+  id: InvestmentMarket;
+  name: string;
+}
+
 interface MarketComparison {
   comparisonMetrics: Record<InvestmentMarket, MarketMetric>;
   isLoading: boolean;
@@ -28,6 +33,10 @@ interface MarketComparison {
     differenceScore: number;
     evaluationText: string;
   };
+  selectedMarkets: InvestmentMarket[];
+  addMarketToComparison: (market: InvestmentMarket) => void;
+  removeMarketFromComparison: (market: InvestmentMarket) => void;
+  getAvailableRecommendedMarkets: () => MarketComparisonMarket[];
 }
 
 const generateDummyData = (): Record<InvestmentMarket, MarketMetric> => {
@@ -114,6 +123,7 @@ export const useMarketComparison = (): MarketComparison => {
   const { currentMarket } = useEnhancedMarket();
   const [comparisonMetrics, setComparisonMetrics] = useState<Record<InvestmentMarket, MarketMetric>>(generateDummyData());
   const [isLoading, setIsLoading] = useState(false);
+  const [selectedMarkets, setSelectedMarkets] = useState<InvestmentMarket[]>(['germany', 'austria']);
 
   // Simulate API fetch
   useEffect(() => {
@@ -126,6 +136,32 @@ export const useMarketComparison = (): MarketComparison => {
     
     // For now, just use the dummy data directly
   }, []);
+
+  // Add market to comparison
+  const addMarketToComparison = (market: InvestmentMarket) => {
+    if (!selectedMarkets.includes(market)) {
+      setSelectedMarkets(prev => [...prev, market]);
+    }
+  };
+
+  // Remove market from comparison
+  const removeMarketFromComparison = (market: InvestmentMarket) => {
+    setSelectedMarkets(prev => prev.filter(m => m !== market));
+  };
+
+  // Get available recommended markets
+  const getAvailableRecommendedMarkets = (): MarketComparisonMarket[] => {
+    const availableMarkets: MarketComparisonMarket[] = [
+      { id: 'germany', name: language === 'de' ? 'Deutschland' : 'Germany' },
+      { id: 'austria', name: language === 'de' ? 'Österreich' : 'Austria' },
+      { id: 'switzerland', name: language === 'de' ? 'Schweiz' : 'Switzerland' },
+      { id: 'usa', name: language === 'de' ? 'USA' : 'USA' },
+      { id: 'canada', name: language === 'de' ? 'Kanada' : 'Canada' },
+      { id: 'global', name: language === 'de' ? 'Global' : 'Global' }
+    ];
+    
+    return availableMarkets.filter(market => !selectedMarkets.includes(market.id));
+  };
 
   // Calculate difference between two markets for a specific metric
   const getMetricDifference = (market1: InvestmentMarket, market2: InvestmentMarket, metric: keyof MarketMetric): number => {
@@ -207,6 +243,10 @@ export const useMarketComparison = (): MarketComparison => {
     isLoading,
     getMetricDifference,
     getMetricPercentageDifference,
-    compareMarketOverall
+    compareMarketOverall,
+    selectedMarkets,
+    addMarketToComparison,
+    removeMarketFromComparison,
+    getAvailableRecommendedMarkets
   };
 };

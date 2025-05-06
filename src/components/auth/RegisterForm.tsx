@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -58,20 +57,22 @@ const RegisterForm: React.FC<RegisterFormProps> = ({ onToggleForm }) => {
     setIsLoading(true);
     
     try {
-      const success = await registerUser(name, email, password);
-      
-      if (success) {
-        toast({
-          title: t('success'),
-          description: t('registrationSuccessful'),
-        });
-        navigate('/dashboard');
-      } else {
-        toast({
-          title: t('error'),
-          description: t('registrationFailed'),
-          variant: 'destructive',
-        });
+      if (registerUser) {
+        const success = await registerUser(name, email, password);
+        
+        if (success) {
+          toast({
+            title: t('success'),
+            description: t('registrationSuccessful'),
+          });
+          navigate('/dashboard');
+        } else {
+          toast({
+            title: t('error'),
+            description: t('registrationFailed'),
+            variant: 'destructive',
+          });
+        }
       }
     } catch (error) {
       toast({

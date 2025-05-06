@@ -1,7 +1,7 @@
+
 import React, { useEffect, useState, lazy, Suspense } from 'react';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
 import OnboardingFlow from '@/components/onboarding/OnboardingFlow';
-import { OnboardingData } from '@/components/onboarding/types';
 import { useUserPreferences } from '@/contexts/UserPreferencesContext';
 import { toast } from 'sonner';
 import { useNavigate } from 'react-router-dom';
@@ -29,11 +29,26 @@ const WelcomeModal = () => {
     }
   }, [isFirstVisit, announce, t]);
 
-  const handleComplete = (data: OnboardingData) => {
+  const handleComplete = (data: any) => {
     // Sync user data across platform
-    saveOnboardingData(data);
+    if (saveOnboardingData) {
+      saveOnboardingData({
+        name: data.name || '',
+        experienceLevel: data.experienceLevel || 'beginner',
+        goals: data.goals || [],
+        propertyTypes: data.propertyTypes || [],
+        investmentPreference: data.investmentPreference || 'balanced',
+        investmentMarket: data.investmentMarket || 'global',
+        interests: data.interests || [],
+        investmentGoals: data.investmentGoals || [],
+        preferredPropertyTypes: data.preferredPropertyTypes || []
+      });
+    }
+    
     setIsOpen(false);
-    setIsFirstVisit(false);
+    if (setIsFirstVisit) {
+      setIsFirstVisit(false);
+    }
     
     // Navigate to appropriate dashboard based on selected market
     if (data.investmentMarket) {
@@ -58,7 +73,9 @@ const WelcomeModal = () => {
   };
 
   const handleSkip = () => {
-    setIsFirstVisit(false);
+    if (setIsFirstVisit) {
+      setIsFirstVisit(false);
+    }
     localStorage.setItem('firstVisit', 'false');
     setIsOpen(false);
     
@@ -78,7 +95,10 @@ const WelcomeModal = () => {
     interests: preferences.interests || [],
     investmentGoals: preferences.investmentGoals || [],
     preferredPropertyTypes: preferences.preferredPropertyTypes || [],
-    investmentMarket: preferences.investmentMarket || 'global' // Default to global instead of empty string
+    investmentMarket: preferences.investmentMarket || 'global', // Default to global instead of empty string
+    goals: preferences.goals || [],
+    propertyTypes: preferences.propertyTypes || [],
+    investmentPreference: preferences.investmentPreference || 'balanced'
   };
 
   return (

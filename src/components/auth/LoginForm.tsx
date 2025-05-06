@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -40,20 +39,22 @@ const LoginForm: React.FC<LoginFormProps> = ({ onToggleForm }) => {
     setIsLoading(true);
     
     try {
-      const success = await loginUser(email, password);
-      
-      if (success) {
-        toast({
-          title: t('success'),
-          description: t('loginSuccessful'),
-        });
-        navigate('/dashboard');
-      } else {
-        toast({
-          title: t('error'),
-          description: t('invalidEmailOrPassword'),
-          variant: 'destructive',
-        });
+      if (loginUser) {
+        const success = await loginUser(email, password);
+        
+        if (success) {
+          toast({
+            title: t('success'),
+            description: t('loginSuccessful'),
+          });
+          navigate('/dashboard');
+        } else {
+          toast({
+            title: t('error'),
+            description: t('invalidEmailOrPassword'),
+            variant: 'destructive',
+          });
+        }
       }
     } catch (error) {
       toast({
@@ -75,7 +76,7 @@ const LoginForm: React.FC<LoginFormProps> = ({ onToggleForm }) => {
     try {
       const success = await useFaceId();
       
-      if (success) {
+      if (success && loginUser) {
         // For demo, we'll just log in a default user with Face ID
         const success = await loginUser('user@example.com', 'password');
         
