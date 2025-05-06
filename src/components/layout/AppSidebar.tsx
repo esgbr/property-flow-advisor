@@ -7,7 +7,7 @@ import {
   BarChart3, Building, Calculator, Calendar, Settings2, Star, 
   School, Building2, Banknote, RefreshCw, Users, Euro, 
   PieChart, BarChart, Globe, LayoutDashboard, Home,
-  LineChart, Shield, FileText
+  LineChart, Shield, FileText, ArrowLeftRight, Map
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useUserPreferences } from '@/contexts/UserPreferencesContext';
@@ -26,7 +26,7 @@ interface NavCategory {
 }
 
 const AppSidebar = () => {
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   const location = useLocation();
   const { preferences } = useUserPreferences();
 
@@ -49,6 +49,33 @@ const AppSidebar = () => {
           name: t('properties'),
           href: '/properties',
           icon: <Building className="h-5 w-5" />,
+        },
+      ]
+    },
+    {
+      title: language === 'de' ? 'Markt & Analyse' : 'Market & Analysis',
+      items: [
+        {
+          name: language === 'de' ? 'Marktexplorer' : 'Market Explorer',
+          href: '/market-explorer',
+          icon: <Globe className="h-5 w-5" />,
+        },
+        {
+          name: language === 'de' ? 'Marktvergleich' : 'Market Comparison',
+          href: '/market-comparison',
+          icon: <ArrowLeftRight className="h-5 w-5" />,
+          new: true,
+        },
+        {
+          name: language === 'de' ? 'Regionale Analyse' : 'Regional Analysis',
+          href: '/regional-analysis',
+          icon: <Map className="h-5 w-5" />,
+          new: true,
+        },
+        {
+          name: language === 'de' ? 'Erweiterte Analysen' : 'Advanced Analytics',
+          href: '/advanced-analytics',
+          icon: <BarChart3 className="h-5 w-5" />,
         },
       ]
     },

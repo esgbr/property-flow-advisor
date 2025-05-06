@@ -1,6 +1,6 @@
 
 import React, { Suspense, lazy } from 'react';
-import { createBrowserRouter, RouterProvider, Outlet } from 'react-router-dom';
+import { createBrowserRouter, RouterProvider } from 'react-router-dom';
 import MainLayout from '@/layouts/MainLayout';
 import ErrorBoundary from '@/components/ErrorBoundary';
 import PageLoader from '@/components/ui/page-loader';
@@ -18,8 +18,73 @@ import OnboardingPage from '@/pages/OnboardingPage';
 import Index from '@/pages/Index';
 import SimplifiedDashboard from '@/pages/SimplifiedDashboard';
 import Dashboard from '@/pages/Dashboard';
+import MarketComparisonTool from '@/pages/MarketComparisonTool';
 
 const AdvancedAnalytics = lazy(() => import('@/pages/AdvancedAnalyticsPage'));
+
+// Create routes outside of the component to avoid recreation on each render
+const routes = [
+  {
+    path: '/',
+    element: <MainLayout><Index /></MainLayout>,
+  },
+  {
+    path: '/onboarding',
+    element: <OnboardingPage />
+  },
+  {
+    path: '/dashboard',
+    element: <MainLayout><SimplifiedDashboard /></MainLayout>
+  },
+  {
+    path: '/auth',
+    element: <MainLayout><AuthPage /></MainLayout>
+  },
+  {
+    path: '/settings',
+    element: <MainLayout><SettingsPage /></MainLayout>
+  },
+  {
+    path: '/accessibility',
+    element: <MainLayout><AccessibilitySettings /></MainLayout>
+  },
+  {
+    path: '/market-explorer',
+    element: <MainLayout><MarketExplorer /></MainLayout>
+  },
+  {
+    path: '/market-comparison',
+    element: <MainLayout><MarketComparisonTool /></MainLayout>
+  },
+  {
+    path: '/calculators',
+    element: <MainLayout><CalculatorsPage /></MainLayout>
+  },
+  {
+    path: '/documents',
+    element: <MainLayout><DocumentsPage /></MainLayout>
+  },
+  {
+    path: '/investor-dashboard',
+    element: <MainLayout><InvestorDashboard /></MainLayout>
+  },
+  {
+    path: '/deutsche-immobilien-tools',
+    element: <MainLayout><GermanRealEstateInvestor /></MainLayout>
+  },
+  {
+    path: '/advanced-analytics',
+    element: (
+      <MainLayout>
+        <ErrorBoundary>
+          <Suspense fallback={<PageLoader size="lg" />}>
+            <AdvancedAnalytics />
+          </Suspense>
+        </ErrorBoundary>
+      </MainLayout>
+    )
+  }
+];
 
 const App: React.FC = () => {
   const { preferences } = useUserPreferences();
@@ -33,69 +98,8 @@ const App: React.FC = () => {
     }
   }, [preferences.darkMode]);
 
-  // Update the router configuration to include our new routes
-  const router = createBrowserRouter([
-    {
-      path: '/',
-      element: <MainLayout><Outlet /></MainLayout>,
-      children: [
-        {
-          index: true,
-          element: <Index />
-        },
-        {
-          path: 'onboarding',
-          element: <OnboardingPage />
-        },
-        {
-          path: 'dashboard',
-          element: <SimplifiedDashboard />
-        },
-        {
-          path: 'auth',
-          element: <AuthPage />
-        },
-        {
-          path: 'settings',
-          element: <SettingsPage />
-        },
-        {
-          path: 'accessibility',
-          element: <AccessibilitySettings />
-        },
-        {
-          path: 'market-explorer',
-          element: <MarketExplorer />
-        },
-        {
-          path: 'calculators',
-          element: <CalculatorsPage />
-        },
-        {
-          path: 'documents',
-          element: <DocumentsPage />
-        },
-        {
-          path: 'investor-dashboard',
-          element: <InvestorDashboard />
-        },
-        {
-          path: 'deutsche-immobilien-tools',
-          element: <GermanRealEstateInvestor />
-        },
-        {
-          path: 'advanced-analytics',
-          element: (
-            <ErrorBoundary>
-              <Suspense fallback={<PageLoader size="lg" />}>
-                <AdvancedAnalytics />
-              </Suspense>
-            </ErrorBoundary>
-          )
-        }
-      ]
-    }
-  ]);
+  // Create the router with our routes
+  const router = createBrowserRouter(routes);
 
   return (
     <ErrorBoundary>
