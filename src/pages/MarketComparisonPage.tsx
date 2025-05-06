@@ -7,6 +7,7 @@ import { ArrowLeftRight, BarChart3, ChartBar, Building, MapPin, LineChart, Trend
 import MarketComparisonAssistant from '@/components/market/MarketComparisonAssistant';
 import MarketComparisonDashboard from '@/components/market/MarketComparisonDashboard';
 import MarketTrendsComparison from '@/components/market/MarketTrendsComparison';
+import RegionalRentalTrendForecast from '@/components/market/RegionalRentalTrendForecast';
 import { useEnhancedMarket } from '@/hooks/use-enhanced-market';
 import { Button } from '@/components/ui/button';
 
@@ -28,7 +29,7 @@ const MarketComparisonPage: React.FC = () => {
       </div>
       
       <Tabs defaultValue="comparison" className="w-full">
-        <TabsList className="grid grid-cols-1 md:grid-cols-3">
+        <TabsList className="grid grid-cols-1 md:grid-cols-4">
           <TabsTrigger value="comparison">
             <ArrowLeftRight className="mr-2 h-4 w-4" />
             {language === 'de' ? 'Marktvergleich' : 'Market Comparison'}
@@ -40,6 +41,10 @@ const MarketComparisonPage: React.FC = () => {
           <TabsTrigger value="trends">
             <LineChart className="mr-2 h-4 w-4" />
             {language === 'de' ? 'Trendanalyse' : 'Trend Analysis'}
+          </TabsTrigger>
+          <TabsTrigger value="rental">
+            <TrendingUp className="mr-2 h-4 w-4" />
+            {language === 'de' ? 'Mietpreisentwicklung' : 'Rental Trends'}
           </TabsTrigger>
         </TabsList>
         
@@ -113,6 +118,12 @@ const MarketComparisonPage: React.FC = () => {
                 </div>
               </CardContent>
             </Card>
+          </div>
+        </TabsContent>
+        
+        <TabsContent value="rental">
+          <div className="grid gap-6">
+            <RegionalRentalTrendForecast />
           </div>
         </TabsContent>
       </Tabs>

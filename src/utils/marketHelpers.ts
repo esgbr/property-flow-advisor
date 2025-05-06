@@ -1,6 +1,11 @@
 
 import { InvestmentMarket } from '@/contexts/UserPreferencesContext';
 
+export interface InvestmentMarketOption {
+  id: InvestmentMarket;
+  name: string;
+}
+
 /**
  * Get the localized name of a market
  */
@@ -20,7 +25,7 @@ export const getLocalizedMarketName = (market: InvestmentMarket, language: strin
 /**
  * Available markets with their display names
  */
-export const availableMarkets = [
+export const availableMarkets: InvestmentMarketOption[] = [
   { id: 'germany' as InvestmentMarket, name: 'Deutschland/Germany' },
   { id: 'austria' as InvestmentMarket, name: 'Österreich/Austria' },
   { id: 'switzerland' as InvestmentMarket, name: 'Schweiz/Switzerland' },

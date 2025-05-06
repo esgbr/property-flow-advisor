@@ -56,7 +56,7 @@ const ImprovedMarketSelector: React.FC<ImprovedMarketSelectorProps> = ({
     return growthIndicators[market] || { trend: 'stable', value: 0 };
   };
   
-  const renderMarketItem = (market: InvestmentMarketOption) => {
+  const renderMarketItem = (market: {id: InvestmentMarket, name: string}) => {
     const growth = getMarketGrowthIndicator(market.id);
     
     return (
