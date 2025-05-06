@@ -59,10 +59,13 @@ export function useEnhancedMarket() {
   
   // Track a visit to a specific market page for analytics
   const trackMarketVisit = (market: InvestmentMarket) => {
-    const visitedMarkets = preferences.visitedMarkets || [];
-    if (!visitedMarkets.includes(market)) {
+    // Get current visited markets array or initialize if it doesn't exist
+    const recentlyVisitedMarkets = preferences.recentMarkets || [];
+    
+    // Only add if not already in the list
+    if (!recentlyVisitedMarkets.includes(market)) {
       updatePreferences({
-        visitedMarkets: [...visitedMarkets, market]
+        recentMarkets: [...recentlyVisitedMarkets, market]
       });
     }
   };
