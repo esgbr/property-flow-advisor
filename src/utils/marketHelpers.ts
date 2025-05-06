@@ -1,3 +1,4 @@
+
 import { InvestmentMarket } from '@/contexts/UserPreferencesContext';
 
 /**
@@ -219,6 +220,124 @@ export const getFilteredMarketOptions = (region: string): InvestmentMarket[] => 
   return ['germany', 'austria', 'switzerland', 'usa', 'canada', 'global'];
 };
 
+/**
+ * Get market data for a specific city
+ */
+export const getCityMarketData = (
+  country: InvestmentMarket,
+  city: string
+) => {
+  // Sample city data - in a real app this would come from an API
+  const sampleCityData: Record<string, Record<string, any>> = {
+    'germany': {
+      'berlin': {
+        avgPrice: 4800,
+        avgRent: 13.2,
+        yieldAvg: 3.3,
+        growth: 5.2
+      },
+      'munich': {
+        avgPrice: 8900,
+        avgRent: 19.1,
+        yieldAvg: 2.5,
+        growth: 4.1
+      },
+      'hamburg': {
+        avgPrice: 5100,
+        avgRent: 14.5,
+        yieldAvg: 3.4,
+        growth: 3.8
+      }
+    },
+    'austria': {
+      'vienna': {
+        avgPrice: 4700,
+        avgRent: 13.1,
+        yieldAvg: 3.2,
+        growth: 4.0
+      },
+      'salzburg': {
+        avgPrice: 5500,
+        avgRent: 15.2,
+        yieldAvg: 3.0,
+        growth: 3.7
+      }
+    },
+    'switzerland': {
+      'zurich': {
+        avgPrice: 13500,
+        avgRent: 30.1,
+        yieldAvg: 2.2,
+        growth: 2.5
+      },
+      'geneva': {
+        avgPrice: 14200,
+        avgRent: 31.8,
+        yieldAvg: 2.1,
+        growth: 2.3
+      }
+    }
+  };
+  
+  // Return data for the specified country and city, or a default object if not found
+  return sampleCityData[country]?.[city.toLowerCase()] || {
+    avgPrice: 0,
+    avgRent: 0,
+    yieldAvg: 0,
+    growth: 0
+  };
+};
+
+/**
+ * Get rental market trend data
+ */
+export const getRentalMarketTrend = (
+  market: InvestmentMarket,
+  timespan: 'current' | '1y' | '5y' | '10y' = 'current'
+) => {
+  // Sample trend data - in a real app this would come from an API
+  const trends: Record<InvestmentMarket, Record<string, any>> = {
+    'germany': {
+      'current': { change: 3.2, trend: 'up' },
+      '1y': { change: 5.8, trend: 'up' },
+      '5y': { change: 23.5, trend: 'up' },
+      '10y': { change: 52.3, trend: 'up' }
+    },
+    'austria': {
+      'current': { change: 2.7, trend: 'up' },
+      '1y': { change: 4.9, trend: 'up' },
+      '5y': { change: 19.8, trend: 'up' },
+      '10y': { change: 44.7, trend: 'up' }
+    },
+    'switzerland': {
+      'current': { change: 1.2, trend: 'stable' },
+      '1y': { change: 2.1, trend: 'stable' },
+      '5y': { change: 10.5, trend: 'up' },
+      '10y': { change: 27.6, trend: 'up' }
+    },
+    'usa': {
+      'current': { change: 4.5, trend: 'up' },
+      '1y': { change: 7.2, trend: 'up' },
+      '5y': { change: 29.8, trend: 'up' },
+      '10y': { change: 63.4, trend: 'up' }
+    },
+    'canada': {
+      'current': { change: 3.9, trend: 'up' },
+      '1y': { change: 6.5, trend: 'up' },
+      '5y': { change: 27.2, trend: 'up' },
+      '10y': { change: 58.9, trend: 'up' }
+    },
+    'global': {
+      'current': { change: 3.1, trend: 'up' },
+      '1y': { change: 5.4, trend: 'up' },
+      '5y': { change: 21.7, trend: 'up' },
+      '10y': { change: 49.2, trend: 'up' }
+    }
+  };
+  
+  return trends[market]?.[timespan] || { change: 0, trend: 'stable' };
+};
+
 export default {
   getLocalizedMarketName,
   getRecommendedMarkets,
@@ -227,5 +346,7 @@ export default {
   getMarketDisplayName,
   availableMarkets,
   getMarketSimilarity,
-  getFilteredMarketOptions
+  getFilteredMarketOptions,
+  getCityMarketData,
+  getRentalMarketTrend
 };
