@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
@@ -8,6 +7,7 @@ import { Lock, Fingerprint } from 'lucide-react';
 import { useAppLock } from '@/contexts/AppLockContext';
 import { useToast } from '@/components/ui/use-toast';
 import { useLanguage } from '@/contexts/LanguageContext';
+import BiometricAuth from '@/components/auth/BiometricAuth';
 
 const AppLockScreen: React.FC = () => {
   const [pin, setPin] = useState('');
@@ -82,15 +82,13 @@ const AppLockScreen: React.FC = () => {
             />
             
             {supportsFaceId && (
-              <Button 
-                variant="outline" 
-                className="w-full flex items-center justify-center gap-2 mt-4"
-                onClick={handleFaceId}
-                disabled={isLoading}
-              >
-                <Fingerprint className="h-5 w-5" />
-                {isLoading ? t('verifying') : t('useFaceId')}
-              </Button>
+              <div className="mt-4">
+                <BiometricAuth 
+                  onSuccess={() => unlockApp(pin || '')}
+                  title={t('unlockWithBiometrics')}
+                  description={t('useYourFaceOrFingerprint')}
+                />
+              </div>
             )}
           </div>
         </CardContent>

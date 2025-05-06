@@ -12,13 +12,19 @@ interface PinInputProps {
   onChange: (value: string) => void;
   maxLength?: number;
   label?: string;
+  error?: boolean;
+  errorMessage?: string;
+  disabled?: boolean;
 }
 
 const PinInput: React.FC<PinInputProps> = ({ 
   value, 
   onChange, 
   maxLength = 4,
-  label
+  label,
+  error = false,
+  errorMessage,
+  disabled = false
 }) => {
   const { t } = useLanguage();
   
@@ -31,14 +37,24 @@ const PinInput: React.FC<PinInputProps> = ({
         maxLength={maxLength}
         value={value}
         onChange={onChange}
+        disabled={disabled}
+        className={error ? "has-error" : ""}
         render={({ slots }) => (
           <InputOTPGroup>
             {slots.map((slot, index) => (
-              <InputOTPSlot key={index} {...slot} index={index} />
+              <InputOTPSlot 
+                key={index} 
+                {...slot} 
+                index={index}
+                className={error ? "border-red-500 focus:border-red-500 focus:ring-red-500" : ""} 
+              />
             ))}
           </InputOTPGroup>
         )}
       />
+      {error && errorMessage && (
+        <p className="text-sm text-red-500">{errorMessage}</p>
+      )}
     </div>
   );
 };

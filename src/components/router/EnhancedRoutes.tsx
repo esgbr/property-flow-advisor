@@ -1,4 +1,3 @@
-
 import React, { Suspense, lazy, useEffect } from 'react';
 import { Route, Routes, Navigate, useLocation } from 'react-router-dom';
 import PageLoader from '@/components/ui/page-loader';
@@ -30,6 +29,7 @@ const PortfolioAnalyticsPage = lazy(() => import('@/pages/PortfolioAnalyticsPage
 const MarketAnalysisDashboardPage = lazy(() => import('@/pages/MarketAnalysisDashboard'));
 const AccessibilitySettingsPage = lazy(() => import('@/components/accessibility/AccessibilitySettings'));
 const OnboardingWizard = lazy(() => import('@/components/onboarding/OnboardingWizard'));
+const SecurityPage = lazy(() => import('@/pages/SecurityPage'));
 
 // Loading fallback component
 const PageLoadingFallback: React.FC<{ message?: string }> = ({ message }) => (
@@ -208,6 +208,8 @@ const EnhancedRoutes: React.FC = () => {
               <AccessibilitySettingsPage />
             </PageSuspense>
           } />
+          
+          <Route path="/security" element={<SecurityPage />} />
         </Route>
         
         {/* Redirects for backward compatibility */}

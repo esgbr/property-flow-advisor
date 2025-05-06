@@ -1,12 +1,14 @@
+
 import React, { useEffect, useState } from 'react';
 import { Navigate, useLocation, useNavigate } from 'react-router-dom';
 import { useUserPreferences } from '@/contexts/UserPreferencesContext';
 import { useToast } from '@/components/ui/use-toast';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useAppLock } from '@/contexts/AppLockContext';
-import { AlertCircle, Shield } from 'lucide-react';
+import { AlertCircle, Shield, Clock } from 'lucide-react';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
+import { toast } from 'sonner';
 
 interface AuthGuardProps {
   children: React.ReactNode;
@@ -28,38 +30,50 @@ const AuthGuard: React.FC<AuthGuardProps> = ({
   
   const [showSecurityPrompt, setShowSecurityPrompt] = useState(false);
   const [lastAccessCheck, setLastAccessCheck] = useState<Date>(new Date());
+  const [sessionActive, setSessionActive] = useState(true);
   
-  // Enhanced security - session activity validation
+  // Enhanced security - session activity validation with better timing
   useEffect(() => {
     if (isAuthenticated) {
-      // Check for session timeout (30 minutes of inactivity)
-      const lastActivity = localStorage.getItem('lastUserActivity');
-      const now = new Date();
-      
-      if (lastActivity) {
-        const lastActiveTime = new Date(lastActivity);
-        const inactiveTime = now.getTime() - lastActiveTime.getTime();
+      const checkSessionActivity = () => {
+        // Check for session timeout (30 minutes of inactivity)
+        const lastActivity = localStorage.getItem('lastUserActivity');
+        const now = new Date();
         
-        // If inactive for more than 30 minutes, require re-authentication
-        if (inactiveTime > 30 * 60 * 1000) {
-          toast({
-            title: t('sessionExpired'),
-            description: t('pleaseLoginAgain'),
-            variant: 'destructive',
-          });
-          navigate('/auth', { state: { from: location, reason: 'timeout' } });
-          return;
+        if (lastActivity) {
+          const lastActiveTime = new Date(lastActivity);
+          const inactiveTime = now.getTime() - lastActiveTime.getTime();
+          
+          // If inactive for more than 30 minutes, require re-authentication
+          if (inactiveTime > 30 * 60 * 1000) {
+            setSessionActive(false);
+            toast({
+              title: t('sessionExpired'),
+              description: t('pleaseLoginAgain'),
+              variant: 'destructive',
+            });
+            navigate('/auth', { state: { from: location, reason: 'timeout' } });
+            return false;
+          }
         }
-      }
+        
+        // Update last activity time
+        localStorage.setItem('lastUserActivity', now.toISOString());
+        return true;
+      };
       
-      // Update last activity time
-      localStorage.setItem('lastUserActivity', now.toISOString());
+      // Initial check
+      const isActive = checkSessionActivity();
       
-      // Check for security setup after login if not done
-      const securityPromptShown = sessionStorage.getItem('securityPromptShown');
-      if (!preferences.appLockEnabled && !securityPromptShown) {
-        // Show security prompt with delay to avoid disrupting the user flow
-        if (Date.now() - lastAccessCheck.getTime() > 60000) {
+      // Set up interval for periodic checks (every 5 minutes)
+      const intervalId = setInterval(() => {
+        checkSessionActivity();
+      }, 5 * 60 * 1000);
+      
+      // Set up security prompt with delay
+      if (isActive && !preferences.appLockEnabled) {
+        const securityPromptShown = sessionStorage.getItem('securityPromptShown');
+        if (!securityPromptShown && Date.now() - lastAccessCheck.getTime() > 60000) {
           setShowSecurityPrompt(true);
           sessionStorage.setItem('securityPromptShown', 'true');
         }
@@ -67,8 +81,10 @@ const AuthGuard: React.FC<AuthGuardProps> = ({
       
       // Update last access check
       setLastAccessCheck(new Date());
+      
+      return () => clearInterval(intervalId);
     }
-  }, [isAuthenticated, location.pathname, navigate, preferences.appLockEnabled, t, toast]);
+  }, [isAuthenticated, location.pathname, navigate, preferences.appLockEnabled, t, toast, lastAccessCheck]);
   
   // Check for encrypted status
   useEffect(() => {
@@ -77,27 +93,46 @@ const AuthGuard: React.FC<AuthGuardProps> = ({
     }
   }, [isAuthenticated, isLocked, navigate, location]);
   
+  // Welcome toast with improved handling
   useEffect(() => {
     // Check if redirected from auth page and show welcome toast
     if (location.state?.from?.pathname === '/auth' && isAuthenticated) {
-      toast({
-        title: t('success'),
-        description: t(preferences.role === 'admin' ? 'adminWelcomeBack' : 'welcomeBack'),
-      });
+      // Check if we've already shown this toast today
+      const today = new Date().toDateString();
+      const lastWelcome = localStorage.getItem('lastWelcomeShown');
+      
+      if (lastWelcome !== today) {
+        toast({
+          title: t('success'),
+          description: t(preferences.role === 'admin' ? 'adminWelcomeBack' : 'welcomeBack'),
+        });
+        localStorage.setItem('lastWelcomeShown', today);
+      }
     }
   }, [location, isAuthenticated, preferences.role, toast, t]);
   
+  // Improved security setup handling
   const handleSecuritySetup = () => {
-    navigate('/settings?tab=security');
+    // Tracking the security setup attempt for analytics
+    localStorage.setItem('securitySetupAttempted', 'true');
+    navigate('/settings?tab=security&setup=true');
     setShowSecurityPrompt(false);
   };
   
   const dismissSecurityPrompt = () => {
     setShowSecurityPrompt(false);
-    // Remember dismissal for 7 days
+    // Remember dismissal for 7 days with exact expiry time
     const expiryDate = new Date();
     expiryDate.setDate(expiryDate.getDate() + 7);
     localStorage.setItem('securityPromptDismissed', expiryDate.toISOString());
+    
+    // Show a gentle reminder toast
+    toast.info(
+      language === 'de' 
+        ? 'Sie können die Sicherheitseinstellungen jederzeit in den Einstellungen aktivieren'
+        : 'You can enable security settings anytime from your preferences',
+      { duration: 5000 }
+    );
   };
   
   // Not authenticated
@@ -109,6 +144,11 @@ const AuthGuard: React.FC<AuthGuardProps> = ({
   // Authenticated, but app is locked
   if (isLocked) {
     return <Navigate to="/locked" state={{ from: location }} replace />;
+  }
+  
+  // Enhanced security - session expired
+  if (!sessionActive) {
+    return <Navigate to="/auth" state={{ from: location, reason: 'timeout' }} replace />;
   }
   
   // Check for verified email if required
@@ -162,6 +202,15 @@ const AuthGuard: React.FC<AuthGuardProps> = ({
           </AlertDescription>
         </Alert>
       )}
+      
+      {/* Session activity indicator for better user awareness */}
+      {isAuthenticated && (
+        <div className="fixed bottom-4 right-4 z-40 hidden md:flex items-center text-xs text-muted-foreground bg-background/80 backdrop-blur-sm p-1 px-2 rounded-full border border-border">
+          <Clock className="h-3 w-3 mr-1 text-primary" />
+          <span>Session aktiv</span>
+        </div>
+      )}
+      
       {children}
     </>
   );
