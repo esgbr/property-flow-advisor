@@ -25,8 +25,8 @@ const AuthGuard: React.FC<AuthGuardProps> = ({
   const { isLocked } = useAppLock();
   const location = useLocation();
   const navigate = useNavigate();
-  const { toast } = useToast();
-  const { t } = useLanguage();
+  const { toast: toastHook } = useToast();
+  const { t, language } = useLanguage();
   
   const [showSecurityPrompt, setShowSecurityPrompt] = useState(false);
   const [lastAccessCheck, setLastAccessCheck] = useState<Date>(new Date());
@@ -47,7 +47,7 @@ const AuthGuard: React.FC<AuthGuardProps> = ({
           // If inactive for more than 30 minutes, require re-authentication
           if (inactiveTime > 30 * 60 * 1000) {
             setSessionActive(false);
-            toast({
+            toastHook({
               title: t('sessionExpired'),
               description: t('pleaseLoginAgain'),
               variant: 'destructive',
@@ -84,7 +84,7 @@ const AuthGuard: React.FC<AuthGuardProps> = ({
       
       return () => clearInterval(intervalId);
     }
-  }, [isAuthenticated, location.pathname, navigate, preferences.appLockEnabled, t, toast, lastAccessCheck]);
+  }, [isAuthenticated, location.pathname, navigate, preferences.appLockEnabled, t, toastHook, lastAccessCheck]);
   
   // Check for encrypted status
   useEffect(() => {
@@ -102,14 +102,14 @@ const AuthGuard: React.FC<AuthGuardProps> = ({
       const lastWelcome = localStorage.getItem('lastWelcomeShown');
       
       if (lastWelcome !== today) {
-        toast({
+        toastHook({
           title: t('success'),
           description: t(preferences.role === 'admin' ? 'adminWelcomeBack' : 'welcomeBack'),
         });
         localStorage.setItem('lastWelcomeShown', today);
       }
     }
-  }, [location, isAuthenticated, preferences.role, toast, t]);
+  }, [location, isAuthenticated, preferences.role, toastHook, t]);
   
   // Improved security setup handling
   const handleSecuritySetup = () => {
@@ -126,8 +126,8 @@ const AuthGuard: React.FC<AuthGuardProps> = ({
     expiryDate.setDate(expiryDate.getDate() + 7);
     localStorage.setItem('securityPromptDismissed', expiryDate.toISOString());
     
-    // Show a gentle reminder toast
-    toast.info(
+    // Show a gentle reminder toast using sonner toast
+    toast(
       language === 'de' 
         ? 'Sie können die Sicherheitseinstellungen jederzeit in den Einstellungen aktivieren'
         : 'You can enable security settings anytime from your preferences',
@@ -175,7 +175,7 @@ const AuthGuard: React.FC<AuthGuardProps> = ({
   
   // Authenticated, but no admin and admin is required
   if (requireAdmin && preferences.role !== 'admin') {
-    toast({
+    toastHook({
       title: t('error'),
       description: t('adminAccessRequired'),
       variant: 'destructive',

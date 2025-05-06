@@ -21,89 +21,37 @@ import {
   LogOut,
   Lock,
   Bell,
-  UserCog,
   ShieldCheck,
-  Building,
   LifeBuoy,
   UserPlus,
-  Globe,
-  AlertCircle,
-  CheckCircle,
-  Home,
-  LineChart,
-  BookOpen
 } from 'lucide-react';
 import { useAppLock } from '@/contexts/AppLockContext';
 import { toast } from 'sonner';
 import { Badge } from '@/components/ui/badge';
 
-// Refactored components for better organization
-const SecurityBadge = ({ show }: { show: boolean }) => {
-  if (!show) return null;
-  
-  return (
-    <div className="absolute -top-1 -right-1 bg-amber-500 rounded-full w-3 h-3 border border-background"></div>
-  );
-};
+interface NavItem {
+  icon: React.ReactNode;
+  label: string;
+  path?: string;
+  action?: () => void;
+  condition?: boolean;
+  className?: string;
+  badge?: string | null;
+  badgeVariant?: string;
+}
 
-const SecurityStatus = ({ isSecure }: { isSecure: boolean }) => {
-  const { t } = useLanguage();
-  
-  if (isSecure) {
-    return (
-      <div className="px-2 py-1.5 mx-2 my-1 text-xs bg-green-500/10 text-green-600 dark:text-green-400 rounded border border-green-200 dark:border-green-800 flex items-center gap-2">
-        <CheckCircle className="h-3 w-3" />
-        <span>{t('securityEnabled')}</span>
-      </div>
-    );
-  }
-  
-  return (
-    <div className="px-2 py-1.5 mx-2 my-1 text-xs bg-amber-500/10 text-amber-600 dark:text-amber-400 rounded border border-amber-200 dark:border-amber-800 flex items-center gap-2">
-      <AlertCircle className="h-3 w-3" />
-      <span>{t('securityNotConfigured')}</span>
-    </div>
-  );
-};
-
-const LoginButtons = () => {
-  const navigate = useNavigate();
-  const { t } = useLanguage();
-  
-  return (
-    <div className="flex gap-2 items-center">
-      <Button 
-        variant="outline" 
-        size="sm"
-        onClick={() => navigate('/auth')}
-        className="flex items-center gap-1"
-      >
-        <User className="h-4 w-4 mr-1" />
-        {t('login')}
-      </Button>
-      <Button 
-        variant="default" 
-        size="sm" 
-        className="hidden sm:flex items-center gap-1"
-        onClick={() => navigate('/auth?mode=register')}
-      >
-        <UserPlus className="h-4 w-4 mr-1" />
-        {t('register')}
-      </Button>
-    </div>
-  );
-};
+interface NavGroup {
+  name: string;
+  items: NavItem[];
+}
 
 const UserMenu = () => {
   const { preferences, logoutUser, isAuthenticated } = useUserPreferences();
   const navigate = useNavigate();
-  const { toast } = useToast();
-  const { t, language } = useLanguage();
-  const { lockApp, isLocked, supportsFaceId } = useAppLock();
+  const { toast: toastHook } = useToast();
+  const { t } = useLanguage();
+  const { lockApp, isLocked } = useAppLock();
   const [showSecurityBadge, setShowSecurityBadge] = useState(!preferences.appLockEnabled);
-  
-  // Enhanced security check for user session
-  const isSessionSecure = preferences.appLockEnabled || !!localStorage.getItem('secureSession');
   
   // Enhanced function for name display with better initials algorithm
   const getInitials = () => {
@@ -124,106 +72,98 @@ const UserMenu = () => {
     return 'U';
   };
 
-  // Enhanced logout with confirmation and security check
   const handleLogout = () => {
     logoutUser();
-    
-    // Clear any sensitive data
     localStorage.removeItem('secureSession');
     sessionStorage.clear();
     
-    toast({
+    toastHook({
       title: t('success'),
       description: t('loggedOutSuccessfully'),
     });
     navigate('/');
   };
 
-  // Enhanced lock function with activity tracking
   const handleLock = () => {
     if (lockApp) {
-      // Track last user activity before locking
       localStorage.setItem('lastActivity', new Date().toISOString());
-      
       lockApp();
-      toast({
-        title: t('security'),
-        description: t('appLocked'),
-      });
+      toast.success(t('appLocked'));
     }
   };
   
-  // Handle security setup
   const handleSecuritySetup = () => {
-    navigate('/settings?tab=security');
+    navigate('/security');
     setShowSecurityBadge(false);
     localStorage.setItem('securityNoticeShown', 'true');
   };
+  
+  const navigationGroups: NavGroup[] = [
+    {
+      name: 'account',
+      items: [
+        { icon: <User className="mr-2 h-4 w-4" />, label: t('profile'), path: '/profile' },
+        { icon: <Settings className="mr-2 h-4 w-4" />, label: t('settings'), path: '/settings' },
+        { 
+          icon: <ShieldCheck className="mr-2 h-4 w-4" />, 
+          label: t('security'), 
+          path: '/security',
+          badge: !preferences.appLockEnabled ? t('recommended') : null,
+          badgeVariant: 'amber'
+        },
+        { icon: <Bell className="mr-2 h-4 w-4" />, label: t('notifications'), path: '/notifications' }
+      ]
+    },
+    {
+      name: 'help',
+      items: [
+        { icon: <LifeBuoy className="mr-2 h-4 w-4" />, label: t('helpSupport'), path: '/help' }
+      ]
+    },
+    {
+      name: 'actions',
+      items: [
+        { 
+          icon: <Lock className="mr-2 h-4 w-4" />, 
+          label: t('lock'), 
+          action: handleLock,
+          condition: isAuthenticated && !!lockApp && !isLocked
+        },
+        { 
+          icon: <LogOut className="mr-2 h-4 w-4" />, 
+          label: t('logout'), 
+          action: handleLogout,
+          className: 'text-red-600 dark:text-red-400'
+        }
+      ]
+    }
+  ];
 
-  // Improved getNavItems function to organize navigation items
-  const getNavItems = () => {
-    return [
-      {
-        group: 'main',
-        items: [
-          { icon: <User className="mr-2 h-4 w-4" />, label: t('profile'), path: '/profile' },
-          { icon: <Home className="mr-2 h-4 w-4" />, label: t('dashboard'), path: '/dashboard' },
-          { icon: <LineChart className="mr-2 h-4 w-4" />, label: t('investorDashboard'), path: '/investor-dashboard' },
-          { icon: <Globe className="mr-2 h-4 w-4" />, label: t('marketAnalysis'), path: '/market-analysis' },
-          { icon: <BookOpen className="mr-2 h-4 w-4" />, label: t('education'), path: '/education' }
-        ]
-      },
-      {
-        group: 'settings',
-        items: [
-          { icon: <Settings className="mr-2 h-4 w-4" />, label: t('settings'), path: '/settings' },
-          { 
-            icon: <ShieldCheck className="mr-2 h-4 w-4" />, 
-            label: t('security'), 
-            path: '/security',
-            badge: !preferences.appLockEnabled ? t('recommended') : null,
-            badgeVariant: 'amber'
-          },
-          { icon: <Bell className="mr-2 h-4 w-4" />, label: t('notifications'), path: '/notifications' }
-        ]
-      },
-      {
-        group: 'help',
-        items: [
-          { 
-            icon: <LifeBuoy className="mr-2 h-4 w-4" />, 
-            label: t('helpSupport'), 
-            path: '/help',
-            className: 'text-indigo-600 dark:text-indigo-400'
-          }
-        ]
-      },
-      {
-        group: 'account',
-        items: [
-          { 
-            icon: <Lock className="mr-2 h-4 w-4" />, 
-            label: t('lock'), 
-            action: handleLock,
-            condition: isAuthenticated && lockApp
-          },
-          { 
-            icon: <LogOut className="mr-2 h-4 w-4" />, 
-            label: t('logout'), 
-            action: handleLogout,
-            className: 'text-red-600 dark:text-red-400'
-          }
-        ]
-      }
-    ];
-  };
-
-  // Not authenticated, show improved login buttons
+  // Show login buttons for unauthenticated users
   if (!isAuthenticated) {
-    return <LoginButtons />;
+    return (
+      <div className="flex gap-2 items-center">
+        <Button 
+          variant="outline" 
+          size="sm"
+          onClick={() => navigate('/auth')}
+        >
+          <User className="h-4 w-4 mr-1" />
+          {t('login')}
+        </Button>
+        <Button 
+          variant="default" 
+          size="sm" 
+          className="hidden sm:flex"
+          onClick={() => navigate('/auth?mode=register')}
+        >
+          <UserPlus className="h-4 w-4 mr-1" />
+          {t('register')}
+        </Button>
+      </div>
+    );
   }
 
-  // Enhanced user menu for authenticated users with better organization
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
@@ -240,10 +180,12 @@ const UserMenu = () => {
             <AvatarFallback>{getInitials()}</AvatarFallback>
           </Avatar>
           
-          <SecurityBadge show={showSecurityBadge} />
+          {showSecurityBadge && (
+            <div className="absolute -top-1 -right-1 bg-amber-500 rounded-full w-3 h-3 border border-background"></div>
+          )}
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent className="w-64" align="end" forceMount>
+      <DropdownMenuContent className="w-56" align="end" forceMount>
         <DropdownMenuLabel className="font-normal">
           <div className="flex flex-col space-y-1">
             <p className="text-sm font-medium leading-none">
@@ -261,9 +203,7 @@ const UserMenu = () => {
           </div>
         </DropdownMenuLabel>
         
-        <SecurityStatus isSecure={isSessionSecure} />
-        
-        {!isSessionSecure && (
+        {!preferences.appLockEnabled && (
           <div className="px-2 mb-1">
             <Button
               variant="outline"
@@ -272,29 +212,28 @@ const UserMenu = () => {
               onClick={handleSecuritySetup}
             >
               <ShieldCheck className="h-3 w-3 mr-1" />
-              {t('setup')}
+              {t('setupSecurity')}
             </Button>
           </div>
         )}
         
         <DropdownMenuSeparator />
         
-        {/* Main navigation items */}
-        {getNavItems().map((group, index) => (
-          <React.Fragment key={`group-${index}`}>
+        {navigationGroups.map((group, groupIndex) => (
+          <React.Fragment key={`group-${groupIndex}`}>
             <DropdownMenuGroup>
               {group.items.map((item, itemIndex) => (
-                item.condition !== false && (
+                (item.condition !== false) && (
                   <DropdownMenuItem 
-                    key={`item-${index}-${itemIndex}`}
-                    onClick={item.action || (() => navigate(item.path))}
+                    key={`item-${groupIndex}-${itemIndex}`}
+                    onClick={item.action || (item.path ? () => navigate(item.path!) : undefined)}
                     className={item.className}
                   >
                     {item.icon}
                     <span>{item.label}</span>
                     {item.badge && (
                       <Badge 
-                        variant={item.badgeVariant || "outline"}
+                        variant={item.badgeVariant as any || "outline"}
                         className="ml-auto text-xs"
                       >
                         {item.badge}
@@ -304,7 +243,7 @@ const UserMenu = () => {
                 )
               ))}
             </DropdownMenuGroup>
-            {index < getNavItems().length - 1 && <DropdownMenuSeparator />}
+            {groupIndex < navigationGroups.length - 1 && <DropdownMenuSeparator />}
           </React.Fragment>
         ))}
       </DropdownMenuContent>

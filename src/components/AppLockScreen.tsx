@@ -1,16 +1,19 @@
+
 import React, { useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import { Lock, Fingerprint } from 'lucide-react';
 import { useAppLock } from '@/contexts/AppLockContext';
 import { useToast } from '@/components/ui/use-toast';
 import { useLanguage } from '@/contexts/LanguageContext';
 import BiometricAuth from '@/components/auth/BiometricAuth';
+import PinInput from '@/components/app-lock/PinInput';
+import BiometricButton from '@/components/app-lock/BiometricButton';
 
 const AppLockScreen: React.FC = () => {
   const [pin, setPin] = useState('');
+  const [error, setError] = useState(false);
   const { unlockApp, supportsFaceId, useFaceId } = useAppLock();
   const navigate = useNavigate();
   const location = useLocation();
@@ -19,6 +22,11 @@ const AppLockScreen: React.FC = () => {
   const [isLoading, setIsLoading] = useState(false);
   
   const handleUnlock = () => {
+    if (pin.length < 4) {
+      setError(true);
+      return;
+    }
+    
     if (unlockApp(pin)) {
       const from = location.state?.from?.pathname || '/dashboard';
       navigate(from);
@@ -33,6 +41,7 @@ const AppLockScreen: React.FC = () => {
         variant: 'destructive',
       });
       setPin('');
+      setError(true);
     }
   };
   
@@ -59,6 +68,33 @@ const AppLockScreen: React.FC = () => {
     }
   };
   
+  const handlePinChange = (value: string) => {
+    setPin(value);
+    setError(false);
+    
+    // Auto-submit when PIN is complete
+    if (value.length === 4) {
+      setTimeout(() => {
+        if (unlockApp(value)) {
+          const from = location.state?.from?.pathname || '/dashboard';
+          navigate(from);
+          toast({
+            title: t('appUnlocked'),
+            description: t('welcomeBack'),
+          });
+        } else {
+          toast({
+            title: t('error'),
+            description: t('invalidPIN'),
+            variant: 'destructive',
+          });
+          setPin('');
+          setError(true);
+        }
+      }, 300);
+    }
+  };
+  
   return (
     <div className="min-h-screen flex items-center justify-center p-4 bg-gradient-to-b from-background to-background/80">
       <Card className="w-full max-w-md">
@@ -69,34 +105,32 @@ const AppLockScreen: React.FC = () => {
           <CardTitle className="text-2xl">{t('appLocked')}</CardTitle>
           <CardDescription>{t('enterPINToUnlock')}</CardDescription>
         </CardHeader>
-        <CardContent>
-          <div className="space-y-4">
-            <Input
-              type="password"
-              value={pin}
-              onChange={(e) => setPin(e.target.value)}
-              placeholder="PIN"
-              onKeyDown={(e) => e.key === 'Enter' && handleUnlock()}
-              className="text-center text-lg tracking-widest"
-              maxLength={6}
-            />
-            
-            {supportsFaceId && (
-              <div className="mt-4">
-                <BiometricAuth 
-                  onSuccess={() => unlockApp(pin || '')}
-                  title={t('unlockWithBiometrics')}
-                  description={t('useYourFaceOrFingerprint')}
-                />
-              </div>
-            )}
-          </div>
+        <CardContent className="space-y-6">
+          <PinInput
+            value={pin}
+            onChange={handlePinChange}
+            maxLength={4}
+            label={t('enterPIN')}
+            error={error}
+            errorMessage={t('invalidPIN')}
+          />
+          
+          {supportsFaceId && (
+            <div className="pt-4">
+              <BiometricButton
+                onClick={handleFaceId}
+                isLoading={isLoading}
+                type="faceId"
+                disabled={isLoading}
+              />
+            </div>
+          )}
         </CardContent>
         <CardFooter>
           <Button 
             className="w-full" 
             onClick={handleUnlock}
-            disabled={!pin}
+            disabled={!pin || isLoading}
           >
             {t('unlock')}
           </Button>

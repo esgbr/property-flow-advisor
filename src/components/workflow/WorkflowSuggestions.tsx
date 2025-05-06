@@ -43,7 +43,7 @@ const WorkflowSuggestions: React.FC<WorkflowSuggestionsProps> = ({
   const isMobile = useIsMobile();
   const { userMarket } = useMarketFilter();
   
-  // Use the enhanced workflow hook - FIX: Pass the workflowType parameter
+  // Use the enhanced workflow hook - Fixed: Pass the workflowType parameter
   const workflow = useWorkflow(workflowType);
   
   // Get next steps from the workflow - pass currentTool parameter

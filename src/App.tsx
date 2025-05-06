@@ -1,3 +1,4 @@
+
 import React, { lazy, Suspense } from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { ThemeProvider } from '@/components/theme-provider';
@@ -24,6 +25,10 @@ const PortfolioAnalyticsPage = lazy(() => import('@/pages/PortfolioAnalyticsPage
 const MarketExplorerPage = lazy(() => import('@/pages/MarketExplorerPage'));
 const AfaCalculatorPage = lazy(() => import('@/pages/AfaCalculatorPage'));
 const GrunderwerbsteuerPage = lazy(() => import('@/pages/GrunderwerbsteuerPage'));
+const InvestorDashboard = lazy(() => import('@/pages/InvestorDashboard'));
+const NotificationsPage = lazy(() => import('@/pages/NotFound')); // Placeholder until a proper page is created
+const ProfilePage = lazy(() => import('@/pages/UserProfile'));
+const HelpSupportPage = lazy(() => import('@/pages/NotFound')); // Placeholder until a proper page is created
 
 const App: React.FC = () => {
   return (
@@ -38,6 +43,8 @@ const App: React.FC = () => {
                   <Route path="/auth" element={<AuthPage />} />
                   <Route path="/onboarding" element={<OnboardingPage />} />
                   <Route path="/locked" element={<LockedPage />} />
+                  
+                  {/* Main application routes with auth guard */}
                   <Route path="/dashboard" element={
                     <AuthGuard>
                       <Dashboard />
@@ -58,8 +65,12 @@ const App: React.FC = () => {
                       <Calculators />
                     </AuthGuard>
                   } />
+                  
+                  {/* Calculator pages */}
                   <Route path="/calculators/afa" element={<AfaCalculatorPage />} />
                   <Route path="/calculators/grunderwerbsteuer" element={<GrunderwerbsteuerPage />} />
+                  
+                  {/* User account related pages */}
                   <Route path="/settings" element={
                     <AuthGuard>
                       <SettingsPage />
@@ -70,14 +81,44 @@ const App: React.FC = () => {
                       <LanguageSettings />
                     </AuthGuard>
                   } />
+                  <Route path="/security" element={
+                    <AuthGuard>
+                      <SecurityPage />
+                    </AuthGuard>
+                  } />
+                  <Route path="/notifications" element={
+                    <AuthGuard>
+                      <NotificationsPage />
+                    </AuthGuard>
+                  } />
+                  <Route path="/profile" element={
+                    <AuthGuard>
+                      <ProfilePage />
+                    </AuthGuard>
+                  } />
+                  <Route path="/help" element={
+                    <AuthGuard>
+                      <HelpSupportPage />
+                    </AuthGuard>
+                  } />
+                  
+                  {/* Market-specific pages */}
                   <Route path="/deutsche-immobilien" element={<DeutscheImmobilienPage />} />
                   <Route path="/deutsche-immobilien-tools" element={<GermanRealEstateInvestor />} />
+                  <Route path="/investor-dashboard" element={
+                    <AuthGuard>
+                      <InvestorDashboard />
+                    </AuthGuard>
+                  } />
+                  
+                  {/* Admin routes */}
                   <Route path="/admin-tools" element={
                     <AuthGuard requireAdmin={true}>
                       <div>Admin-Tools</div>
                     </AuthGuard>
                   } />
-                  <Route path="/security" element={<SecurityPage />} />
+                  
+                  {/* 404 route */}
                   <Route path="*" element={<div>404 - Seite nicht gefunden</div>} />
                 </Routes>
                 <Toaster />
