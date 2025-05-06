@@ -24,7 +24,10 @@ export type MarketSpecificFeature = FeatureMarketConfig;
 
 /**
  * Enhanced hook for market filtering with improved UI support and better
- * synchronization between local state and user preferences
+ * synchronization between local state and user preferences.
+ * 
+ * Version 2.0 - Adds workflow integration, market transitions and intelligent
+ * feature suggestions based on user market preferences.
  */
 export const useMarketFilter = () => {
   const { preferences, updatePreferences } = useUserPreferences();
@@ -34,13 +37,22 @@ export const useMarketFilter = () => {
   const [userMarket, setUserMarketState] = useState<InvestmentMarket>(
     preferences.investmentMarket || 'global'
   );
+  
+  // Track recent markets for better transitions and recommendations
+  const [recentMarkets, setRecentMarkets] = useState<InvestmentMarket[]>(
+    preferences.recentMarkets || []
+  );
 
   // Synchronize local state with user preferences
   useEffect(() => {
     if (preferences.investmentMarket && preferences.investmentMarket !== userMarket) {
       setUserMarketState(preferences.investmentMarket);
     }
-  }, [preferences.investmentMarket, userMarket]);
+    
+    if (preferences.recentMarkets) {
+      setRecentMarkets(preferences.recentMarkets);
+    }
+  }, [preferences.investmentMarket, preferences.recentMarkets, userMarket]);
 
   // Function to determine if a feature should be shown
   const shouldShowFeature = useCallback((feature: FeatureMarketConfig): boolean => {
@@ -57,11 +69,35 @@ export const useMarketFilter = () => {
   const filterFeaturesByMarket = useCallback(<T extends FeatureMarketConfig>(features: T[]): T[] => {
     return features.filter(shouldShowFeature);
   }, [shouldShowFeature]);
+  
+  // Get related markets based on current selection for better workflow transitions
+  const getRelatedMarkets = useCallback((): InvestmentMarket[] => {
+    if (userMarket === 'germany') {
+      return ['austria', 'switzerland'];
+    } else if (userMarket === 'usa') {
+      return ['canada'];
+    } else if (userMarket === 'austria' || userMarket === 'switzerland') {
+      return ['germany'];
+    } else if (userMarket === 'canada') {
+      return ['usa'];
+    }
+    return [];
+  }, [userMarket]);
 
-  // Set market and update preferences
+  // Set market and update preferences with better UX
   const setUserMarket = useCallback((market: InvestmentMarket) => {
     setUserMarketState(market);
-    updatePreferences({ investmentMarket: market });
+    
+    // Track recent markets (up to 3) for better suggestions
+    const updatedRecentMarkets = [
+      market, 
+      ...recentMarkets.filter(m => m !== market)
+    ].slice(0, 3);
+    
+    updatePreferences({ 
+      investmentMarket: market,
+      recentMarkets: updatedRecentMarkets
+    });
     
     // Show feedback toast for better UX
     toast.success(
@@ -70,7 +106,7 @@ export const useMarketFilter = () => {
         : `Market set to ${getLocalizedMarketName(market, language)}`,
       { duration: 3000 }
     );
-  }, [updatePreferences, language]);
+  }, [updatePreferences, language, recentMarkets]);
 
   // Get display name for current market
   const getMarketDisplayNameFormatted = useCallback((): string => {
@@ -94,7 +130,9 @@ export const useMarketFilter = () => {
     filterFeaturesByMarket,
     getMarketDisplayName: getMarketDisplayNameFormatted,
     getLocalizedMarketName: getLocalizedMarketNameFormatted,
-    getAvailableMarkets
+    getAvailableMarkets,
+    recentMarkets,
+    getRelatedMarkets
   };
 };
 

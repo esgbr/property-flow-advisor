@@ -5,7 +5,7 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Building, Calculator, PieChart, TrendingUp, LineChart, ArrowRight, DollarSign, BarChart3 } from 'lucide-react';
+import { Building, Calculator, PieChart, TrendingUp, LineChart, ArrowRight, DollarSign, BarChart3, Search, Receipt } from 'lucide-react';
 import { useUserPreferences } from '@/contexts/UserPreferencesContext';
 import { useIsMobile } from '@/hooks/use-mobile';
 import PortfolioDashboard from './PortfolioDashboard';
