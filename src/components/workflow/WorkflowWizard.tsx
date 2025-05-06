@@ -24,15 +24,15 @@ const WorkflowWizard: React.FC<WorkflowWizardProps> = ({
   className
 }) => {
   const { language } = useLanguage();
-  const { workflow, goToStep, getWorkflowProgress } = useWorkflow(workflowType);
+  const workflowHook = useWorkflow(workflowType);
   const { getCurrentWorkflowStep, markStepComplete } = useWorkflowState();
   
   // Set initial step
   const [currentStepIndex, setCurrentStepIndex] = useState(0);
-  const currentStep = workflow.steps[currentStepIndex];
+  const currentStep = workflowHook.steps[currentStepIndex];
   
   // Track progress
-  const progress = getWorkflowProgress(currentStep.id);
+  const progress = workflowHook.getWorkflowProgress();
   
   // Navigation
   const handleNext = () => {
@@ -40,7 +40,7 @@ const WorkflowWizard: React.FC<WorkflowWizardProps> = ({
     markStepComplete(workflowType, currentStep.id);
     
     // Check if we're on the last step
-    if (currentStepIndex === workflow.steps.length - 1) {
+    if (currentStepIndex === workflowHook.steps.length - 1) {
       // Workflow completed
       if (onComplete) {
         onComplete();
@@ -59,17 +59,17 @@ const WorkflowWizard: React.FC<WorkflowWizardProps> = ({
   };
   
   const handleGoToStep = (step: string) => {
-    goToStep(step);
+    workflowHook.goToStep(step);
   };
   
-  const isLastStep = currentStepIndex === workflow.steps.length - 1;
+  const isLastStep = currentStepIndex === workflowHook.steps.length - 1;
   
   return (
     <Card className={className}>
       <CardHeader>
-        <CardTitle>{workflow.title[language as keyof typeof workflow.title]}</CardTitle>
+        <CardTitle>{workflowHook.title[language as keyof typeof workflowHook.title]}</CardTitle>
         <CardDescription>
-          {workflow.description[language as keyof typeof workflow.description]}
+          {workflowHook.description[language as keyof typeof workflowHook.description]}
         </CardDescription>
         
         <div className="mt-2">
@@ -115,7 +115,7 @@ const WorkflowWizard: React.FC<WorkflowWizardProps> = ({
           
           {/* Step indicator */}
           <div className="flex justify-center mt-4">
-            {workflow.steps.map((step, index) => (
+            {workflowHook.steps.map((step, index) => (
               <div
                 key={step.id}
                 className={`w-2 h-2 rounded-full mx-1 ${

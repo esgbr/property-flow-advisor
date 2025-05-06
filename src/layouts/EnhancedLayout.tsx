@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Outlet, useLocation } from 'react-router-dom';
 import { ThemeProvider } from '@/components/theme-provider';
@@ -8,7 +7,7 @@ import { A11yProvider } from '@/components/accessibility/A11yProvider';
 import { UserPreferencesProvider } from '@/contexts/UserPreferencesContext';
 import { AppLockProvider } from '@/contexts/AppLockContext';
 import { useIsMobile } from '@/hooks/use-mobile';
-import { EnhancedToaster } from '@/components/ui/enhanced-toaster';
+import EnhancedToaster from '@/components/ui/enhanced-toaster';
 import { ButtonScrollToTop } from '@/components/ui/scroll-to-top';
 import { UserPreferences } from '@/contexts/UserPreferencesContext';
 import { TooltipProvider } from '@/components/ui/tooltip';

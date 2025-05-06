@@ -1,4 +1,3 @@
-
 import { useState, useEffect, useCallback } from 'react';
 import { useUserPreferences, InvestmentMarket } from '@/contexts/UserPreferencesContext';
 import { useLanguage } from '@/contexts/LanguageContext';
@@ -21,6 +20,11 @@ export interface FeatureMarketConfig {
 
 // Market-specific feature type
 export type MarketSpecificFeature = FeatureMarketConfig;
+
+export interface InvestmentMarketOption {
+  id: InvestmentMarket;
+  name: string;
+}
 
 /**
  * Enhanced hook for market filtering with improved UI support and better
@@ -123,6 +127,9 @@ export const useMarketFilter = () => {
     return availableMarkets;
   }, []);
   
+  // Ensure getMarketOptions exists for backward compatibility
+  const getMarketOptions = getAvailableMarkets;
+  
   return {
     userMarket,
     setUserMarket,
@@ -131,6 +138,7 @@ export const useMarketFilter = () => {
     getMarketDisplayName: getMarketDisplayNameFormatted,
     getLocalizedMarketName: getLocalizedMarketNameFormatted,
     getAvailableMarkets,
+    getMarketOptions,
     recentMarkets,
     getRelatedMarkets
   };

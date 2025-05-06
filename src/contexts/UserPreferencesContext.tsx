@@ -67,6 +67,11 @@ export interface UserPreferences {
     widgetOrder?: string[];
   };
   notifications?: UserNotificationPreferences;
+  isAuthenticated?: boolean;
+  interests?: string[];
+  investmentGoals?: string[];
+  preferredPropertyTypes?: string[];
+  visitedInvestorDashboard?: boolean;
 }
 
 // Define OnboardingData interface
@@ -102,7 +107,9 @@ interface UserPreferencesContextType {
   registerUser: (name: string, email: string, password: string) => Promise<boolean>;
   loginUser: (email: string, password: string) => Promise<boolean>;
   logoutUser: () => void;
-  saveOnboardingData: (data: OnboardingData) => void;
+  saveOnboardingData: (data: Partial<OnboardingData>) => void;
+  isFirstVisit: boolean;
+  setIsFirstVisit: (value: boolean) => void;
 }
 
 // Default preferences
@@ -112,6 +119,12 @@ const defaultPreferences: UserPreferences = {
   market: 'global',
   marketFilter: 'global',
   onboardingCompleted: false,
+  isAuthenticated: false,
+  interests: [],
+  investmentGoals: [],
+  preferredPropertyTypes: [],
+  visitedPages: [],
+  visitedInvestorDashboard: false,
   accessibility: {
     highContrast: false,
     largeText: false,
@@ -152,7 +165,9 @@ const UserPreferencesContext = createContext<UserPreferencesContextType>({
   registerUser: async () => false,
   loginUser: async () => false,
   logoutUser: () => {},
-  saveOnboardingData: () => {}
+  saveOnboardingData: () => {},
+  isFirstVisit: true,
+  setIsFirstVisit: () => {}
 });
 
 // Export the hook to use this context
@@ -162,6 +177,7 @@ export const useUserPreferences = () => useContext(UserPreferencesContext);
 export const UserPreferencesProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [preferences, setPreferences] = useLocalStorage<UserPreferences>('userPreferences', defaultPreferences);
   const [isAuthenticated, setIsAuthenticated] = useLocalStorage<boolean>('isAuthenticated', false);
+  const [isFirstVisit, setIsFirstVisit] = useLocalStorage<boolean>('firstVisit', true);
   
   // Function to update preferences
   const updatePreferences = (newPreferences: Partial<UserPreferences>) => {
@@ -227,12 +243,14 @@ export const UserPreferencesProvider: React.FC<{ children: React.ReactNode }> = 
     setIsAuthenticated(false);
   };
   
-  const saveOnboardingData = (data: OnboardingData) => {
+  const saveOnboardingData = (data: Partial<OnboardingData>) => {
     updatePreferences({
       name: data.name,
       experienceLevel: data.experienceLevel,
-      investmentMarket: data.investmentMarket
-      // Add other fields as needed
+      investmentMarket: data.investmentMarket,
+      interests: data.interests,
+      investmentGoals: data.investmentGoals,
+      preferredPropertyTypes: data.preferredPropertyTypes
     });
   };
   
@@ -279,10 +297,13 @@ export const UserPreferencesProvider: React.FC<{ children: React.ReactNode }> = 
         registerUser,
         loginUser,
         logoutUser,
-        saveOnboardingData
+        saveOnboardingData,
+        isFirstVisit,
+        setIsFirstVisit
       }}
     >
       {children}
     </UserPreferencesContext.Provider>
   );
 };
+

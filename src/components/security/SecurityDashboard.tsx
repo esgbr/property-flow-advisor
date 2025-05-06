@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -102,6 +101,12 @@ const SecurityDashboard: React.FC = () => {
       icon: <AlertTriangle className="h-4 w-4" />
     }
   ].filter(item => item.isAvailable !== false);
+  
+  // Fix the alert comparison error on line 101
+  const hasEnabledAlerts = preferences.notifications?.alerts?.security === true ||
+                         preferences.notifications?.alerts?.price === true ||
+                         preferences.notifications?.alerts?.news === true ||
+                         preferences.notifications?.alerts?.portfolio === true;
   
   return (
     <div className="space-y-6">

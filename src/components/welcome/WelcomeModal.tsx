@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState, lazy, Suspense } from 'react';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
 import OnboardingFlow from '@/components/onboarding/OnboardingFlow';
@@ -72,6 +71,16 @@ const WelcomeModal = () => {
     navigate('/dashboard');
   };
 
+  // When setting initial data, ensure investmentMarket is never an empty string
+  const initialData = {
+    name: preferences.name || '',
+    experienceLevel: preferences.experienceLevel || 'beginner',
+    interests: preferences.interests || [],
+    investmentGoals: preferences.investmentGoals || [],
+    preferredPropertyTypes: preferences.preferredPropertyTypes || [],
+    investmentMarket: preferences.investmentMarket || 'global' // Default to global instead of empty string
+  };
+
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogContent 
@@ -89,14 +98,7 @@ const WelcomeModal = () => {
           <OnboardingFlow 
             onComplete={handleComplete} 
             onSkip={handleSkip}
-            initialData={{
-              name: preferences.name || '',
-              experienceLevel: preferences.experienceLevel || 'beginner',
-              interests: preferences.interests || [],
-              investmentGoals: preferences.investmentGoals || [],
-              preferredPropertyTypes: preferences.preferredPropertyTypes || [],
-              investmentMarket: preferences.investmentMarket || ''
-            }}
+            initialData={initialData}
           />
         </Suspense>
       </DialogContent>

@@ -1,249 +1,221 @@
-import React, { useState, useEffect } from 'react';
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
-import { Button } from '@/components/ui/button';
+// Fix password strength typing issues
+import React from 'react';
+import { useState } from 'react';
 import { Progress } from '@/components/ui/progress';
-import { useLanguage } from '@/contexts/LanguageContext';
-import { checkPasswordStrength, PasswordStrength } from '@/utils/securityUtils';
-import { Label } from '@/components/ui/label';
 
-interface SecurityDashboardProps {
-  className?: string;
-}
-
-interface PasswordStrengthState {
+export interface PasswordStrength {
   score: number;
   feedback: string;
   suggestions: string[];
 }
 
-/**
- * Comprehensive security management component
- * Allows users to view, manage, and enhance their account security
- */
-const SecurityDashboard: React.FC<SecurityDashboardProps> = ({ className }) => {
-  const { language } = useLanguage();
-  const [password, setPassword] = useState('');
-  const [passwordStrength, setPasswordStrength] = useState<PasswordStrengthState>({
+// Mock password strength checker function
+export const checkPasswordStrength = (password: string): PasswordStrength => {
+  // In a real app, this would use a library like zxcvbn
+  const length = password.length;
+  const hasUppercase = /[A-Z]/.test(password);
+  const hasLowercase = /[a-z]/.test(password);
+  const hasNumber = /[0-9]/.test(password);
+  const hasSpecial = /[^A-Za-z0-9]/.test(password);
+  
+  // Calculate score (0-4)
+  let score = 0;
+  if (length > 8) score += 1;
+  if (hasUppercase) score += 1;
+  if (hasLowercase) score += 1;
+  if (hasNumber) score += 1;
+  if (hasSpecial) score += 1;
+  
+  // Get feedback
+  let feedback = '';
+  const suggestions: string[] = [];
+  
+  if (score < 2) {
+    feedback = 'Weak password';
+    if (!hasUppercase) suggestions.push('Add uppercase letters');
+    if (!hasLowercase) suggestions.push('Add lowercase letters');
+    if (!hasNumber) suggestions.push('Add numbers');
+    if (!hasSpecial) suggestions.push('Add special characters');
+    if (length < 8) suggestions.push('Make it longer');
+  } else if (score < 4) {
+    feedback = 'Moderate password';
+    if (!hasUppercase) suggestions.push('Add uppercase letters for stronger password');
+    if (!hasSpecial) suggestions.push('Add special characters for stronger password');
+  } else {
+    feedback = 'Strong password';
+  }
+  
+  return { score, feedback, suggestions };
+};
+
+export const PasswordStrengthMeter = ({ password }: { password: string }) => {
+  const [strength, setStrength] = useState<PasswordStrength>({
     score: 0,
     feedback: '',
-    suggestions: [],
+    suggestions: []
   });
-  const [email, setEmail] = useState('');
-  const [isEmailVerified, setIsEmailVerified] = useState(false);
-  const [isTwoFactorEnabled, setIsTwoFactorEnabled] = useState(false);
-  const [securitySettings, setSecuritySettings] = useState({
-    security: true,
-    price: true,
-    news: true,
-    portfolio: true,
-  });
-
-  useEffect(() => {
-    const strength = checkPasswordStrength(password);
-    setPasswordStrength({
-      score: strength.score,
-      feedback: strength.feedback,
-      suggestions: strength.suggestions,
-    });
+  
+  React.useEffect(() => {
+    if (password) {
+      const result = checkPasswordStrength(password);
+      setStrength({
+        score: result.score,
+        feedback: result.feedback,
+        suggestions: result.suggestions
+      });
+    } else {
+      setStrength({
+        score: 0,
+        feedback: '',
+        suggestions: []
+      });
+    }
   }, [password]);
-
-  const handlePasswordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setPassword(e.target.value);
+  
+  const getStrengthColor = () => {
+    switch (strength.score) {
+      case 0:
+      case 1:
+        return 'bg-red-500';
+      case 2:
+      case 3:
+        return 'bg-yellow-500';
+      case 4:
+      case 5:
+        return 'bg-green-500';
+      default:
+        return 'bg-gray-200';
+    }
   };
-
-  const handleEmailChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setEmail(e.target.value);
+  
+  const getStrengthPercent = () => {
+    return (strength.score / 5) * 100;
   };
-
-  const handleVerifyEmail = () => {
-    // Simulate email verification process
-    setIsEmailVerified(true);
-  };
-
-  const handleEnableTwoFactor = () => {
-    // Simulate enabling two-factor authentication
-    setIsTwoFactorEnabled(true);
-  };
-
-  const handleSecuritySettingsChange = (setting: string, value: boolean) => {
-    setSecuritySettings(prevSettings => ({
-      ...prevSettings,
-      [setting]: value,
-    }));
-  };
-
+  
   return (
-    <div className={className}>
-      <Card>
-        <CardHeader>
-          <CardTitle>
-            {language === 'de' ? 'Passwort ändern' : 'Change Password'}
-          </CardTitle>
-          <CardDescription>
-            {language === 'de'
-              ? 'Aktualisieren Sie Ihr Passwort, um die Sicherheit zu erhöhen'
-              : 'Update your password to enhance security'}
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="grid gap-4">
-          <div className="grid gap-2">
-            <Label htmlFor="password">
-              {language === 'de' ? 'Neues Passwort' : 'New Password'}
-            </Label>
-            <Input
-              type="password"
-              id="password"
-              value={password}
-              onChange={handlePasswordChange}
-            />
-            <Progress value={passwordStrength.score * 20} max={100} className="h-2" />
-            <p className="text-sm text-muted-foreground">
-              {passwordStrength.feedback}
-            </p>
-            {passwordStrength.suggestions.length > 0 && (
-              <ul className="list-disc list-inside text-sm text-muted-foreground">
-                {passwordStrength.suggestions.map((suggestion, index) => (
-                  <li key={index}>{suggestion}</li>
-                ))}
-              </ul>
-            )}
-          </div>
-          <Button>
-            {language === 'de' ? 'Passwort aktualisieren' : 'Update Password'}
-          </Button>
-        </CardContent>
-      </Card>
-
-      <Card className="mt-6">
-        <CardHeader>
-          <CardTitle>
-            {language === 'de' ? 'E-Mail-Adresse verwalten' : 'Manage Email Address'}
-          </CardTitle>
-          <CardDescription>
-            {language === 'de'
-              ? 'Überprüfen und aktualisieren Sie Ihre E-Mail-Adresse'
-              : 'Verify and update your email address'}
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="grid gap-4">
-          <div className="grid gap-2">
-            <Label htmlFor="email">
-              {language === 'de' ? 'E-Mail-Adresse' : 'Email Address'}
-            </Label>
-            <Input
-              type="email"
-              id="email"
-              value={email}
-              onChange={handleEmailChange}
-            />
-            {!isEmailVerified && (
-              <Button variant="secondary" onClick={handleVerifyEmail}>
-                {language === 'de' ? 'E-Mail verifizieren' : 'Verify Email'}
-              </Button>
-            )}
-            {isEmailVerified && (
-              <p className="text-sm text-green-500">
-                {language === 'de' ? 'E-Mail verifiziert' : 'Email Verified'}
-              </p>
-            )}
-          </div>
-          <Button>
-            {language === 'de' ? 'E-Mail aktualisieren' : 'Update Email'}
-          </Button>
-        </CardContent>
-      </Card>
-
-      <Card className="mt-6">
-        <CardHeader>
-          <CardTitle>
-            {language === 'de' ? 'Zwei-Faktor-Authentifizierung' : 'Two-Factor Authentication'}
-          </CardTitle>
-          <CardDescription>
-            {language === 'de'
-              ? 'Fügen Sie eine zusätzliche Sicherheitsebene hinzu'
-              : 'Add an extra layer of security'}
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="grid gap-4">
-          <p>
-            {language === 'de'
-              ? 'Aktivieren Sie die Zwei-Faktor-Authentifizierung für zusätzlichen Schutz.'
-              : 'Enable two-factor authentication for added protection.'}
-          </p>
-          {!isTwoFactorEnabled && (
-            <Button variant="secondary" onClick={handleEnableTwoFactor}>
-              {language === 'de' ? 'Aktivieren' : 'Enable'}
-            </Button>
-          )}
-          {isTwoFactorEnabled && (
-            <p className="text-sm text-green-500">
-              {language === 'de' ? 'Zwei-Faktor-Authentifizierung aktiviert' : 'Two-Factor Authentication Enabled'}
-            </p>
-          )}
-        </CardContent>
-      </Card>
-
-      <Card className="mt-6">
-        <CardHeader>
-          <CardTitle>
-            {language === 'de' ? 'Benachrichtigungseinstellungen' : 'Notification Settings'}
-          </CardTitle>
-          <CardDescription>
-            {language === 'de'
-              ? 'Passen Sie Ihre Benachrichtigungseinstellungen an'
-              : 'Customize your notification preferences'}
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="grid gap-4">
-          <div className="flex items-center justify-between">
-            <Label htmlFor="security">
-              {language === 'de' ? 'Sicherheitsbenachrichtigungen' : 'Security Notifications'}
-            </Label>
-            <input
-              type="checkbox"
-              id="security"
-              checked={securitySettings.security || false}
-              onChange={(e) => handleSecuritySettingsChange('security', e.target.checked)}
-            />
-          </div>
-          <div className="flex items-center justify-between">
-            <Label htmlFor="price">
-              {language === 'de' ? 'Preisbenachrichtigungen' : 'Price Notifications'}
-            </Label>
-            <input
-              type="checkbox"
-              id="price"
-              checked={securitySettings.price || false}
-              onChange={(e) => handleSecuritySettingsChange('price', e.target.checked)}
-            />
-          </div>
-          <div className="flex items-center justify-between">
-            <Label htmlFor="news">
-              {language === 'de' ? 'Nachrichtenbenachrichtigungen' : 'News Notifications'}
-            </Label>
-            <input
-              type="checkbox"
-              id="news"
-              checked={securitySettings.news || false}
-              onChange={(e) => handleSecuritySettingsChange('news', e.target.checked)}
-            />
-          </div>
-          <div className="flex items-center justify-between">
-            <Label htmlFor="portfolio">
-              {language === 'de' ? 'Portfoliobenachrichtigungen' : 'Portfolio Notifications'}
-            </Label>
-            <input
-              type="checkbox"
-              id="portfolio"
-              checked={securitySettings.portfolio || false}
-              onChange={(e) => handleSecuritySettingsChange('portfolio', e.target.checked)}
-            />
-          </div>
-        </CardContent>
-      </Card>
+    <div className="space-y-2">
+      <div className="flex justify-between text-sm">
+        <span>{strength.feedback}</span>
+        <span>{strength.score}/5</span>
+      </div>
+      <Progress value={getStrengthPercent()} className="h-2" />
+      {strength.suggestions.length > 0 && (
+        <div className="text-sm text-muted-foreground">
+          <ul className="list-disc pl-5">
+            {strength.suggestions.map((suggestion, index) => (
+              <li key={index}>{suggestion}</li>
+            ))}
+          </ul>
+        </div>
+      )}
     </div>
   );
 };
 
-export default SecurityDashboard;
+// Security utility functions for the application
+export const generateSecureToken = (length: number = 32): string => {
+  const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*()';
+  let result = '';
+  const charactersLength = characters.length;
+  
+  // Create a Uint8Array with the required number of random values
+  const randomValues = new Uint8Array(length);
+  window.crypto.getRandomValues(randomValues);
+  
+  // Use the random values to select characters
+  for (let i = 0; i < length; i++) {
+    result += characters.charAt(randomValues[i] % charactersLength);
+  }
+  
+  return result;
+};
+
+export const hashData = async (data: string): Promise<string> => {
+  // In a real app, this would use a proper hashing algorithm
+  // This is a simplified example using the Web Crypto API
+  const encoder = new TextEncoder();
+  const dataBuffer = encoder.encode(data);
+  
+  const hashBuffer = await window.crypto.subtle.digest('SHA-256', dataBuffer);
+  const hashArray = Array.from(new Uint8Array(hashBuffer));
+  const hashHex = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+  
+  return hashHex;
+};
+
+export const validateEmail = (email: string): boolean => {
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  return emailRegex.test(email);
+};
+
+export const validatePassword = (password: string): { isValid: boolean; message: string } => {
+  if (password.length < 8) {
+    return { isValid: false, message: 'Password must be at least 8 characters long' };
+  }
+  
+  if (!/[A-Z]/.test(password)) {
+    return { isValid: false, message: 'Password must contain at least one uppercase letter' };
+  }
+  
+  if (!/[a-z]/.test(password)) {
+    return { isValid: false, message: 'Password must contain at least one lowercase letter' };
+  }
+  
+  if (!/[0-9]/.test(password)) {
+    return { isValid: false, message: 'Password must contain at least one number' };
+  }
+  
+  if (!/[^A-Za-z0-9]/.test(password)) {
+    return { isValid: false, message: 'Password must contain at least one special character' };
+  }
+  
+  return { isValid: true, message: 'Password is valid' };
+};
+
+export const detectSecurityRisks = (userData: any): string[] => {
+  const risks: string[] = [];
+  
+  // Check for common security risks
+  if (!userData.emailVerified) {
+    risks.push('Email not verified');
+  }
+  
+  if (!userData.twoFactorEnabled) {
+    risks.push('Two-factor authentication not enabled');
+  }
+  
+  if (userData.lastPasswordChange) {
+    const lastChange = new Date(userData.lastPasswordChange);
+    const now = new Date();
+    const daysSinceChange = Math.floor((now.getTime() - lastChange.getTime()) / (1000 * 60 * 60 * 24));
+    
+    if (daysSinceChange > 90) {
+      risks.push('Password not changed in over 90 days');
+    }
+  }
+  
+  return risks;
+};
+
+export const formatSecurityScore = (score: number): string => {
+  if (score >= 90) return 'Excellent';
+  if (score >= 70) return 'Good';
+  if (score >= 50) return 'Fair';
+  return 'Poor';
+};
+
+export const calculateSecurityScore = (userData: any): number => {
+  let score = 100;
+  const risks = detectSecurityRisks(userData);
+  
+  // Deduct points for each security risk
+  score -= risks.length * 15;
+  
+  // Bonus points for security measures
+  if (userData.twoFactorEnabled) score += 10;
+  if (userData.strongPassword) score += 10;
+  if (userData.recentLogin) score += 5;
+  
+  // Ensure score is between 0 and 100
+  return Math.max(0, Math.min(100, score));
+};

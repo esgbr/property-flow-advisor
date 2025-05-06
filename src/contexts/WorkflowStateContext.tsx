@@ -1,4 +1,3 @@
-
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { useUserPreferences } from './UserPreferencesContext';
 
@@ -34,17 +33,15 @@ export const WorkflowStateProvider: React.FC<{ children: React.ReactNode }> = ({
   
   // Load workflow state from localStorage on mount
   useEffect(() => {
-    if (preferences.isAuthenticated) {
-      try {
-        const savedWorkflows = localStorage.getItem('workflowState');
-        if (savedWorkflows) {
-          setWorkflows(JSON.parse(savedWorkflows));
-        }
-      } catch (error) {
-        console.error('Error loading workflow state:', error);
+    try {
+      const savedWorkflows = localStorage.getItem('workflowState');
+      if (savedWorkflows) {
+        setWorkflows(JSON.parse(savedWorkflows));
       }
+    } catch (error) {
+      console.error('Error loading workflow state:', error);
     }
-  }, [preferences.isAuthenticated]);
+  }, []);
   
   // Save workflow state to localStorage when it changes
   useEffect(() => {

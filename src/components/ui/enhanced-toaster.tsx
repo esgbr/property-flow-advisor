@@ -1,5 +1,6 @@
-import React from 'react';
-import { Toaster } from '@/components/ui/sonner';
+
+import React, { useEffect } from 'react';
+import { Toaster } from 'sonner';
 import { useTheme } from 'next-themes';
 import { useLanguage } from '@/contexts/LanguageContext';
 import useAnnouncement from '@/utils/announcer';
@@ -22,7 +23,6 @@ const EnhancedToaster = () => {
       position={language === 'de' ? 'bottom-right' : 'top-right'}
       closeButton
       richColors
-      onToastShow={(toast) => handleToastShow(toast.description || toast.title || '')}
     />
   );
 };

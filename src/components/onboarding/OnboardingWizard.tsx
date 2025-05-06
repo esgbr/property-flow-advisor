@@ -26,7 +26,7 @@ const OnboardingWizard: React.FC = () => {
   const { setLanguage } = useLanguage();
   const { largeText } = useAccessibility();
   const [currentStep, setCurrentStep] = useState(0);
-  const [onboardingData, setOnboardingData] = useState<Partial<OnboardingData>>({
+  const [onboardingData, setOnboardingData] = useState<OnboardingData>({
     name: '',
     experienceLevel: 'beginner',
     investmentMarket: 'global',
@@ -38,11 +38,7 @@ const OnboardingWizard: React.FC = () => {
   const handleNext = () => {
     if (currentStep === steps.length - 1) {
       // Final step - complete onboarding
-      saveOnboardingData?.(onboardingData);
-      toast.success("Welcome to PropertyFlow!", {
-        description: "Your personalized dashboard is ready"
-      });
-      navigate('/dashboard');
+      completeOnboarding();
     } else {
       setCurrentStep(prev => prev + 1);
     }
@@ -60,6 +56,14 @@ const OnboardingWizard: React.FC = () => {
     setLanguage(lang as SupportedLanguage);
     // Also store in preferences
     updatePreferences({ language: lang });
+  };
+  
+  const completeOnboarding = () => {
+    if (saveOnboardingData) {
+      // Now it's safe to call with our non-partial data
+      saveOnboardingData(onboardingData);
+    }
+    navigate('/dashboard');
   };
   
   const steps: OnboardingStep[] = [

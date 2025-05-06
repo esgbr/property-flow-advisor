@@ -1,107 +1,100 @@
-
 import React from 'react';
-import { Card, CardContent } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { CheckCircle, Circle, ArrowRight } from 'lucide-react';
-import { WorkflowStepWithStatus, WorkflowType } from '@/hooks/use-workflow';
+import { WorkflowType } from '@/hooks/use-workflow';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { CheckCircle, Circle } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { useWorkflow } from '@/hooks/use-workflow';
+import { useNavigate } from 'react-router-dom';
 
-interface WorkflowStepsProps {
-  steps: WorkflowStepWithStatus[];
-  activeStep: string | null;
-  onSelectStep: (stepId: string) => void;
+export interface WorkflowStepsProps {
   workflowType: WorkflowType;
+  currentStep?: string;
+  showCompleted?: boolean;
+  variant?: 'default' | 'compact';
   className?: string;
 }
 
 const WorkflowSteps: React.FC<WorkflowStepsProps> = ({
-  steps,
-  activeStep,
-  onSelectStep,
   workflowType,
+  currentStep,
+  showCompleted = true,
+  variant = 'default',
   className
 }) => {
   const { language } = useLanguage();
-  const currentLang = language as 'en' | 'de';
-
+  const navigate = useNavigate();
+  const { getStepsWithStatus, goToStep } = useWorkflow(workflowType);
+  
+  const steps = getStepsWithStatus();
+  
+  // Filter steps if needed
+  const displaySteps = showCompleted 
+    ? steps 
+    : steps.filter(step => !step.isComplete || step.id === currentStep);
+  
+  const handleStepClick = (path: string) => {
+    navigate(path);
+  };
+  
   return (
     <Card className={cn("overflow-hidden", className)}>
-      <CardContent className="p-0">
-        <div className="flex flex-col divide-y">
-          {steps.map((step, index) => {
-            // Check if step is blocked by dependencies
-            const isBlocked = step.dependencies?.some(
-              depId => !steps.find(s => s.id === depId)?.isComplete
-            );
-
-            return (
-              <div
-                key={step.id}
-                className={cn(
-                  "flex items-center p-4 transition-colors",
-                  step.isActive && "bg-primary/10",
-                  isBlocked && "opacity-60"
+      <CardHeader className={cn(
+        "bg-muted/30",
+        variant === 'compact' ? "py-2 px-3" : "py-4"
+      )}>
+        <CardTitle className={cn(
+          variant === 'compact' ? "text-base" : "text-lg"
+        )}>
+          {language === 'de' ? 'Workflow-Schritte' : 'Workflow Steps'}
+        </CardTitle>
+      </CardHeader>
+      <CardContent className={cn(
+        variant === 'compact' ? "p-3" : "p-4"
+      )}>
+        <ol className="space-y-2">
+          {displaySteps.map((step) => (
+            <li 
+              key={step.id}
+              className={cn(
+                "flex items-center p-2 rounded-md",
+                step.isActive ? "bg-primary/10" : "hover:bg-muted/50",
+                step.isComplete ? "text-muted-foreground" : "",
+                "cursor-pointer transition-colors"
+              )}
+              onClick={() => handleStepClick(step.path)}
+            >
+              <div className="mr-3">
+                {step.isComplete ? (
+                  <CheckCircle className="h-5 w-5 text-primary" />
+                ) : (
+                  <Circle className={cn(
+                    "h-5 w-5",
+                    step.isActive ? "text-primary" : "text-muted-foreground"
+                  )} />
                 )}
-              >
-                <div className="flex-shrink-0 mr-4">
-                  {step.isComplete ? (
-                    <div className="h-8 w-8 rounded-full flex items-center justify-center bg-primary text-primary-foreground">
-                      <CheckCircle className="h-5 w-5" />
-                    </div>
-                  ) : (
-                    <div className={cn(
-                      "h-8 w-8 rounded-full flex items-center justify-center border-2",
-                      step.isActive ? "border-primary text-primary" : "border-muted"
-                    )}>
-                      <span className="text-sm font-medium">{index + 1}</span>
-                    </div>
-                  )}
+              </div>
+              <div className="flex-grow">
+                <div className={cn(
+                  "font-medium",
+                  step.isActive ? "text-primary" : ""
+                )}>
+                  {step.label[language as keyof typeof step.label]}
                 </div>
-
-                <div className="flex-grow">
-                  <h3 className="text-sm font-medium">
-                    {step.label[currentLang] || step.label.en}
-                  </h3>
-                  {step.description && (
-                    <p className="text-xs text-muted-foreground mt-1">
-                      {step.description[currentLang] || step.description.en}
-                    </p>
-                  )}
-                </div>
-
-                {step.isComplete && !step.isActive && (
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="ml-2"
-                    onClick={() => onSelectStep(step.id)}
-                  >
-                    <ArrowRight className="h-4 w-4" />
-                    <span className="sr-only">View step</span>
-                  </Button>
-                )}
-
-                {!step.isComplete && !step.isActive && !isBlocked && (
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="ml-2 text-xs"
-                    onClick={() => onSelectStep(step.id)}
-                  >
-                    Start
-                  </Button>
-                )}
-
-                {isBlocked && (
-                  <div className="ml-2 text-xs text-muted-foreground px-2 py-1 bg-muted/50 rounded">
-                    Locked
+                {step.description && variant !== 'compact' && (
+                  <div className="text-sm text-muted-foreground">
+                    {step.description[language as keyof typeof step.description]}
                   </div>
                 )}
               </div>
-            );
-          })}
-        </div>
+              {step.progress !== undefined && (
+                <div className="ml-2 text-xs font-medium">
+                  {step.progress}%
+                </div>
+              )}
+            </li>
+          ))}
+        </ol>
       </CardContent>
     </Card>
   );
