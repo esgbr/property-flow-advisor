@@ -42,7 +42,7 @@ export const workflowDefinitions: Record<WorkflowType, WorkflowDefinition> = {
           de: 'Berechnung der Grunderwerbsteuer beim Immobilienkauf', 
           en: 'Calculate transfer tax for property purchases' 
         },
-        icon: <Euro className="h-5 w-5 text-primary" />,
+        icon: React.createElement(Euro, { className: "h-5 w-5 text-primary" }),
         estimatedTime: 5
       },
       {
@@ -53,7 +53,7 @@ export const workflowDefinitions: Record<WorkflowType, WorkflowDefinition> = {
           de: 'Berechnung der steuerlichen Abschreibung', 
           en: 'Calculate tax depreciation for properties' 
         },
-        icon: <Calculator className="h-5 w-5 text-primary" />,
+        icon: React.createElement(Calculator, { className: "h-5 w-5 text-primary" }),
         requiredSteps: ['grunderwerbsteuer'],
         estimatedTime: 10
       },
@@ -65,7 +65,7 @@ export const workflowDefinitions: Record<WorkflowType, WorkflowDefinition> = {
           de: 'Berechnen der potentiellen Spekulationssteuer beim Verkauf',
           en: 'Calculate potential speculation tax when selling property'
         },
-        icon: <Euro className="h-5 w-5 text-primary" />,
+        icon: React.createElement(Euro, { className: "h-5 w-5 text-primary" }),
         requiredSteps: ['afa'],
         estimatedTime: 8
       },
@@ -77,7 +77,7 @@ export const workflowDefinitions: Record<WorkflowType, WorkflowDefinition> = {
           de: 'Überblick über alle steuerlichen Auswirkungen',
           en: 'Overview of all tax implications'
         },
-        icon: <FileText className="h-5 w-5 text-primary" />,
+        icon: React.createElement(FileText, { className: "h-5 w-5 text-primary" }),
         requiredSteps: ['spekulationssteuer'],
         estimatedTime: 3
       }
@@ -99,7 +99,7 @@ export const workflowDefinitions: Record<WorkflowType, WorkflowDefinition> = {
           de: 'Berechnen Sie die potenzielle Rendite Ihrer Investition',
           en: 'Calculate the potential yield of your investment'
         },
-        icon: <Calculator className="h-5 w-5 text-primary" />,
+        icon: React.createElement(Calculator, { className: "h-5 w-5 text-primary" }),
         estimatedTime: 8
       },
       {
@@ -110,7 +110,7 @@ export const workflowDefinitions: Record<WorkflowType, WorkflowDefinition> = {
           de: 'Analyse des Immobilienmarkts', 
           en: 'Analyze the real estate market' 
         },
-        icon: <Map className="h-5 w-5 text-primary" />,
+        icon: React.createElement(Map, { className: "h-5 w-5 text-primary" }),
         requiredSteps: ['rendite'],
         estimatedTime: 10
       },
@@ -122,7 +122,7 @@ export const workflowDefinitions: Record<WorkflowType, WorkflowDefinition> = {
           de: 'Optimieren Sie Ihr Immobilienportfolio',
           en: 'Optimize your real estate portfolio'
         },
-        icon: <Building className="h-5 w-5 text-primary" />,
+        icon: React.createElement(Building, { className: "h-5 w-5 text-primary" }),
         requiredSteps: ['marktanalyse'],
         estimatedTime: 12
       },
@@ -134,7 +134,7 @@ export const workflowDefinitions: Record<WorkflowType, WorkflowDefinition> = {
           de: 'Erstellen Sie einen umfassenden Investitionsbericht',
           en: 'Generate a comprehensive investment report'
         },
-        icon: <FileText className="h-5 w-5 text-primary" />,
+        icon: React.createElement(FileText, { className: "h-5 w-5 text-primary" }),
         requiredSteps: ['portfolio'],
         estimatedTime: 5
       }
@@ -156,7 +156,7 @@ export const workflowDefinitions: Record<WorkflowType, WorkflowDefinition> = {
           de: 'Berechnung der Finanzierungsoptionen', 
           en: 'Calculate financing options' 
         },
-        icon: <Calculator className="h-5 w-5 text-primary" />,
+        icon: React.createElement(Calculator, { className: "h-5 w-5 text-primary" }),
         estimatedTime: 10
       },
       {
@@ -167,7 +167,7 @@ export const workflowDefinitions: Record<WorkflowType, WorkflowDefinition> = {
           de: 'Vergleichen Sie verschiedene Finanzierungsangebote', 
           en: 'Compare different financing offers' 
         },
-        icon: <Database className="h-5 w-5 text-primary" />,
+        icon: React.createElement(Database, { className: "h-5 w-5 text-primary" }),
         requiredSteps: ['calculator'],
         estimatedTime: 15
       },
@@ -179,7 +179,7 @@ export const workflowDefinitions: Record<WorkflowType, WorkflowDefinition> = {
           de: 'Erstellen Sie einen detaillierten Tilgungsplan',
           en: 'Create a detailed repayment plan'
         },
-        icon: <PiggyBank className="h-5 w-5 text-primary" />,
+        icon: React.createElement(PiggyBank, { className: "h-5 w-5 text-primary" }),
         requiredSteps: ['offers'],
         estimatedTime: 12
       }
@@ -201,7 +201,7 @@ export const workflowDefinitions: Record<WorkflowType, WorkflowDefinition> = {
           de: 'Erfassen und dokumentieren Sie Ihre Immobilien',
           en: 'Register and document your properties'
         },
-        icon: <Building className="h-5 w-5 text-primary" />,
+        icon: React.createElement(Building, { className: "h-5 w-5 text-primary" }),
         estimatedTime: 15
       },
       {
@@ -212,7 +212,7 @@ export const workflowDefinitions: Record<WorkflowType, WorkflowDefinition> = {
           de: 'Verwalten Sie Ihre Mietobjekte und Mieter',
           en: 'Manage your rental properties and tenants'
         },
-        icon: <Database className="h-5 w-5 text-primary" />,
+        icon: React.createElement(Database, { className: "h-5 w-5 text-primary" }),
         requiredSteps: ['objekterfassung'],
         estimatedTime: 12
       },
@@ -224,7 +224,7 @@ export const workflowDefinitions: Record<WorkflowType, WorkflowDefinition> = {
           de: 'Berechnen und verwalten Sie Nebenkosten',
           en: 'Calculate and manage additional costs'
         },
-        icon: <Calculator className="h-5 w-5 text-primary" />,
+        icon: React.createElement(Calculator, { className: "h-5 w-5 text-primary" }),
         requiredSteps: ['mietverwaltung'],
         estimatedTime: 10
       }

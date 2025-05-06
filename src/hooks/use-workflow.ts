@@ -2,12 +2,11 @@
 import { useCallback, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useWorkflowState } from '@/contexts/WorkflowStateContext';
-import { workflowDefinitions } from '@/data/workflow-definitions';
+import { workflowDefinitions, WorkflowType } from '@/data/workflow-definitions';
 
-// Export WorkflowType from the workflow definitions
-export type { WorkflowType } from '@/data/workflow-definitions';
+export { WorkflowType } from '@/data/workflow-definitions';
 
-export const useWorkflow = (workflowType: import('@/data/workflow-definitions').WorkflowType) => {
+export const useWorkflow = (workflowType: WorkflowType) => {
   const { getCurrentWorkflowStep, getCompletedSteps, markStepComplete, setCurrentStep } = useWorkflowState();
   const navigate = useNavigate();
   
