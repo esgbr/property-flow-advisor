@@ -1,24 +1,23 @@
 
-import { InvestmentMarket } from '@/contexts/UserPreferencesContext';
+import { InvestmentMarket, InvestmentMarketOption } from '@/contexts/UserPreferencesContext';
 
 // Update this type to include 'other'
-export type ExtendedInvestmentMarket = InvestmentMarket | 'other' | '';
+export type ExtendedInvestmentMarket = InvestmentMarket | 'other';
 
 // Central market data for consistent usage across the app
-export const availableMarkets = [
+export const availableMarkets: InvestmentMarketOption[] = [
   { id: 'germany' as InvestmentMarket, name: 'Germany (Deutschland)' },
   { id: 'austria' as InvestmentMarket, name: 'Austria (Österreich)' },
   { id: 'switzerland' as InvestmentMarket, name: 'Switzerland (Schweiz)' },
   { id: 'france' as InvestmentMarket, name: 'France (France)' },
   { id: 'usa' as InvestmentMarket, name: 'United States' },
   { id: 'canada' as InvestmentMarket, name: 'Canada' },
-  { id: 'global' as InvestmentMarket, name: 'Global' },
-  { id: 'other' as ExtendedInvestmentMarket, name: 'Other Markets' }
+  { id: 'global' as InvestmentMarket, name: 'Global' }
 ];
 
 // Helper function to get display name for a market
 export const getMarketDisplayName = (market: InvestmentMarket): string => {
-  const marketDisplayNames: Record<ExtendedInvestmentMarket, string> = {
+  const marketDisplayNames: Record<string, string> = {
     germany: 'German',
     austria: 'Austrian',
     switzerland: 'Swiss',
@@ -26,11 +25,10 @@ export const getMarketDisplayName = (market: InvestmentMarket): string => {
     usa: 'US',
     canada: 'Canadian',
     global: 'Global',
-    other: 'International',
     '': 'Global'
   };
   
-  return marketDisplayNames[market as ExtendedInvestmentMarket] || 'International';
+  return marketDisplayNames[market] || 'International';
 };
 
 // Get market by ID with proper fallback
@@ -41,7 +39,7 @@ export const getMarketById = (id: InvestmentMarket) => {
 
 // Get localized market name
 export const getLocalizedMarketName = (marketId: InvestmentMarket, language: string): string => {
-  const localizedNames: Record<string, Record<ExtendedInvestmentMarket, string>> = {
+  const localizedNames: Record<string, Record<string, string>> = {
     'de': {
       germany: 'Deutschland',
       austria: 'Österreich',
@@ -50,7 +48,6 @@ export const getLocalizedMarketName = (marketId: InvestmentMarket, language: str
       usa: 'die USA',
       canada: 'Kanada',
       global: 'Global',
-      other: 'Andere Märkte',
       '': 'Global'
     },
     'en': {
@@ -61,11 +58,10 @@ export const getLocalizedMarketName = (marketId: InvestmentMarket, language: str
       usa: 'the USA',
       canada: 'Canada',
       global: 'Global',
-      other: 'Other Markets',
       '': 'Global'
     }
   };
   
   const langKey = language in localizedNames ? language : 'en';
-  return localizedNames[langKey][marketId as ExtendedInvestmentMarket] || marketId;
+  return localizedNames[langKey][marketId] || marketId;
 };

@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
@@ -20,7 +21,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog"
-import { ReloadIcon } from 'lucide-react';
+import { Loader2 } from 'lucide-react';
 
 const SecurityDashboard: React.FC = () => {
   const { preferences, updatePreferences } = useUserPreferences();
@@ -131,7 +132,7 @@ const SecurityDashboard: React.FC = () => {
             <Label htmlFor="security-notifications">{t('securityNotifications')}</Label>
             <Switch
               id="security-notifications"
-              checked={preferences.notifications && preferences.notifications.security ? true : false}
+              checked={preferences.notifications?.security || false}
               onCheckedChange={(checked) => handleToggleNotification('security', checked)}
             />
           </div>
@@ -140,7 +141,7 @@ const SecurityDashboard: React.FC = () => {
             <Label htmlFor="price-notifications">{t('priceNotifications')}</Label>
             <Switch
               id="price-notifications"
-              checked={preferences.notifications && preferences.notifications.price ? true : false}
+              checked={preferences.notifications?.price || false}
               onCheckedChange={(checked) => handleToggleNotification('price', checked)}
             />
           </div>
@@ -149,7 +150,7 @@ const SecurityDashboard: React.FC = () => {
             <Label htmlFor="news-notifications">{t('newsNotifications')}</Label>
             <Switch
               id="news-notifications"
-              checked={preferences.notifications && preferences.notifications.news ? true : false}
+              checked={preferences.notifications?.news || false}
               onCheckedChange={(checked) => handleToggleNotification('news', checked)}
             />
           </div>
@@ -158,7 +159,7 @@ const SecurityDashboard: React.FC = () => {
             <Label htmlFor="portfolio-notifications">{t('portfolioNotifications')}</Label>
             <Switch
               id="portfolio-notifications"
-              checked={preferences.notifications && preferences.notifications.portfolio ? true : false}
+              checked={preferences.notifications?.portfolio || false}
               onCheckedChange={(checked) => handleToggleNotification('portfolio', checked)}
             />
           </div>
@@ -205,7 +206,7 @@ const SecurityDashboard: React.FC = () => {
             <p className="text-sm text-red-500">{passwordError}</p>
           )}
           <Button onClick={handleChangePassword} disabled={isLoading}>
-            {isLoading && <ReloadIcon className="mr-2 h-4 w-4 animate-spin" />}
+            {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
             {t('changePassword')}
           </Button>
         </CardContent>
@@ -231,7 +232,7 @@ const SecurityDashboard: React.FC = () => {
             <p className="text-sm text-red-500">{verificationError}</p>
           )}
           <Button onClick={handleVerifyEmail} disabled={isVerifying}>
-            {isVerifying && <ReloadIcon className="mr-2 h-4 w-4 animate-spin" />}
+            {isVerifying && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
             {t('verifyEmail')}
           </Button>
         </CardContent>

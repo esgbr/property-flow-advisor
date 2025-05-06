@@ -1,6 +1,6 @@
 
 import { useContext } from 'react';
-import { InvestmentMarket, UserPreferencesContext } from '@/contexts/UserPreferencesContext';
+import { InvestmentMarket, UserPreferencesContext, InvestmentMarketOption } from '@/contexts/UserPreferencesContext';
 import { getLocalizedMarketName as getLocalizedMarketNameUtil, availableMarkets } from '@/utils/marketHelpers';
 import { ReactNode } from 'react';
 
@@ -22,6 +22,8 @@ export interface MarketFilterHook {
   shouldShowFeature: (feature: FeatureMarketConfig) => boolean;
   getLocalizedMarketName: () => string;
   getAvailableMarkets: () => { id: InvestmentMarket; name: string }[];
+  getMarketDisplayName: () => string;
+  getMarketOptions: () => InvestmentMarketOption[];
 }
 
 export const useMarketFilter = (): MarketFilterHook => {
@@ -67,6 +69,17 @@ export const useMarketFilter = (): MarketFilterHook => {
   const getAvailableMarkets = () => {
     return availableMarkets;
   };
+  
+  // Get market display name
+  const getMarketDisplayName = (): string => {
+    const marketName = availableMarkets.find(m => m.id === userMarket)?.name || 'Global';
+    return marketName;
+  };
+  
+  // Get market options for dropdowns and selectors
+  const getMarketOptions = () => {
+    return availableMarkets;
+  };
 
   return {
     userMarket,
@@ -74,7 +87,9 @@ export const useMarketFilter = (): MarketFilterHook => {
     getCurrentMarket,
     shouldShowFeature,
     getLocalizedMarketName,
-    getAvailableMarkets
+    getAvailableMarkets,
+    getMarketDisplayName,
+    getMarketOptions
   };
 };
 

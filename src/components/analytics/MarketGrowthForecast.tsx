@@ -5,7 +5,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from 'recharts';
 import { useMarketFilter } from '@/hooks/use-market-filter';
-import { InvestmentMarket, InvestmentMarketOption } from '@/contexts/UserPreferencesContext';
+import { InvestmentMarket } from '@/contexts/UserPreferencesContext';
 
 // Sample market growth data - in a real app, this would come from an API
 const marketGrowthData = {
@@ -94,7 +94,7 @@ const MarketGrowthForecast: React.FC = () => {
               <SelectValue placeholder={language === 'de' ? 'Markt wählen' : 'Select market'} />
             </SelectTrigger>
             <SelectContent>
-              {marketFilter.getMarketOptions().map((option: InvestmentMarketOption) => (
+              {marketFilter.getMarketOptions().map((option) => (
                 <SelectItem key={option.id} value={option.id}>
                   {option.name}
                 </SelectItem>
