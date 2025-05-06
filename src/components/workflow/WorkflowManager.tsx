@@ -9,7 +9,6 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import { WorkflowType, useWorkflow } from '@/hooks/use-workflow';
 import { workflowDefinitions } from '@/data/workflow-definitions';
 import WorkflowSteps from '@/components/workflow/WorkflowSteps';
-import WorkflowHistory from '@/components/workflow/WorkflowHistory';
 import { MoreHorizontal, Trello, Calendar, RotateCcw, CheckCircle, Settings, FileText } from 'lucide-react';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { useWorkflowState } from '@/contexts/WorkflowStateContext';
@@ -219,10 +218,6 @@ const WorkflowManager: React.FC<WorkflowManagerProps> = ({ className }) => {
             </ScrollArea>
           </TabsContent>
         </Tabs>
-        
-        <div className="mt-6">
-          <WorkflowHistory />
-        </div>
       </CardContent>
     </Card>
   );
