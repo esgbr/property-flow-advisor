@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
@@ -100,7 +99,6 @@ export const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ onComplete, onSk
       setCurrentStep(currentStep + 1);
     } else {
       toast({
-        title: t('setupComplete'),
         description: t('yourPreferencesHaveBeenSaved'),
       });
       onComplete(data);

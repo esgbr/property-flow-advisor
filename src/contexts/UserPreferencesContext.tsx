@@ -102,7 +102,7 @@ export interface OnboardingData {
   interests: string[];
   investmentGoals: string[];
   preferredPropertyTypes: string[];
-  investmentPreference: string;
+  investmentPreference: 'growth' | 'income' | 'balanced';
   investmentMarket: InvestmentMarket;
   goals: string[];
   propertyTypes: string[];
@@ -320,7 +320,6 @@ export const UserPreferencesProvider: React.FC<{ children: React.ReactNode }> = 
     });
     
     toast({
-      title: t('onboardingReset'),
       description: t('onboardingResetDescription'),
     });
   };

@@ -17,11 +17,11 @@ const EnhancedAccessibilityPanel: React.FC<EnhancedAccessibilityPanelProps> = ({
   const { 
     highContrast, 
     largeText, 
-    reducedMotion,
+    reduceMotion,
     dyslexiaFriendly,
     toggleHighContrast, 
     toggleLargeText, 
-    toggleReducedMotion,
+    toggleReduceMotion,
     toggleDyslexiaFriendly,
     announce 
   } = useAccessibility();
@@ -29,7 +29,7 @@ const EnhancedAccessibilityPanel: React.FC<EnhancedAccessibilityPanelProps> = ({
   const handleResetSettings = () => {
     if (highContrast) toggleHighContrast();
     if (largeText) toggleLargeText();
-    if (reducedMotion) toggleReducedMotion();
+    if (reduceMotion) toggleReduceMotion();
     if (dyslexiaFriendly) toggleDyslexiaFriendly();
     
     announce(
@@ -88,8 +88,8 @@ const EnhancedAccessibilityPanel: React.FC<EnhancedAccessibilityPanelProps> = ({
           </div>
           <Switch 
             id="reduced-motion" 
-            checked={reducedMotion} 
-            onCheckedChange={toggleReducedMotion}
+            checked={reduceMotion} 
+            onCheckedChange={toggleReduceMotion}
             aria-label={language === 'de' ? 'Reduzierte Bewegung' : 'Reduced Motion'}
           />
         </div>

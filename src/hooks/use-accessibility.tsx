@@ -19,7 +19,7 @@ export const useAccessibility = () => {
   const {
     highContrast = false,
     largeText = false,
-    reducedMotion = false,
+    reduceMotion = false,
     dyslexiaFriendly = false,
   } = preferences.accessibility || {};
 
@@ -32,8 +32,8 @@ export const useAccessibility = () => {
     const updateFromMediaQueries = () => {
       const accessibilitySettings = {
         ...preferences.accessibility,
-        reducedMotion: preferences.accessibility?.reducedMotionOverride
-          ? preferences.accessibility.reducedMotion
+        reduceMotion: preferences.accessibility?.reducedMotionOverride
+          ? preferences.accessibility.reduceMotion
           : prefersReducedMotion.matches,
         highContrast: preferences.accessibility?.highContrastOverride
           ? preferences.accessibility.highContrast
@@ -84,12 +84,12 @@ export const useAccessibility = () => {
     }
 
     // Apply reduced motion mode
-    if (reducedMotion) {
+    if (reduceMotion) {
       document.body.classList.add('reduce-motion');
     } else {
       document.body.classList.remove('reduce-motion');
     }
-  }, [highContrast, largeText, reducedMotion, dyslexiaFriendly]);
+  }, [highContrast, largeText, reduceMotion, dyslexiaFriendly]);
 
   /**
    * Toggle high contrast mode
@@ -132,12 +132,12 @@ export const useAccessibility = () => {
   /**
    * Toggle reduced motion mode
    */
-  const toggleReducedMotion = () => {
-    const newValue = !reducedMotion;
+  const toggleReduceMotion = () => {
+    const newValue = !reduceMotion;
     updatePreferences({
       accessibility: {
         ...preferences.accessibility,
-        reducedMotion: newValue,
+        reduceMotion: newValue,
         reducedMotionOverride: true
       }
     });
@@ -167,25 +167,55 @@ export const useAccessibility = () => {
     );
   };
 
-  /**
-   * Helper function to announce messages to screen readers
-   * @param message Message to announce
-   * @param politeness Politeness level of announcement
-   */
-  const announceSRMessage = (message: string, politeness: 'polite' | 'assertive' = 'polite') => {
-    announce(message, politeness);
+  // For compatibility with components expecting setX instead of toggleX functions
+  const setHighContrast = (value: boolean) => {
+    if (value !== highContrast) {
+      toggleHighContrast();
+    }
+  };
+
+  const setLargeText = (value: boolean) => {
+    if (value !== largeText) {
+      toggleLargeText();
+    }
+  };
+
+  const setReduceMotion = (value: boolean) => {
+    if (value !== reduceMotion) {
+      toggleReduceMotion();
+    }
+  };
+
+  const setScreenReader = (value: boolean) => {
+    if (value !== screenReader) {
+      toggleScreenReader();
+    }
+  };
+  
+  // Add a placeholder focusElement function to satisfy components
+  const focusElement = (element: HTMLElement) => {
+    if (element) {
+      element.focus();
+      announce(`Focused ${element.getAttribute('aria-label') || 'element'}`);
+    }
   };
 
   return {
     highContrast,
     largeText,
-    reducedMotion,
+    reduceMotion,
     dyslexiaFriendly,
     toggleHighContrast,
     toggleLargeText,
-    toggleReducedMotion,
+    toggleReduceMotion,
     toggleDyslexiaFriendly,
-    announce: announceSRMessage
+    announce,
+    // Add these methods for compatibility
+    setHighContrast,
+    setLargeText,
+    setReduceMotion,
+    setScreenReader,
+    focusElement
   };
 };
 
