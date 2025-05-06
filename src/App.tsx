@@ -1,4 +1,3 @@
-
 import React, { lazy, Suspense } from 'react';
 import { Routes, Route } from 'react-router-dom';
 import { ThemeProvider } from '@/components/theme-provider';
@@ -17,6 +16,7 @@ import LockedPage from '@/pages/LockedPage';
 import PageLoader from '@/components/ui/page-loader';
 import SecurityPage from "@/pages/SecurityPage";
 import WorkflowOverviewPage from "@/pages/WorkflowOverviewPage";
+import AdvancedAnalyticsPage from "@/pages/AdvancedAnalyticsPage";
 
 // Lazy-load less frequently accessed pages for better performance
 const Dashboard = lazy(() => import('@/pages/Dashboard'));
@@ -135,6 +135,9 @@ const App: React.FC = () => {
                   
                   {/* 404 route */}
                   <Route path="*" element={<div>404 - Seite nicht gefunden</div>} />
+                  
+                  {/* Add our new page routes */}
+                  <Route path="/advanced-analytics" element={<AdvancedAnalyticsPage />} />
                 </Routes>
                 <Toaster />
               </Suspense>

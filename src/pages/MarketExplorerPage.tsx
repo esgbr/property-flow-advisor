@@ -4,16 +4,19 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useLanguage } from '@/contexts/LanguageContext';
 import MarketAnalysis from '@/components/market/MarketAnalysis';
-import { Building, BarChart3, Map, Globe, TrendingUp } from 'lucide-react';
+import { Building, BarChart3, Map, Globe, TrendingUp, Calculator, ArrowRight } from 'lucide-react';
 import MarketTrendsAnalysis from '@/components/market/MarketTrendsAnalysis';
 import GermanMarketInsights from '@/components/german/GermanMarketInsights';
 import ImprovedMarketSelector from '@/components/market/ImprovedMarketSelector';
 import { useUserPreferences, InvestmentMarket } from '@/contexts/UserPreferencesContext';
 import MarketComparisonTool from '@/components/market/MarketComparisonTool';
+import { Button } from '@/components/ui/button';
+import { useNavigate } from 'react-router-dom';
 
 const MarketExplorerPage: React.FC = () => {
   const { t, language } = useLanguage();
   const { preferences, updatePreferences } = useUserPreferences();
+  const navigate = useNavigate();
 
   const handleMarketChange = (market: InvestmentMarket) => {
     updatePreferences({ investmentMarket: market });
@@ -33,6 +36,32 @@ const MarketExplorerPage: React.FC = () => {
         </div>
         <ImprovedMarketSelector onMarketChange={handleMarketChange} />
       </div>
+      
+      {/* Advanced Analytics Promotion Card */}
+      <Card className="bg-primary/5 hover:bg-primary/10 transition-colors">
+        <CardContent className="p-6">
+          <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+            <div className="space-y-2">
+              <h3 className="text-lg font-medium flex items-center">
+                <Calculator className="h-5 w-5 mr-2 text-primary" />
+                {language === 'de' ? 'Erweiterte Analysetools' : 'Advanced Analytics Tools'}
+              </h3>
+              <p className="text-sm text-muted-foreground max-w-md">
+                {language === 'de' 
+                  ? 'Nutzen Sie unsere neuen erweiterten Analysewerkzeuge für tiefere Einblicke in Märkte und Investments.' 
+                  : 'Use our new advanced analytics tools for deeper insights into markets and investments.'}
+              </p>
+            </div>
+            <Button 
+              className="group"
+              onClick={() => navigate('/advanced-analytics')}
+            >
+              {language === 'de' ? 'Zu den erweiterten Tools' : 'Go to Advanced Tools'}
+              <ArrowRight className="ml-2 h-4 w-4 group-hover:translate-x-1 transition-transform" />
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
       
       <Tabs defaultValue="analysis" className="space-y-6">
         <TabsList>
