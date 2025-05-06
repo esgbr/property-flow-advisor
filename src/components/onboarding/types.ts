@@ -8,7 +8,7 @@ export interface OnboardingData {
   preferredPropertyTypes: string[];
   interests: string[];
   investmentMarket: InvestmentMarket;
-  investmentPreference: 'growth' | 'income' | 'balanced';
+  investmentPreference: 'growth' | 'income' | 'balanced' | 'conservative' | 'aggressive';
   goals: string[];
   propertyTypes: string[];
 }

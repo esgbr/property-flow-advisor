@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useContext, createContext } from 'react';
 
 export type ExperienceLevel = 'beginner' | 'intermediate' | 'advanced' | 'expert';

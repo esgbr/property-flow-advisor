@@ -1,3 +1,4 @@
+
 import { useContext } from 'react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { UserPreferencesContext, InvestmentMarket, InvestmentMarketOption } from '@/contexts/UserPreferencesContext';
@@ -24,7 +25,7 @@ export interface MarketFilterHook {
   getCurrentMarket: () => InvestmentMarket;
   shouldShowFeature: (feature: FeatureMarketConfig) => boolean;
   getLocalizedMarketName: () => string;
-  getAvailableMarkets: () => { id: InvestmentMarket; name: string }[];
+  getAvailableMarkets: () => InvestmentMarketOption[];
   getMarketDisplayName: () => string;
   getMarketOptions: () => InvestmentMarketOption[];
   setUserMarket: (market: InvestmentMarket) => void;
@@ -74,7 +75,7 @@ export const useMarketFilter = () => {
   };
 
   // Get available markets
-  const getAvailableMarkets = () => {
+  const getAvailableMarkets = (): InvestmentMarketOption[] => {
     return availableMarkets;
   };
   
@@ -86,7 +87,7 @@ export const useMarketFilter = () => {
   
   // Get market options for dropdowns and selectors
   const getMarketOptions = (): InvestmentMarketOption[] => {
-    const availableMarkets = [
+    return [
       { id: 'germany', name: language === 'de' ? 'Deutschland' : 'Germany' },
       { id: 'austria', name: language === 'de' ? 'Österreich' : 'Austria' },
       { id: 'switzerland', name: language === 'de' ? 'Schweiz' : 'Switzerland' },
@@ -96,7 +97,6 @@ export const useMarketFilter = () => {
       { id: 'uk', name: language === 'de' ? 'Vereinigtes Königreich' : 'United Kingdom' },
       { id: 'europe', name: language === 'de' ? 'Europa' : 'Europe' }
     ];
-    return availableMarkets;
   };
 
   // Set the user's market preference

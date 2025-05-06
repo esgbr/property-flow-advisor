@@ -1,7 +1,7 @@
 
 import React, { useState } from 'react';
 import { Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { InvestmentMarket } from '@/contexts/UserPreferencesContext';
+import { InvestmentMarket, InvestmentMarketOption } from '@/contexts/UserPreferencesContext';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { getLocalizedMarketName } from '@/utils/marketHelpers';
 import { Badge } from '@/components/ui/badge';
@@ -58,18 +58,18 @@ const ImprovedMarketSelector: React.FC<ImprovedMarketSelectorProps> = ({
     return growthIndicators[market] || { trend: 'stable', value: 0 };
   };
   
-  const availableMarkets = [
-    { id: 'germany' as InvestmentMarket, name: 'Germany' },
-    { id: 'austria' as InvestmentMarket, name: 'Austria' },
-    { id: 'switzerland' as InvestmentMarket, name: 'Switzerland' },
-    { id: 'usa' as InvestmentMarket, name: 'USA' },
-    { id: 'canada' as InvestmentMarket, name: 'Canada' },
-    { id: 'global' as InvestmentMarket, name: 'Global' },
-    { id: 'uk' as InvestmentMarket, name: 'United Kingdom' },
-    { id: 'europe' as InvestmentMarket, name: 'Europe' }
+  const availableMarkets: InvestmentMarketOption[] = [
+    { id: 'germany', name: 'Germany' },
+    { id: 'austria', name: 'Austria' },
+    { id: 'switzerland', name: 'Switzerland' },
+    { id: 'usa', name: 'USA' },
+    { id: 'canada', name: 'Canada' },
+    { id: 'global', name: 'Global' },
+    { id: 'uk', name: 'United Kingdom' },
+    { id: 'europe', name: 'Europe' }
   ];
   
-  const renderMarketItem = (market: {id: InvestmentMarket, name: string}) => {
+  const renderMarketItem = (market: InvestmentMarketOption) => {
     const growth = getMarketGrowthIndicator(market.id);
     
     return (

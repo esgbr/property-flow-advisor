@@ -1,10 +1,12 @@
+
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { ChevronRight } from 'lucide-react';
-import { InvestmentMarket, OnboardingData, InvestmentPreference } from '@/contexts/UserPreferencesContext';
+import { InvestmentMarket, InvestmentPreference } from '@/contexts/UserPreferencesContext';
+import { OnboardingData } from './types';
 
 // Import step components
 import WelcomeStep from './steps/WelcomeStep';
@@ -28,7 +30,7 @@ export const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ onComplete, onSk
   const { t } = useLanguage();
   const { toast } = useToast();
   const [currentStep, setCurrentStep] = useState(0);
-  const [data, setData] = useState<Partial<OnboardingData>>({
+  const [data, setData] = useState<OnboardingData>({
     name: initialData?.name || '',
     experienceLevel: initialData?.experienceLevel || 'beginner',
     investmentGoals: initialData?.investmentGoals || [],
