@@ -16,6 +16,7 @@ interface WorkflowStepsProps {
   currentStep?: string;
   className?: string;
   compact?: boolean;
+  onStepClick?: (stepId: string) => void;
 }
 
 /**
@@ -25,7 +26,8 @@ const WorkflowSteps: React.FC<WorkflowStepsProps> = ({
   workflowType,
   currentStep,
   className,
-  compact = false
+  compact = false,
+  onStepClick
 }) => {
   const navigate = useNavigate();
   const { language } = useLanguage();
@@ -38,7 +40,11 @@ const WorkflowSteps: React.FC<WorkflowStepsProps> = ({
 
   // Navigate to a step
   const handleStepClick = (step: (typeof steps)[0]) => {
-    navigate(step.path);
+    if (onStepClick) {
+      onStepClick(step.id);
+    } else {
+      navigate(step.path);
+    }
     
     // Announce for screen readers
     const stepName = step.label[language as keyof typeof step.label];

@@ -4,7 +4,7 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import useAnnouncement from '@/utils/announcer';
 
 /**
- * Hook for improved screen reader support
+ * Enhanced hook for improved screen reader support
  * Provides functions to check screen reader status and make announcements
  */
 export const useScreenReader = () => {

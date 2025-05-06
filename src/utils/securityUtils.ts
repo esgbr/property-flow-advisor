@@ -1,370 +1,184 @@
-import { toast } from 'sonner';
 
 /**
  * Utility functions for security-related operations
+ * Provides password validation, strength checking, and security-related helpers
  */
 
-// Check password strength with improved scoring algorithm
-export const checkPasswordStrength = (password: string): {
-  score: number;
-  feedback: string;
-  suggestions: string[];
-} => {
-  if (!password) return { 
-    score: 0, 
-    feedback: 'Password is required',
-    suggestions: ['Enter a password']
-  };
+/**
+ * Password strength levels
+ */
+export enum PasswordStrength {
+  Weak = 'weak',
+  Medium = 'medium',
+  Strong = 'strong',
+  VeryStrong = 'very-strong'
+}
+
+/**
+ * Check if a password meets minimum requirements
+ * @param password The password to check
+ * @returns Whether the password meets minimum requirements
+ */
+export const isPasswordValid = (password: string): boolean => {
+  // Minimum 8 characters with at least one number and one special character
+  const minLength = password.length >= 8;
+  const hasNumber = /\d/.test(password);
+  const hasSpecialChar = /[!@#$%^&*(),.?":{}|<>]/.test(password);
   
+  return minLength && hasNumber && hasSpecialChar;
+};
+
+/**
+ * Get detailed password validation errors
+ * @param password The password to check
+ * @returns Array of validation error messages
+ */
+export const getPasswordValidationErrors = (password: string): string[] => {
+  const errors: string[] = [];
+  
+  if (password.length < 8) {
+    errors.push('Password must be at least 8 characters long');
+  }
+  
+  if (!/\d/.test(password)) {
+    errors.push('Password must contain at least one number');
+  }
+  
+  if (!/[!@#$%^&*(),.?":{}|<>]/.test(password)) {
+    errors.push('Password must contain at least one special character');
+  }
+  
+  if (!/[A-Z]/.test(password)) {
+    errors.push('Password should contain at least one uppercase letter');
+  }
+  
+  if (!/[a-z]/.test(password)) {
+    errors.push('Password should contain at least one lowercase letter');
+  }
+  
+  return errors;
+};
+
+/**
+ * Check password strength
+ * @param password The password to check
+ * @returns The strength of the password as an enum
+ */
+export const checkPasswordStrength = (password: string): PasswordStrength => {
   let score = 0;
-  const suggestions: string[] = [];
   
-  // Length check with exponential scoring for length
+  // Length
   if (password.length >= 8) score += 1;
   if (password.length >= 12) score += 1;
   if (password.length >= 16) score += 1;
   
-  if (password.length < 8) {
-    suggestions.push('Use at least 8 characters');
-  }
+  // Complexity
+  if (/[a-z]/.test(password)) score += 1; // Lowercase
+  if (/[A-Z]/.test(password)) score += 1; // Uppercase
+  if (/\d/.test(password)) score += 1; // Number
+  if (/[!@#$%^&*(),.?":{}|<>]/.test(password)) score += 1; // Special character
   
-  // Complexity checks
-  if (!/[A-Z]/.test(password)) {
-    suggestions.push('Add uppercase letters');
-  } else {
-    score += 1;
-  }
+  // Variety
+  const uniqueChars = new Set(password).size;
+  if (uniqueChars >= password.length * 0.7) score += 1;
   
-  if (!/[a-z]/.test(password)) {
-    suggestions.push('Add lowercase letters');
-  } else {
-    score += 1;
-  }
-  
-  if (!/[0-9]/.test(password)) {
-    suggestions.push('Add numbers');
-  } else {
-    score += 1;
-  }
-  
-  if (!/[^A-Za-z0-9]/.test(password)) {
-    suggestions.push('Add special characters');
-  } else {
-    score += 1;
-  }
-  
-  // Check for common patterns
-  if (/^(12345|qwerty|password|admin|welcome).*/i.test(password)) {
-    score -= 2;
-    suggestions.push('Avoid common password patterns');
-  }
-  
-  // Check for repeated characters
-  if (/(.)\1{2,}/.test(password)) {
-    score -= 1;
-    suggestions.push('Avoid repeated characters');
-  }
-  
-  // Check for sequential characters
-  if (/(?:abc|bcd|cde|def|efg|123|234|345|456|567|678|789)/.test(password.toLowerCase())) {
-    score -= 1;
-    suggestions.push('Avoid sequential characters');
-  }
-  
-  // Normalize score to 0-100
-  const normalizedScore = Math.min(Math.max(Math.round((score / 7) * 100), 0), 100);
-  
-  // Generate feedback
-  let feedback = '';
-  if (normalizedScore < 40) {
-    feedback = 'Weak password';
-  } else if (normalizedScore < 70) {
-    feedback = 'Moderate password';
-  } else {
-    feedback = 'Strong password';
-  }
-  
-  return { score: normalizedScore, feedback, suggestions };
+  // Map score to strength
+  if (score < 4) return PasswordStrength.Weak;
+  if (score < 6) return PasswordStrength.Medium;
+  if (score < 8) return PasswordStrength.Strong;
+  return PasswordStrength.VeryStrong;
 };
 
-// Enhanced suspicious login detection with more sophisticated heuristics
-export const detectSuspiciousLogin = (
-  currentLogin: { time: Date; location?: string; device?: string; ip?: string; userAgent?: string },
-  previousLogin?: { time: Date; location?: string; device?: string; ip?: string; userAgent?: string }
-): { suspicious: boolean; reasons: string[] } => {
-  if (!previousLogin) return { suspicious: false, reasons: [] };
-  
-  const reasons: string[] = [];
-  
-  // Check for logins from different locations in short time
-  if (
-    previousLogin.location && 
-    currentLogin.location && 
-    previousLogin.location !== currentLogin.location
-  ) {
-    const timeDiff = currentLogin.time.getTime() - previousLogin.time.getTime();
-    const hoursDiff = timeDiff / (1000 * 60 * 60);
-    
-    // Calculate approximate travel speed between locations (simplified for example)
-    const impossibleTravel = hoursDiff < 2;
-    
-    // If locations different and time difference implies impossible travel
-    if (impossibleTravel) {
-      reasons.push(`Rapid location change from ${previousLogin.location} to ${currentLogin.location}`);
-    }
-  }
-  
-  // Check for unusual device change
-  if (
-    previousLogin.device &&
-    currentLogin.device &&
-    previousLogin.device !== currentLogin.device
-  ) {
-    reasons.push(`Device changed from ${previousLogin.device} to ${currentLogin.device}`);
-  }
-  
-  // Check for unusual IP address
-  if (
-    previousLogin.ip &&
-    currentLogin.ip &&
-    previousLogin.ip !== currentLogin.ip
-  ) {
-    reasons.push(`IP address changed from ${previousLogin.ip} to ${currentLogin.ip}`);
-  }
-  
-  // Check for unusual user agent
-  if (
-    previousLogin.userAgent &&
-    currentLogin.userAgent &&
-    previousLogin.userAgent !== currentLogin.userAgent
-  ) {
-    reasons.push(`Browser/device signature changed`);
-  }
-  
-  // Check for unusual time of day
-  const currentLoginHour = currentLogin.time.getHours();
-  const previousLoginHour = previousLogin.time.getHours();
-  const hourDifference = Math.abs(currentLoginHour - previousLoginHour);
-  
-  if (hourDifference > 12) {
-    reasons.push(`Unusual login time compared to previous login`);
-  }
-  
-  return { 
-    suspicious: reasons.length > 0,
-    reasons 
-  };
-};
-
-// Improved anonymization of sensitive data for GDPR compliance
-export const anonymizeData = (data: string, type?: 'email' | 'creditCard' | 'phone' | 'address' | 'name'): string => {
-  if (!data) return '';
-  
-  // Determine data type if not specified
-  if (!type) {
-    if (data.includes('@')) {
-      type = 'email';
-    } else if (/^\d{13,19}$/.test(data.replace(/\s/g, ''))) {
-      type = 'creditCard';
-    } else if (/^\+?[\d\s]{10,15}$/.test(data)) {
-      type = 'phone';
-    } else if (data.split(' ').length > 3) {
-      type = 'address';
-    } else {
-      type = 'name';
-    }
-  }
-  
-  switch (type) {
-    // Email: keep first two chars of local part and domain
-    case 'email':
-      return data.replace(/(.{2})(.*)(@.*)/, '$1***$3');
-    
-    // Credit card: keep first 4 and last 4 digits
-    case 'creditCard':
-      return data.replace(/\s+/g, '').replace(/(\d{4})(\d+)(\d{4})/, '$1 **** **** $3');
-    
-    // Phone: keep country code and last two digits
-    case 'phone':
-      return data.replace(/(\+\d{1,3}|\d{1,4})(.*)(\d{2})/, '$1******$3');
-    
-    // Address: anonymize except postal code
-    case 'address':
-      const words = data.split(' ');
-      return words.map((word, i) => {
-        // Keep postal codes (usually numeric)
-        if (/^\d+$/.test(word)) return word;
-        // Keep first letter of each word
-        return word.substring(0, 1) + '***';
-      }).join(' ');
-    
-    // Name: keep first letter
-    case 'name':
-      const names = data.split(' ');
-      return names.map(name => name.substring(0, 1) + '***').join(' ');
-    
-    // Default for other data types
+/**
+ * Get color for password strength visualization
+ * @param strength The password strength
+ * @returns Color for the strength indicator
+ */
+export const getPasswordStrengthColor = (strength: PasswordStrength): string => {
+  switch (strength) {
+    case PasswordStrength.Weak:
+      return 'red';
+    case PasswordStrength.Medium:
+      return 'orange';
+    case PasswordStrength.Strong:
+      return 'green';
+    case PasswordStrength.VeryStrong:
+      return 'emerald';
     default:
-      if (data.length > 5) {
-        return `${data.substring(0, 2)}***${data.substring(data.length - 2)}`;
-      }
-      return '****';
+      return 'gray';
   }
 };
 
-// Enhanced security event logger with severity levels and more structured data
-export const logSecurityEvent = (
-  eventType: 'login' | 'logout' | 'pin_change' | 'password_change' | 'suspicious_activity' | 'login_failure' | 'permission_change' | 'account_locked',
-  details: Record<string, any> = {},
-  options: {
-    severity?: 'info' | 'warning' | 'critical';
-    notifyUser?: boolean;
-    persistToDB?: boolean;
-  } = {}
-): void => {
-  const { 
-    severity = 'info', 
-    notifyUser = false, 
-    persistToDB = false 
-  } = options;
-  
-  // Create sanitized log entry
-  const sanitizedDetails = { ...details };
-  
-  // Remove sensitive data
-  if (sanitizedDetails.password) sanitizedDetails.password = '[REDACTED]';
-  if (sanitizedDetails.pin) sanitizedDetails.pin = '[REDACTED]';
-  if (sanitizedDetails.token) sanitizedDetails.token = '[REDACTED]';
-  if (sanitizedDetails.creditCard) sanitizedDetails.creditCard = '[REDACTED]';
-  
-  // Add metadata
-  const logEntry = {
-    type: eventType,
-    timestamp: new Date().toISOString(),
-    severity,
-    deviceInfo: {
-      userAgent: navigator.userAgent,
-      language: navigator.language,
-      platform: navigator.platform
-    },
-    ...sanitizedDetails
-  };
-  
-  // In a real app, you would send this to a secure logging service
-  console.log(`Security event [${severity}]:`, logEntry);
-  
-  // For critical events, always notify
-  const shouldNotify = notifyUser || severity === 'critical';
-  
-  // Optionally notify user
-  if (shouldNotify) {
-    const variant = severity === 'critical' ? 'destructive' : (severity === 'warning' ? 'warning' : 'default');
-    
-    toast[variant === 'destructive' ? 'error' : (variant === 'warning' ? 'warning' : 'info')](
-      `Security event: ${eventType}`, 
-      {
-        description: details.message || 'Check your security settings for details',
-        duration: severity === 'critical' ? 8000 : 5000,
-        id: `security-${eventType}-${Date.now()}`
-      }
-    );
-  }
-  
-  // In a real app, persist to database if requested
-  if (persistToDB) {
-    // This would be implemented when connected to a backend
-    console.log('Would persist to database:', logEntry);
-  }
-};
-
-// New: Generate cryptographically secure random password
-export const generateSecurePassword = (length: number = 16, options = { 
-  includeUppercase: true, 
-  includeLowercase: true,
-  includeNumbers: true,
-  includeSpecial: true
-}): string => {
-  const uppercase = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
-  const lowercase = 'abcdefghijklmnopqrstuvwxyz';
-  const numbers = '0123456789';
-  const special = '!@#$%^&*()-_=+[]{}|;:,.<>?';
-  
-  let charset = '';
-  if (options.includeUppercase) charset += uppercase;
-  if (options.includeLowercase) charset += lowercase;
-  if (options.includeNumbers) charset += numbers;
-  if (options.includeSpecial) charset += special;
-  
-  if (charset === '') charset = lowercase + numbers; // Fallback
-  
-  // Use crypto API for better randomness
-  const array = new Uint8Array(length);
-  crypto.getRandomValues(array);
-  
+/**
+ * Generate a random secure password
+ * @param length Length of the password to generate
+ * @returns A randomly generated strong password
+ */
+export const generateSecurePassword = (length = 16): string => {
+  const charset = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*()_+-=[]{}|;:,.<>?';
   let password = '';
-  for (let i = 0; i < length; i++) {
-    password += charset.charAt(array[i] % charset.length);
+  
+  // Ensure at least one of each required type
+  password += getRandomChar('ABCDEFGHIJKLMNOPQRSTUVWXYZ'); // Uppercase
+  password += getRandomChar('abcdefghijklmnopqrstuvwxyz'); // Lowercase
+  password += getRandomChar('0123456789'); // Number
+  password += getRandomChar('!@#$%^&*()_+-=[]{}|;:,.<>?'); // Special
+  
+  // Fill the rest randomly
+  for (let i = password.length; i < length; i++) {
+    password += charset.charAt(Math.floor(Math.random() * charset.length));
   }
   
-  return password;
+  // Shuffle the password
+  return password.split('').sort(() => Math.random() - 0.5).join('');
 };
 
-// New: Validate tokens against common security vulnerabilities
-export const validateToken = (token: string): { valid: boolean; reason?: string } => {
-  if (!token) return { valid: false, reason: 'Token is empty' };
-  
-  // Check token length
-  if (token.length < 32) return { valid: false, reason: 'Token is too short' };
-  
-  // Check for common test/debug tokens
-  if (['test', 'demo', 'admin', 'token'].some(t => token.toLowerCase().includes(t))) {
-    return { valid: false, reason: 'Token contains common test words' };
-  }
-  
-  // Check for JWT structure (simplified)
-  const isJWT = /^[A-Za-z0-9-_]+\.[A-Za-z0-9-_]+\.[A-Za-z0-9-_]+$/.test(token);
-  if (isJWT) {
-    // Check JWT expiration (simplified)
-    try {
-      const payload = JSON.parse(atob(token.split('.')[1]));
-      if (payload.exp && payload.exp < Date.now() / 1000) {
-        return { valid: false, reason: 'Token has expired' };
-      }
-    } catch {
-      return { valid: false, reason: 'Cannot parse token payload' };
-    }
-  }
-  
-  return { valid: true };
+/**
+ * Get a random character from the provided charset
+ * @param charset The character set to choose from
+ * @returns A random character from the charset
+ */
+const getRandomChar = (charset: string): string => {
+  return charset.charAt(Math.floor(Math.random() * charset.length));
 };
 
-// New: Rate limiting utility for security-sensitive operations
-export const rateLimit = (key: string, maxAttempts: number = 5, windowMs: number = 60000): boolean => {
-  const now = Date.now();
-  const attempts = JSON.parse(localStorage.getItem(`rateLimit_${key}`) || '[]');
-  
-  // Remove attempts outside the window
-  const recentAttempts = attempts.filter(time => now - time < windowMs);
-  
-  // Check if exceeded
-  if (recentAttempts.length >= maxAttempts) {
-    return false; // Rate limit exceeded
-  }
-  
-  // Add new attempt
-  recentAttempts.push(now);
-  localStorage.setItem(`rateLimit_${key}`, JSON.stringify(recentAttempts));
-  
-  return true; // Rate limit not exceeded
+/**
+ * Sanitize user input to prevent XSS attacks
+ * @param input The input to sanitize
+ * @returns Sanitized input string
+ */
+export const sanitizeInput = (input: string): string => {
+  const element = document.createElement('div');
+  element.textContent = input;
+  return element.innerHTML;
 };
 
-// Export all functions
-export default {
-  checkPasswordStrength,
-  detectSuspiciousLogin,
-  anonymizeData,
-  logSecurityEvent,
-  generateSecurePassword,
-  validateToken,
-  rateLimit
+/**
+ * Hash a value using SHA-256
+ * Note: This is for client-side use only, not for server authentication
+ * @param value The value to hash
+ * @returns A promise that resolves to the hashed value
+ */
+export const hashValue = async (value: string): Promise<string> => {
+  const encoder = new TextEncoder();
+  const data = encoder.encode(value);
+  const hashBuffer = await crypto.subtle.digest('SHA-256', data);
+  const hashArray = Array.from(new Uint8Array(hashBuffer));
+  return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+};
+
+/**
+ * Check if a string might contain sensitive information
+ * @param input The input to check
+ * @returns Whether the input might contain sensitive information
+ */
+export const mightContainSensitiveInfo = (input: string): boolean => {
+  // Check for common patterns that might indicate sensitive data
+  const patterns = [
+    /\b[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}\b/i, // Email
+    /\b(?:\d[ -]*?){13,16}\b/, // Credit card
+    /\b\d{3}[-. ]?\d{2}[-. ]?\d{4}\b/ // SSN
+  ];
+  
+  return patterns.some(pattern => pattern.test(input));
 };

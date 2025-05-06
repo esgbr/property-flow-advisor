@@ -1,451 +1,374 @@
 
-import React, { useEffect, useState } from 'react';
-import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from '@/components/ui/sheet';
+import React, { useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
-import { Label } from '@/components/ui/label';
 import { Slider } from '@/components/ui/slider';
-import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription, SheetTrigger } from '@/components/ui/sheet';
+import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { useLanguage } from '@/contexts/LanguageContext';
-import { Accessibility, Check, Monitor, Sun, Moon, Contrast, Type, MousePointer, Globe, VolumeX, Volume2 } from 'lucide-react';
+import { Settings, Type, EyeOff, MousePointer, Ear, Keyboard } from 'lucide-react';
 import { useAccessibility } from '@/hooks/use-accessibility';
-import { useScreenReader } from '@/hooks/use-screen-reader';
+import { Label } from '@/components/ui/label';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { cn } from '@/lib/utils';
-import { useAppTheme } from '@/components/theme-provider';
-
-interface EnhancedAccessibilityPanelProps {
-  open: boolean;
-  onOpenChange: (open: boolean) => void;
-}
+import useAnnouncement from '@/utils/announcer';
 
 /**
- * Enhanced accessibility panel with more options and better organization
+ * Enhanced accessibility panel with additional settings
+ * Provides settings for visual, motor, and cognitive accessibility
  */
-const EnhancedAccessibilityPanel: React.FC<EnhancedAccessibilityPanelProps> = ({
-  open,
-  onOpenChange
-}) => {
+const EnhancedAccessibilityPanel: React.FC = () => {
   const { language } = useLanguage();
-  const { isDarkMode, setTheme } = useAppTheme();
-  const { announce } = useScreenReader();
-  const { 
-    largeText, 
-    setLargeText,
+  const {
     highContrast,
-    setHighContrast,
+    largeText,
     reducedMotion,
-    setReducedMotion,
-    screenReader,
-    setScreenReader,
     dyslexiaFriendly,
-    setDyslexiaFriendly,
-    cursorSize,
-    setCursorSize
+    toggleHighContrast,
+    toggleLargeText,
+    toggleReducedMotion,
+    toggleDyslexiaFriendly
   } = useAccessibility();
+  const { announce } = useAnnouncement();
   
-  const [fontSizeLevel, setFontSizeLevel] = useState<number>(largeText ? 2 : 1);
-  const [contrastLevel, setContrastLevel] = useState<number>(highContrast ? 2 : 1);
-  const [soundEffects, setSoundEffects] = useState<boolean>(false);
-  
-  // Update accessibility options when slider values change
-  useEffect(() => {
-    setLargeText(fontSizeLevel > 1);
-  }, [fontSizeLevel, setLargeText]);
-  
-  useEffect(() => {
-    setHighContrast(contrastLevel > 1);
-  }, [contrastLevel, setHighContrast]);
+  const [isOpen, setIsOpen] = React.useState(false);
+  const [cursorSize, setCursorSize] = React.useState(1);
+  const [focusIndicator, setFocusIndicator] = React.useState<'default' | 'enhanced' | 'high'>('default');
   
   // Announce when panel is opened
   useEffect(() => {
-    if (open) {
+    if (isOpen) {
       announce(
         language === 'de'
-          ? 'Barrierefreiheit-Panel geöffnet'
-          : 'Accessibility panel opened',
+          ? 'Barrierefreiheitseinstellungen geöffnet'
+          : 'Accessibility settings opened',
         'polite'
       );
     }
-  }, [open, announce, language]);
+  }, [isOpen, announce, language]);
   
-  // Handle theme changes
-  const handleThemeChange = (theme: 'light' | 'dark' | 'system') => {
-    setTheme(theme);
+  // Apply cursor size
+  useEffect(() => {
+    const htmlElement = document.documentElement;
+    
+    if (cursorSize > 1) {
+      htmlElement.style.setProperty('--cursor-scale', cursorSize.toString());
+      document.body.classList.add('custom-cursor');
+    } else {
+      htmlElement.style.removeProperty('--cursor-scale');
+      document.body.classList.remove('custom-cursor');
+    }
+  }, [cursorSize]);
+  
+  // Apply focus indicator style
+  useEffect(() => {
+    const body = document.body;
+    body.classList.remove('focus-default', 'focus-enhanced', 'focus-high');
+    
+    if (focusIndicator === 'enhanced') {
+      body.classList.add('focus-enhanced');
+    } else if (focusIndicator === 'high') {
+      body.classList.add('focus-high');
+    } else {
+      body.classList.add('focus-default');
+    }
+  }, [focusIndicator]);
+  
+  // Handle focus indicator change
+  const handleFocusIndicatorChange = (value: string) => {
+    setFocusIndicator(value as 'default' | 'enhanced' | 'high');
     
     announce(
       language === 'de'
-        ? `Design auf ${theme === 'light' ? 'Hell' : theme === 'dark' ? 'Dunkel' : 'System'} geändert`
-        : `Theme changed to ${theme}`,
+        ? `Fokusindikator auf ${value === 'default' ? 'Standard' : value === 'enhanced' ? 'Verbessert' : 'Hoch'} gesetzt`
+        : `Focus indicator set to ${value}`,
       'polite'
     );
   };
   
-  // Apply font size changes
-  const getFontSizeLabel = () => {
-    switch (fontSizeLevel) {
-      case 1: return language === 'de' ? 'Normal' : 'Normal';
-      case 2: return language === 'de' ? 'Mittel' : 'Medium';
-      case 3: return language === 'de' ? 'Groß' : 'Large';
-      default: return language === 'de' ? 'Normal' : 'Normal';
-    }
-  };
-  
-  // Apply contrast level changes
-  const getContrastLabel = () => {
-    switch (contrastLevel) {
-      case 1: return language === 'de' ? 'Standard' : 'Standard';
-      case 2: return language === 'de' ? 'Hoch' : 'High';
-      case 3: return language === 'de' ? 'Sehr hoch' : 'Very high';
-      default: return language === 'de' ? 'Standard' : 'Standard';
-    }
-  };
-  
   return (
-    <Sheet open={open} onOpenChange={onOpenChange}>
-      <SheetContent className="w-full sm:max-w-md overflow-y-auto">
-        <SheetHeader className="mb-4">
-          <SheetTitle className="flex items-center gap-2">
-            <Accessibility className="h-5 w-5" />
-            {language === 'de' ? 'Barrierefreiheit' : 'Accessibility'}
+    <Sheet open={isOpen} onOpenChange={setIsOpen}>
+      <SheetTrigger asChild>
+        <Button
+          variant="outline"
+          size="icon"
+          className="rounded-full"
+          aria-label={language === 'de' ? 'Barrierefreiheitseinstellungen' : 'Accessibility settings'}
+        >
+          <Settings className="h-4 w-4" />
+        </Button>
+      </SheetTrigger>
+      <SheetContent className="w-[400px] sm:max-w-none">
+        <SheetHeader>
+          <SheetTitle>
+            {language === 'de' ? 'Barrierefreiheitseinstellungen' : 'Accessibility Settings'}
           </SheetTitle>
           <SheetDescription>
-            {language === 'de'
-              ? 'Passen Sie die Einstellungen an, um die Barrierefreiheit zu verbessern'
-              : 'Adjust settings to improve accessibility'}
+            {language === 'de' 
+              ? 'Passen Sie die Einstellungen an Ihre Bedürfnisse an' 
+              : 'Customize settings to meet your needs'}
           </SheetDescription>
         </SheetHeader>
         
-        <Tabs defaultValue="display">
-          <TabsList className="grid grid-cols-3 mb-4">
-            <TabsTrigger value="display">
-              <Monitor className="h-4 w-4 mr-2" />
-              {language === 'de' ? 'Anzeige' : 'Display'}
+        <Tabs defaultValue="visual" className="mt-6">
+          <TabsList className="grid grid-cols-4 mb-4">
+            <TabsTrigger value="visual" className="flex flex-col items-center py-2">
+              <EyeOff className="h-4 w-4 mb-1" />
+              <span className="text-xs">
+                {language === 'de' ? 'Visuell' : 'Visual'}
+              </span>
             </TabsTrigger>
-            <TabsTrigger value="content">
-              <Type className="h-4 w-4 mr-2" />
-              {language === 'de' ? 'Inhalt' : 'Content'}
+            <TabsTrigger value="motor" className="flex flex-col items-center py-2">
+              <MousePointer className="h-4 w-4 mb-1" />
+              <span className="text-xs">
+                {language === 'de' ? 'Motorik' : 'Motor'}
+              </span>
             </TabsTrigger>
-            <TabsTrigger value="interaction">
-              <MousePointer className="h-4 w-4 mr-2" />
-              {language === 'de' ? 'Interaktion' : 'Interaction'}
+            <TabsTrigger value="cognitive" className="flex flex-col items-center py-2">
+              <Type className="h-4 w-4 mb-1" />
+              <span className="text-xs">
+                {language === 'de' ? 'Kognitiv' : 'Cognitive'}
+              </span>
+            </TabsTrigger>
+            <TabsTrigger value="audio" className="flex flex-col items-center py-2">
+              <Ear className="h-4 w-4 mb-1" />
+              <span className="text-xs">
+                {language === 'de' ? 'Audio' : 'Audio'}
+              </span>
             </TabsTrigger>
           </TabsList>
           
-          {/* Display Tab */}
-          <TabsContent value="display" className="space-y-6">
-            {/* Theme Selection */}
-            <div className="space-y-2">
-              <h3 className="text-sm font-medium">
-                {language === 'de' ? 'Farbschema' : 'Color Theme'}
-              </h3>
-              <div className="grid grid-cols-3 gap-2">
-                <Button
-                  variant={isDarkMode === false ? "default" : "outline"}
-                  size="sm"
-                  onClick={() => handleThemeChange('light')}
-                  className="w-full"
-                >
-                  <Sun className="h-4 w-4 mr-2" />
-                  {language === 'de' ? 'Hell' : 'Light'}
-                </Button>
-                <Button
-                  variant={isDarkMode === true ? "default" : "outline"}
-                  size="sm"
-                  onClick={() => handleThemeChange('dark')}
-                  className="w-full"
-                >
-                  <Moon className="h-4 w-4 mr-2" />
-                  {language === 'de' ? 'Dunkel' : 'Dark'}
-                </Button>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => handleThemeChange('system')}
-                  className="w-full"
-                >
-                  <Monitor className="h-4 w-4 mr-2" />
-                  {language === 'de' ? 'System' : 'System'}
-                </Button>
-              </div>
-            </div>
-            
-            {/* Font Size */}
+          <TabsContent value="visual" className="space-y-4">
             <div className="space-y-4">
-              <div className="flex justify-between">
-                <Label>
-                  {language === 'de' ? 'Textgröße' : 'Text Size'}
-                </Label>
-                <span className="text-sm">{getFontSizeLabel()}</span>
-              </div>
-              <Slider
-                min={1}
-                max={3}
-                step={1}
-                value={[fontSizeLevel]}
-                onValueChange={(values) => setFontSizeLevel(values[0])}
-              />
-            </div>
-            
-            {/* Contrast */}
-            <div className="space-y-4">
-              <div className="flex justify-between">
-                <Label className="flex items-center">
-                  <Contrast className="h-4 w-4 mr-2" />
-                  {language === 'de' ? 'Kontrast' : 'Contrast'}
-                </Label>
-                <span className="text-sm">{getContrastLabel()}</span>
-              </div>
-              <Slider
-                min={1}
-                max={3}
-                step={1}
-                value={[contrastLevel]}
-                onValueChange={(values) => setContrastLevel(values[0])}
-              />
-            </div>
-            
-            {/* Reduced Motion */}
-            <div className="flex items-center justify-between">
-              <Label className="flex items-center space-x-2">
-                {language === 'de' ? 'Bewegungen reduzieren' : 'Reduce Motion'}
-              </Label>
-              <Switch
-                checked={reducedMotion}
-                onCheckedChange={setReducedMotion}
-              />
-            </div>
-          </TabsContent>
-          
-          {/* Content Tab */}
-          <TabsContent value="content" className="space-y-6">
-            {/* Dyslexia Friendly */}
-            <div className="flex items-center justify-between">
-              <div className="space-y-0.5">
-                <Label className="flex items-center">
-                  {language === 'de' ? 'Legasthenie-freundlich' : 'Dyslexia Friendly'}
-                </Label>
-                <p className="text-xs text-muted-foreground">
-                  {language === 'de'
-                    ? 'Spezielle Schriftart und Textabstand für bessere Lesbarkeit'
-                    : 'Special font and text spacing for better readability'
-                  }
-                </p>
-              </div>
-              <Switch
-                checked={dyslexiaFriendly}
-                onCheckedChange={setDyslexiaFriendly}
-              />
-            </div>
-            
-            {/* Screen Reader Support */}
-            <div className="flex items-center justify-between">
-              <div className="space-y-0.5">
-                <Label className="flex items-center">
-                  {language === 'de' ? 'Bildschirmleser-Unterstützung' : 'Screen Reader Support'}
-                </Label>
-                <p className="text-xs text-muted-foreground">
-                  {language === 'de'
-                    ? 'Verbesserte Hinweise für Bildschirmleser'
-                    : 'Enhanced cues for screen readers'
-                  }
-                </p>
-              </div>
-              <Switch
-                checked={screenReader}
-                onCheckedChange={setScreenReader}
-              />
-            </div>
-            
-            {/* Language */}
-            <div className="space-y-2">
-              <Label className="flex items-center">
-                <Globe className="h-4 w-4 mr-2" />
-                {language === 'de' ? 'Sprache' : 'Language'}
-              </Label>
-              <RadioGroup defaultValue={language} className="grid grid-cols-2 gap-2">
+              <div className="flex items-center justify-between">
                 <div>
-                  <RadioGroupItem
-                    value="en"
-                    id="language-en"
-                    className="peer sr-only"
-                  />
-                  <Label
-                    htmlFor="language-en"
-                    className={cn(
-                      "flex items-center justify-center border rounded-md p-2",
-                      "cursor-pointer hover:bg-muted peer-data-[state=checked]:border-primary",
-                      "peer-data-[state=checked]:bg-primary/10"
-                    )}
-                  >
-                    {language === "en" && (
-                      <Check className="h-4 w-4 mr-2 text-primary" />
-                    )}
-                    English
+                  <Label htmlFor="high-contrast" className="text-base">
+                    {language === 'de' ? 'Hoher Kontrast' : 'High Contrast'}
                   </Label>
+                  <p className="text-sm text-muted-foreground">
+                    {language === 'de' 
+                      ? 'Erhöht den Kontrast für bessere Sichtbarkeit' 
+                      : 'Increases contrast for better visibility'}
+                  </p>
                 </div>
-                <div>
-                  <RadioGroupItem
-                    value="de"
-                    id="language-de"
-                    className="peer sr-only"
-                  />
-                  <Label
-                    htmlFor="language-de"
-                    className={cn(
-                      "flex items-center justify-center border rounded-md p-2",
-                      "cursor-pointer hover:bg-muted peer-data-[state=checked]:border-primary",
-                      "peer-data-[state=checked]:bg-primary/10"
-                    )}
-                  >
-                    {language === "de" && (
-                      <Check className="h-4 w-4 mr-2 text-primary" />
-                    )}
-                    Deutsch
-                  </Label>
-                </div>
-              </RadioGroup>
-            </div>
-            
-            {/* Sound Effects */}
-            <div className="flex items-center justify-between">
-              <div className="space-y-0.5">
-                <Label className="flex items-center">
-                  {soundEffects ? (
-                    <Volume2 className="h-4 w-4 mr-2" />
-                  ) : (
-                    <VolumeX className="h-4 w-4 mr-2" />
-                  )}
-                  {language === 'de' ? 'Soundeffekte' : 'Sound Effects'}
-                </Label>
-                <p className="text-xs text-muted-foreground">
-                  {language === 'de'
-                    ? 'Auditive Rückmeldungen bei Interaktionen'
-                    : 'Audio feedback for interactions'
-                  }
-                </p>
-              </div>
-              <Switch
-                checked={soundEffects}
-                onCheckedChange={setSoundEffects}
-              />
-            </div>
-          </TabsContent>
-          
-          {/* Interaction Tab */}
-          <TabsContent value="interaction" className="space-y-6">
-            {/* Cursor Size */}
-            <div className="space-y-4">
-              <div className="flex justify-between">
-                <Label>
-                  {language === 'de' ? 'Cursor-Größe' : 'Cursor Size'}
-                </Label>
-                <span className="text-sm">
-                  {cursorSize === 'normal'
-                    ? (language === 'de' ? 'Normal' : 'Normal')
-                    : cursorSize === 'large'
-                    ? (language === 'de' ? 'Groß' : 'Large')
-                    : (language === 'de' ? 'Sehr groß' : 'Extra Large')
-                  }
-                </span>
+                <Switch 
+                  id="high-contrast" 
+                  checked={highContrast} 
+                  onCheckedChange={toggleHighContrast} 
+                />
               </div>
               
-              <RadioGroup 
-                value={cursorSize} 
-                onValueChange={(value) => setCursorSize(value as 'normal' | 'large' | 'x-large')}
-              >
-                <div className="grid grid-cols-3 gap-2">
-                  <div>
-                    <RadioGroupItem
-                      value="normal"
-                      id="cursor-normal"
-                      className="peer sr-only"
-                    />
-                    <Label
-                      htmlFor="cursor-normal"
-                      className={cn(
-                        "flex flex-col items-center justify-center rounded-md border-2 p-2",
-                        "hover:bg-muted peer-data-[state=checked]:border-primary",
-                        "cursor-pointer peer-focus:ring-2 peer-focus:ring-primary"
-                      )}
-                    >
-                      <span className="text-xs">•</span>
-                      <span className="text-xs mt-1">
-                        {language === 'de' ? 'Normal' : 'Normal'}
-                      </span>
-                    </Label>
-                  </div>
-                  
-                  <div>
-                    <RadioGroupItem
-                      value="large"
-                      id="cursor-large"
-                      className="peer sr-only"
-                    />
-                    <Label
-                      htmlFor="cursor-large"
-                      className={cn(
-                        "flex flex-col items-center justify-center rounded-md border-2 p-2",
-                        "hover:bg-muted peer-data-[state=checked]:border-primary",
-                        "cursor-pointer peer-focus:ring-2 peer-focus:ring-primary"
-                      )}
-                    >
-                      <span className="text-lg">•</span>
-                      <span className="text-xs mt-1">
-                        {language === 'de' ? 'Groß' : 'Large'}
-                      </span>
-                    </Label>
-                  </div>
-                  
-                  <div>
-                    <RadioGroupItem
-                      value="x-large"
-                      id="cursor-x-large"
-                      className="peer sr-only"
-                    />
-                    <Label
-                      htmlFor="cursor-x-large"
-                      className={cn(
-                        "flex flex-col items-center justify-center rounded-md border-2 p-2",
-                        "hover:bg-muted peer-data-[state=checked]:border-primary",
-                        "cursor-pointer peer-focus:ring-2 peer-focus:ring-primary"
-                      )}
-                    >
-                      <span className="text-2xl">•</span>
-                      <span className="text-xs mt-1">
-                        {language === 'de' ? 'Sehr groß' : 'X-Large'}
-                      </span>
-                    </Label>
-                  </div>
+              <div className="flex items-center justify-between">
+                <div>
+                  <Label htmlFor="large-text" className="text-base">
+                    {language === 'de' ? 'Große Schrift' : 'Large Text'}
+                  </Label>
+                  <p className="text-sm text-muted-foreground">
+                    {language === 'de' 
+                      ? 'Vergrößert die Schrift für bessere Lesbarkeit' 
+                      : 'Makes text larger for better readability'}
+                  </p>
                 </div>
-              </RadioGroup>
+                <Switch 
+                  id="large-text" 
+                  checked={largeText} 
+                  onCheckedChange={toggleLargeText} 
+                />
+              </div>
+              
+              <div className="flex items-center justify-between">
+                <div>
+                  <Label htmlFor="reduced-motion" className="text-base">
+                    {language === 'de' ? 'Reduzierte Bewegung' : 'Reduced Motion'}
+                  </Label>
+                  <p className="text-sm text-muted-foreground">
+                    {language === 'de' 
+                      ? 'Reduziert Animationen und Bewegungen' 
+                      : 'Reduces animations and motion effects'}
+                  </p>
+                </div>
+                <Switch 
+                  id="reduced-motion" 
+                  checked={reducedMotion} 
+                  onCheckedChange={toggleReducedMotion} 
+                />
+              </div>
+              
+              <div>
+                <Label className="text-base mb-2 block">
+                  {language === 'de' ? 'Fokusindikator' : 'Focus Indicator'}
+                </Label>
+                <p className="text-sm text-muted-foreground mb-2">
+                  {language === 'de' 
+                    ? 'Legt fest, wie deutlich der Fokus angezeigt wird' 
+                    : 'Sets how prominently focus is displayed'}
+                </p>
+                <Select 
+                  value={focusIndicator} 
+                  onValueChange={handleFocusIndicatorChange}
+                >
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="default">
+                      {language === 'de' ? 'Standard' : 'Default'}
+                    </SelectItem>
+                    <SelectItem value="enhanced">
+                      {language === 'de' ? 'Verbessert' : 'Enhanced'}
+                    </SelectItem>
+                    <SelectItem value="high">
+                      {language === 'de' ? 'Stark' : 'High Visibility'}
+                    </SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+          </TabsContent>
+          
+          <TabsContent value="motor" className="space-y-4">
+            <div>
+              <Label className="text-base mb-2 block">
+                {language === 'de' ? 'Mauszeigergrӧße' : 'Cursor Size'}
+              </Label>
+              <p className="text-sm text-muted-foreground mb-2">
+                {language === 'de' 
+                  ? 'Stellen Sie die Größe des Mauszeigers ein' 
+                  : 'Adjust the size of the cursor'}
+              </p>
+              <div className="flex gap-4 items-center">
+                <Slider
+                  min={1}
+                  max={3}
+                  step={0.5}
+                  value={[cursorSize]}
+                  onValueChange={([value]) => setCursorSize(value)}
+                  className="flex-1"
+                />
+                <span className="w-10 text-center">
+                  {cursorSize}x
+                </span>
+              </div>
             </div>
             
-            {/* Keyboard Navigation */}
-            <div className="flex items-center justify-between">
-              <div className="space-y-0.5">
-                <Label>
-                  {language === 'de' ? 'Verbesserte Tastaturnavigation' : 'Enhanced Keyboard Navigation'}
+            <div className="flex items-center justify-between pt-2">
+              <div>
+                <Label htmlFor="keyboard-nav" className="text-base">
+                  {language === 'de' ? 'Tastaturnavigation' : 'Keyboard Navigation'}
                 </Label>
-                <p className="text-xs text-muted-foreground">
-                  {language === 'de'
-                    ? 'Bessere Sichtbarkeit des Fokus bei Tastaturnavigation'
-                    : 'Better focus visibility during keyboard navigation'
-                  }
+                <p className="text-sm text-muted-foreground">
+                  {language === 'de' 
+                    ? 'Verbesserte Tastaturnavigation' 
+                    : 'Enhanced keyboard navigation'}
                 </p>
               </div>
-              <Switch defaultChecked />
+              <Switch id="keyboard-nav" />
+            </div>
+            
+            <div className="pt-4">
+              <Button variant="secondary" className="w-full" disabled>
+                <Keyboard className="h-4 w-4 mr-2" />
+                {language === 'de' ? 'Tastaturkürzel anpassen' : 'Customize Keyboard Shortcuts'}
+              </Button>
+            </div>
+          </TabsContent>
+          
+          <TabsContent value="cognitive" className="space-y-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <Label htmlFor="dyslexia-friendly" className="text-base">
+                  {language === 'de' ? 'Legasthenie-freundlich' : 'Dyslexia-friendly'}
+                </Label>
+                <p className="text-sm text-muted-foreground">
+                  {language === 'de' 
+                    ? 'Optimiert Schrift und Layout für Lesefreundlichkeit' 
+                    : 'Optimizes font and layout for readability'}
+                </p>
+              </div>
+              <Switch 
+                id="dyslexia-friendly" 
+                checked={dyslexiaFriendly} 
+                onCheckedChange={toggleDyslexiaFriendly} 
+              />
+            </div>
+            
+            <div className="flex items-center justify-between">
+              <div>
+                <Label htmlFor="plain-language" className="text-base">
+                  {language === 'de' ? 'Einfache Sprache' : 'Plain Language'}
+                </Label>
+                <p className="text-sm text-muted-foreground">
+                  {language === 'de' 
+                    ? 'Vereinfacht komplexe Texte (wenn verfügbar)' 
+                    : 'Simplifies complex text (when available)'}
+                </p>
+              </div>
+              <Switch id="plain-language" disabled />
+            </div>
+            
+            <div className="flex items-center justify-between">
+              <div>
+                <Label htmlFor="reduce-distractions" className="text-base">
+                  {language === 'de' ? 'Ablenkungen reduzieren' : 'Reduce Distractions'}
+                </Label>
+                <p className="text-sm text-muted-foreground">
+                  {language === 'de' 
+                    ? 'Vereinfacht die Benutzeroberfläche' 
+                    : 'Simplifies the interface'}
+                </p>
+              </div>
+              <Switch id="reduce-distractions" disabled />
+            </div>
+          </TabsContent>
+          
+          <TabsContent value="audio" className="space-y-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <Label htmlFor="screen-reader-friendly" className="text-base">
+                  {language === 'de' ? 'Bildschirmleser-freundlich' : 'Screen Reader Friendly'}
+                </Label>
+                <p className="text-sm text-muted-foreground">
+                  {language === 'de' 
+                    ? 'Optimiert für Screenreader-Kompatibilität' 
+                    : 'Optimizes for screen reader compatibility'}
+                </p>
+              </div>
+              <Switch id="screen-reader-friendly" defaultChecked disabled />
+            </div>
+            
+            <div>
+              <Label className="text-base mb-2 block">
+                {language === 'de' ? 'Ankündigungen' : 'Announcements'}
+              </Label>
+              <p className="text-sm text-muted-foreground mb-2">
+                {language === 'de' 
+                  ? 'Wählen Sie aus, welche Inhalte angekündigt werden sollen' 
+                  : 'Choose which content should be announced'}
+              </p>
+              <Select defaultValue="important">
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">
+                    {language === 'de' ? 'Alle Ankündigungen' : 'All announcements'}
+                  </SelectItem>
+                  <SelectItem value="important">
+                    {language === 'de' ? 'Nur wichtige' : 'Important only'}
+                  </SelectItem>
+                  <SelectItem value="minimal">
+                    {language === 'de' ? 'Minimal' : 'Minimal'}
+                  </SelectItem>
+                </SelectContent>
+              </Select>
             </div>
           </TabsContent>
         </Tabs>
         
-        <div className="mt-6 text-xs text-muted-foreground border-t pt-6">
-          <p>
-            {language === 'de'
-              ? 'Wir arbeiten kontinuierlich daran, die Barrierefreiheit unserer Anwendung zu verbessern. Wenn Sie Vorschläge haben, kontaktieren Sie uns bitte.'
-              : 'We are continuously working to improve the accessibility of our application. If you have suggestions, please contact us.'
-            }
-          </p>
+        <div className="mt-8">
+          <Button className="w-full">
+            {language === 'de' ? 'Einstellungen speichern' : 'Save Settings'}
+          </Button>
         </div>
       </SheetContent>
     </Sheet>
