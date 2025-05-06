@@ -2,7 +2,7 @@
 import React, { useState } from 'react';
 import SecurityDashboard from '@/components/security/SecurityDashboard';
 import AuthGuard from '@/components/auth/AuthGuard';
-import { Shield, Lock, AlertTriangle, ShieldCheck, UserCheck } from 'lucide-react';
+import { Shield, Lock, AlertTriangle, ShieldCheck, UserCheck, History, Key } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -11,6 +11,9 @@ import { Button } from '@/components/ui/button';
 import { useNavigate } from 'react-router-dom';
 import { useUserPreferences } from '@/contexts/UserPreferencesContext';
 import { useAppLock } from '@/contexts/AppLockContext';
+import SecurityAuditLog from '@/components/security/SecurityAuditLog';
+import TwoFactorAuth from '@/components/auth/TwoFactorAuth';
+import { toast } from 'sonner';
 
 const SecurityPage: React.FC = () => {
   const { t, language } = useLanguage();
@@ -18,9 +21,32 @@ const SecurityPage: React.FC = () => {
   const navigate = useNavigate();
   const { hasPIN } = useAppLock();
   const [activeTab, setActiveTab] = useState<string>('overview');
+  const [show2FA, setShow2FA] = useState(false);
 
   const handleSetupSecurity = () => {
     navigate('/settings?tab=security&setup=true');
+  };
+  
+  const handleDemo2FA = async (code: string): Promise<boolean> => {
+    // This is just a demo - in a real app this would verify with a server
+    return new Promise(resolve => {
+      setTimeout(() => {
+        const isValid = code === '123456';
+        if (isValid) {
+          toast.success(
+            language === 'de' 
+              ? 'Zwei-Faktor-Authentifizierung erfolgreich' 
+              : '2FA verification successful',
+            {
+              description: language === 'de'
+                ? 'Dies ist nur eine Demo-Funktion'
+                : 'This is only a demo feature'
+            }
+          );
+        }
+        resolve(isValid);
+      }, 1500);
+    });
   };
 
   return (
@@ -65,7 +91,7 @@ const SecurityPage: React.FC = () => {
           onValueChange={setActiveTab}
           className="space-y-4"
         >
-          <TabsList className="grid grid-cols-3 md:w-[400px]">
+          <TabsList className="grid grid-cols-4 md:w-[500px]">
             <TabsTrigger value="overview">
               <Shield className="h-4 w-4 mr-2" />
               <span className="hidden sm:inline">{t('overview')}</span>
@@ -75,8 +101,12 @@ const SecurityPage: React.FC = () => {
               <span className="hidden sm:inline">{t('securitySettings')}</span>
             </TabsTrigger>
             <TabsTrigger value="activity">
-              <UserCheck className="h-4 w-4 mr-2" />
+              <History className="h-4 w-4 mr-2" />
               <span className="hidden sm:inline">{t('activity')}</span>
+            </TabsTrigger>
+            <TabsTrigger value="authentication">
+              <Key className="h-4 w-4 mr-2" />
+              <span className="hidden sm:inline">{t('authentication')}</span>
             </TabsTrigger>
           </TabsList>
 
@@ -123,39 +153,140 @@ const SecurityPage: React.FC = () => {
                   </Button>
                 </CardContent>
               </Card>
+              
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center">
+                    <Key className="h-5 w-5 mr-2 text-primary" />
+                    {t('twoFactorAuthentication')}
+                  </CardTitle>
+                  <CardDescription>{t('twoFactorAuthDescription')}</CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <p className="text-sm">{t('twoFactorAuthExplanation')}</p>
+                  <Button 
+                    variant="outline" 
+                    onClick={() => setShow2FA(true)}
+                  >
+                    {t('setup2FA')}
+                  </Button>
+                  
+                  {show2FA && (
+                    <div className="mt-4">
+                      <TwoFactorAuth 
+                        onVerify={handleDemo2FA}
+                        onCancel={() => setShow2FA(false)}
+                        email={preferences.email}
+                        method="2fa"
+                      />
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
             </div>
           </TabsContent>
 
           <TabsContent value="activity">
-            <Card>
-              <CardHeader>
-                <CardTitle>{t('recentActivity')}</CardTitle>
-                <CardDescription>{t('recentActivityDescription')}</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  {preferences.lastActive ? (
-                    <div className="rounded-md border p-4">
-                      <div className="flex items-center gap-4">
-                        <div className="p-2 bg-primary/10 rounded-full">
-                          <UserCheck className="h-4 w-4 text-primary" />
-                        </div>
-                        <div>
-                          <p className="text-sm font-medium">{t('lastLogin')}</p>
-                          <p className="text-xs text-muted-foreground">
-                            {new Date(preferences.lastActive).toLocaleString()}
-                          </p>
+            <div className="grid gap-4">
+              <SecurityAuditLog />
+              
+              <Card>
+                <CardHeader>
+                  <CardTitle>{t('recentActivity')}</CardTitle>
+                  <CardDescription>{t('recentActivityDescription')}</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-4">
+                    {preferences.lastActive ? (
+                      <div className="rounded-md border p-4">
+                        <div className="flex items-center gap-4">
+                          <div className="p-2 bg-primary/10 rounded-full">
+                            <UserCheck className="h-4 w-4 text-primary" />
+                          </div>
+                          <div>
+                            <p className="text-sm font-medium">{t('lastLogin')}</p>
+                            <p className="text-xs text-muted-foreground">
+                              {new Date(preferences.lastActive).toLocaleString()}
+                            </p>
+                          </div>
                         </div>
                       </div>
-                    </div>
-                  ) : (
-                    <div className="text-center text-muted-foreground py-8">
-                      <p>{t('noRecentActivity')}</p>
-                    </div>
-                  )}
-                </div>
-              </CardContent>
-            </Card>
+                    ) : (
+                      <div className="text-center text-muted-foreground py-8">
+                        <p>{t('noRecentActivity')}</p>
+                      </div>
+                    )}
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+          </TabsContent>
+          
+          <TabsContent value="authentication">
+            <div className="grid gap-4 md:grid-cols-2">
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center">
+                    <Key className="h-5 w-5 mr-2 text-primary" />
+                    {t('passwordManagement')}
+                  </CardTitle>
+                  <CardDescription>{t('passwordManagementDescription')}</CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="border rounded-md p-4 bg-muted/30">
+                    <h4 className="font-medium mb-1">{t('passwordLastChanged')}</h4>
+                    <p className="text-sm text-muted-foreground">
+                      {preferences.lastPasswordChange ? 
+                        new Date(preferences.lastPasswordChange).toLocaleDateString() :
+                        t('never')}
+                    </p>
+                  </div>
+                  
+                  <div className="flex flex-col gap-2">
+                    <Button variant="outline" onClick={() => navigate('/profile?section=password')}>
+                      {t('changePassword')}
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+              
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center">
+                    <ShieldCheck className="h-5 w-5 mr-2 text-primary" />
+                    {t('securityRecommendations')}
+                  </CardTitle>
+                  <CardDescription>{t('securityRecommendationsDescription')}</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <ul className="space-y-3">
+                    <li className="flex gap-2">
+                      <ShieldCheck className="h-5 w-5 text-green-500 flex-shrink-0" />
+                      <div>
+                        <p className="font-medium">{t('useStrongPassword')}</p>
+                        <p className="text-sm text-muted-foreground">{t('useStrongPasswordDescription')}</p>
+                      </div>
+                    </li>
+                    
+                    <li className="flex gap-2">
+                      <ShieldCheck className="h-5 w-5 text-green-500 flex-shrink-0" />
+                      <div>
+                        <p className="font-medium">{t('enable2FA')}</p>
+                        <p className="text-sm text-muted-foreground">{t('enable2FADescription')}</p>
+                      </div>
+                    </li>
+                    
+                    <li className="flex gap-2">
+                      <ShieldCheck className="h-5 w-5 text-green-500 flex-shrink-0" />
+                      <div>
+                        <p className="font-medium">{t('regularSecurityChecks')}</p>
+                        <p className="text-sm text-muted-foreground">{t('regularSecurityChecksDescription')}</p>
+                      </div>
+                    </li>
+                  </ul>
+                </CardContent>
+              </Card>
+            </div>
           </TabsContent>
         </Tabs>
       </div>
