@@ -1,60 +1,36 @@
 
 import React from 'react';
-import { useNavigate } from 'react-router-dom';
-import { useWorkflow, WorkflowType } from '@/hooks/use-workflow';
-import { workflowDefinitions } from '@/data/workflow-definitions';
-import { useLanguage } from '@/contexts/LanguageContext';
 import { Button } from '@/components/ui/button';
-import { Progress } from '@/components/ui/progress';
 import { Card } from '@/components/ui/card';
-import { CheckCircle, Clock, ArrowRight } from 'lucide-react';
+import { useWorkflow, WorkflowType } from '@/hooks/use-workflow';
+import { useLanguage } from '@/contexts/LanguageContext';
+import { CheckCircle, ArrowRight, Clock } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { useAccessibility } from '@/hooks/use-accessibility';
+import { Badge } from '@/components/ui/badge';
+import { useNavigate } from 'react-router-dom';
 
-interface WorkflowStepsProps {
+interface WorkflowStepsListProps {
   workflowType: WorkflowType;
-  currentStep?: string;
   className?: string;
-  compact?: boolean;
-  onStepClick?: (stepId: string) => void;
 }
 
 /**
  * Displays the steps of a workflow with their completion status
  */
-const WorkflowSteps: React.FC<WorkflowStepsProps> = ({
+const WorkflowStepsList: React.FC<WorkflowStepsListProps> = ({
   workflowType,
-  currentStep,
-  className,
-  compact = false,
-  onStepClick
+  className
 }) => {
   const navigate = useNavigate();
   const { language } = useLanguage();
   const workflow = useWorkflow(workflowType);
-  const { announce } = useAccessibility();
   
   const steps = workflow.getStepsWithStatus();
-  const currentStepObj = steps.find(step => step.id === currentStep);
-  const progress = workflow.getWorkflowProgress(currentStep);
+  const progress = workflow.getWorkflowProgress();
 
   // Navigate to a step
-  const handleStepClick = (step: (typeof steps)[0]) => {
-    if (onStepClick) {
-      onStepClick(step.id);
-    } else {
-      navigate(step.path);
-    }
-    
-    // Announce for screen readers
-    const langKey = language as keyof typeof step.label;
-    const stepName = step.label[langKey];
-    announce(
-      language === 'de'
-        ? `Navigation zu ${stepName}`
-        : `Navigating to ${stepName}`,
-      'polite'
-    );
+  const handleStepClick = (stepPath: string) => {
+    navigate(stepPath);
   };
 
   return (
@@ -62,15 +38,20 @@ const WorkflowSteps: React.FC<WorkflowStepsProps> = ({
       <div className="flex items-center justify-between">
         <div>
           <h2 className="text-xl font-semibold">
-            {workflowDefinitions[workflowType].title[language as keyof typeof workflowDefinitions[workflowType].title]}
+            {language === 'de' ? 
+              workflow.workflow.title.de :
+              workflow.workflow.title.en
+            }
           </h2>
           <p className="text-sm text-muted-foreground">
-            {workflowDefinitions[workflowType].description[language as keyof typeof workflowDefinitions[workflowType].description]}
+            {language === 'de' ? 
+              workflow.workflow.description.de :
+              workflow.workflow.description.en
+            }
           </p>
         </div>
         <div className="text-right">
           <span className="text-sm font-medium">{progress}%</span>
-          <Progress value={progress} className="h-2 w-16" />
         </div>
       </div>
       
@@ -80,11 +61,10 @@ const WorkflowSteps: React.FC<WorkflowStepsProps> = ({
         
         <div className="space-y-3">
           {steps.map((step, index) => {
-            const isActive = step.id === currentStep;
-            const langKey = language as keyof typeof step.label;
-            const stepName = step.label[langKey];
+            const isActive = false; // Could be controlled by parent
+            const stepName = language === 'de' ? step.label.de : step.label.en;
             const stepDescription = step.description 
-              ? step.description[language as keyof typeof step.description] 
+              ? (language === 'de' ? step.description.de : step.description.en)
               : undefined;
             
             return (
@@ -119,19 +99,14 @@ const WorkflowSteps: React.FC<WorkflowStepsProps> = ({
                       {stepName}
                     </h4>
                     
-                    {!compact && step.estimatedTime && (
-                      <div className="flex items-center gap-1 text-xs text-muted-foreground">
-                        <Clock className="h-3 w-3" aria-hidden="true" />
-                        {language === 'de' ? (
-                          <span>{step.estimatedTime} Min.</span>
-                        ) : (
-                          <span>{step.estimatedTime} min</span>
-                        )}
-                      </div>
+                    {step.estimatedTime && (
+                      <Badge variant="outline" className="text-xs">
+                        {step.estimatedTime} {language === 'de' ? 'Min.' : 'min'}
+                      </Badge>
                     )}
                   </div>
                   
-                  {!compact && stepDescription && (
+                  {stepDescription && (
                     <p className="text-sm text-muted-foreground mt-1">{stepDescription}</p>
                   )}
                   
@@ -142,7 +117,7 @@ const WorkflowSteps: React.FC<WorkflowStepsProps> = ({
                       className={cn(
                         step.isComplete && !isActive && "text-green-700 dark:text-green-400"
                       )}
-                      onClick={() => handleStepClick(step)}
+                      onClick={() => handleStepClick(step.path)}
                     >
                       {isActive ? (
                         language === 'de' ? 'Aktueller Schritt' : 'Current Step'
@@ -166,4 +141,4 @@ const WorkflowSteps: React.FC<WorkflowStepsProps> = ({
   );
 };
 
-export default WorkflowSteps;
+export default WorkflowStepsList;

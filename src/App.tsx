@@ -31,6 +31,7 @@ const InvestorDashboard = lazy(() => import('@/pages/InvestorDashboard'));
 const NotificationsPage = lazy(() => import('@/pages/NotFound')); // Placeholder until a proper page is created
 const ProfilePage = lazy(() => import('@/pages/UserProfile'));
 const HelpSupportPage = lazy(() => import('@/pages/NotFound')); // Placeholder until a proper page is created
+const WorkflowsPage = lazy(() => import('@/pages/WorkflowsPage')); // New workflows page
 
 const App: React.FC = () => {
   return (
@@ -114,6 +115,11 @@ const App: React.FC = () => {
                   } />
                   
                   {/* Workflow Pages */}
+                  <Route path="/workflows" element={
+                    <AuthGuard>
+                      <WorkflowsPage />
+                    </AuthGuard>
+                  } />
                   <Route path="/workflows/:type" element={
                     <AuthGuard>
                       <WorkflowOverviewPage />

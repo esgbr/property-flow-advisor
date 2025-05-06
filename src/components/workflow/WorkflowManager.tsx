@@ -1,19 +1,15 @@
 
 import React, { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { DialogTrigger } from '@/components/ui/dialog';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { WorkflowType, useWorkflow } from '@/hooks/use-workflow';
-import { workflowDefinitions } from '@/data/workflow-definitions';
-import WorkflowSteps from '@/components/workflow/WorkflowSteps';
-import { MoreHorizontal, Trello, Calendar, RotateCcw, CheckCircle, Settings, FileText } from 'lucide-react';
-import { ScrollArea } from '@/components/ui/scroll-area';
-import { useWorkflowState } from '@/contexts/WorkflowStateContext';
+import { RotateCcw } from 'lucide-react';
 import { useToast } from '@/components/ui/toast';
-import { cn } from '@/lib/utils';
+import WorkflowTabs from './WorkflowTabs';
+import WorkflowResetDialog from './WorkflowResetDialog';
 
 interface WorkflowManagerProps {
   className?: string;
@@ -26,7 +22,6 @@ interface WorkflowManagerProps {
 const WorkflowManager: React.FC<WorkflowManagerProps> = ({ className }) => {
   const { language } = useLanguage();
   const { toast } = useToast();
-  const { resetWorkflow } = useWorkflowState();
   const [activeTab, setActiveTab] = useState<WorkflowType>('steuer');
   const [isResetDialogOpen, setIsResetDialogOpen] = useState<boolean>(false);
   const [isResetting, setIsResetting] = useState<boolean>(false);
@@ -85,8 +80,8 @@ const WorkflowManager: React.FC<WorkflowManagerProps> = ({ className }) => {
       toast({
         title: language === 'de' ? 'Workflow zurückgesetzt' : 'Workflow reset',
         description: language === 'de'
-          ? `Der ${workflowDefinitions[activeTab].title.de}-Workflow wurde zurückgesetzt.`
-          : `The ${workflowDefinitions[activeTab].title.en} workflow has been reset.`,
+          ? `Der ${activeWorkflow.workflow.title.de}-Workflow wurde zurückgesetzt.`
+          : `The ${activeWorkflow.workflow.title.en} workflow has been reset.`,
         variant: 'default'
       });
       
@@ -115,7 +110,7 @@ const WorkflowManager: React.FC<WorkflowManagerProps> = ({ className }) => {
   const summary = getWorkflowSummary();
   
   return (
-    <Card className={cn("", className)}>
+    <Card className={className}>
       <CardHeader>
         <div className="flex items-center justify-between">
           <div>
@@ -132,92 +127,33 @@ const WorkflowManager: React.FC<WorkflowManagerProps> = ({ className }) => {
         </div>
       </CardHeader>
       <CardContent>
-        <Tabs defaultValue={activeTab} onValueChange={(value) => setActiveTab(value as WorkflowType)}>
-          <div className="flex items-center justify-between mb-4">
-            <TabsList>
-              <TabsTrigger value="steuer">
-                {language === 'de' ? 'Steuer' : 'Tax'}
-              </TabsTrigger>
-              <TabsTrigger value="immobilien">
-                {language === 'de' ? 'Immobilien' : 'Property'}
-              </TabsTrigger>
-              <TabsTrigger value="finanzierung">
-                {language === 'de' ? 'Finanzierung' : 'Financing'}
-              </TabsTrigger>
-              <TabsTrigger value="analyse">
-                {language === 'de' ? 'Analyse' : 'Analysis'}
-              </TabsTrigger>
-            </TabsList>
-            
-            <Dialog open={isResetDialogOpen} onOpenChange={setIsResetDialogOpen}>
-              <DialogTrigger asChild>
-                <Button variant="outline" size="sm">
-                  <RotateCcw className="h-4 w-4 mr-1" />
-                  {language === 'de' ? 'Zurücksetzen' : 'Reset'}
-                </Button>
-              </DialogTrigger>
-              <DialogContent>
-                <DialogHeader>
-                  <DialogTitle>
-                    {language === 'de'
-                      ? `Workflow "${workflowDefinitions[activeTab].title.de}" zurücksetzen?`
-                      : `Reset "${workflowDefinitions[activeTab].title.en}" workflow?`
-                    }
-                  </DialogTitle>
-                  <DialogDescription>
-                    {language === 'de'
-                      ? 'Dies wird den Fortschritt und alle gespeicherten Daten für diesen Workflow löschen. Diese Aktion kann nicht rückgängig gemacht werden.'
-                      : 'This will delete all progress and saved data for this workflow. This action cannot be undone.'
-                    }
-                  </DialogDescription>
-                </DialogHeader>
-                <div className="flex justify-end gap-2 mt-4">
-                  <Button
-                    variant="outline"
-                    onClick={() => setIsResetDialogOpen(false)}
-                    disabled={isResetting}
-                  >
-                    {language === 'de' ? 'Abbrechen' : 'Cancel'}
-                  </Button>
-                  <Button
-                    variant="destructive"
-                    onClick={handleResetWorkflow}
-                    disabled={isResetting}
-                  >
-                    {isResetting
-                      ? (language === 'de' ? 'Wird zurückgesetzt...' : 'Resetting...')
-                      : (language === 'de' ? 'Ja, zurücksetzen' : 'Yes, reset')
-                    }
-                  </Button>
-                </div>
-              </DialogContent>
-            </Dialog>
+        <div className="flex items-center justify-between mb-4">
+          <div className="flex-1">
+            <WorkflowTabs 
+              activeTab={activeTab}
+              onTabChange={(value) => setActiveTab(value as WorkflowType)}
+            />
           </div>
           
-          <TabsContent value="steuer" className="mt-0">
-            <ScrollArea className="max-h-[500px]">
-              <WorkflowSteps workflowType="steuer" />
-            </ScrollArea>
-          </TabsContent>
+          <WorkflowResetDialog
+            open={isResetDialogOpen}
+            onOpenChange={setIsResetDialogOpen}
+            onConfirm={handleResetWorkflow}
+            isResetting={isResetting}
+            workflowType={activeTab}
+          />
           
-          <TabsContent value="immobilien" className="mt-0">
-            <ScrollArea className="max-h-[500px]">
-              <WorkflowSteps workflowType="immobilien" />
-            </ScrollArea>
-          </TabsContent>
-          
-          <TabsContent value="finanzierung" className="mt-0">
-            <ScrollArea className="max-h-[500px]">
-              <WorkflowSteps workflowType="finanzierung" />
-            </ScrollArea>
-          </TabsContent>
-          
-          <TabsContent value="analyse" className="mt-0">
-            <ScrollArea className="max-h-[500px]">
-              <WorkflowSteps workflowType="analyse" />
-            </ScrollArea>
-          </TabsContent>
-        </Tabs>
+          <DialogTrigger asChild>
+            <Button 
+              variant="outline" 
+              size="sm"
+              onClick={() => setIsResetDialogOpen(true)}
+            >
+              <RotateCcw className="h-4 w-4 mr-1" />
+              {language === 'de' ? 'Zurücksetzen' : 'Reset'}
+            </Button>
+          </DialogTrigger>
+        </div>
       </CardContent>
     </Card>
   );

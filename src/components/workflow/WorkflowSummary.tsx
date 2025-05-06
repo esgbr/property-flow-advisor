@@ -2,7 +2,7 @@
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
-import { CheckCircle, Clock } from 'lucide-react';
+import { CheckCircle } from 'lucide-react';
 import { useWorkflow, WorkflowType } from '@/hooks/use-workflow';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { workflowDefinitions } from '@/data/workflow-definitions';
