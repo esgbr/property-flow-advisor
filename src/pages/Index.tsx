@@ -56,9 +56,9 @@ const Index: React.FC = () => {
     return () => clearTimeout(timer);
   }, []);
 
-  // Fix setUserMarket usage
+  // Fix the handleMarketChange function to use setUserMarket directly
   const handleMarketChange = (market: InvestmentMarket) => {
-    marketFilter.setUserMarket(market);
+    setUserMarket(market);
   };
 
   // Consolidated features array with removed duplicates and merged similar features
