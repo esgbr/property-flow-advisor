@@ -3,7 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { InputOTP, InputOTPGroup, InputOTPSlot } from '@/components/ui/input-otp';
-import { useToast } from '@/components/ui/use-toast';
+import { toast } from 'sonner';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { Shield, Check, RefreshCcw } from 'lucide-react';
 import { logSecurityEvent } from '@/utils/securityUtils';
@@ -31,7 +31,6 @@ const TwoFactorAuth: React.FC<TwoFactorAuthProps> = ({
   const [countdown, setCountdown] = useState(30);
   const [canResend, setCanResend] = useState(false);
   
-  const { toast } = useToast();
   const { t, language } = useLanguage();
   
   // Countdown timer for code expiration
@@ -168,7 +167,7 @@ const TwoFactorAuth: React.FC<TwoFactorAuthProps> = ({
             <div className="flex justify-center gap-1 sm:gap-2">
               {slots.map((slot, index) => (
                 <InputOTPGroup key={index}>
-                  <InputOTPSlot {...slot} />
+                  <InputOTPSlot {...slot} index={index} />
                 </InputOTPGroup>
               ))}
             </div>

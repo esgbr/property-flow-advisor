@@ -1,256 +1,103 @@
-
 import React, { createContext, useState, useContext, useEffect } from 'react';
 
-// Define InvestmentMarket type explicitly as a string union type
-export type InvestmentMarket = 'germany' | 'austria' | 'switzerland' | 'france' | 'usa' | 'canada' | 'global' | 'other' | '';
+export type Theme = 'light' | 'dark' | 'system';
+export type Language = 'en' | 'de';
+export type ExperienceLevel = 'beginner' | 'intermediate' | 'advanced' | 'expert';
+export type InvestmentMarket = 'global' | 'germany' | 'usa' | 'austria' | 'switzerland';
 
-// Update the UserPreferences interface to include all needed properties
+// Define the shape of our user preferences
 export interface UserPreferences {
-  theme?: 'light' | 'dark' | 'system';
-  language?: string;
-  currency?: string;
+  theme: Theme;
+  language: Language;
   name?: string;
   email?: string;
-  investmentMarket?: InvestmentMarket;
-  experienceLevel?: 'beginner' | 'intermediate' | 'advanced' | 'expert';
-  appLockEnabled?: boolean;
-  appLockMethod?: 'pin' | 'biometric' | 'none';
-  notifications?: {
-    email?: boolean;
-    push?: boolean;
-    alerts?: boolean;
+  isAuthenticated: boolean;
+  visitedDashboard?: boolean;
+  visitedInvestorDashboard?: boolean;
+  hasCompletedOnboarding?: boolean;
+  role?: 'user' | 'admin' | 'premium';
+  preferences?: {
+    notifications?: boolean;
+    marketUpdates?: boolean;
+    newsletter?: boolean;
   };
-  marketAlerts?: {
-    priceDrops?: boolean;
-    foreclosures?: boolean;
-    newListings?: boolean;
-  };
-  // Adding missing properties
-  darkMode?: boolean;
-  notificationsEnabled?: boolean;
-  analyticsConsent?: boolean;
-  onboardingCompleted?: boolean;
-  dismissedSecurityAlert?: boolean;
+  marketFilter?: InvestmentMarket;
+  lastPasswordChange?: string; // Add this property
+  experienceLevel?: ExperienceLevel;
   visitedPages?: string[];
   lastVisitedPage?: string;
   lastActive?: string;
-  todayWelcomed?: string;
-  interests?: string[];
-  investmentGoals?: string[];
-  preferredPropertyTypes?: string[];
-  visitedInvestorDashboard?: boolean;
-  sidebarPreferences?: {
-    collapsed?: boolean;
-    favoriteItems?: string[];
-  };
-  // Adding properties needed for WelcomeModal
-  isFirstVisit?: boolean;
-  
-  // Add missing property for AuthGuard.tsx
-  emailVerified?: boolean;
-  
-  // Add missing property for UserMenu.tsx
-  profileImage?: string;
-  
-  // Add recentMarkets for useMarketFilter.tsx
-  recentMarkets?: InvestmentMarket[];
-  
-  // Add accessibility settings as individual properties
-  reduceMotion?: boolean;
-  highContrast?: boolean;
-  largeText?: boolean;
-  screenReader?: boolean;
-  
-  // Add user role property for admin features
-  role?: 'user' | 'admin';
+  dismissedSecurityAlert?: boolean;
 }
 
-// Define OnboardingData type for WelcomeModal - fixing the error by making sure advanced is included
-export interface OnboardingData {
-  name: string;
-  experienceLevel: 'beginner' | 'intermediate' | 'advanced' | 'expert';
-  interests: string[];
-  investmentGoals: string[];
-  preferredPropertyTypes: string[];
-  investmentMarket: InvestmentMarket;
-}
+// Set up the initial (default) user preferences
+const defaultPreferences: UserPreferences = {
+  theme: 'system',
+  language: 'en',
+  isAuthenticated: false,
+  marketFilter: 'global',
+};
 
-interface UserPreferencesContextProps {
+// Create a context for these preferences
+interface UserPreferencesContextType {
   preferences: UserPreferences;
-  updatePreferences: (newPreferences: UserPreferences) => void;
-  resetOnboarding?: () => void;
-  isFirstVisit?: boolean;
-  setIsFirstVisit?: (value: boolean) => void;
-  saveOnboardingData?: (data: Partial<OnboardingData>) => void;
-  loginUser?: (email: string, password: string) => Promise<boolean>;
-  registerUser?: (name: string, email: string, password: string) => Promise<boolean>;
-  logoutUser?: () => void;
-  isAuthenticated?: boolean;
+  updatePreferences: (updates: Partial<UserPreferences>) => void;
+  resetPreferences: () => void;
 }
 
-const UserPreferencesContext = createContext<UserPreferencesContextProps>({
-  preferences: {},
-  updatePreferences: () => {}
+const UserPreferencesContext = createContext<UserPreferencesContextType>({
+  preferences: defaultPreferences,
+  updatePreferences: () => {},
+  resetPreferences: () => {},
 });
 
+// Provider to supply preferences to app
 interface UserPreferencesProviderProps {
   children: React.ReactNode;
 }
 
-const defaultPreferences: UserPreferences = {
-  theme: 'system',
-  language: 'en',
-  currency: 'USD',
-  investmentMarket: 'global',
-  experienceLevel: 'beginner',
-  appLockEnabled: false,
-  appLockMethod: 'none',
-  notifications: {
-    email: true,
-    push: false,
-    alerts: true
-  },
-  marketAlerts: {
-    priceDrops: true,
-    foreclosures: false,
-    newListings: true
-  },
-  darkMode: false,
-  notificationsEnabled: true,
-  analyticsConsent: true,
-  onboardingCompleted: false,
-  dismissedSecurityAlert: false,
-  visitedPages: [],
-  todayWelcomed: '',
-  sidebarPreferences: {
-    collapsed: false,
-    favoriteItems: []
-  },
-  isFirstVisit: true,
-  // Initialize accessibility settings
-  reduceMotion: false,
-  highContrast: false,
-  largeText: false,
-  screenReader: false,
-  // Default role is user, not admin
-  role: 'user'
-};
-
 export const UserPreferencesProvider: React.FC<UserPreferencesProviderProps> = ({ children }) => {
-  const [preferences, setPreferences] = useState<UserPreferences>(() => {
-    // Load preferences from localStorage on initialization
-    const storedPreferences = localStorage.getItem('userPreferences');
-    return storedPreferences ? { ...defaultPreferences, ...JSON.parse(storedPreferences) } : defaultPreferences;
-  });
-  
-  const [isFirstVisit, setIsFirstVisit] = useState<boolean>(preferences.isFirstVisit !== false);
-  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
+  const [preferences, setPreferences] = useState<UserPreferences>(defaultPreferences);
+
+  useEffect(() => {
+    // Load preferences from localStorage on mount
+    try {
+      const storedPreferences = localStorage.getItem('userPreferences');
+      if (storedPreferences) {
+        setPreferences(JSON.parse(storedPreferences));
+      }
+    } catch (error) {
+      console.error('Failed to load user preferences from localStorage', error);
+    }
+  }, []);
 
   useEffect(() => {
     // Save preferences to localStorage whenever they change
-    localStorage.setItem('userPreferences', JSON.stringify(preferences));
-    
-    // Check for authentication token
-    const authToken = localStorage.getItem('authToken');
-    if (authToken) {
-      setIsAuthenticated(true);
+    try {
+      localStorage.setItem('userPreferences', JSON.stringify(preferences));
+    } catch (error) {
+      console.error('Failed to save user preferences to localStorage', error);
     }
   }, [preferences]);
 
-  const updatePreferences = (newPreferences: UserPreferences) => {
-    setPreferences(prevPreferences => ({ ...prevPreferences, ...newPreferences }));
+  const updatePreferences = (updates: Partial<UserPreferences>) => {
+    setPreferences((prevPreferences) => ({
+      ...prevPreferences,
+      ...updates,
+    }));
   };
 
-  // Add the resetOnboarding function
-  const resetOnboarding = () => {
-    updatePreferences({ onboardingCompleted: false });
-  };
-  
-  // Add saveOnboardingData function
-  const saveOnboardingData = (data: Partial<OnboardingData>) => {
-    updatePreferences({
-      ...data,
-      onboardingCompleted: true
-    });
-  };
-  
-  // Mock login function (would connect to a real backend in production)
-  const loginUser = async (email: string, password: string): Promise<boolean> => {
-    try {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 800));
-      
-      // For demo purposes, consider specific emails as admin
-      const isAdmin = email.includes('admin') || email === 'admin@example.com';
-      
-      // Store auth token (in real app, this would come from backend)
-      localStorage.setItem('authToken', 'mock-jwt-token');
-      setIsAuthenticated(true);
-      
-      // Update user preferences
-      updatePreferences({ 
-        ...preferences,
-        email,
-        role: isAdmin ? 'admin' : 'user',
-        name: preferences.name || email.split('@')[0]
-      });
-      
-      return true;
-    } catch (error) {
-      console.error('Login error:', error);
-      return false;
-    }
-  };
-  
-  // Mock register function
-  const registerUser = async (name: string, email: string, password: string): Promise<boolean> => {
-    try {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      // Store auth token (in real app, this would come from backend)
-      localStorage.setItem('authToken', 'mock-jwt-token');
-      setIsAuthenticated(true);
-      
-      // Update user preferences
-      updatePreferences({ 
-        ...preferences,
-        name,
-        email,
-        role: 'user'
-      });
-      
-      return true;
-    } catch (error) {
-      console.error('Registration error:', error);
-      return false;
-    }
-  };
-  
-  // Logout function
-  const logoutUser = () => {
-    localStorage.removeItem('authToken');
-    setIsAuthenticated(false);
+  const resetPreferences = () => {
+    setPreferences(defaultPreferences);
+    localStorage.removeItem('userPreferences');
   };
 
   return (
-    <UserPreferencesContext.Provider value={{ 
-      preferences, 
-      updatePreferences, 
-      resetOnboarding, 
-      isFirstVisit, 
-      setIsFirstVisit,
-      saveOnboardingData,
-      loginUser,
-      registerUser,
-      logoutUser,
-      isAuthenticated
-    }}>
+    <UserPreferencesContext.Provider value={{ preferences, updatePreferences, resetPreferences }}>
       {children}
     </UserPreferencesContext.Provider>
   );
 };
 
-export const useUserPreferences = (): UserPreferencesContextProps => {
-  return useContext(UserPreferencesContext);
-};
+// Hook to consume preferences in a component
+export const useUserPreferences = () => useContext(UserPreferencesContext);

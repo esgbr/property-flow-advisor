@@ -50,7 +50,7 @@ const WorkflowSuggestions: React.FC<WorkflowSuggestionsProps> = ({
   const nextSteps = workflow.getNextSteps(currentTool, maxSuggestions) as EnhancedWorkflowStep[];
   
   // Get user's progress in this workflow
-  const workflowProgress = workflow.getWorkflowProgress();
+  const workflowProgress = workflow.getWorkflowProgress(currentTool);
 
   // Handle navigation and callback
   const handleStepSelection = (stepId: string) => {
