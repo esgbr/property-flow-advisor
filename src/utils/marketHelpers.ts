@@ -1,129 +1,144 @@
 
 import { InvestmentMarket, InvestmentMarketOption } from '@/contexts/UserPreferencesContext';
 
-export const availableMarkets: InvestmentMarketOption[] = [
-  { id: 'germany', name: 'Germany' },
-  { id: 'austria', name: 'Austria' },
-  { id: 'switzerland', name: 'Switzerland' },
-  { id: 'usa', name: 'USA' },
-  { id: 'canada', name: 'Canada' },
-  { id: 'global', name: 'Global' },
-  { id: 'uk', name: 'United Kingdom' },
-  { id: 'europe', name: 'Europe' }
-];
-
-export const getLocalizedMarketName = (market: InvestmentMarket, language: string): string => {
-  if (language === 'de') {
-    const germanNames: Record<InvestmentMarket, string> = {
-      germany: 'Deutschland',
-      austria: 'Österreich',
-      switzerland: 'Schweiz',
-      usa: 'USA',
-      canada: 'Kanada',
-      global: 'Global',
-      uk: 'Vereinigtes Königreich',
-      europe: 'Europa'
-    };
-    return germanNames[market] || market;
-  }
-
-  // English fallback
-  const englishNames: Record<InvestmentMarket, string> = {
-    germany: 'Germany',
-    austria: 'Austria',
-    switzerland: 'Switzerland',
-    usa: 'USA',
-    canada: 'Canada',
-    global: 'Global',
-    uk: 'United Kingdom',
-    europe: 'Europe'
+/**
+ * Get localized name for a market
+ */
+export const getLocalizedMarketName = (market: InvestmentMarket, language: string = 'en'): string => {
+  const marketNames: Record<InvestmentMarket, Record<string, string>> = {
+    germany: { en: 'Germany', de: 'Deutschland' },
+    austria: { en: 'Austria', de: 'Österreich' },
+    switzerland: { en: 'Switzerland', de: 'Schweiz' },
+    usa: { en: 'USA', de: 'USA' },
+    canada: { en: 'Canada', de: 'Kanada' },
+    global: { en: 'Global', de: 'Global' },
+    uk: { en: 'United Kingdom', de: 'Vereinigtes Königreich' },
+    europe: { en: 'Europe', de: 'Europa' }
   };
   
-  return englishNames[market] || market;
+  return marketNames[market]?.[language as 'en' | 'de'] || market;
 };
 
-// Add the missing function for market display name
-export const getMarketDisplayName = (market: InvestmentMarket, language: string = 'en'): string => {
-  return getLocalizedMarketName(market, language);
+/**
+ * Get filtered market options based on language
+ */
+export const getFilteredMarketOptions = (language: string = 'en'): InvestmentMarketOption[] => {
+  return [
+    { value: 'germany', label: getLocalizedMarketName('germany', language) },
+    { value: 'austria', label: getLocalizedMarketName('austria', language) },
+    { value: 'switzerland', label: getLocalizedMarketName('switzerland', language) },
+    { value: 'usa', label: getLocalizedMarketName('usa', language) },
+    { value: 'canada', label: getLocalizedMarketName('canada', language) },
+    { value: 'global', label: getLocalizedMarketName('global', language) },
+    { value: 'uk', label: getLocalizedMarketName('uk', language) },
+    { value: 'europe', label: getLocalizedMarketName('europe', language) }
+  ];
 };
 
-// Add rental market trend function
-export const getRentalMarketTrend = (market: InvestmentMarket): { trend: 'up' | 'down' | 'stable'; percentage: number } => {
-  const trends: Record<InvestmentMarket, { trend: 'up' | 'down' | 'stable'; percentage: number }> = {
-    germany: { trend: 'up', percentage: 3.2 },
-    austria: { trend: 'up', percentage: 2.8 },
-    switzerland: { trend: 'stable', percentage: 1.5 },
-    usa: { trend: 'up', percentage: 4.3 },
-    canada: { trend: 'up', percentage: 3.5 },
-    global: { trend: 'stable', percentage: 2.7 },
-    uk: { trend: 'down', percentage: 1.2 },
-    europe: { trend: 'stable', percentage: 2.1 }
-  };
-  
-  return trends[market] || { trend: 'stable', percentage: 0 };
-};
-
-// Add filtered market options function
-export const getFilteredMarketOptions = (filter?: string): InvestmentMarketOption[] => {
-  if (!filter) return availableMarkets;
-  return availableMarkets.filter(market => 
-    market.name.toLowerCase().includes(filter.toLowerCase()));
-};
-
-// Add market similarity function
+/**
+ * Calculate similarity between two markets (0-100)
+ */
 export const getMarketSimilarity = (marketA: InvestmentMarket, marketB: InvestmentMarket): number => {
-  const similarityMatrix: Record<InvestmentMarket, Record<InvestmentMarket, number>> = {
-    germany: { germany: 1, austria: 0.8, switzerland: 0.7, usa: 0.4, canada: 0.4, global: 0.5, uk: 0.6, europe: 0.8 },
-    austria: { germany: 0.8, austria: 1, switzerland: 0.8, usa: 0.3, canada: 0.3, global: 0.5, uk: 0.5, europe: 0.8 },
-    switzerland: { germany: 0.7, austria: 0.8, switzerland: 1, usa: 0.4, canada: 0.4, global: 0.5, uk: 0.5, europe: 0.7 },
-    usa: { germany: 0.4, austria: 0.3, switzerland: 0.4, usa: 1, canada: 0.8, global: 0.7, uk: 0.6, europe: 0.5 },
-    canada: { germany: 0.4, austria: 0.3, switzerland: 0.4, usa: 0.8, canada: 1, global: 0.6, uk: 0.6, europe: 0.5 },
-    global: { germany: 0.5, austria: 0.5, switzerland: 0.5, usa: 0.7, canada: 0.6, global: 1, uk: 0.6, europe: 0.7 },
-    uk: { germany: 0.6, austria: 0.5, switzerland: 0.5, usa: 0.6, canada: 0.6, global: 0.6, uk: 1, europe: 0.8 },
-    europe: { germany: 0.8, austria: 0.8, switzerland: 0.7, usa: 0.5, canada: 0.5, global: 0.7, uk: 0.8, europe: 1 }
+  if (marketA === marketB) return 100;
+  
+  const similarities: Record<string, number> = {
+    'germany-austria': 82,
+    'austria-germany': 82,
+    'germany-switzerland': 75,
+    'switzerland-germany': 75,
+    'austria-switzerland': 79,
+    'switzerland-austria': 79,
+    'usa-canada': 84,
+    'canada-usa': 84,
+    'uk-europe': 72,
+    'europe-uk': 72,
+    'germany-europe': 89,
+    'europe-germany': 89,
+    'austria-europe': 85,
+    'europe-austria': 85
   };
   
-  return similarityMatrix[marketA]?.[marketB] || 0;
+  const key = `${marketA}-${marketB}`;
+  return similarities[key] || 50; // Default similarity if not defined
 };
 
-// Add market potential score calculation
-export const calculateMarketPotentialScore = (market: InvestmentMarket, userPreference: string): number => {
-  // Mock implementation - in reality would use more complex factors
-  const baseScores: Record<InvestmentMarket, number> = {
-    germany: 85,
-    austria: 80,
-    switzerland: 82,
-    usa: 87,
-    canada: 83,
-    global: 75,
-    uk: 81,
-    europe: 79
+/**
+ * Calculate market potential score (0-100)
+ */
+export const calculateMarketPotentialScore = (market: InvestmentMarket): number => {
+  const potentialScores: Record<InvestmentMarket, number> = {
+    germany: 78,
+    austria: 76,
+    switzerland: 74,
+    usa: 82,
+    canada: 80,
+    global: 68,
+    uk: 75,
+    europe: 72
   };
   
-  // Adjust score based on user preference
-  let adjustmentFactor = 0;
-  
-  if (userPreference === 'growth' && ['usa', 'germany', 'uk'].includes(market)) {
-    adjustmentFactor = 10;
-  } else if (userPreference === 'income' && ['switzerland', 'canada'].includes(market)) {
-    adjustmentFactor = 8;
-  } else if (userPreference === 'balanced') {
-    adjustmentFactor = 5;
-  } else if (userPreference === 'conservative' && ['switzerland', 'germany'].includes(market)) {
-    adjustmentFactor = 12;
-  } else if (userPreference === 'aggressive' && ['usa', 'global'].includes(market)) {
-    adjustmentFactor = 15;
-  }
-  
-  return Math.min(100, baseScores[market] + adjustmentFactor);
+  return potentialScores[market] || 70;
 };
 
-export default {
-  availableMarkets,
-  getLocalizedMarketName,
-  getMarketDisplayName,
-  getRentalMarketTrend,
-  getFilteredMarketOptions,
-  getMarketSimilarity,
-  calculateMarketPotentialScore
+/**
+ * Get rental market trend data
+ */
+export const getRentalMarketTrend = (market: InvestmentMarket, period: '1y' | '3y' | '5y' | '10y' = '5y') => {
+  const trends: Record<InvestmentMarket, Record<string, { change: number, volatility: number }>> = {
+    germany: {
+      '1y': { change: 3.2, volatility: 1.1 },
+      '3y': { change: 9.8, volatility: 2.4 },
+      '5y': { change: 17.5, volatility: 3.2 },
+      '10y': { change: 32.8, volatility: 5.7 }
+    },
+    austria: {
+      '1y': { change: 3.5, volatility: 1.2 },
+      '3y': { change: 10.2, volatility: 2.5 },
+      '5y': { change: 18.1, volatility: 3.4 },
+      '10y': { change: 33.5, volatility: 5.9 }
+    },
+    switzerland: {
+      '1y': { change: 2.8, volatility: 1.0 },
+      '3y': { change: 8.5, volatility: 2.0 },
+      '5y': { change: 15.2, volatility: 2.8 },
+      '10y': { change: 28.4, volatility: 4.8 }
+    },
+    usa: {
+      '1y': { change: 4.2, volatility: 1.8 },
+      '3y': { change: 13.5, volatility: 3.2 },
+      '5y': { change: 22.8, volatility: 4.5 },
+      '10y': { change: 42.5, volatility: 7.8 }
+    },
+    canada: {
+      '1y': { change: 3.8, volatility: 1.6 },
+      '3y': { change: 12.1, volatility: 3.0 },
+      '5y': { change: 21.5, volatility: 4.2 },
+      '10y': { change: 39.8, volatility: 7.2 }
+    },
+    global: {
+      '1y': { change: 3.5, volatility: 1.5 },
+      '3y': { change: 10.8, volatility: 2.8 },
+      '5y': { change: 19.5, volatility: 3.8 },
+      '10y': { change: 36.2, volatility: 6.5 }
+    },
+    uk: {
+      '1y': { change: 3.0, volatility: 1.4 },
+      '3y': { change: 9.2, volatility: 2.6 },
+      '5y': { change: 16.8, volatility: 3.5 },
+      '10y': { change: 31.5, volatility: 6.2 }
+    },
+    europe: {
+      '1y': { change: 3.1, volatility: 1.3 },
+      '3y': { change: 9.5, volatility: 2.5 },
+      '5y': { change: 17.2, volatility: 3.3 },
+      '10y': { change: 32.0, volatility: 5.8 }
+    }
+  };
+  
+  return trends[market]?.[period] || { change: 3.5, volatility: 1.5 };
 };
+
+/**
+ * Get market display name (alias for getLocalizedMarketName for backward compatibility)
+ */
+export const getMarketDisplayName = getLocalizedMarketName;
