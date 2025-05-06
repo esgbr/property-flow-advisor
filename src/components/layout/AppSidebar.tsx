@@ -50,13 +50,7 @@ const AppSidebar = () => {
           name: t('properties'),
           href: '/properties',
           icon: <Building className="h-5 w-5" />,
-        },
-        {
-          name: t('welcomePage'),
-          href: '/',
-          icon: <Home className="h-5 w-5" />,
-          hide: true, // Hide from navigation
-        },
+        }
       ]
     },
     {
@@ -91,7 +85,7 @@ const AppSidebar = () => {
       items: [
         {
           name: t('tools'),
-          href: '/deutsche-immobilien-tools',
+          href: '/tools',
           icon: <Banknote className="h-5 w-5" />,
         },
         {
@@ -116,6 +110,11 @@ const AppSidebar = () => {
           href: '/education',
           icon: <School className="h-5 w-5" />,
         },
+        {
+          name: language === 'de' ? 'Steuerplanung' : 'Tax Planning',
+          href: '/tax-planning',
+          icon: <Euro className="h-5 w-5" />,
+        }
       ]
     },
     {
@@ -190,7 +189,7 @@ const AppSidebar = () => {
     <Sidebar>
       <div className="flex flex-col h-full py-4">
         <div className="px-3 py-2">
-          <Link to="/" className="flex items-center mb-6">
+          <Link to="/dashboard" className="flex items-center mb-6">
             <Building className="h-8 w-8 text-primary" />
             <span className="text-xl font-bold ml-2">PropertyFlow</span>
           </Link>

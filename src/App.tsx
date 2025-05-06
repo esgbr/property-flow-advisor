@@ -26,6 +26,10 @@ import Properties from '@/pages/Properties';
 import UserProfile from '@/pages/UserProfile';
 import Education from '@/pages/Education';
 import NotFound from '@/pages/NotFound';
+import PropertyDetail from '@/pages/PropertyDetail';
+import ToolsPage from '@/pages/ToolsPage';
+import RegionalAnalysis from '@/pages/RegionalAnalysis';
+import TaxPlanning from '@/pages/TaxPlanning';
 
 const AdvancedAnalytics = lazy(() => import('@/pages/AdvancedAnalyticsPage'));
 
@@ -92,12 +96,36 @@ const routes = [
     element: <MainLayout><PropertyList /></MainLayout>
   },
   {
+    path: '/property/:id',
+    element: <MainLayout><PropertyDetail /></MainLayout>
+  },
+  {
     path: '/education',
     element: <MainLayout><Education /></MainLayout>
   },
   {
     path: '/profile',
     element: <MainLayout><UserProfile /></MainLayout>
+  },
+  {
+    path: '/tools',
+    element: <MainLayout><ToolsPage /></MainLayout>
+  },
+  {
+    path: '/decision-tools',
+    element: <MainLayout><ToolsPage /></MainLayout>
+  },
+  {
+    path: '/immobilien-tools',
+    element: <MainLayout><GermanRealEstateInvestor /></MainLayout>
+  },
+  {
+    path: '/regional-analysis',
+    element: <MainLayout><RegionalAnalysis /></MainLayout>
+  },
+  {
+    path: '/tax-planning',
+    element: <MainLayout><TaxPlanning /></MainLayout>
   },
   {
     path: '/advanced-analytics',

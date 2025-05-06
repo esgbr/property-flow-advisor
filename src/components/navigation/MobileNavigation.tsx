@@ -57,26 +57,12 @@ export const MobileNavigation: React.FC = () => {
       { icon: <BarChart3 className="h-5 w-5" />, label: t('investorDashboard'), path: '/investor-dashboard' }
     ];
     
-    // Add market-specific items based on user's selected market
-    if (userMarket === 'germany' || userMarket === 'austria' || userMarket === 'switzerland') {
-      baseItems.push({ 
-        icon: <Compass className="h-5 w-5" />, 
-        label: language === 'de' ? 'DE Tools' : 'DE Tools', 
-        path: '/deutsche-immobilien-tools'
-      });
-    } else if (userMarket === 'usa' || userMarket === 'canada') {
-      baseItems.push({ 
-        icon: <Compass className="h-5 w-5" />, 
-        label: 'US Tools', 
-        path: '/us-real-estate-tools'
-      });
-    } else {
-      baseItems.push({ 
-        icon: <Search className="h-5 w-5" />, 
-        label: t('search'), 
-        path: '/search'
-      });
-    }
+    // Add market-specific tools
+    baseItems.push({ 
+      icon: <Calculator className="h-5 w-5" />, 
+      label: t('tools'), 
+      path: '/tools'
+    });
     
     // Add profile or notifications item
     if (isAuthenticated) {
@@ -296,10 +282,10 @@ export const MobileNavigation: React.FC = () => {
             <Button 
               variant="ghost" 
               className="justify-start"
-              onClick={() => navigate('/calculators')}
+              onClick={() => navigate('/tools')}
             >
               <Calculator className="mr-2 h-5 w-5" />
-              {t('calculators')}
+              {t('tools')}
             </Button>
             
             <Button 
@@ -311,27 +297,14 @@ export const MobileNavigation: React.FC = () => {
               {t('settings')}
             </Button>
             
-            {userMarket === 'germany' && (
-              <Button 
-                variant="ghost" 
-                className="justify-start"
-                onClick={() => navigate('/deutsche-immobilien-tools')}
-              >
-                <Compass className="mr-2 h-5 w-5" />
-                Deutsche Tools
-              </Button>
-            )}
-            
-            {userMarket === 'usa' && (
-              <Button 
-                variant="ghost" 
-                className="justify-start"
-                onClick={() => navigate('/us-real-estate-tools')}
-              >
-                <Compass className="mr-2 h-5 w-5" />
-                US Tools
-              </Button>
-            )}
+            <Button 
+              variant="ghost" 
+              className="justify-start"
+              onClick={() => navigate('/regional-analysis')}
+            >
+              <Compass className="mr-2 h-5 w-5" />
+              {language === 'de' ? 'Regionale Analyse' : 'Regional Analysis'}
+            </Button>
           </div>
           
           {isAuthenticated && (

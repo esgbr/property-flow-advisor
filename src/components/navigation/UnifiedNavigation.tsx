@@ -78,8 +78,7 @@ const UnifiedNavigation: React.FC<{
       label: t('main'),
       icon: <LayoutDashboard className="h-5 w-5" />,
       items: [
-        { label: t('dashboard'), icon: <Home className="h-4 w-4" />, path: '/dashboard', highlight: true },
-        { label: t('welcomePage'), icon: <Globe className="h-4 w-4" />, path: '/' }
+        { label: t('dashboard'), icon: <Home className="h-4 w-4" />, path: '/dashboard', highlight: true }
       ],
       expanded: true
     },
@@ -96,22 +95,26 @@ const UnifiedNavigation: React.FC<{
       label: t('tools'),
       icon: <Calculator className="h-5 w-5" />,
       items: [
+        { label: t('tools'), icon: <Search className="h-4 w-4" />, path: '/tools' },
         { label: t('calculators'), icon: <Calculator className="h-4 w-4" />, path: '/calculators' },
         { label: t('portfolioOptimization'), icon: <PieChart className="h-4 w-4" />, path: '/portfolio-optimization', badge: 'new' },
-        { label: t('marketExplorer'), icon: <Search className="h-4 w-4" />, path: '/market-explorer' }
+        { label: t('marketExplorer'), icon: <Globe className="h-4 w-4" />, path: '/market-explorer' },
+        { label: language === 'de' ? 'Steuerplanung' : 'Tax Planning', icon: <Euro className="h-4 w-4" />, path: '/tax-planning' }
       ]
     },
     {
       label: language === 'de' ? 'Markt' : 'Market',
       icon: <Globe className="h-5 w-5" />,
       items: [
-        { label: language === 'de' ? 'Deutsche Tools' : 'German Tools', 
-          icon: <Euro className="h-4 w-4" />, 
-          path: '/deutsche-immobilien-tools' 
+        { label: language === 'de' ? 'Regionale Analyse' : 'Regional Analysis', 
+          icon: <Search className="h-4 w-4" />, 
+          path: '/regional-analysis',
+          badge: 'new' 
         },
-        { label: language === 'en' ? 'US Tools' : 'US Tools', 
-          icon: <Calculator className="h-4 w-4" />, 
-          path: '/us-real-estate-tools' 
+        { label: language === 'de' ? 'Marktvergleich' : 'Market Comparison', 
+          icon: <BarChart3 className="h-4 w-4" />, 
+          path: '/market-comparison',
+          badge: 'new' 
         },
       ]
     },

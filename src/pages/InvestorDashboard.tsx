@@ -1,388 +1,343 @@
 
 import React from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { useLanguage } from '@/contexts/LanguageContext';
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Building2, TrendingUp, PieChart, DollarSign, Calendar, Users, Globe } from 'lucide-react';
-import { useLanguage } from '@/contexts/LanguageContext';
-import { Progress } from '@/components/ui/progress';
-import { AreaChart, BarChart, PieChart as RechartsChart } from 'recharts';
+import { BarChart2, Activity, TrendingUp, PieChart, ChevronsRight, LineChart, ArrowRight } from 'lucide-react';
+import { useUserPreferences } from '@/contexts/UserPreferencesContext';
+import PortfolioDistributionChart from '@/components/charts/PortfolioDistributionChart';
+import QuickActions from '@/components/dashboard/QuickActions';
+import InvestmentOpportunities from '@/components/investments/InvestmentOpportunities';
 
-const InvestorDashboard = () => {
-  const { language } = useLanguage();
-
-  // Sample portfolio data
-  const portfolioData = [
-    { name: language === 'de' ? 'Wohnung' : 'Apartment', value: 35 },
-    { name: language === 'de' ? 'Haus' : 'House', value: 30 },
-    { name: language === 'de' ? 'Gewerbe' : 'Commercial', value: 20 },
-    { name: language === 'de' ? 'Land' : 'Land', value: 15 }
-  ];
-  
-  // Sample performance data
-  const performanceData = [
-    { month: 'Jan', roi: 5.2 },
-    { month: 'Feb', roi: 5.4 },
-    { month: 'Mar', roi: 5.6 },
-    { month: 'Apr', roi: 5.5 },
-    { month: 'May', roi: 5.8 },
-    { month: 'Jun', roi: 6.1 },
-    { month: 'Jul', roi: 6.3 },
-    { month: 'Aug', roi: 6.2 },
-  ];
-  
-  // Sample properties data
-  const propertiesData = [
-    {
-      id: 1,
-      name: language === 'de' ? 'Zentrum Apartment' : 'City Center Apartment',
-      location: language === 'de' ? 'Berlin, DE' : 'Berlin, DE',
-      roi: 6.2,
-      value: 375000,
-      occupancy: 98
-    },
-    {
-      id: 2,
-      name: language === 'de' ? 'Vorstadtvilla' : 'Suburban Villa',
-      location: language === 'de' ? 'München, DE' : 'Munich, DE',
-      roi: 5.8,
-      value: 520000,
-      occupancy: 100
-    },
-    {
-      id: 3,
-      name: language === 'de' ? 'Geschäftsbüro' : 'Business Office',
-      location: language === 'de' ? 'Frankfurt, DE' : 'Frankfurt, DE',
-      roi: 7.4,
-      value: 890000,
-      occupancy: 95
-    }
-  ];
+const InvestorDashboard: React.FC = () => {
+  const { t, language } = useLanguage();
+  const { preferences } = useUserPreferences();
 
   return (
-    <div className="space-y-6 animate-fade-in">
-      <div className="flex justify-between items-center">
-        <div>
-          <h1 className="text-3xl font-bold flex gap-2 items-center">
-            <Building2 className="h-8 w-8" />
-            {language === 'de' ? 'Investoren-Dashboard' : 'Investor Dashboard'}
-          </h1>
-          <p className="text-muted-foreground">
-            {language === 'de' 
-              ? 'Übersicht Ihrer Immobilieninvestitionen und Performance'
-              : 'Overview of your real estate investments and performance'}
-          </p>
-        </div>
-
-        <div className="flex space-x-2">
-          <Button variant="outline">
-            <TrendingUp className="h-4 w-4 mr-2" />
-            {language === 'de' ? 'Berichte' : 'Reports'}
-          </Button>
-          
+    <div className="h-full overflow-auto">
+      <div className="container mx-auto p-4 md:p-6 space-y-6">
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+          <div>
+            <h1 className="text-3xl font-bold">
+              {t('investorDashboard')}
+            </h1>
+            <p className="text-muted-foreground">
+              {language === 'de' 
+                ? 'Überwachen und Optimieren Sie Ihre Immobilieninvestitionen'
+                : 'Monitor and optimize your real estate investments'}
+            </p>
+          </div>
           <Button>
-            <Globe className="h-4 w-4 mr-2" />
-            {language === 'de' ? 'Portfolio erweitern' : 'Expand Portfolio'}
+            {language === 'de' ? 'Neue Investition' : 'New Investment'}
           </Button>
         </div>
-      </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium">
-              {language === 'de' ? 'Portfoliowert' : 'Portfolio Value'}
-            </CardTitle>
-            <DollarSign className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">€1,785,000</div>
-            <p className="text-xs text-muted-foreground">
-              +12.5% {language === 'de' ? 'seit letztem Jahr' : 'since last year'}
-            </p>
-          </CardContent>
-        </Card>
-        
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium">
-              {language === 'de' ? 'Durchschnittlicher ROI' : 'Average ROI'}
-            </CardTitle>
-            <PieChart className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">6.5%</div>
-            <p className="text-xs text-muted-foreground">
-              +0.8% {language === 'de' ? 'seit letztem Jahr' : 'since last year'}
-            </p>
-          </CardContent>
-        </Card>
-        
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium">
-              {language === 'de' ? 'Nächste Prüfung' : 'Next Review'}
-            </CardTitle>
-            <Calendar className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">24 {language === 'de' ? 'Oktober' : 'October'}</div>
-            <p className="text-xs text-muted-foreground">
-              {language === 'de' ? 'Quartalsportfoliobewertung' : 'Quarterly portfolio assessment'}
-            </p>
-          </CardContent>
-        </Card>
-      </div>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <Card>
+            <CardHeader className="pb-2">
+              <CardTitle>{t('totalInvested')}</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="text-3xl font-bold">€1,850,000</div>
+              <p className="text-sm text-green-600 flex items-center">
+                +8.3% <span className="text-muted-foreground ml-1">{t('fromLastYear')}</span>
+              </p>
+            </CardContent>
+          </Card>
+          
+          <Card>
+            <CardHeader className="pb-2">
+              <CardTitle>{t('annualReturn')}</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="text-3xl font-bold">7.2%</div>
+              <p className="text-sm text-green-600 flex items-center">
+                +0.5% <span className="text-muted-foreground ml-1">{t('fromLastYear')}</span>
+              </p>
+            </CardContent>
+          </Card>
+          
+          <Card>
+            <CardHeader className="pb-2">
+              <CardTitle>{t('propertyCount')}</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="text-3xl font-bold">7</div>
+              <p className="text-sm text-muted-foreground">
+                {language === 'de' ? 'Immobilien im Portfolio' : 'Properties in portfolio'}
+              </p>
+            </CardContent>
+          </Card>
+        </div>
 
-      <Tabs defaultValue="overview" className="space-y-4">
-        <TabsList>
-          <TabsTrigger value="overview">{language === 'de' ? 'Übersicht' : 'Overview'}</TabsTrigger>
-          <TabsTrigger value="properties">{language === 'de' ? 'Immobilien' : 'Properties'}</TabsTrigger>
-          <TabsTrigger value="portfolio">{language === 'de' ? 'Portfolio-Optimierung' : 'Portfolio Optimization'}</TabsTrigger>
-          <TabsTrigger value="partners">{language === 'de' ? 'Partner' : 'Partners'}</TabsTrigger>
-        </TabsList>
-        
-        <TabsContent value="overview" className="space-y-4">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <Card>
-              <CardHeader>
-                <CardTitle>{language === 'de' ? 'Portfoliozusammensetzung' : 'Portfolio Composition'}</CardTitle>
-                <CardDescription>
-                  {language === 'de' ? 'Aufschlüsselung nach Immobilientyp' : 'Breakdown by property type'}
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="pb-2">
-                <div className="h-60">
-                  <RechartsChart 
-                    width={300} 
-                    height={200} 
-                    data={portfolioData}
-                    margin={{ top: 5, right: 5, bottom: 5, left: 5 }}
-                  >
-                    <defs>
-                      <linearGradient id="colorValue" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="5%" stopColor="#8884d8" stopOpacity={0.8}/>
-                        <stop offset="95%" stopColor="#8884d8" stopOpacity={0.2}/>
-                      </linearGradient>
-                    </defs>
-                  </RechartsChart>
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <Card className="lg:col-span-2">
+            <CardHeader>
+              <div className="flex items-center justify-between">
+                <div>
+                  <CardTitle>{t('portfolioPerformance')}</CardTitle>
+                  <CardDescription>{t('last12Months')}</CardDescription>
                 </div>
-                
-                {portfolioData.map((item, index) => (
-                  <div key={index} className="flex items-center justify-between mt-2">
-                    <div className="flex items-center">
-                      <div className={`w-3 h-3 rounded-full mr-2 bg-primary-${index * 200 + 200}`}></div>
-                      <span>{item.name}</span>
+                <div className="flex gap-2">
+                  <Button variant="outline" size="sm">YTD</Button>
+                  <Button variant="outline" size="sm">1Y</Button>
+                  <Button size="sm">5Y</Button>
+                </div>
+              </div>
+            </CardHeader>
+            <CardContent className="h-80">
+              <div className="h-full flex items-center justify-center bg-muted/20 rounded-lg">
+                <LineChart className="h-12 w-12 text-muted-foreground" />
+              </div>
+            </CardContent>
+          </Card>
+          
+          <Card>
+            <CardHeader>
+              <CardTitle>{t('portfolioDistribution')}</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <PortfolioDistributionChart />
+            </CardContent>
+            <CardFooter>
+              <Button variant="outline" className="w-full" size="sm">
+                {language === 'de' ? 'Detaillierte Aufteilung' : 'Detailed Breakdown'}
+              </Button>
+            </CardFooter>
+          </Card>
+        </div>
+
+        <Tabs defaultValue="overview">
+          <TabsList className="grid w-full grid-cols-4">
+            <TabsTrigger value="overview">{t('overview')}</TabsTrigger>
+            <TabsTrigger value="analysis">{t('analysis')}</TabsTrigger>
+            <TabsTrigger value="opportunities">{t('opportunities')}</TabsTrigger>
+            <TabsTrigger value="optimization">{t('optimization')}</TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="overview" className="space-y-6 mt-6">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+              <Card className="lg:col-span-2">
+                <CardHeader>
+                  <CardTitle>{t('keyMetrics')}</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                    <div className="space-y-4">
+                      <div>
+                        <p className="text-sm text-muted-foreground">{t('cashOnCashReturn')}</p>
+                        <p className="text-xl font-medium">5.8%</p>
+                        <div className="h-1 w-full bg-muted mt-1 rounded-full overflow-hidden">
+                          <div className="bg-primary h-full rounded-full" style={{width: '58%'}}></div>
+                        </div>
+                      </div>
+                      
+                      <div>
+                        <p className="text-sm text-muted-foreground">{t('capRate')}</p>
+                        <p className="text-xl font-medium">4.2%</p>
+                        <div className="h-1 w-full bg-muted mt-1 rounded-full overflow-hidden">
+                          <div className="bg-primary h-full rounded-full" style={{width: '42%'}}></div>
+                        </div>
+                      </div>
+                      
+                      <div>
+                        <p className="text-sm text-muted-foreground">{t('debtCoverageRatio')}</p>
+                        <p className="text-xl font-medium">1.85</p>
+                        <div className="h-1 w-full bg-muted mt-1 rounded-full overflow-hidden">
+                          <div className="bg-green-500 h-full rounded-full" style={{width: '85%'}}></div>
+                        </div>
+                      </div>
                     </div>
-                    <span>{item.value}%</span>
+                    
+                    <div className="space-y-4">
+                      <div>
+                        <p className="text-sm text-muted-foreground">{t('grossRentalYield')}</p>
+                        <p className="text-xl font-medium">6.9%</p>
+                        <div className="h-1 w-full bg-muted mt-1 rounded-full overflow-hidden">
+                          <div className="bg-primary h-full rounded-full" style={{width: '69%'}}></div>
+                        </div>
+                      </div>
+                      
+                      <div>
+                        <p className="text-sm text-muted-foreground">{t('vacancyRate')}</p>
+                        <p className="text-xl font-medium">2.1%</p>
+                        <div className="h-1 w-full bg-muted mt-1 rounded-full overflow-hidden">
+                          <div className="bg-green-500 h-full rounded-full" style={{width: '21%'}}></div>
+                        </div>
+                      </div>
+                      
+                      <div>
+                        <p className="text-sm text-muted-foreground">{t('roi')}</p>
+                        <p className="text-xl font-medium">12.3%</p>
+                        <div className="h-1 w-full bg-muted mt-1 rounded-full overflow-hidden">
+                          <div className="bg-primary h-full rounded-full" style={{width: '82%'}}></div>
+                        </div>
+                      </div>
+                    </div>
                   </div>
-                ))}
-              </CardContent>
-            </Card>
+                </CardContent>
+                <CardFooter>
+                  <Button variant="outline" size="sm">
+                    {t('exportData')}
+                  </Button>
+                  <Button size="sm" className="ml-auto">
+                    {t('detailedAnalysis')} <ChevronsRight className="h-4 w-4 ml-1" />
+                  </Button>
+                </CardFooter>
+              </Card>
+              
+              <Card>
+                <CardHeader>
+                  <CardTitle>{language === 'de' ? 'Schnellaktionen' : 'Quick Actions'}</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <QuickActions />
+                </CardContent>
+              </Card>
+            </div>
             
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              <Card>
+                <CardHeader>
+                  <CardTitle>{t('marketInsights')}</CardTitle>
+                  <CardDescription>
+                    {language === 'de' 
+                      ? `Trends im ${preferences.investmentMarket} Markt`
+                      : `Trends in the ${preferences.investmentMarket} market`}
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <div className="bg-primary/10 p-1 rounded-full">
+                        <TrendingUp className="h-4 w-4 text-primary" />
+                      </div>
+                      <span>{language === 'de' ? 'Preiswachstum' : 'Price Growth'}</span>
+                    </div>
+                    <div className="text-green-600 font-medium">+3.2%</div>
+                  </div>
+                  
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <div className="bg-primary/10 p-1 rounded-full">
+                        <BarChart2 className="h-4 w-4 text-primary" />
+                      </div>
+                      <span>{language === 'de' ? 'Mietwachstum' : 'Rent Growth'}</span>
+                    </div>
+                    <div className="text-green-600 font-medium">+2.1%</div>
+                  </div>
+                  
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <div className="bg-primary/10 p-1 rounded-full">
+                        <Activity className="h-4 w-4 text-primary" />
+                      </div>
+                      <span>{language === 'de' ? 'Marktliquidität' : 'Market Liquidity'}</span>
+                    </div>
+                    <div className="font-medium">
+                      {language === 'de' ? 'Mittel' : 'Medium'}
+                    </div>
+                  </div>
+                </CardContent>
+                <CardFooter>
+                  <Button variant="link" className="ml-auto">
+                    {language === 'de' ? 'Mehr erfahren' : 'Learn more'} <ArrowRight className="h-4 w-4 ml-1" />
+                  </Button>
+                </CardFooter>
+              </Card>
+              
+              <Card>
+                <CardHeader>
+                  <CardTitle>{language === 'de' ? 'Portfolio-Gesundheit' : 'Portfolio Health'}</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="flex flex-col items-center justify-center h-40">
+                    <div className="relative h-32 w-32">
+                      <PieChart className="h-32 w-32 text-muted-foreground/20" />
+                      <div className="absolute inset-0 flex items-center justify-center">
+                        <div className="text-center">
+                          <p className="text-3xl font-bold">85</p>
+                          <p className="text-sm text-muted-foreground">/ 100</p>
+                        </div>
+                      </div>
+                    </div>
+                    <p className="mt-2 text-green-600 font-medium">
+                      {language === 'de' ? 'Sehr gut' : 'Very Good'}
+                    </p>
+                  </div>
+                </CardContent>
+                <CardFooter>
+                  <Button variant="outline" className="w-full">
+                    {language === 'de' ? 'Verbesserungsmöglichkeiten anzeigen' : 'View Improvement Opportunities'}
+                  </Button>
+                </CardFooter>
+              </Card>
+            </div>
+          </TabsContent>
+          
+          <TabsContent value="analysis" className="mt-6">
             <Card>
               <CardHeader>
-                <CardTitle>{language === 'de' ? 'Performance-Trend' : 'Performance Trend'}</CardTitle>
+                <CardTitle>{t('advancedAnalysis')}</CardTitle>
+                <CardDescription>{t('detailedMetricsForYourPortfolio')}</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="h-96 flex items-center justify-center bg-muted/20 rounded-lg">
+                  <BarChart2 className="h-12 w-12 text-muted-foreground" />
+                </div>
+              </CardContent>
+              <CardFooter>
+                <Button variant="outline">
+                  {language === 'de' ? 'Filter anpassen' : 'Adjust Filters'}
+                </Button>
+                <Button className="ml-auto">
+                  {language === 'de' ? 'Vollständige Analyse' : 'Full Analysis'}
+                </Button>
+              </CardFooter>
+            </Card>
+          </TabsContent>
+          
+          <TabsContent value="opportunities" className="mt-6">
+            <InvestmentOpportunities />
+          </TabsContent>
+          
+          <TabsContent value="optimization" className="mt-6">
+            <Card>
+              <CardHeader>
+                <CardTitle>{language === 'de' ? 'Portfolio-Optimierung' : 'Portfolio Optimization'}</CardTitle>
                 <CardDescription>
-                  {language === 'de' ? 'ROI-Entwicklung über die Zeit' : 'ROI development over time'}
+                  {language === 'de'
+                    ? 'KI-basierte Vorschläge zur Optimierung Ihres Immobilienportfolios'
+                    : 'AI-powered suggestions to optimize your real estate portfolio'}
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                <div className="h-60">
-                  <AreaChart
-                    width={300}
-                    height={200}
-                    data={performanceData}
-                    margin={{ top: 10, right: 10, left: 0, bottom: 0 }}
-                  >
-                    <defs>
-                      <linearGradient id="colorRoi" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="5%" stopColor="#82ca9d" stopOpacity={0.8}/>
-                        <stop offset="95%" stopColor="#82ca9d" stopOpacity={0.2}/>
-                      </linearGradient>
-                    </defs>
-                  </AreaChart>
+                <div className="h-96 flex items-center justify-center bg-muted/20 rounded-lg">
+                  <div className="text-center space-y-4">
+                    <TrendingUp className="h-12 w-12 mx-auto text-muted-foreground" />
+                    <div>
+                      <h3 className="text-lg font-medium">
+                        {language === 'de' 
+                          ? 'Optimierungsvorschläge werden generiert'
+                          : 'Generating optimization suggestions'}
+                      </h3>
+                      <p className="text-sm text-muted-foreground mt-1">
+                        {language === 'de'
+                          ? 'Diese Funktion wird bald verfügbar sein'
+                          : 'This feature will be available soon'}
+                      </p>
+                    </div>
+                    <Button>
+                      {language === 'de' ? 'Jetzt freischalten' : 'Unlock Now'}
+                    </Button>
+                  </div>
                 </div>
               </CardContent>
             </Card>
-          </div>
-        </TabsContent>
-        
-        <TabsContent value="properties" className="space-y-4">
-          <div className="grid gap-6">
-            {propertiesData.map((property) => (
-              <Card key={property.id}>
-                <CardHeader className="pb-2">
-                  <CardTitle>{property.name}</CardTitle>
-                  <CardDescription>{property.location}</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="grid grid-cols-3 gap-4 mb-4">
-                    <div>
-                      <div className="text-sm font-medium text-muted-foreground mb-1">
-                        {language === 'de' ? 'Wert' : 'Value'}
-                      </div>
-                      <div className="text-xl font-bold">€{property.value.toLocaleString()}</div>
-                    </div>
-                    <div>
-                      <div className="text-sm font-medium text-muted-foreground mb-1">ROI</div>
-                      <div className="text-xl font-bold text-green-600">{property.roi}%</div>
-                    </div>
-                    <div>
-                      <div className="text-sm font-medium text-muted-foreground mb-1">
-                        {language === 'de' ? 'Belegung' : 'Occupancy'}
-                      </div>
-                      <div className="text-xl font-bold">{property.occupancy}%</div>
-                    </div>
-                  </div>
-                  
-                  <div className="space-y-2">
-                    <div className="flex justify-between text-sm">
-                      <span>{language === 'de' ? 'Auslastung' : 'Occupancy'}</span>
-                      <span>{property.occupancy}%</span>
-                    </div>
-                    <Progress value={property.occupancy} className="h-2" />
-                  </div>
-                  
-                  <div className="flex justify-between mt-4">
-                    <Button variant="outline">
-                      {language === 'de' ? 'Details anzeigen' : 'View Details'}
-                    </Button>
-                    <Button variant="outline">
-                      {language === 'de' ? 'Berichte' : 'Reports'}
-                    </Button>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
-            
-            <div className="flex justify-center">
-              <Button>
-                <Building2 className="h-4 w-4 mr-2" />
-                {language === 'de' ? 'Alle Immobilien anzeigen' : 'View All Properties'}
-              </Button>
-            </div>
-          </div>
-        </TabsContent>
-        
-        <TabsContent value="portfolio" className="space-y-4">
-          <Card>
-            <CardHeader>
-              <CardTitle>{language === 'de' ? 'Portfolio-Optimierung' : 'Portfolio Optimization'}</CardTitle>
-              <CardDescription>
-                {language === 'de' 
-                  ? 'Automatisierte Empfehlungen zur Optimierung Ihres Immobilienportfolios'
-                  : 'Automated recommendations to optimize your real estate portfolio'}
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="border rounded-md p-4 bg-muted/30">
-                <div className="font-medium mb-2">
-                  {language === 'de' ? 'Diversifikationsempfehlung' : 'Diversification Recommendation'}
-                </div>
-                <p className="text-sm text-muted-foreground">
-                  {language === 'de'
-                    ? 'Ihr Portfolio könnte von einer breiteren Verteilung über verschiedene Standorte profitieren.'
-                    : 'Your portfolio could benefit from a wider distribution across different locations.'}
-                </p>
-                <Button variant="outline" size="sm" className="mt-3">
-                  {language === 'de' ? 'Möglichkeiten erkunden' : 'Explore Options'}
-                </Button>
-              </div>
-              
-              <div className="border rounded-md p-4 bg-muted/30">
-                <div className="font-medium mb-2">
-                  {language === 'de' ? 'Renditeoptimierung' : 'Yield Optimization'}
-                </div>
-                <p className="text-sm text-muted-foreground">
-                  {language === 'de'
-                    ? 'Die Anpassung der Mietpreise für Ihr Zentrum Apartment könnte die Gesamtrendite um 0,3% steigern.'
-                    : 'Adjusting rental prices for your City Center Apartment could increase overall yield by 0.3%.'}
-                </p>
-                <Button variant="outline" size="sm" className="mt-3">
-                  {language === 'de' ? 'Analyse anzeigen' : 'View Analysis'}
-                </Button>
-              </div>
-              
-              <Button className="w-full">
-                <TrendingUp className="h-4 w-4 mr-2" />
-                {language === 'de' ? 'Vollständige Portfolio-Analyse' : 'Complete Portfolio Analysis'}
-              </Button>
-            </CardContent>
-          </Card>
-        </TabsContent>
-        
-        <TabsContent value="partners" className="space-y-4">
-          <Card>
-            <CardHeader>
-              <CardTitle>{language === 'de' ? 'Investitionspartner' : 'Investment Partners'}</CardTitle>
-              <CardDescription>
-                {language === 'de' 
-                  ? 'Verbinden Sie sich mit kompatiblen Investoren für gemeinsame Möglichkeiten'
-                  : 'Connect with compatible investors for joint opportunities'}
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                <div className="flex items-center justify-between border-b pb-4">
-                  <div className="flex items-center">
-                    <div className="h-10 w-10 rounded-full bg-primary/20 flex items-center justify-center">
-                      <Users className="h-5 w-5" />
-                    </div>
-                    <div className="ml-4">
-                      <p className="font-medium">Alexander Schmidt</p>
-                      <p className="text-sm text-muted-foreground">
-                        {language === 'de' ? 'Gewerbliche Immobilien, München' : 'Commercial Properties, Munich'}
-                      </p>
-                    </div>
-                  </div>
-                  <Button variant="outline" size="sm">
-                    {language === 'de' ? 'Verbinden' : 'Connect'}
-                  </Button>
-                </div>
-                
-                <div className="flex items-center justify-between border-b pb-4">
-                  <div className="flex items-center">
-                    <div className="h-10 w-10 rounded-full bg-primary/20 flex items-center justify-center">
-                      <Users className="h-5 w-5" />
-                    </div>
-                    <div className="ml-4">
-                      <p className="font-medium">Julia Weber</p>
-                      <p className="text-sm text-muted-foreground">
-                        {language === 'de' ? 'Wohnimmobilien, Berlin' : 'Residential Properties, Berlin'}
-                      </p>
-                    </div>
-                  </div>
-                  <Button variant="outline" size="sm">
-                    {language === 'de' ? 'Verbinden' : 'Connect'}
-                  </Button>
-                </div>
-                
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center">
-                    <div className="h-10 w-10 rounded-full bg-primary/20 flex items-center justify-center">
-                      <Users className="h-5 w-5" />
-                    </div>
-                    <div className="ml-4">
-                      <p className="font-medium">Michael Becker</p>
-                      <p className="text-sm text-muted-foreground">
-                        {language === 'de' ? 'Internationale Investments' : 'International Investments'}
-                      </p>
-                    </div>
-                  </div>
-                  <Button variant="outline" size="sm">
-                    {language === 'de' ? 'Verbinden' : 'Connect'}
-                  </Button>
-                </div>
-              </div>
-              
-              <Button variant="link" className="mt-4 w-full">
-                {language === 'de' ? 'Alle potenziellen Partner anzeigen' : 'View all potential partners'}
-              </Button>
-            </CardContent>
-          </Card>
-        </TabsContent>
-      </Tabs>
+          </TabsContent>
+        </Tabs>
+      </div>
     </div>
   );
 };

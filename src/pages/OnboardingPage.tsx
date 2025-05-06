@@ -101,9 +101,11 @@ const OnboardingPage: React.FC = () => {
                   }
                 }}
                 tabIndex={0}
+                role="radio"
+                aria-checked={onboardingData.investmentMarket === market.id}
               >
                 <RadioGroupItem value={market.id} id={market.id} />
-                <Label htmlFor={market.id} className="flex-1 cursor-pointer font-medium w-full">
+                <Label htmlFor={market.id} className="flex-1 cursor-pointer w-full">
                   {market.label}
                   <span className="text-xs block text-muted-foreground">{market.description}</span>
                 </Label>
@@ -145,6 +147,8 @@ const OnboardingPage: React.FC = () => {
                   }
                 }}
                 tabIndex={0}
+                role="radio"
+                aria-checked={onboardingData.experienceLevel === level.id}
               >
                 <RadioGroupItem value={level.id} id={level.id} />
                 <Label htmlFor={level.id} className="flex-1 cursor-pointer w-full">
@@ -200,125 +204,105 @@ const OnboardingPage: React.FC = () => {
           ))}
         </div>
       )
-    },
-    {
-      title: language === 'de' ? 'Fertig!' : 'All Set!',
-      description: language === 'de' ? 'Ihr personalisiertes Dashboard steht bereit' : 'Your personalized dashboard is ready',
-      component: (
-        <div className="text-center space-y-6">
-          <div className="h-24 w-24 bg-primary/20 rounded-full flex items-center justify-center mx-auto">
-            <ChevronRight className="h-12 w-12 text-primary" />
-          </div>
-          <p className="text-xl">
-            {language === 'de' 
-              ? `Vielen Dank, ${onboardingData.name}! Wir haben Ihr Profil eingerichtet.` 
-              : `Thank you, ${onboardingData.name}! We have set up your profile.`}
-          </p>
-          <p className="text-muted-foreground">
-            {language === 'de'
-              ? 'Klicken Sie auf "Dashboard starten", um zu Ihrem personalisierten Dashboard zu gelangen.'
-              : 'Click "Launch Dashboard" to access your personalized dashboard.'}
-          </p>
-        </div>
-      )
     }
   ];
 
-  const toggleInvestmentGoal = (goalLabel: string) => {
-    setFormError(null);
+  const toggleInvestmentGoal = (goal: string) => {
     setOnboardingData(prev => {
-      const currentGoals = [...prev.investmentGoals];
-      const index = currentGoals.indexOf(goalLabel);
-      
-      if (index === -1) {
-        // Add the goal
-        return {
-          ...prev,
-          investmentGoals: [...prev.investmentGoals, goalLabel],
-          goals: [...prev.goals, goalLabel]
-        };
-      } else {
-        // Remove the goal
-        const newGoals = [...currentGoals];
-        newGoals.splice(index, 1);
-        return {
-          ...prev,
-          investmentGoals: newGoals,
-          goals: prev.goals.filter(g => g !== goalLabel)
-        };
-      }
+      const goals = prev.investmentGoals || [];
+      return {
+        ...prev,
+        investmentGoals: goals.includes(goal) 
+          ? goals.filter(g => g !== goal)
+          : [...goals, goal]
+      };
     });
   };
 
-  const handleNext = () => {
-    if (currentStep === 0 && !onboardingData.name.trim()) {
-      setFormError(language === 'de' ? 'Bitte geben Sie Ihren Namen ein' : 'Please enter your name');
-      return;
+  const handleSubmit = async () => {
+    // Basic validation before saving
+    if (currentStep === steps.length - 1) {
+      if (onboardingData.investmentGoals.length === 0) {
+        setFormError(language === 'de' 
+          ? 'Bitte wählen Sie mindestens ein Ziel aus' 
+          : 'Please select at least one goal');
+        return;
+      }
     }
-
-    if (currentStep === 3 && onboardingData.investmentGoals.length === 0) {
-      setFormError(language === 'de' ? 'Bitte wählen Sie mindestens ein Investitionsziel' : 'Please select at least one investment goal');
-      return;
-    }
-
-    setFormError(null);
-
+    
     if (currentStep < steps.length - 1) {
       setCurrentStep(currentStep + 1);
+      setFormError(null);
     } else {
-      if (saveOnboardingData) {
-        saveOnboardingData(onboardingData);
-      }
-      
-      // Navigate to appropriate dashboard based on user preferences
-      if (onboardingData.investmentMarket === 'germany' || onboardingData.investmentMarket === 'austria') {
-        navigate('/deutsche-immobilien-tools');
-      } else if (onboardingData.investmentMarket === 'usa') {
-        navigate('/us-real-estate-tools');
-      } else {
+      try {
+        await saveOnboardingData(onboardingData);
+        toast.success(language === 'de' 
+          ? 'Onboarding abgeschlossen!'
+          : 'Onboarding completed!');
         navigate('/dashboard');
+      } catch (error) {
+        console.error('Onboarding error:', error);
+        toast.error(language === 'de' 
+          ? 'Es gab einen Fehler. Bitte versuchen Sie es erneut.'
+          : 'There was an error. Please try again.');
       }
     }
   };
 
   const handleBack = () => {
+    setCurrentStep(Math.max(0, currentStep - 1));
     setFormError(null);
-    if (currentStep > 0) {
-      setCurrentStep(currentStep - 1);
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter' && !e.shiftKey && document.activeElement?.tagName !== 'BUTTON') {
+      handleSubmit();
     }
   };
 
-  const progress = ((currentStep + 1) / steps.length) * 100;
-
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-background to-background/80 p-4">
-      <Card className="w-full max-w-lg animate-fade-in">
-        <CardHeader className="space-y-2">
-          <CardTitle className="text-2xl text-center">{steps[currentStep].title}</CardTitle>
-          <CardDescription className="text-center text-base">{steps[currentStep].description}</CardDescription>
-          <Progress value={progress} className="h-2 mt-4" />
+    <div 
+      className="min-h-screen flex items-center justify-center bg-background p-4"
+      onKeyDown={handleKeyDown}
+    >
+      <Card className="w-full max-w-lg mx-auto">
+        <CardHeader>
+          <CardTitle>{steps[currentStep].title}</CardTitle>
+          <CardDescription>{steps[currentStep].description}</CardDescription>
         </CardHeader>
-        <CardContent className="pt-6">
+        
+        <CardContent>
           {steps[currentStep].component}
         </CardContent>
-        <CardFooter className="flex justify-between pt-6">
-          <Button 
-            variant="outline" 
-            onClick={handleBack}
-            disabled={currentStep === 0}
-          >
-            {language === 'de' ? 'Zurück' : 'Back'}
-          </Button>
-          <Button 
-            onClick={handleNext}
-            disabled={currentStep === 0 && !onboardingData.name.trim()}
-            className="gap-2"
-          >
-            {currentStep === steps.length - 1 
-              ? (language === 'de' ? 'Dashboard starten' : 'Launch Dashboard') 
-              : (language === 'de' ? 'Weiter' : 'Continue')}
-            {currentStep !== steps.length - 1 && <ChevronRight className="h-4 w-4" />}
-          </Button>
+        
+        <CardFooter className="flex flex-col gap-4">
+          <div className="w-full flex justify-between">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={handleBack}
+              disabled={currentStep === 0}
+            >
+              {language === 'de' ? 'Zurück' : 'Back'}
+            </Button>
+            
+            <Button
+              type="button"
+              onClick={handleSubmit}
+              className="gap-1"
+            >
+              {currentStep < steps.length - 1 
+                ? (language === 'de' ? 'Weiter' : 'Next') 
+                : (language === 'de' ? 'Fertigstellen' : 'Complete')
+              }
+              <ChevronRight className="h-4 w-4" />
+            </Button>
+          </div>
+          
+          <Progress 
+            value={(currentStep + 1) / steps.length * 100} 
+            className="w-full" 
+          />
         </CardFooter>
       </Card>
     </div>
