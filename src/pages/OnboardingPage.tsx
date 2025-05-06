@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { InvestmentMarket, OnboardingData } from '@/contexts/UserPreferencesContext';
 import { useNavigate } from 'react-router-dom';
@@ -11,12 +12,14 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Checkbox } from '@/components/ui/checkbox';
+import { toast } from 'sonner';
 
 const OnboardingPage: React.FC = () => {
   const navigate = useNavigate();
   const { saveOnboardingData } = useUserPreferences();
   const { t, language } = useLanguage();
   const [currentStep, setCurrentStep] = useState(0);
+  const [formError, setFormError] = useState<string | null>(null);
   
   // Initialize OnboardingData with all required fields and correct typing
   const [onboardingData, setOnboardingData] = useState<OnboardingData>({
@@ -56,6 +59,12 @@ const OnboardingPage: React.FC = () => {
                 onChange={(e) => setOnboardingData({...onboardingData, name: e.target.value})}
                 placeholder={language === 'de' ? 'Ihr Name' : 'Your name'}
                 className="text-lg"
+                autoFocus
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' && onboardingData.name.trim()) {
+                    setCurrentStep(1);
+                  }
+                }}
               />
             </div>
           </div>
@@ -75,34 +84,31 @@ const OnboardingPage: React.FC = () => {
             onValueChange={(value) => setOnboardingData({...onboardingData, investmentMarket: value as InvestmentMarket})}
             className="space-y-3"
           >
-            <div className="flex items-center space-x-2 border p-4 rounded-lg hover:border-primary/50 hover:bg-muted/50 cursor-pointer">
-              <RadioGroupItem value="germany" id="germany" />
-              <Label htmlFor="germany" className="flex-1 cursor-pointer font-medium">
-                {language === 'de' ? 'Deutschland' : 'Germany'}
-                <span className="text-xs block text-muted-foreground">{language === 'de' ? 'Fokus auf deutsche Immobilienmärkte' : 'Focus on German real estate markets'}</span>
-              </Label>
-            </div>
-            <div className="flex items-center space-x-2 border p-4 rounded-lg hover:border-primary/50 hover:bg-muted/50 cursor-pointer">
-              <RadioGroupItem value="austria" id="austria" />
-              <Label htmlFor="austria" className="flex-1 cursor-pointer font-medium">
-                {language === 'de' ? 'Österreich' : 'Austria'}
-                <span className="text-xs block text-muted-foreground">{language === 'de' ? 'Fokus auf österreichische Immobilienmärkte' : 'Focus on Austrian real estate markets'}</span>
-              </Label>
-            </div>
-            <div className="flex items-center space-x-2 border p-4 rounded-lg hover:border-primary/50 hover:bg-muted/50 cursor-pointer">
-              <RadioGroupItem value="usa" id="usa" />
-              <Label htmlFor="usa" className="flex-1 cursor-pointer font-medium">
-                {language === 'de' ? 'USA' : 'USA'}
-                <span className="text-xs block text-muted-foreground">{language === 'de' ? 'Fokus auf US-amerikanische Immobilienmärkte' : 'Focus on US real estate markets'}</span>
-              </Label>
-            </div>
-            <div className="flex items-center space-x-2 border p-4 rounded-lg hover:border-primary/50 hover:bg-muted/50 cursor-pointer">
-              <RadioGroupItem value="global" id="global" />
-              <Label htmlFor="global" className="flex-1 cursor-pointer font-medium">
-                {language === 'de' ? 'Global' : 'Global'}
-                <span className="text-xs block text-muted-foreground">{language === 'de' ? 'Investitionen auf verschiedenen internationalen Märkten' : 'Investments across various international markets'}</span>
-              </Label>
-            </div>
+            {[
+              { id: 'germany', label: language === 'de' ? 'Deutschland' : 'Germany', description: language === 'de' ? 'Fokus auf deutsche Immobilienmärkte' : 'Focus on German real estate markets' },
+              { id: 'austria', label: language === 'de' ? 'Österreich' : 'Austria', description: language === 'de' ? 'Fokus auf österreichische Immobilienmärkte' : 'Focus on Austrian real estate markets' },
+              { id: 'usa', label: language === 'de' ? 'USA' : 'USA', description: language === 'de' ? 'Fokus auf US-amerikanische Immobilienmärkte' : 'Focus on US real estate markets' },
+              { id: 'global', label: language === 'de' ? 'Global' : 'Global', description: language === 'de' ? 'Investitionen auf verschiedenen internationalen Märkten' : 'Investments across various international markets' }
+            ].map((market) => (
+              <div 
+                key={market.id} 
+                className="flex items-center space-x-2 border p-4 rounded-lg hover:border-primary/50 hover:bg-muted/50 cursor-pointer"
+                onClick={() => setOnboardingData({...onboardingData, investmentMarket: market.id as InvestmentMarket})}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    setOnboardingData({...onboardingData, investmentMarket: market.id as InvestmentMarket});
+                  }
+                }}
+                tabIndex={0}
+              >
+                <RadioGroupItem value={market.id} id={market.id} />
+                <Label htmlFor={market.id} className="flex-1 cursor-pointer font-medium w-full">
+                  {market.label}
+                  <span className="text-xs block text-muted-foreground">{market.description}</span>
+                </Label>
+              </div>
+            ))}
           </RadioGroup>
         </div>
       )
@@ -122,34 +128,31 @@ const OnboardingPage: React.FC = () => {
             }
             className="space-y-3"
           >
-            <div className="flex items-center space-x-2 border p-4 rounded-lg hover:border-primary/50 hover:bg-muted/50 cursor-pointer">
-              <RadioGroupItem value="beginner" id="beginner" />
-              <Label htmlFor="beginner" className="flex-1 cursor-pointer">
-                <span className="font-medium">{language === 'de' ? 'Anfänger' : 'Beginner'}</span>
-                <span className="text-xs block text-muted-foreground">{language === 'de' ? 'Neu im Bereich Immobilieninvestitionen' : 'New to real estate investing'}</span>
-              </Label>
-            </div>
-            <div className="flex items-center space-x-2 border p-4 rounded-lg hover:border-primary/50 hover:bg-muted/50 cursor-pointer">
-              <RadioGroupItem value="intermediate" id="intermediate" />
-              <Label htmlFor="intermediate" className="flex-1 cursor-pointer">
-                <span className="font-medium">{language === 'de' ? 'Fortgeschritten' : 'Intermediate'}</span>
-                <span className="text-xs block text-muted-foreground">{language === 'de' ? 'Einige Erfahrung mit Immobilieninvestitionen' : 'Some experience with real estate investing'}</span>
-              </Label>
-            </div>
-            <div className="flex items-center space-x-2 border p-4 rounded-lg hover:border-primary/50 hover:bg-muted/50 cursor-pointer">
-              <RadioGroupItem value="advanced" id="advanced" />
-              <Label htmlFor="advanced" className="flex-1 cursor-pointer">
-                <span className="font-medium">{language === 'de' ? 'Erfahren' : 'Advanced'}</span>
-                <span className="text-xs block text-muted-foreground">{language === 'de' ? 'Umfangreiche Erfahrung mit Immobilieninvestitionen' : 'Extensive experience with real estate investing'}</span>
-              </Label>
-            </div>
-            <div className="flex items-center space-x-2 border p-4 rounded-lg hover:border-primary/50 hover:bg-muted/50 cursor-pointer">
-              <RadioGroupItem value="expert" id="expert" />
-              <Label htmlFor="expert" className="flex-1 cursor-pointer">
-                <span className="font-medium">{language === 'de' ? 'Experte' : 'Expert'}</span>
-                <span className="text-xs block text-muted-foreground">{language === 'de' ? 'Professioneller Immobilieninvestor' : 'Professional real estate investor'}</span>
-              </Label>
-            </div>
+            {[
+              { id: 'beginner', label: language === 'de' ? 'Anfänger' : 'Beginner', description: language === 'de' ? 'Neu im Bereich Immobilieninvestitionen' : 'New to real estate investing' },
+              { id: 'intermediate', label: language === 'de' ? 'Fortgeschritten' : 'Intermediate', description: language === 'de' ? 'Einige Erfahrung mit Immobilieninvestitionen' : 'Some experience with real estate investing' },
+              { id: 'advanced', label: language === 'de' ? 'Erfahren' : 'Advanced', description: language === 'de' ? 'Umfangreiche Erfahrung mit Immobilieninvestitionen' : 'Extensive experience with real estate investing' },
+              { id: 'expert', label: language === 'de' ? 'Experte' : 'Expert', description: language === 'de' ? 'Professioneller Immobilieninvestor' : 'Professional real estate investor' }
+            ].map((level) => (
+              <div 
+                key={level.id} 
+                className="flex items-center space-x-2 border p-4 rounded-lg hover:border-primary/50 hover:bg-muted/50 cursor-pointer"
+                onClick={() => setOnboardingData({...onboardingData, experienceLevel: level.id as "beginner" | "intermediate" | "advanced" | "expert"})}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    setOnboardingData({...onboardingData, experienceLevel: level.id as "beginner" | "intermediate" | "advanced" | "expert"});
+                  }
+                }}
+                tabIndex={0}
+              >
+                <RadioGroupItem value={level.id} id={level.id} />
+                <Label htmlFor={level.id} className="flex-1 cursor-pointer w-full">
+                  <span className="font-medium">{level.label}</span>
+                  <span className="text-xs block text-muted-foreground">{level.description}</span>
+                </Label>
+              </div>
+            ))}
           </RadioGroup>
         </div>
       )
@@ -159,33 +162,37 @@ const OnboardingPage: React.FC = () => {
       description: language === 'de' ? 'Was sind Ihre Hauptziele?' : 'What are your main goals?',
       component: (
         <div className="space-y-4">
+          {formError && (
+            <div className="p-3 text-sm rounded-md bg-destructive/15 text-destructive">
+              {formError}
+            </div>
+          )}
           {[
             {id: 'passive-income', label: language === 'de' ? 'Passives Einkommen' : 'Passive Income', description: language === 'de' ? 'Regelmäßige Einnahmen generieren' : 'Generate regular income'},
             {id: 'capital-growth', label: language === 'de' ? 'Kapitalwachstum' : 'Capital Growth', description: language === 'de' ? 'Langfristige Wertsteigerung' : 'Long-term value appreciation'},
             {id: 'tax-benefits', label: language === 'de' ? 'Steuervorteile' : 'Tax Benefits', description: language === 'de' ? 'Steuerliche Optimierung' : 'Tax optimization'},
             {id: 'portfolio-diversification', label: language === 'de' ? 'Portfolio-Diversifikation' : 'Portfolio Diversification', description: language === 'de' ? 'Risikostreuung' : 'Risk spreading'}
           ].map((goal) => (
-            <div key={goal.id} className="flex items-center space-x-2 border p-4 rounded-lg hover:border-primary/50 hover:bg-muted/50">
+            <div 
+              key={goal.id} 
+              className="flex items-center space-x-2 border p-4 rounded-lg hover:border-primary/50 hover:bg-muted/50"
+              onClick={() => toggleInvestmentGoal(goal.label)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                  e.preventDefault();
+                  toggleInvestmentGoal(goal.label);
+                }
+              }}
+              tabIndex={0}
+              role="checkbox"
+              aria-checked={onboardingData.investmentGoals.includes(goal.label)}
+            >
               <Checkbox 
                 id={`goal-${goal.id}`} 
                 checked={onboardingData.investmentGoals.includes(goal.label)}
-                onCheckedChange={(checked) => {
-                  if (checked) {
-                    setOnboardingData({
-                      ...onboardingData, 
-                      investmentGoals: [...onboardingData.investmentGoals, goal.label],
-                      goals: [...onboardingData.goals, goal.label]
-                    });
-                  } else {
-                    setOnboardingData({
-                      ...onboardingData, 
-                      investmentGoals: onboardingData.investmentGoals.filter(g => g !== goal.label),
-                      goals: onboardingData.goals.filter(g => g !== goal.label)
-                    });
-                  }
-                }}
+                onCheckedChange={() => toggleInvestmentGoal(goal.label)}
               />
-              <Label htmlFor={`goal-${goal.id}`} className="flex-1 cursor-pointer">
+              <Label htmlFor={`goal-${goal.id}`} className="flex-1 cursor-pointer w-full">
                 <span className="font-medium">{goal.label}</span>
                 <span className="text-xs block text-muted-foreground">{goal.description}</span>
               </Label>
@@ -217,7 +224,45 @@ const OnboardingPage: React.FC = () => {
     }
   ];
 
+  const toggleInvestmentGoal = (goalLabel: string) => {
+    setFormError(null);
+    setOnboardingData(prev => {
+      const currentGoals = [...prev.investmentGoals];
+      const index = currentGoals.indexOf(goalLabel);
+      
+      if (index === -1) {
+        // Add the goal
+        return {
+          ...prev,
+          investmentGoals: [...prev.investmentGoals, goalLabel],
+          goals: [...prev.goals, goalLabel]
+        };
+      } else {
+        // Remove the goal
+        const newGoals = [...currentGoals];
+        newGoals.splice(index, 1);
+        return {
+          ...prev,
+          investmentGoals: newGoals,
+          goals: prev.goals.filter(g => g !== goalLabel)
+        };
+      }
+    });
+  };
+
   const handleNext = () => {
+    if (currentStep === 0 && !onboardingData.name.trim()) {
+      setFormError(language === 'de' ? 'Bitte geben Sie Ihren Namen ein' : 'Please enter your name');
+      return;
+    }
+
+    if (currentStep === 3 && onboardingData.investmentGoals.length === 0) {
+      setFormError(language === 'de' ? 'Bitte wählen Sie mindestens ein Investitionsziel' : 'Please select at least one investment goal');
+      return;
+    }
+
+    setFormError(null);
+
     if (currentStep < steps.length - 1) {
       setCurrentStep(currentStep + 1);
     } else {
@@ -237,6 +282,7 @@ const OnboardingPage: React.FC = () => {
   };
 
   const handleBack = () => {
+    setFormError(null);
     if (currentStep > 0) {
       setCurrentStep(currentStep - 1);
     }
@@ -265,7 +311,7 @@ const OnboardingPage: React.FC = () => {
           </Button>
           <Button 
             onClick={handleNext}
-            disabled={currentStep === 0 && !onboardingData.name}
+            disabled={currentStep === 0 && !onboardingData.name.trim()}
             className="gap-2"
           >
             {currentStep === steps.length - 1 

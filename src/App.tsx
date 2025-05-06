@@ -21,6 +21,11 @@ import Dashboard from '@/pages/Dashboard';
 import MarketComparisonTool from '@/pages/MarketComparisonTool';
 import { RewardsProvider } from '@/contexts/RewardsContext';
 import Rewards from '@/pages/Rewards';
+import PropertyList from '@/pages/PropertyList';
+import Properties from '@/pages/Properties';
+import UserProfile from '@/pages/UserProfile';
+import Education from '@/pages/Education';
+import NotFound from '@/pages/NotFound';
 
 const AdvancedAnalytics = lazy(() => import('@/pages/AdvancedAnalyticsPage'));
 
@@ -79,6 +84,22 @@ const routes = [
     element: <MainLayout><Rewards /></MainLayout>
   },
   {
+    path: '/properties',
+    element: <MainLayout><Properties /></MainLayout>
+  },
+  {
+    path: '/property-list',
+    element: <MainLayout><PropertyList /></MainLayout>
+  },
+  {
+    path: '/education',
+    element: <MainLayout><Education /></MainLayout>
+  },
+  {
+    path: '/profile',
+    element: <MainLayout><UserProfile /></MainLayout>
+  },
+  {
     path: '/advanced-analytics',
     element: (
       <MainLayout>
@@ -89,6 +110,11 @@ const routes = [
         </ErrorBoundary>
       </MainLayout>
     )
+  },
+  // Catch-all route for 404
+  {
+    path: '*',
+    element: <NotFound />
   }
 ];
 

@@ -1,232 +1,245 @@
 
 import React from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Separator } from '@/components/ui/separator';
 import { useLanguage } from '@/contexts/LanguageContext';
-import { User, Settings, Bell, Shield, Building } from 'lucide-react';
+import { useUserPreferences } from '@/contexts/UserPreferencesContext';
+import { Badge } from '@/components/ui/badge';
+import { User, Mail, Phone, MapPin, Building, PieChart, Clock, Save, FileText } from 'lucide-react';
+import { toast } from 'sonner';
 
 const UserProfile = () => {
-  const { t } = useLanguage();
+  const { language } = useLanguage();
+  const { preferences, updatePreferences } = useUserPreferences();
   
-  // Demo user data
-  const user = {
-    name: "Alex Johnson",
-    email: "alex.johnson@example.com",
-    role: "Investor",
-    joinDate: "June 2023",
-    profilePicture: "https://api.dicebear.com/7.x/avataaars/svg?seed=Alex",
-    properties: 5,
-    totalInvestment: 1250000,
-    preferences: {
-      investmentTypes: ["Residential", "Commercial"],
-      preferredLocations: ["Urban", "Suburban"],
-      minROI: 6.5,
-      maxBudget: 500000
-    },
-    activity: [
-      { type: "Property Viewed", target: "Downtown Loft", date: "2 days ago" },
-      { type: "ROI Analysis", target: "Suburban House", date: "5 days ago" },
-      { type: "Mortgage Calculator", target: "Investment Property", date: "1 week ago" },
-      { type: "Property Comparison", target: "Multiple Properties", date: "2 weeks ago" }
-    ]
+  const [profileData, setProfileData] = React.useState({
+    name: preferences.name || '',
+    email: 'user@example.com',
+    phone: '',
+    location: '',
+    bio: ''
+  });
+  
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    const { name, value } = e.target;
+    setProfileData(prev => ({ ...prev, [name]: value }));
+  };
+  
+  const handleSave = () => {
+    updatePreferences({ name: profileData.name });
+    toast.success(language === 'de' ? 'Profil aktualisiert!' : 'Profile updated!');
   };
 
+  // Calculate experience level for display
+  const getExperienceBadge = () => {
+    switch (preferences.experienceLevel) {
+      case 'beginner':
+        return { label: language === 'de' ? 'Anfänger' : 'Beginner', color: 'bg-blue-100 text-blue-800' };
+      case 'intermediate':
+        return { label: language === 'de' ? 'Fortgeschritten' : 'Intermediate', color: 'bg-green-100 text-green-800' };
+      case 'advanced':
+        return { label: language === 'de' ? 'Erfahren' : 'Advanced', color: 'bg-yellow-100 text-yellow-800' };
+      case 'expert':
+        return { label: language === 'de' ? 'Experte' : 'Expert', color: 'bg-purple-100 text-purple-800' };
+      default:
+        return { label: language === 'de' ? 'Anfänger' : 'Beginner', color: 'bg-blue-100 text-blue-800' };
+    }
+  };
+  
+  const experienceBadge = getExperienceBadge();
+
   return (
-    <div className="space-y-6">
-      <div className="flex flex-col md:flex-row md:items-start gap-6">
-        <Card className="w-full md:w-80">
-          <CardContent className="pt-6 flex flex-col items-center">
-            <Avatar className="h-24 w-24">
-              <AvatarImage src={user.profilePicture} alt={user.name} />
-              <AvatarFallback>{user.name.charAt(0)}</AvatarFallback>
-            </Avatar>
-            <h2 className="text-xl font-bold mt-4">{user.name}</h2>
-            <p className="text-muted-foreground">{user.role}</p>
-            
-            <div className="w-full mt-6 space-y-2">
-              <div className="flex justify-between">
-                <span className="text-muted-foreground">{t('email')}</span>
-                <span>{user.email}</span>
+    <div className="container mx-auto py-6 animate-fade-in">
+      <h1 className="text-3xl font-bold mb-6 flex items-center">
+        <User className="h-8 w-8 mr-2" />
+        {language === 'de' ? 'Benutzerprofil' : 'User Profile'}
+      </h1>
+      
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div className="md:col-span-1">
+          <Card>
+            <CardHeader>
+              <div className="flex justify-center">
+                <Avatar className="h-24 w-24">
+                  <AvatarImage src="" />
+                  <AvatarFallback className="text-3xl">
+                    {profileData.name ? profileData.name.charAt(0).toUpperCase() : 'U'}
+                  </AvatarFallback>
+                </Avatar>
               </div>
-              <div className="flex justify-between">
-                <span className="text-muted-foreground">{t('memberSince')}</span>
-                <span>{user.joinDate}</span>
+              <CardTitle className="text-center mt-4">{profileData.name || 'User'}</CardTitle>
+              <CardDescription className="text-center">
+                <Badge className={`${experienceBadge.color} mt-2`}>
+                  {experienceBadge.label}
+                </Badge>
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="flex items-center">
+                <Building className="h-4 w-4 mr-2 text-muted-foreground" />
+                <span className="text-sm">
+                  {language === 'de' ? 'Portfolio: ' : 'Portfolio: '} 3 {language === 'de' ? 'Immobilien' : 'properties'}
+                </span>
               </div>
-              <div className="flex justify-between">
-                <span className="text-muted-foreground">{t('properties')}</span>
-                <span>{user.properties}</span>
+              <div className="flex items-center">
+                <PieChart className="h-4 w-4 mr-2 text-muted-foreground" />
+                <span className="text-sm">
+                  {language === 'de' ? 'Ø ROI: 6.2%' : 'Avg. ROI: 6.2%'}
+                </span>
               </div>
-              <div className="flex justify-between">
-                <span className="text-muted-foreground">{t('totalInvestment')}</span>
-                <span>€{user.totalInvestment.toLocaleString()}</span>
+              <div className="flex items-center">
+                <Clock className="h-4 w-4 mr-2 text-muted-foreground" />
+                <span className="text-sm">
+                  {language === 'de' ? 'Mitglied seit: Jan 2023' : 'Member since: Jan 2023'}
+                </span>
               </div>
-            </div>
-            
-            <Button className="w-full mt-6">
-              <User className="mr-2 h-4 w-4" />
-              {t('editProfile')}
-            </Button>
-          </CardContent>
-        </Card>
+            </CardContent>
+            <CardFooter>
+              <Button variant="outline" className="w-full" onClick={() => toast.info(language === 'de' ? 'Funktion kommt bald!' : 'Feature coming soon!')}>
+                <FileText className="h-4 w-4 mr-2" />
+                {language === 'de' ? 'Portfolio anzeigen' : 'View Portfolio'}
+              </Button>
+            </CardFooter>
+          </Card>
+        </div>
         
-        <div className="flex-1">
-          <Tabs defaultValue="preferences">
-            <TabsList className="grid w-full grid-cols-3">
-              <TabsTrigger value="preferences">
-                <Settings className="mr-2 h-4 w-4" />
-                {t('preferences')}
-              </TabsTrigger>
-              <TabsTrigger value="activity">
-                <Bell className="mr-2 h-4 w-4" />
-                {t('recentActivity')}
-              </TabsTrigger>
-              <TabsTrigger value="portfolio">
-                <Building className="mr-2 h-4 w-4" />
-                {t('portfolioSummary')}
-              </TabsTrigger>
-            </TabsList>
-            
-            <TabsContent value="preferences" className="mt-4 space-y-4">
-              <Card>
-                <CardHeader>
-                  <CardTitle>{t('investmentPreferences')}</CardTitle>
-                  <CardDescription>{t('yourPreferredInvestmentCriteria')}</CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div>
-                    <h3 className="font-medium mb-2">{t('investmentTypes')}</h3>
-                    <div className="flex flex-wrap gap-2">
-                      {user.preferences.investmentTypes.map((type) => (
-                        <div key={type} className="bg-primary/10 text-primary px-3 py-1 rounded-full text-sm">
-                          {type}
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                  
-                  <div>
-                    <h3 className="font-medium mb-2">{t('preferredLocations')}</h3>
-                    <div className="flex flex-wrap gap-2">
-                      {user.preferences.preferredLocations.map((location) => (
-                        <div key={location} className="bg-primary/10 text-primary px-3 py-1 rounded-full text-sm">
-                          {location}
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                  
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <h3 className="font-medium mb-1">{t('minimumROI')}</h3>
-                      <p>{user.preferences.minROI}%</p>
-                    </div>
-                    <div>
-                      <h3 className="font-medium mb-1">{t('maximumBudget')}</h3>
-                      <p>€{user.preferences.maxBudget.toLocaleString()}</p>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
+        <div className="md:col-span-2">
+          <Card>
+            <CardHeader>
+              <CardTitle>{language === 'de' ? 'Persönliche Informationen' : 'Personal Information'}</CardTitle>
+              <CardDescription>
+                {language === 'de' ? 'Bearbeiten Sie Ihre Profilinformationen' : 'Edit your profile information'}
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              <div className="space-y-2">
+                <Label htmlFor="name">
+                  <User className="h-4 w-4 inline mr-2" />
+                  {language === 'de' ? 'Name' : 'Name'}
+                </Label>
+                <Input 
+                  id="name" 
+                  name="name" 
+                  value={profileData.name} 
+                  onChange={handleInputChange} 
+                />
+              </div>
               
-              <Card>
-                <CardHeader>
-                  <CardTitle>{t('accountSecurity')}</CardTitle>
-                  <CardDescription>{t('manageYourAccountSecurity')}</CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="flex justify-between items-center">
-                    <div className="flex items-center">
-                      <Shield className="h-5 w-5 mr-2 text-green-500" />
-                      <div>
-                        <h3 className="font-medium">{t('twoFactorAuthentication')}</h3>
-                        <p className="text-sm text-muted-foreground">{t('enhanceYourAccountSecurity')}</p>
-                      </div>
-                    </div>
-                    <Button variant="outline" size="sm">{t('enable')}</Button>
-                  </div>
-                  
-                  <div className="flex justify-between items-center">
-                    <div className="flex items-center">
-                      <Shield className="h-5 w-5 mr-2 text-yellow-500" />
-                      <div>
-                        <h3 className="font-medium">{t('changePassword')}</h3>
-                        <p className="text-sm text-muted-foreground">{t('updateYourPassword')}</p>
-                      </div>
-                    </div>
-                    <Button variant="outline" size="sm">{t('change')}</Button>
-                  </div>
-                </CardContent>
-              </Card>
-            </TabsContent>
-            
-            <TabsContent value="activity" className="mt-4">
-              <Card>
-                <CardHeader>
-                  <CardTitle>{t('recentActivity')}</CardTitle>
-                  <CardDescription>{t('yourRecentActionsOnThePlatform')}</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-4">
-                    {user.activity.map((activity, index) => (
-                      <div key={index} className="flex justify-between items-start border-b last:border-0 pb-3 last:pb-0">
-                        <div>
-                          <h3 className="font-medium">{activity.type}</h3>
-                          <p className="text-sm text-muted-foreground">{activity.target}</p>
-                        </div>
-                        <div className="text-sm text-muted-foreground">{activity.date}</div>
-                      </div>
-                    ))}
-                  </div>
-                </CardContent>
-              </Card>
-            </TabsContent>
-            
-            <TabsContent value="portfolio" className="mt-4">
-              <Card>
-                <CardHeader>
-                  <CardTitle>{t('portfolioSummary')}</CardTitle>
-                  <CardDescription>{t('overviewOfYourRealEstatePortfolio')}</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-6">
-                    <div className="grid grid-cols-2 gap-4">
-                      <Card>
-                        <CardContent className="pt-6">
-                          <div className="text-sm text-muted-foreground">{t('totalInvestment')}</div>
-                          <div className="text-2xl font-bold">€{user.totalInvestment.toLocaleString()}</div>
-                        </CardContent>
-                      </Card>
-                      <Card>
-                        <CardContent className="pt-6">
-                          <div className="text-sm text-muted-foreground">{t('averageROI')}</div>
-                          <div className="text-2xl font-bold">7.2%</div>
-                        </CardContent>
-                      </Card>
-                      <Card>
-                        <CardContent className="pt-6">
-                          <div className="text-sm text-muted-foreground">{t('monthlyCashFlow')}</div>
-                          <div className="text-2xl font-bold">€3,750</div>
-                        </CardContent>
-                      </Card>
-                      <Card>
-                        <CardContent className="pt-6">
-                          <div className="text-sm text-muted-foreground">{t('portfolioEquity')}</div>
-                          <div className="text-2xl font-bold">€325,000</div>
-                        </CardContent>
-                      </Card>
-                    </div>
-                    
-                    <Button className="w-full">
-                      <Building className="mr-2 h-4 w-4" />
-                      {t('viewFullPortfolio')}
-                    </Button>
-                  </div>
-                </CardContent>
-              </Card>
-            </TabsContent>
-          </Tabs>
+              <div className="space-y-2">
+                <Label htmlFor="email">
+                  <Mail className="h-4 w-4 inline mr-2" />
+                  {language === 'de' ? 'E-Mail' : 'Email'}
+                </Label>
+                <Input 
+                  id="email" 
+                  name="email" 
+                  type="email" 
+                  value={profileData.email} 
+                  onChange={handleInputChange} 
+                />
+              </div>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="phone">
+                    <Phone className="h-4 w-4 inline mr-2" />
+                    {language === 'de' ? 'Telefon' : 'Phone'}
+                  </Label>
+                  <Input 
+                    id="phone" 
+                    name="phone" 
+                    value={profileData.phone} 
+                    onChange={handleInputChange} 
+                  />
+                </div>
+                
+                <div className="space-y-2">
+                  <Label htmlFor="location">
+                    <MapPin className="h-4 w-4 inline mr-2" />
+                    {language === 'de' ? 'Standort' : 'Location'}
+                  </Label>
+                  <Input 
+                    id="location" 
+                    name="location" 
+                    value={profileData.location} 
+                    onChange={handleInputChange} 
+                  />
+                </div>
+              </div>
+              
+              <div className="space-y-2">
+                <Label htmlFor="bio">
+                  {language === 'de' ? 'Über mich' : 'About Me'}
+                </Label>
+                <textarea 
+                  id="bio"
+                  name="bio"
+                  className="w-full min-h-[100px] p-2 border rounded-md"
+                  value={profileData.bio}
+                  onChange={handleInputChange}
+                />
+              </div>
+            </CardContent>
+            <CardFooter className="flex justify-between">
+              <Button variant="outline">
+                {language === 'de' ? 'Abbrechen' : 'Cancel'}
+              </Button>
+              <Button onClick={handleSave} className="gap-2">
+                <Save className="h-4 w-4" />
+                {language === 'de' ? 'Speichern' : 'Save Changes'}
+              </Button>
+            </CardFooter>
+          </Card>
+          
+          <Card className="mt-6">
+            <CardHeader>
+              <CardTitle>{language === 'de' ? 'Investitionspräferenzen' : 'Investment Preferences'}</CardTitle>
+              <CardDescription>
+                {language === 'de' ? 'Ihre aktuellen Investitionspräferenzen' : 'Your current investment preferences'}
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div>
+                <h3 className="text-sm font-medium mb-2">
+                  {language === 'de' ? 'Bevorzugte Märkte' : 'Preferred Markets'}
+                </h3>
+                <div className="flex flex-wrap gap-2">
+                  <Badge variant="secondary">
+                    {preferences.investmentMarket === 'germany' ? 'Deutschland' : 
+                     preferences.investmentMarket === 'austria' ? 'Österreich' : 
+                     preferences.investmentMarket === 'usa' ? 'USA' : 'Global'}
+                  </Badge>
+                </div>
+              </div>
+              
+              <Separator />
+              
+              <div>
+                <h3 className="text-sm font-medium mb-2">
+                  {language === 'de' ? 'Investitionsziele' : 'Investment Goals'}
+                </h3>
+                <div className="flex flex-wrap gap-2">
+                  {(preferences.investmentGoals || []).map((goal, index) => (
+                    <Badge key={index} variant="secondary">{goal}</Badge>
+                  ))}
+                  {(!preferences.investmentGoals || preferences.investmentGoals.length === 0) && (
+                    <span className="text-sm text-muted-foreground">
+                      {language === 'de' ? 'Keine Ziele festgelegt' : 'No goals set'}
+                    </span>
+                  )}
+                </div>
+              </div>
+            </CardContent>
+            <CardFooter>
+              <Button variant="outline" className="w-full" onClick={() => toast.info(language === 'de' ? 'Onboarding-Reset in den Einstellungen verfügbar!' : 'Onboarding reset available in Settings!')}>
+                {language === 'de' ? 'Präferenzen aktualisieren' : 'Update Preferences'}
+              </Button>
+            </CardFooter>
+          </Card>
         </div>
       </div>
     </div>

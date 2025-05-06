@@ -7,7 +7,7 @@ import {
   BarChart3, Building, Calculator, Calendar, Settings2, Star, 
   School, Building2, Banknote, RefreshCw, Users, Euro, 
   PieChart, BarChart, Globe, LayoutDashboard, Home,
-  LineChart, Shield, FileText, ArrowLeftRight, Map
+  LineChart, Shield, FileText, ArrowLeftRight, Map, User
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useUserPreferences } from '@/contexts/UserPreferencesContext';
@@ -18,6 +18,7 @@ interface NavItem {
   href: string;
   icon: React.ReactNode;
   new?: boolean;
+  hide?: boolean;
 }
 
 interface NavCategory {
@@ -49,6 +50,12 @@ const AppSidebar = () => {
           name: t('properties'),
           href: '/properties',
           icon: <Building className="h-5 w-5" />,
+        },
+        {
+          name: t('welcomePage'),
+          href: '/',
+          icon: <Home className="h-5 w-5" />,
+          hide: true, // Hide from navigation
         },
       ]
     },
@@ -83,10 +90,9 @@ const AppSidebar = () => {
       title: t('tools'),
       items: [
         {
-          name: t('investorTools'),
-          href: '/investor-tools',
+          name: t('tools'),
+          href: '/deutsche-immobilien-tools',
           icon: <Banknote className="h-5 w-5" />,
-          new: true,
         },
         {
           name: t('calculators'),
@@ -105,48 +111,10 @@ const AppSidebar = () => {
           icon: <BarChart className="h-5 w-5" />,
           new: true,
         },
-      ]
-    },
-    {
-      title: t('specializedTools'),
-      items: [
         {
-          name: t('exchangeTracker'),
-          href: '/exchange-tracker',
-          icon: <RefreshCw className="h-5 w-5" />,
-          new: true,
-        },
-        {
-          name: t('partnerMatching'),
-          href: '/partner-matching',
-          icon: <Users className="h-5 w-5" />,
-          new: true,
-        },
-        {
-          name: t('deutscheImmobilienTools'),
-          href: '/deutsche-immobilien-tools',
-          icon: <Euro className="h-5 w-5" />,
-          new: true,
-        },
-      ]
-    },
-    {
-      title: t('planning'),
-      items: [
-        {
-          name: t('schedule'),
-          href: '/schedule',
-          icon: <Calendar className="h-5 w-5" />,
-        },
-        {
-          name: t('decision'),
-          href: '/decision',
-          icon: <LineChart className="h-5 w-5" />,
-        },
-        {
-          name: t('refurbishment'),
-          href: '/refurbishment',
-          icon: <Home className="h-5 w-5" />,
+          name: t('education'),
+          href: '/education',
+          icon: <School className="h-5 w-5" />,
         },
       ]
     },
@@ -159,15 +127,9 @@ const AppSidebar = () => {
           icon: <Star className="h-5 w-5" />,
         },
         {
-          name: t('education'),
-          href: '/education',
-          icon: <School className="h-5 w-5" />,
-        },
-        {
-          name: t('features'),
-          href: '/features',
-          icon: <Globe className="h-5 w-5" />,
-          new: true,
+          name: t('profile'),
+          href: '/profile',
+          icon: <User className="h-5 w-5" />,
         },
         {
           name: t('settings'),
@@ -185,27 +147,32 @@ const AppSidebar = () => {
   ];
 
   // Render a nav item
-  const renderNavItem = (item: NavItem) => (
-    <Link
-      key={item.href}
-      to={item.href}
-      className={cn(
-        "flex items-center py-2 px-3 rounded-md group transition-colors",
-        location.pathname === item.href
-          ? "bg-primary text-primary-foreground"
-          : "hover:bg-muted"
-      )}
-      aria-current={location.pathname === item.href ? "page" : undefined}
-    >
-      {item.icon}
-      <span className="ml-3 flex-1">{item.name}</span>
-      {item.new && (
-        <span className="bg-primary/10 text-primary text-xs px-1.5 py-0.5 rounded-full">
-          {t('new')}
-        </span>
-      )}
-    </Link>
-  );
+  const renderNavItem = (item: NavItem) => {
+    // Skip hidden items
+    if (item.hide) return null;
+    
+    return (
+      <Link
+        key={item.href}
+        to={item.href}
+        className={cn(
+          "flex items-center py-2 px-3 rounded-md group transition-colors",
+          location.pathname === item.href
+            ? "bg-primary text-primary-foreground"
+            : "hover:bg-muted"
+        )}
+        aria-current={location.pathname === item.href ? "page" : undefined}
+      >
+        {item.icon}
+        <span className="ml-3 flex-1">{item.name}</span>
+        {item.new && (
+          <span className="bg-primary/10 text-primary text-xs px-1.5 py-0.5 rounded-full">
+            {t('new')}
+          </span>
+        )}
+      </Link>
+    );
+  };
 
   // Render a category with its items
   const renderCategory = (category: NavCategory, idx: number) => (
@@ -214,7 +181,7 @@ const AppSidebar = () => {
         {category.title}
       </h3>
       <div className="space-y-1">
-        {category.items.map(renderNavItem)}
+        {category.items.filter(item => !item.hide).map(renderNavItem)}
       </div>
     </div>
   );

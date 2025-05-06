@@ -30,9 +30,19 @@ const MarketStep: React.FC<OnboardingStepProps> = ({ data, updateData, onNext })
           <div 
             key={market.id} 
             className="flex items-center space-x-2 rounded-md border p-3 cursor-pointer hover:bg-accent"
+            onClick={() => handleSelection(market.id)}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                handleSelection(market.id);
+              }
+            }}
+            tabIndex={0}
+            role="radio"
+            aria-checked={data.investmentMarket === market.id}
           >
             <RadioGroupItem value={market.id} id={market.id} />
-            <Label htmlFor={market.id} className="cursor-pointer flex-grow">
+            <Label htmlFor={market.id} className="cursor-pointer flex-grow w-full">
               <div className="font-medium">{market.name}</div>
             </Label>
           </div>
