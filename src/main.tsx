@@ -1,6 +1,4 @@
-
 import { createRoot } from 'react-dom/client';
-import { BrowserRouter } from 'react-router-dom';
 import App from './App.tsx';
 import './index.css';
 import './utils/accessibilityStyles.css';
@@ -260,7 +258,5 @@ function isInputActive() {
 }
 
 createRoot(rootElement).render(
-  <BrowserRouter>
-    <App />
-  </BrowserRouter>
+  <App />
 );
