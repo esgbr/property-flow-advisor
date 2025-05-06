@@ -19,6 +19,8 @@ import Index from '@/pages/Index';
 import SimplifiedDashboard from '@/pages/SimplifiedDashboard';
 import Dashboard from '@/pages/Dashboard';
 import MarketComparisonTool from '@/pages/MarketComparisonTool';
+import { RewardsProvider } from '@/contexts/RewardsContext';
+import Rewards from '@/pages/Rewards';
 
 const AdvancedAnalytics = lazy(() => import('@/pages/AdvancedAnalyticsPage'));
 
@@ -73,6 +75,10 @@ const routes = [
     element: <MainLayout><GermanRealEstateInvestor /></MainLayout>
   },
   {
+    path: '/rewards',
+    element: <MainLayout><Rewards /></MainLayout>
+  },
+  {
     path: '/advanced-analytics',
     element: (
       <MainLayout>
@@ -103,7 +109,9 @@ const App: React.FC = () => {
 
   return (
     <ErrorBoundary>
-      <RouterProvider router={router} />
+      <RewardsProvider>
+        <RouterProvider router={router} />
+      </RewardsProvider>
     </ErrorBoundary>
   );
 };
