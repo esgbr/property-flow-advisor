@@ -1,6 +1,5 @@
-
 import React, { useState } from 'react';
-import { OnboardingData } from '@/contexts/UserPreferencesContext';
+import { InvestmentMarket, OnboardingData } from '@/contexts/UserPreferencesContext';
 import { useNavigate } from 'react-router-dom';
 import { useUserPreferences } from '@/contexts/UserPreferencesContext';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
@@ -12,7 +11,6 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Checkbox } from '@/components/ui/checkbox';
-import { InvestmentMarket } from '@/contexts/UserPreferencesContext';
 
 const OnboardingPage: React.FC = () => {
   const navigate = useNavigate();
@@ -74,7 +72,7 @@ const OnboardingPage: React.FC = () => {
           </div>
           <RadioGroup 
             value={onboardingData.investmentMarket} 
-            onValueChange={(value) => setOnboardingData({...onboardingData, investmentMarket: value})}
+            onValueChange={(value) => setOnboardingData({...onboardingData, investmentMarket: value as InvestmentMarket})}
             className="space-y-3"
           >
             <div className="flex items-center space-x-2 border p-4 rounded-lg hover:border-primary/50 hover:bg-muted/50 cursor-pointer">
