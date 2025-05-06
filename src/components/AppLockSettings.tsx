@@ -1,5 +1,4 @@
-
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useAppLock } from '@/contexts/AppLockContext';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -8,17 +7,41 @@ import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { Lock, Fingerprint, ShieldCheck } from 'lucide-react';
+import { useToast } from '@/components/ui/use-toast';
 
 const AppLockSettings: React.FC = () => {
-  const { pin, setPIN, hasPIN, supportsFaceId } = useAppLock();
+  const { 
+    pin, 
+    setPIN, 
+    hasPIN, 
+    clearPIN, 
+    supportsFaceId, 
+    isBiometricEnabled,
+    setBiometricEnabled
+  } = useAppLock();
+  
   const { t } = useLanguage();
+  const { toast } = useToast();
   const [newPin, setNewPin] = useState('');
   const [confirmPin, setConfirmPin] = useState('');
   const [error, setError] = useState('');
-  const [useBiometrics, setUseBiometrics] = useState(false);
+  
+  // Connect to the biometric state from context
+  const [useBiometrics, setUseBiometrics] = useState(isBiometricEnabled);
+  
+  // Keep local state in sync with context
+  useEffect(() => {
+    setUseBiometrics(isBiometricEnabled);
+  }, [isBiometricEnabled]);
+  
+  // Handle biometrics toggle
+  const handleBiometricsChange = (enabled: boolean) => {
+    setUseBiometrics(enabled);
+    setBiometricEnabled(enabled);
+  };
   
   const handleSetPin = () => {
-    // Validierung
+    // Validation
     if (!newPin || !confirmPin) {
       setError(t('pleaseEnterBothPins'));
       return;
@@ -34,11 +57,22 @@ const AppLockSettings: React.FC = () => {
       return;
     }
     
-    // PIN setzen
+    // Set PIN
     setPIN(newPin);
     setNewPin('');
     setConfirmPin('');
     setError('');
+    
+    toast({
+      title: t('success'),
+      description: t('pinSetSuccessfully')
+    });
+  };
+  
+  const handleResetPin = () => {
+    clearPIN();
+    setNewPin('');
+    setConfirmPin('');
   };
   
   return (
@@ -102,7 +136,7 @@ const AppLockSettings: React.FC = () => {
             <Switch
               id="use-biometrics"
               checked={useBiometrics}
-              onCheckedChange={setUseBiometrics}
+              onCheckedChange={handleBiometricsChange}
               disabled={!hasPIN}
             />
           </div>
@@ -114,7 +148,7 @@ const AppLockSettings: React.FC = () => {
             {t('setupPIN')}
           </Button>
         ) : (
-          <Button variant="outline" onClick={() => setPIN('')}>
+          <Button variant="outline" onClick={handleResetPin}>
             {t('resetPIN')}
           </Button>
         )}

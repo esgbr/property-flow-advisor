@@ -4,6 +4,7 @@ import { useUserPreferences } from './UserPreferencesContext';
 import { useToast } from '@/components/ui/use-toast';
 import { useLanguage } from './LanguageContext';
 import secureStorage from '@/utils/secureStorage';
+import { logSecurityEvent } from '@/utils/securityUtils';
 
 interface AppLockContextProps {
   isLocked: boolean;
@@ -30,7 +31,7 @@ export const AppLockProvider: React.FC<{ children: React.ReactNode }> = ({ child
   const [supportsFaceId, setSupportsFaceId] = useState<boolean>(false);
   const { toast } = useToast();
   const { t } = useLanguage();
-  
+
   // Check if biometric authentication is supported
   useEffect(() => {
     const checkBiometricSupport = async () => {
@@ -82,6 +83,7 @@ export const AppLockProvider: React.FC<{ children: React.ReactNode }> = ({ child
   const lockApp = useCallback(() => {
     if (pin) {
       setIsLocked(true);
+      logSecurityEvent('logout', { automatic: true });
       toast({
         title: t('security'),
         description: t('appLocked'),
@@ -104,6 +106,7 @@ export const AppLockProvider: React.FC<{ children: React.ReactNode }> = ({ child
     
     if (userPin && userPin === pin) {
       setIsLocked(false);
+      logSecurityEvent('login', { method: 'pin' });
       return true;
     }
     
@@ -126,6 +129,8 @@ export const AppLockProvider: React.FC<{ children: React.ReactNode }> = ({ child
         appLockEnabled: true,
         appLockMethod: isBiometricEnabled ? 'biometric' : 'pin'
       });
+      
+      logSecurityEvent('pin_change', {}, true);
       
       toast({
         title: t('success'),
@@ -153,6 +158,8 @@ export const AppLockProvider: React.FC<{ children: React.ReactNode }> = ({ child
         appLockMethod: 'none'
       });
       
+      logSecurityEvent('pin_change', { removed: true });
+      
       toast({
         title: t('success'),
         description: t('pinRemoved'),
@@ -176,6 +183,7 @@ export const AppLockProvider: React.FC<{ children: React.ReactNode }> = ({ child
       // Here we simulate a successful authentication
       await new Promise(resolve => setTimeout(resolve, 1500));
       setIsLocked(false);
+      logSecurityEvent('login', { method: 'biometric' });
       return true;
     } catch (error) {
       console.error('Biometric authentication error:', error);
@@ -201,6 +209,8 @@ export const AppLockProvider: React.FC<{ children: React.ReactNode }> = ({ child
     updatePreferences({
       appLockMethod: enabled ? 'biometric' : 'pin'
     });
+    
+    logSecurityEvent('pin_change', { biometricEnabled: enabled });
     
     toast({
       title: t('success'),

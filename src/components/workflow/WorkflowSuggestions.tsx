@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
@@ -43,7 +42,7 @@ const WorkflowSuggestions: React.FC<WorkflowSuggestionsProps> = ({
   const isMobile = useIsMobile();
   const { userMarket } = useMarketFilter();
   
-  // Use the enhanced workflow hook - Fixed: Pass the workflowType parameter
+  // Fixed: Pass the workflowType parameter to the useWorkflow hook
   const workflow = useWorkflow(workflowType);
   
   // Get next steps from the workflow - pass currentTool parameter
