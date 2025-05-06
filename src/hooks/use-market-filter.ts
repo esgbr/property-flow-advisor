@@ -1,6 +1,7 @@
+
 import { useContext } from 'react';
 import { useLanguage } from '@/contexts/LanguageContext';
-import { UserPreferencesContext, InvestmentMarket } from '@/contexts/UserPreferencesContext';
+import { UserPreferencesContext, InvestmentMarket, InvestmentMarketOption } from '@/contexts/UserPreferencesContext';
 import { getLocalizedMarketName, availableMarkets } from '@/utils/marketHelpers';
 import { ReactNode } from 'react';
 
@@ -70,7 +71,7 @@ export const useMarketFilter = () => {
 
   // Get localized market name
   const getLocalizedMarketName = (): string => {
-    return getLocalizedMarketName(userMarket, language);
+    return getLocalizedMarketName(userMarket);
   };
 
   // Get available markets

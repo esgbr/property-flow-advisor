@@ -2,6 +2,20 @@
 import { InvestmentMarket, InvestmentMarketOption } from '@/contexts/UserPreferencesContext';
 
 /**
+ * Available markets for investment
+ */
+export const availableMarkets = [
+  { id: 'germany', name: 'Germany' },
+  { id: 'austria', name: 'Austria' },
+  { id: 'switzerland', name: 'Switzerland' },
+  { id: 'usa', name: 'USA' },
+  { id: 'canada', name: 'Canada' },
+  { id: 'global', name: 'Global' },
+  { id: 'uk', name: 'United Kingdom' },
+  { id: 'europe', name: 'Europe' }
+];
+
+/**
  * Get localized name for a market
  */
 export const getLocalizedMarketName = (market: InvestmentMarket, language: string = 'en'): string => {
@@ -24,14 +38,14 @@ export const getLocalizedMarketName = (market: InvestmentMarket, language: strin
  */
 export const getFilteredMarketOptions = (language: string = 'en'): InvestmentMarketOption[] => {
   return [
-    { value: 'germany', label: getLocalizedMarketName('germany', language) },
-    { value: 'austria', label: getLocalizedMarketName('austria', language) },
-    { value: 'switzerland', label: getLocalizedMarketName('switzerland', language) },
-    { value: 'usa', label: getLocalizedMarketName('usa', language) },
-    { value: 'canada', label: getLocalizedMarketName('canada', language) },
-    { value: 'global', label: getLocalizedMarketName('global', language) },
-    { value: 'uk', label: getLocalizedMarketName('uk', language) },
-    { value: 'europe', label: getLocalizedMarketName('europe', language) }
+    { id: 'germany', label: getLocalizedMarketName('germany', language) },
+    { id: 'austria', label: getLocalizedMarketName('austria', language) },
+    { id: 'switzerland', label: getLocalizedMarketName('switzerland', language) },
+    { id: 'usa', label: getLocalizedMarketName('usa', language) },
+    { id: 'canada', label: getLocalizedMarketName('canada', language) },
+    { id: 'global', label: getLocalizedMarketName('global', language) },
+    { id: 'uk', label: getLocalizedMarketName('uk', language) },
+    { id: 'europe', label: getLocalizedMarketName('europe', language) }
   ];
 };
 
