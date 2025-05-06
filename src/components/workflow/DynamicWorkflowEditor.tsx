@@ -34,7 +34,7 @@ const DynamicWorkflowEditor: React.FC<DynamicWorkflowEditorProps> = ({ workflowT
   
   const [currentStepId, setCurrentStepId] = useState<string | null>(null);
   const [customBranches, setCustomBranches] = useState<Record<string, string[]>>({});
-  const [userChoices, setUserChoices] = useState<Record<string, any>>({});
+  const [userChoices, setUserChoices] = useState<Record<string, Record<string, string>>>({});
   const [relatedWorkflows, setRelatedWorkflows] = useState<WorkflowType[]>([]);
 
   // Load initial data
@@ -80,7 +80,7 @@ const DynamicWorkflowEditor: React.FC<DynamicWorkflowEditorProps> = ({ workflowT
     });
   };
 
-  const handleSetChoice = (stepId: string, key: string, value: any) => {
+  const handleSetChoice = (stepId: string, key: string, value: string) => {
     setUserChoices(prev => ({
       ...prev,
       [stepId]: {
@@ -93,9 +93,9 @@ const DynamicWorkflowEditor: React.FC<DynamicWorkflowEditorProps> = ({ workflowT
     determineNextStepsBasedOnChoices(stepId, key, value);
   };
 
-  const determineNextStepsBasedOnChoices = (stepId: string, key: string, value: any) => {
+  const determineNextStepsBasedOnChoices = (stepId: string, key: string, value: string) => {
     // Logic to determine which branch to take based on user choices
-    const choiceBasedBranching: Record<string, Record<string, string[]>> = {
+    const choiceBasedBranching: Record<string, Record<string, Record<string, string[]>>> = {
       'steuer': {
         // For tax strategy choice
         'taxStrategy': {
@@ -241,7 +241,7 @@ const DynamicWorkflowEditor: React.FC<DynamicWorkflowEditorProps> = ({ workflowT
     if (!currentStepId) return null;
     
     // Example choices for different workflow types
-    const choiceOptions: Record<string, {key: string, label: {en: string, de: string}, options: {value: any, label: {en: string, de: string}}[]}[]> = {
+    const choiceOptions: Record<string, {key: string, label: {en: string, de: string}, options: {value: string, label: {en: string, de: string}}[]}[]> = {
       'steuer': [
         {
           key: 'taxStrategy',

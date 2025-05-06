@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -18,7 +17,7 @@ import {
 } from "@/components/ui/table";
 import { Progress } from '@/components/ui/progress';
 import { getLocalizedMarketName } from '@/utils/marketHelpers';
-import { toast } from 'sonner';
+import { toast } from '@/components/ui/use-toast';
 
 /**
  * Advanced market comparison dashboard with side-by-side visualizations
@@ -54,16 +53,14 @@ const MarketComparisonDashboard: React.FC = () => {
       setComparisonMarket(market);
     }
 
-    toast.success(
-      language === 'de' 
+    toast({
+      title: language === 'de' 
         ? 'Marktvergleich aktualisiert' 
         : 'Market comparison updated',
-      {
-        description: language === 'de'
-          ? `Vergleiche ${getLocalizedMarketName(primaryMarket, language)} mit ${getLocalizedMarketName(market, language)}`
-          : `Comparing ${getLocalizedMarketName(primaryMarket, language)} with ${getLocalizedMarketName(market, language)}`
-      }
-    );
+      description: language === 'de'
+        ? `Vergleiche ${getLocalizedMarketName(primaryMarket, language)} mit ${getLocalizedMarketName(market, language)}`
+        : `Comparing ${getLocalizedMarketName(primaryMarket, language)} with ${getLocalizedMarketName(market, language)}`
+    });
   };
 
   // Export comparison data
@@ -88,11 +85,11 @@ const MarketComparisonDashboard: React.FC = () => {
     linkElement.setAttribute('download', exportFileDefaultName);
     linkElement.click();
     
-    toast.success(
-      language === 'de'
+    toast({
+      title: language === 'de'
         ? 'Vergleichsdaten exportiert'
         : 'Comparison data exported'
-    );
+    });
   };
 
   // Format currency for display

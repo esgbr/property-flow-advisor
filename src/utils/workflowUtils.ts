@@ -1,5 +1,4 @@
-
-import { WorkflowType } from '@/hooks/use-workflow';
+import { WorkflowType } from '@/data/workflow-definitions';
 import { workflowDefinitions } from '@/data/workflow-definitions';
 import { InvestmentMarket } from '@/contexts/UserPreferencesContext';
 
@@ -136,4 +135,10 @@ export const findIncompleteWorkflows = (
   });
   
   return results;
+};
+
+export default {
+  getRelatedWorkflowsForTool,
+  createRecommendedWorkflowPath,
+  calculateWorkflowEstimatedTime
 };
