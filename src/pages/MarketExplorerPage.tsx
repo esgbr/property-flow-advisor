@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
@@ -14,7 +14,8 @@ import {
   BarChart3,
   TrendingUp,
   Download,
-  Globe
+  Globe,
+  ArrowRight
 } from 'lucide-react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useMarketFilter } from '@/hooks/use-market-filter';
@@ -22,12 +23,21 @@ import { availableMarkets } from '@/utils/marketHelpers';
 import { InvestmentMarket } from '@/contexts/UserPreferencesContext';
 import MarketMetricsGrid from '@/components/analysis/MarketMetricsGrid';
 import MarketChart from '@/components/analysis/MarketChart';
+import { toast } from 'sonner';
+import WorkflowSuggestions from '@/components/workflow/WorkflowSuggestions';
+import { useWorkflow } from '@/hooks/use-workflow';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 const MarketExplorerPage: React.FC = () => {
   const { language } = useLanguage();
   const [searchQuery, setSearchQuery] = useState('');
   const marketFilter = useMarketFilter();
   const userMarket = marketFilter.userMarket;
+  const isMobile = useIsMobile();
+  const [activeTab, setActiveTab] = useState('metrics');
+  
+  // Get the workflow hook for analysis workflow
+  const workflow = useWorkflow('analyse');
   
   // Get the market display name
   const marketName = userMarket ? marketFilter.getMarketDisplayName() : '';
@@ -35,10 +45,29 @@ const MarketExplorerPage: React.FC = () => {
   // Handler for market changes
   const handleMarketChange = (value: string) => {
     marketFilter.setUserMarket(value as InvestmentMarket);
+    toast.success(language === 'de' 
+      ? `Markt gewechselt zu ${value}`
+      : `Market changed to ${value}`);
+  };
+  
+  // Handle tab changes
+  const handleTabChange = (value: string) => {
+    setActiveTab(value);
+    // Mark the step as complete in the workflow
+    if (value === 'metrics') {
+      workflow.markStepComplete('market');
+    }
+  };
+  
+  // Download data handler
+  const handleDownload = () => {
+    toast.success(language === 'de'
+      ? 'Marktdaten werden heruntergeladen...'
+      : 'Downloading market data...');
   };
 
   return (
-    <div className="container mx-auto px-4 py-8">
+    <div className="container mx-auto px-4 py-8 animate-fade-in">
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
         <div>
           <h1 className="text-3xl font-bold flex items-center">
@@ -64,7 +93,7 @@ const MarketExplorerPage: React.FC = () => {
               ))}
             </SelectContent>
           </Select>
-          <Button variant="outline" size="icon">
+          <Button variant="outline" size="icon" onClick={handleDownload}>
             <Download className="h-4 w-4" />
           </Button>
         </div>
@@ -145,7 +174,7 @@ const MarketExplorerPage: React.FC = () => {
         </div>
       </div>
 
-      <Tabs defaultValue="metrics">
+      <Tabs value={activeTab} onValueChange={handleTabChange}>
         <TabsList className="mb-6">
           <TabsTrigger value="metrics">
             <BarChart3 className="h-4 w-4 mr-2" />
@@ -229,6 +258,45 @@ const MarketExplorerPage: React.FC = () => {
           </Card>
         </TabsContent>
       </Tabs>
+      
+      {/* Workflow suggestions to continue analytics journey */}
+      <WorkflowSuggestions 
+        currentTool="market" 
+        workflowType="analyse" 
+        className="mt-8" 
+      />
+
+      <div className="mt-8">
+        <Card className="hover:shadow-md transition-all border-primary/20">
+          <CardHeader>
+            <CardTitle className="flex items-center">
+              <TrendingUp className="h-5 w-5 mr-2 text-primary" />
+              {language === 'de' ? 'Nächster Schritt: Portfolio-Analyse' : 'Next Step: Portfolio Analysis'}
+            </CardTitle>
+            <CardDescription>
+              {language === 'de'
+                ? 'Analysieren Sie Ihr Portfolio im Kontext der aktuellen Marktdaten'
+                : 'Analyze your portfolio in the context of current market data'}
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <p className="text-sm text-muted-foreground mb-4">
+              {language === 'de'
+                ? 'Bringen Sie Ihre Marktanalyse und Ihr bestehendes Portfolio zusammen, um die optimale Strategie zu entwickeln.'
+                : 'Bring together your market analysis and existing portfolio to develop the optimal strategy.'}
+            </p>
+            <Button 
+              className="group"
+              onClick={() => {
+                workflow.goToNextStep('market');
+              }}
+            >
+              {language === 'de' ? 'Zur Portfolio-Analyse' : 'Go to Portfolio Analysis'}
+              <ArrowRight className="ml-2 h-4 w-4 group-hover:translate-x-1 transition-transform" />
+            </Button>
+          </CardContent>
+        </Card>
+      </div>
     </div>
   );
 };

@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useLanguage } from '@/contexts/LanguageContext';
@@ -24,24 +25,38 @@ import {
   BarChart3,
   TrendingUp,
   PiggyBank,
-  Landmark
+  Landmark,
+  ArrowRight
 } from 'lucide-react';
 import { useMarketFilter } from '@/hooks/use-market-filter';
 import MarketSpecificFeatures from '@/components/market/MarketSpecificFeatures';
 import WorkflowNavigation from '@/components/workflow/WorkflowNavigation';
+import { toast } from 'sonner';
+import RelatedGermanTools from '@/components/german/RelatedGermanTools';
+import { useWorkflow } from '@/hooks/use-workflow';
+import WorkflowSuggestions from '@/components/workflow/WorkflowSuggestions';
 
 const DeutscheImmobilienPage: React.FC = () => {
   const { language } = useLanguage();
   const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState('');
   const marketFilter = useMarketFilter();
+  const steuerWorkflow = useWorkflow('steuer');
   
   // Set the market to Germany when the page loads
   useEffect(() => {
     if (marketFilter.userMarket !== 'germany') {
       marketFilter.setUserMarket('germany');
+      toast.success(
+        language === 'de' 
+          ? 'Markt auf Deutschland eingestellt' 
+          : 'Market set to Germany'
+      );
     }
-  }, [marketFilter]);
+    
+    // Mark this step as complete in the workflow
+    steuerWorkflow.markStepComplete('overview');
+  }, [marketFilter, language, steuerWorkflow]);
 
   const steuerTipps = [
     {
@@ -111,8 +126,18 @@ const DeutscheImmobilienPage: React.FC = () => {
     }
   ];
 
+  // Handle workflow navigation
+  const handleWorkflowStart = (path: string, workflow: 'steuern' | 'analyse') => {
+    navigate(path);
+    toast.success(
+      language === 'de'
+        ? `Workflow "${workflow}" gestartet`
+        : `Workflow "${workflow}" started`
+    );
+  };
+
   return (
-    <div className="container mx-auto px-4 py-8">
+    <div className="container mx-auto px-4 py-8 animate-fade-in">
       <SkipToContent contentId="hauptinhalt" />
       
       <WorkflowNavigation
@@ -225,7 +250,7 @@ const DeutscheImmobilienPage: React.FC = () => {
           
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {workflowCards.map((workflow, index) => (
-              <Card key={index}>
+              <Card key={index} className="hover:shadow-md transition-all">
                 <CardHeader>
                   <CardTitle>
                     {workflow.title[language as keyof typeof workflow.title]}
@@ -255,10 +280,11 @@ const DeutscheImmobilienPage: React.FC = () => {
                 </CardContent>
                 <CardFooter>
                   <Button 
-                    className="w-full" 
-                    onClick={() => navigate(workflow.startPath)}
+                    className="w-full group" 
+                    onClick={() => handleWorkflowStart(workflow.startPath, workflow.workflow)}
                   >
                     {language === 'de' ? 'Workflow starten' : 'Start Workflow'}
+                    <ArrowRight className="ml-2 h-4 w-4 group-hover:translate-x-1 transition-transform" />
                   </Button>
                 </CardFooter>
               </Card>
@@ -272,21 +298,34 @@ const DeutscheImmobilienPage: React.FC = () => {
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             {steuerTipps.map((tip, index) => (
-              <Card key={index} className="cursor-pointer hover:shadow-md transition-shadow"
+              <Card key={index} className="cursor-pointer hover:shadow-md transition-shadow group"
                     onClick={() => navigate(tip.path)}>
                 <CardContent className="pt-6">
                   <div className="flex flex-col items-center text-center">
-                    <div className="mb-4">
+                    <div className="mb-4 group-hover:scale-110 transition-transform">
                       {tip.icon}
                     </div>
                     <h3 className="text-lg font-semibold mb-2">{tip.title}</h3>
                     <p className="text-sm text-muted-foreground">{tip.description}</p>
                   </div>
                 </CardContent>
+                <CardFooter className="justify-center pt-0">
+                  <Button variant="ghost" size="sm" className="group-hover:bg-primary/10">
+                    {language === 'de' ? 'Öffnen' : 'Open'}
+                    <ArrowRight className="ml-2 h-4 w-4 group-hover:translate-x-1 transition-transform" />
+                  </Button>
+                </CardFooter>
               </Card>
             ))}
           </div>
         </div>
+        
+        {/* Workflow Suggestions für eine bessere User Journey */}
+        <WorkflowSuggestions
+          currentTool="overview"
+          workflowType="steuer"
+          className="mb-8"
+        />
         
         <Separator className="my-8" />
         
@@ -295,6 +334,9 @@ const DeutscheImmobilienPage: React.FC = () => {
         <Separator className="my-8" />
         
         <MarketSpecificFeatures showTitle={true} limit={6} showViewAll={true} />
+        
+        {/* Verwandte Tools für bessere Übergänge */}
+        <RelatedGermanTools className="mt-8" />
       </div>
     </div>
   );
