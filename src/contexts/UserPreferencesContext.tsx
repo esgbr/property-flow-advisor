@@ -3,10 +3,11 @@ import React, { useState, useEffect, useContext, createContext } from 'react';
 
 export type ExperienceLevel = 'beginner' | 'intermediate' | 'advanced' | 'expert';
 export type InvestmentMarket = 'germany' | 'austria' | 'switzerland' | 'usa' | 'canada' | 'global' | 'uk' | 'europe';
-export type InvestmentPreference = 'conservative' | 'balanced' | 'growth' | 'aggressive';
+export type InvestmentPreference = 'conservative' | 'balanced' | 'growth' | 'aggressive' | 'income';
 
 export interface UserPreferences {
   name?: string;
+  email?: string;
   darkMode: boolean;
   fontSize: 'small' | 'medium' | 'large';
   contrastMode: boolean;
@@ -37,6 +38,21 @@ export interface UserPreferences {
   interests: string[];
   investmentGoals: string[];
   preferredPropertyTypes: string[];
+  // Added properties to fix type errors
+  appLockEnabled?: boolean;
+  role?: string;
+  emailVerified?: boolean;
+  profileImage?: string;
+  sidebarPreferences?: {
+    collapsed?: boolean;
+  };
+  notifications?: {
+    security?: boolean;
+    price?: boolean;
+    news?: boolean;
+    portfolio?: boolean;
+  };
+  lastPasswordChange?: string;
 }
 
 export interface OnboardingData {
@@ -58,6 +74,11 @@ interface UserPreferencesContextProps {
   updatePreferences: (newPrefs: Partial<UserPreferences>) => void;
   resetPreferences: (preserveFields?: Partial<UserPreferences>) => void;
   saveOnboardingData: (data: OnboardingData) => void;
+  // Added properties to fix type errors
+  isAuthenticated?: boolean;
+  loginUser?: (email: string, password: string) => Promise<boolean>;
+  registerUser?: (name: string, email: string, password: string) => Promise<boolean>;
+  logoutUser?: () => void;
 }
 
 const defaultPreferences: UserPreferences = {
@@ -99,6 +120,11 @@ export const UserPreferencesProvider: React.FC<{ children: React.ReactNode }> = 
     const firstVisit = localStorage.getItem('firstVisit');
     return firstVisit === null || firstVisit === 'true';
   });
+  
+  // Mock authentication state for demo purposes
+  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(() => {
+    return localStorage.getItem('isAuthenticated') === 'true';
+  });
 
   // Save preferences to localStorage whenever they change
   useEffect(() => {
@@ -109,6 +135,11 @@ export const UserPreferencesProvider: React.FC<{ children: React.ReactNode }> = 
   useEffect(() => {
     localStorage.setItem('firstVisit', String(isFirstVisit));
   }, [isFirstVisit]);
+  
+  // Save auth status to localStorage
+  useEffect(() => {
+    localStorage.setItem('isAuthenticated', String(isAuthenticated));
+  }, [isAuthenticated]);
 
   const updatePreferences = (newPrefs: Partial<UserPreferences>) => {
     setPreferences(prevPrefs => ({ ...prevPrefs, ...newPrefs }));
@@ -137,6 +168,45 @@ export const UserPreferencesProvider: React.FC<{ children: React.ReactNode }> = 
     }));
     setIsFirstVisit(false);
   };
+  
+  // Mock login function for demo purposes
+  const loginUser = async (email: string, password: string): Promise<boolean> => {
+    return new Promise(resolve => {
+      setTimeout(() => {
+        setIsAuthenticated(true);
+        updatePreferences({
+          email: email,
+          name: email.split('@')[0],
+          role: email.includes('admin') ? 'admin' : 'user',
+          lastActive: new Date().toISOString(),
+          emailVerified: true
+        });
+        resolve(true);
+      }, 1000);
+    });
+  };
+  
+  // Mock register function for demo purposes
+  const registerUser = async (name: string, email: string, password: string): Promise<boolean> => {
+    return new Promise(resolve => {
+      setTimeout(() => {
+        setIsAuthenticated(true);
+        updatePreferences({
+          name,
+          email,
+          role: 'user',
+          lastActive: new Date().toISOString(),
+          emailVerified: false
+        });
+        resolve(true);
+      }, 1000);
+    });
+  };
+  
+  // Mock logout function
+  const logoutUser = () => {
+    setIsAuthenticated(false);
+  };
 
   return (
     <UserPreferencesContext.Provider
@@ -146,7 +216,11 @@ export const UserPreferencesProvider: React.FC<{ children: React.ReactNode }> = 
         preferences,
         updatePreferences,
         resetPreferences,
-        saveOnboardingData
+        saveOnboardingData,
+        isAuthenticated,
+        loginUser,
+        registerUser,
+        logoutUser
       }}
     >
       {children}

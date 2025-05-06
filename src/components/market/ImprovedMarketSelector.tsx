@@ -37,7 +37,7 @@ const ImprovedMarketSelector: React.FC<ImprovedMarketSelectorProps> = ({
   };
   
   // Define market regions for grouping
-  const europeanMarkets = ['germany', 'austria', 'switzerland'];
+  const europeanMarkets = ['germany', 'austria', 'switzerland', 'uk', 'europe'];
   const northAmericanMarkets = ['usa', 'canada'];
   const globalMarkets = ['global'];
 
@@ -50,7 +50,9 @@ const ImprovedMarketSelector: React.FC<ImprovedMarketSelectorProps> = ({
       'switzerland': { trend: 'stable', value: 1.5 },
       'usa': { trend: 'up', value: 4.3 },
       'canada': { trend: 'up', value: 3.5 },
-      'global': { trend: 'stable', value: 2.7 }
+      'global': { trend: 'stable', value: 2.7 },
+      'uk': { trend: 'down', value: 1.2 },
+      'europe': { trend: 'stable', value: 2.1 }
     };
     
     return growthIndicators[market] || { trend: 'stable', value: 0 };
