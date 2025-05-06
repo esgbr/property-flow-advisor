@@ -44,17 +44,17 @@ const MarketExplorerPage: React.FC = () => {
             <div className="space-y-2">
               <h3 className="text-lg font-medium flex items-center">
                 <Calculator className="h-5 w-5 mr-2 text-primary" />
-                {language === 'de' ? 'Erweiterte Analysetools' : 'Advanced Analytics Tools'}
+                {language === 'de' ? 'Erweiterte Marktanalyse-Tools' : 'Advanced Market Analysis Tools'}
               </h3>
               <p className="text-sm text-muted-foreground max-w-md">
                 {language === 'de' 
-                  ? 'Nutzen Sie unsere neuen erweiterten Analysewerkzeuge für tiefere Einblicke in Märkte und Investments.' 
-                  : 'Use our new advanced analytics tools for deeper insights into markets and investments.'}
+                  ? 'Nutzen Sie unsere neuen erweiterten Marktanalyse-Tools für direkten Marktvergleich und detaillierte Prognosen.' 
+                  : 'Use our new advanced market analysis tools for direct market comparison and detailed forecasts.'}
               </p>
             </div>
             <Button 
               className="group"
-              onClick={() => navigate('/advanced-analytics')}
+              onClick={() => navigate('/advanced-market-analysis')}
             >
               {language === 'de' ? 'Zu den erweiterten Tools' : 'Go to Advanced Tools'}
               <ArrowRight className="ml-2 h-4 w-4 group-hover:translate-x-1 transition-transform" />
