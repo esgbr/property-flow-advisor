@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -32,7 +33,10 @@ const OnboardingWizard: React.FC = () => {
     investmentMarket: 'global',
     interests: [],
     investmentGoals: [],
-    preferredPropertyTypes: []
+    preferredPropertyTypes: [],
+    investmentPreference: 'balanced',
+    goals: [],
+    propertyTypes: []
   });
   
   const handleNext = () => {

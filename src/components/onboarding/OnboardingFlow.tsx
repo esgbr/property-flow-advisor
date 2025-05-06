@@ -5,7 +5,7 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { useToast } from '@/hooks/use-toast';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { ChevronRight } from 'lucide-react';
-import { InvestmentMarket } from '@/contexts/UserPreferencesContext';
+import { InvestmentMarket, OnboardingData } from '@/contexts/UserPreferencesContext';
 
 // Import step components
 import WelcomeStep from './steps/WelcomeStep';
@@ -17,7 +17,7 @@ import InterestsStep from './steps/InterestsStep';
 import CompleteStep from './steps/CompleteStep';
 
 // Import types
-import { OnboardingData, OnboardingStep } from './types';
+import { OnboardingStep } from './types';
 
 interface OnboardingFlowProps {
   onComplete: (data: OnboardingData) => void;
@@ -35,7 +35,10 @@ export const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ onComplete, onSk
     investmentGoals: initialData?.investmentGoals || [],
     preferredPropertyTypes: initialData?.preferredPropertyTypes || [],
     interests: initialData?.interests || [],
-    investmentMarket: initialData?.investmentMarket || 'global'
+    investmentMarket: initialData?.investmentMarket || 'global',
+    investmentPreference: initialData?.investmentPreference || 'balanced',
+    goals: initialData?.goals || [],
+    propertyTypes: initialData?.propertyTypes || []
   });
 
   // Helper function to update data by field name

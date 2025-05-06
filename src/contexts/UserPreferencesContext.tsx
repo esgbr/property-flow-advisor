@@ -1,4 +1,3 @@
-
 import React, { createContext, useContext, useState, useEffect } from 'react';
 
 // Define available market types
@@ -49,6 +48,8 @@ export interface UserPreferences {
     reduceMotion?: boolean;
     screenReader?: boolean;
     enabled?: boolean;
+    largeText?: boolean;
+    dyslexiaFriendly?: boolean;
   };
   dashboardLayout?: {
     widgets: string[];
@@ -66,6 +67,7 @@ export interface UserPreferences {
   appLockMethod?: string;
   dismissedSecurityAlert?: boolean;
   lastPasswordChange?: string;
+  lastActive?: string; // Added this field
   notifications?: {
     security: boolean;
     updates: boolean;
@@ -87,6 +89,9 @@ export interface UserPreferences {
   };
   visitedPages?: string[];
   lastVisitedPage?: string;
+  visitedInvestorDashboard?: boolean;
+  notificationsEnabled?: boolean;
+  analyticsConsent?: boolean;
 }
 
 export interface OnboardingData {
@@ -105,6 +110,7 @@ interface UserPreferencesContextValue {
   preferences: UserPreferences;
   updatePreferences: (newPreferences: Partial<UserPreferences>) => void;
   resetPreferences: () => void;
+  resetOnboarding?: () => void; // Added this field
   hasCompletedOnboarding: boolean;
   isAccessibilityEnabled: boolean;
   // Auth related functions
@@ -286,6 +292,26 @@ export const UserPreferencesProvider: React.FC<{ children: React.ReactNode }> = 
     preferences.accessibilityPreferences?.fontSize !== 'medium'
   );
 
+  // Reset onboarding data
+  const resetOnboarding = () => {
+    updatePreferences({
+      onboardingCompleted: false,
+      experienceLevel: 'beginner',
+      goals: [],
+      propertyTypes: [],
+      investmentPreference: 'balanced',
+      investmentMarket: 'global',
+      interests: [],
+      investmentGoals: [],
+      preferredPropertyTypes: []
+    });
+    
+    toast({
+      title: t('onboardingReset'),
+      description: t('onboardingResetDescription'),
+    });
+  };
+
   return (
     <UserPreferencesContext.Provider 
       value={{ 
@@ -300,7 +326,8 @@ export const UserPreferencesProvider: React.FC<{ children: React.ReactNode }> = 
         registerUser,
         saveOnboardingData,
         isFirstVisit,
-        setIsFirstVisit
+        setIsFirstVisit,
+        resetOnboarding
       }}
     >
       {children}

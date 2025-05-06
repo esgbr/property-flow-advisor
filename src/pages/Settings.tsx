@@ -26,9 +26,33 @@ import { useAccessibility } from '@/components/accessibility/A11yProvider';
 
 const Settings = () => {
   const { t } = useLanguage();
-  const { preferences, updatePreferences, resetOnboarding } = useUserPreferences();
-  const navigate = useNavigate();
-  const { reduceMotion, highContrast, largeText, screenReader } = useAccessibility();
+  const { preferences, updatePreferences, resetPreferences } = useUserPreferences();
+  
+  // Add a resetOnboarding function if it's missing from context
+  const resetOnboarding = () => {
+    // Check if the context has the function
+    if (useUserPreferences().resetOnboarding) {
+      useUserPreferences().resetOnboarding();
+    } else {
+      // Fallback implementation
+      updatePreferences({
+        onboardingCompleted: false,
+        experienceLevel: 'beginner',
+        goals: [],
+        propertyTypes: [],
+        investmentPreference: 'balanced',
+        investmentMarket: 'global',
+        interests: [],
+        investmentGoals: [],
+        preferredPropertyTypes: []
+      });
+      
+      toast({
+        title: t('onboardingReset'),
+        description: t('onboardingResetDescription'),
+      });
+    }
+  };
 
   const handleToggleSetting = (key: keyof typeof preferences) => {
     updatePreferences({ [key]: !preferences[key as keyof typeof preferences] });
@@ -57,6 +81,34 @@ const Settings = () => {
     toast({
       title: t('marketPreferenceUpdated'),
       description: t('yourMarketPreferenceHasBeenUpdated'),
+    });
+  };
+
+  const handleNotificationToggle = () => {
+    const newValue = !preferences.notificationPreferences?.email;
+    updatePreferences({
+      notificationPreferences: {
+        ...preferences.notificationPreferences,
+        email: newValue,
+        push: newValue,
+        sms: preferences.notificationPreferences?.sms || false
+      }
+    });
+    
+    toast({
+      title: t('settingUpdated'),
+      description: t('yourPreferencesHaveBeenSaved'),
+    });
+  };
+
+  const handleAnalyticsToggle = () => {
+    updatePreferences({
+      analyticsConsent: !preferences.analyticsConsent
+    });
+    
+    toast({
+      title: t('settingUpdated'),
+      description: t('yourPreferencesHaveBeenSaved'),
     });
   };
 
@@ -370,8 +422,8 @@ const Settings = () => {
                 </div>
                 <Switch 
                   id="notifications" 
-                  checked={preferences.notificationsEnabled}
-                  onCheckedChange={() => handleToggleSetting('notificationsEnabled')}
+                  checked={preferences.notificationPreferences?.email || false}
+                  onCheckedChange={handleNotificationToggle}
                 />
               </div>
             </CardContent>
@@ -408,13 +460,13 @@ const Settings = () => {
             <CardContent className="space-y-4">
               <div className="flex items-center space-x-2 justify-between">
                 <div>
-                  <Label htmlFor="analytics-consent">{t('analyticsConsent')}</Label>
-                  <p className="text-sm text-muted-foreground">{t('allowAnonymousUsageData')}</p>
+                  <Label htmlFor="analytics">{t('analyticsConsent')}</Label>
+                  <p className="text-sm text-muted-foreground">{t('enableAnalytics')}</p>
                 </div>
                 <Switch 
-                  id="analytics-consent"
-                  checked={preferences.analyticsConsent}
-                  onCheckedChange={() => handleToggleSetting('analyticsConsent')}
+                  id="analytics" 
+                  checked={preferences.analyticsConsent || false}
+                  onCheckedChange={handleAnalyticsToggle}
                 />
               </div>
               <Separator />

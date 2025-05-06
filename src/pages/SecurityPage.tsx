@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import SecurityDashboard from '@/components/security/SecurityDashboard';
 import AuthGuard from '@/components/auth/AuthGuard';
@@ -47,6 +46,33 @@ const SecurityPage: React.FC = () => {
         resolve(isValid);
       }, 1500);
     });
+  };
+
+  // Activity tab content with lastActive handling
+  const renderLastActiveInfo = () => {
+    if (preferences.lastActive) {
+      return (
+        <div className="rounded-md border p-4">
+          <div className="flex items-center gap-4">
+            <div className="p-2 bg-primary/10 rounded-full">
+              <UserCheck className="h-4 w-4 text-primary" />
+            </div>
+            <div>
+              <p className="text-sm font-medium">{t('lastLogin')}</p>
+              <p className="text-xs text-muted-foreground">
+                {new Date(preferences.lastActive).toLocaleString()}
+              </p>
+            </div>
+          </div>
+        </div>
+      );
+    } else {
+      return (
+        <div className="text-center text-muted-foreground py-8">
+          <p>{t('noRecentActivity')}</p>
+        </div>
+      );
+    }
   };
 
   return (
@@ -197,25 +223,7 @@ const SecurityPage: React.FC = () => {
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-4">
-                    {preferences.lastActive ? (
-                      <div className="rounded-md border p-4">
-                        <div className="flex items-center gap-4">
-                          <div className="p-2 bg-primary/10 rounded-full">
-                            <UserCheck className="h-4 w-4 text-primary" />
-                          </div>
-                          <div>
-                            <p className="text-sm font-medium">{t('lastLogin')}</p>
-                            <p className="text-xs text-muted-foreground">
-                              {new Date(preferences.lastActive).toLocaleString()}
-                            </p>
-                          </div>
-                        </div>
-                      </div>
-                    ) : (
-                      <div className="text-center text-muted-foreground py-8">
-                        <p>{t('noRecentActivity')}</p>
-                      </div>
-                    )}
+                    {renderLastActiveInfo()}
                   </div>
                 </CardContent>
               </Card>

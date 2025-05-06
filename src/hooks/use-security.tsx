@@ -1,4 +1,3 @@
-
 import { useState, useCallback, useEffect } from 'react';
 import { useAppLock } from '@/contexts/AppLockContext';
 import { useUserPreferences } from '@/contexts/UserPreferencesContext';
@@ -117,6 +116,10 @@ export function useSecurity() {
   // Check if there was potentially suspicious activity
   const checkSuspiciousActivity = useCallback(() => {
     // This is a simplified example - in a real app, you'd have more sophisticated checks
+    if (!preferences.lastActive) {
+      return false;
+    }
+    
     const lastLogin = preferences.lastActive ? new Date(preferences.lastActive) : null;
     const now = new Date();
     

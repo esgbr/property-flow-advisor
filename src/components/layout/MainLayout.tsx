@@ -33,14 +33,14 @@ const SecurityAlert = ({ onSetupPIN, onDismiss }) => {
         <p>{t('securityAlertDescription')}</p>
         <div className="flex gap-2 mt-1">
           <button 
-            onClick={setupPIN}
+            onClick={onSetupPIN}
             className="px-3 py-1 text-sm rounded-md bg-primary text-primary-foreground"
             aria-label={t('setupPIN')}
           >
             {t('setupPIN')}
           </button>
           <button 
-            onClick={dismissSecurityAlert}
+            onClick={onDismiss}
             className="px-3 py-1 text-sm rounded-md bg-muted text-muted-foreground"
             aria-label={t('dismiss')}
           >
@@ -167,37 +167,11 @@ const MainLayout = () => {
                   tabIndex={-1}
                 >
                   {showSecurityAlert && (
-                    <Alert className="mb-6 border-amber-500 bg-amber-500/10" role="alert">
-                      <AlertTriangle className="h-4 w-4 text-amber-500" aria-hidden="true" />
-                      <AlertTitle className="text-amber-500">{t('securityAlert')}</AlertTitle>
-                      <AlertDescription className="flex flex-col gap-2">
-                        <p>{t('securityAlertDescription')}</p>
-                        <div className="flex gap-2 mt-1">
-                          <button 
-                            onClick={setupPIN}
-                            className="px-3 py-1 text-sm rounded-md bg-primary text-primary-foreground"
-                            aria-label={t('setupPIN')}
-                          >
-                            {t('setupPIN')}
-                          </button>
-                          <button 
-                            onClick={dismissSecurityAlert}
-                            className="px-3 py-1 text-sm rounded-md bg-muted text-muted-foreground"
-                            aria-label={t('dismiss')}
-                          >
-                            {t('dismiss')}
-                          </button>
-                        </div>
-                      </AlertDescription>
-                    </Alert>
+                    <SecurityAlert onSetupPIN={setupPIN} onDismiss={dismissSecurityAlert} />
                   )}
                   
                   {pin && (
-                    <Alert className="mb-6 border-green-500 bg-green-500/10" role="status">
-                      <ShieldCheck className="h-4 w-4 text-green-500" aria-hidden="true" />
-                      <AlertTitle className="text-green-500">{t('securityEnabled')}</AlertTitle>
-                      <AlertDescription>{t('securityEnabledDescription')}</AlertDescription>
-                    </Alert>
+                    <SecurityConfirmation />
                   )}
                   
                   <Outlet />
