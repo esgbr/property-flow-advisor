@@ -1,3 +1,4 @@
+
 import React, { Suspense, lazy, useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -56,7 +57,7 @@ const Index: React.FC = () => {
     return () => clearTimeout(timer);
   }, []);
 
-  // Fix the handleMarketChange function to use setUserMarket directly
+  // Fixed handleMarketChange function to use setUserMarket directly
   const handleMarketChange = (market: InvestmentMarket) => {
     setUserMarket(market);
   };
