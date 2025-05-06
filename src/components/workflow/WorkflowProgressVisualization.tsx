@@ -5,7 +5,7 @@ import { Progress } from '@/components/ui/progress';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useWorkflow, WorkflowType } from '@/hooks/use-workflow';
 import useWorkflowAnalytics from '@/hooks/use-workflow-analytics';
-import { AreaChart, BarChart } from 'recharts';
+import { AreaChart, Area, BarChart, Bar, ResponsiveContainer } from 'recharts';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { BarChart3, CheckCircle2, Clock, FileText } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -172,28 +172,28 @@ const WorkflowProgressVisualization: React.FC<WorkflowProgressVisualizationProps
               </h3>
               
               <div className="h-[200px] w-full">
-                <BarChart
-                  width={500}
-                  height={200}
-                  data={progressData}
-                  margin={{
-                    top: 5, right: 30, left: 20, bottom: 5,
-                  }}
-                >
-                  <defs>
-                    <linearGradient id="dailyProgress" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="5%" stopColor="#8884d8" stopOpacity={0.8} />
-                      <stop offset="95%" stopColor="#8884d8" stopOpacity={0} />
-                    </linearGradient>
-                  </defs>
+                <ResponsiveContainer width="100%" height="100%">
                   <AreaChart
-                    type="monotone"
-                    dataKey="completedSteps"
-                    stroke="#8884d8"
-                    fillOpacity={1}
-                    fill="url(#dailyProgress)"
-                  />
-                </BarChart>
+                    data={progressData}
+                    margin={{
+                      top: 5, right: 30, left: 20, bottom: 5,
+                    }}
+                  >
+                    <defs>
+                      <linearGradient id="dailyProgress" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="5%" stopColor="#8884d8" stopOpacity={0.8} />
+                        <stop offset="95%" stopColor="#8884d8" stopOpacity={0} />
+                      </linearGradient>
+                    </defs>
+                    <Area
+                      type="monotone"
+                      dataKey="completedSteps"
+                      stroke="#8884d8"
+                      fillOpacity={1}
+                      fill="url(#dailyProgress)"
+                    />
+                  </AreaChart>
+                </ResponsiveContainer>
               </div>
               
               <div className="grid grid-cols-7 gap-1 text-xs text-center">
