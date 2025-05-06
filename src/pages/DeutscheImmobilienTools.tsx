@@ -6,7 +6,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Building, Calculator, FileText, Info } from 'lucide-react';
 import GrunderwerbsteuerRechner from '@/components/german/GrunderwerbsteuerRechner';
 import GermanAfaCalculator from '@/components/german/GermanAfaCalculator';
-import GermanPropertyRecommendations from '@/components/german/GermanPropertyRecommendations';
+import { GermanPropertyRecommendations } from '@/components/german/GermanPropertyRecommendations';
 import RelatedGermanTools from '@/components/german/RelatedGermanTools';
 import GermanRealEstateGlossary from '@/components/language/GermanRealEstateGlossary';
 
@@ -127,3 +127,4 @@ const DeutscheImmobilienTools: React.FC = () => {
 };
 
 export default DeutscheImmobilienTools;
+
