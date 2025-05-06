@@ -1,5 +1,6 @@
 
-import { WorkflowType, WorkflowStep, workflowDefinitions } from '@/hooks/use-workflow';
+import { WorkflowType } from '@/hooks/use-workflow';
+import { workflowDefinitions } from '@/data/workflow-definitions';
 import { InvestmentMarket } from '@/contexts/UserPreferencesContext';
 
 /**
@@ -59,8 +60,8 @@ export const getRelatedWorkflowsForTool = (toolId: string): WorkflowType[] => {
 export const getCommonNextSteps = (
   currentTool: string,
   excludeWorkflows: WorkflowType[] = []
-): { step: WorkflowStep; workflow: WorkflowType }[] => {
-  const results: { step: WorkflowStep; workflow: WorkflowType }[] = [];
+): { step: any; workflow: WorkflowType }[] => {
+  const results: { step: any; workflow: WorkflowType }[] = [];
   
   // Define common paths users take across different workflows
   const commonPaths: Record<string, { workflow: WorkflowType; step: string }[]> = {
@@ -104,8 +105,8 @@ export const getCommonNextSteps = (
 export const findIncompleteWorkflows = (
   workflowProgress: Record<string, { completedSteps: string[]; currentStep: string }>,
   excludeWorkflows: WorkflowType[] = []
-): { workflow: WorkflowType; step: WorkflowStep }[] => {
-  const results: { workflow: WorkflowType; step: WorkflowStep }[] = [];
+): { workflow: WorkflowType; step: any }[] => {
+  const results: { workflow: WorkflowType; step: any }[] = [];
   
   Object.keys(workflowDefinitions).forEach(wfType => {
     const workflowType = wfType as WorkflowType;

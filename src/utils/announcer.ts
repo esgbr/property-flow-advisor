@@ -1,72 +1,86 @@
+import { useEffect, useRef } from 'react';
 
 /**
- * Enhanced screen reader announcement utility
- * Provides a more robust way to make announcements to screen readers
+ * Hook for managing screen reader announcements
+ * Uses aria-live regions to announce important changes to screen readers
  */
+function useAnnouncement() {
+  // Keep track of announcement elements
+  const politeAnnouncerRef = useRef<HTMLDivElement | null>(null);
+  const assertiveAnnouncerRef = useRef<HTMLDivElement | null>(null);
 
-// Maintain a singleton instance of the announcer element
-let announcer: HTMLElement | null = null;
-
-// Create a singleton polite announcer element
-const getAnnouncer = (assertive = false): HTMLElement => {
-  if (!announcer) {
-    announcer = document.createElement('div');
-    announcer.id = 'screen-reader-announcer';
-    announcer.setAttribute('aria-live', assertive ? 'assertive' : 'polite');
-    announcer.setAttribute('aria-atomic', 'true');
-    announcer.className = 'sr-only';
-    announcer.style.position = 'absolute';
-    announcer.style.width = '1px';
-    announcer.style.height = '1px';
-    announcer.style.padding = '0';
-    announcer.style.margin = '-1px';
-    announcer.style.overflow = 'hidden';
-    announcer.style.clip = 'rect(0, 0, 0, 0)';
-    announcer.style.whiteSpace = 'nowrap';
-    announcer.style.border = '0';
-    document.body.appendChild(announcer);
-  }
-  
-  // Update the politeness setting if needed
-  announcer.setAttribute('aria-live', assertive ? 'assertive' : 'polite');
-  
-  return announcer;
-};
-
-// Clear the announcer after a delay to prevent multiple rapid announcements
-const clearAnnouncer = (delay = 3000): void => {
-  if (!announcer) return;
-  
-  setTimeout(() => {
-    if (announcer) {
-      announcer.textContent = '';
+  // Initialize announcers when component mounts
+  useEffect(() => {
+    // Create polite announcer (for non-urgent info)
+    if (!politeAnnouncerRef.current) {
+      const politeElement = document.createElement('div');
+      politeElement.setAttribute('aria-live', 'polite');
+      politeElement.setAttribute('aria-atomic', 'true');
+      politeElement.setAttribute('role', 'status'); 
+      politeElement.className = 'sr-only';
+      document.body.appendChild(politeElement);
+      politeAnnouncerRef.current = politeElement;
     }
-  }, delay);
-};
 
-/**
- * Announce a message to screen readers
- * @param message - The message to be announced
- * @param assertive - Whether to use assertive (true) or polite (false) priority
- * @param delay - How long to wait before clearing the announcement
- */
-export const announce = (
-  message: string,
-  assertive = false,
-  delay = 3000
-): void => {
-  if (!message) return;
-  
-  // Get or create the announcer element
-  const element = getAnnouncer(assertive);
-  
-  // Set message text
-  element.textContent = message;
-  
-  // Clear after delay
-  clearAnnouncer(delay);
-};
+    // Create assertive announcer (for urgent info)
+    if (!assertiveAnnouncerRef.current) {
+      const assertiveElement = document.createElement('div');
+      assertiveElement.setAttribute('aria-live', 'assertive');
+      assertiveElement.setAttribute('aria-atomic', 'true');
+      assertiveElement.setAttribute('role', 'alert');
+      assertiveElement.className = 'sr-only';
+      document.body.appendChild(assertiveElement);
+      assertiveAnnouncerRef.current = assertiveElement;
+    }
 
-export const useAnnouncement = () => {
-  return { announce };
-};
+    // Cleanup when component unmounts
+    return () => {
+      if (politeAnnouncerRef.current) {
+        document.body.removeChild(politeAnnouncerRef.current);
+        politeAnnouncerRef.current = null;
+      }
+      if (assertiveAnnouncerRef.current) {
+        document.body.removeChild(assertiveAnnouncerRef.current);
+        assertiveAnnouncerRef.current = null;
+      }
+    };
+  }, []);
+
+  /**
+   * Announce a message to screen readers
+   * @param message The message to announce
+   * @param politeness The politeness level of the announcement
+   */
+  const announce = (
+    message: string, 
+    politeness: 'polite' | 'assertive' = 'polite'
+  ) => {
+    // Get the appropriate announcer
+    const announcer = politeness === 'assertive' 
+      ? assertiveAnnouncerRef.current 
+      : politeAnnouncerRef.current;
+
+    // Make the announcement
+    if (announcer) {
+      // Clear previous announcement first (important for same text announcements)
+      announcer.textContent = '';
+      
+      // Use setTimeout to force browser to recognize the change
+      setTimeout(() => {
+        announcer.textContent = message;
+      }, 50);
+    }
+  };
+
+  /**
+   * Announce a page title to screen readers
+   * @param title The page title to announce
+   */
+  const announcePageChange = (title: string) => {
+    announce(`Page changed: ${title}`, 'polite');
+  };
+
+  return { announce, announcePageChange };
+}
+
+export default useAnnouncement;

@@ -1,300 +1,230 @@
 
 import React, { useState } from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { useNavigate } from 'react-router-dom';
-import { useWorkflow, WorkflowType } from '@/hooks/use-workflow';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { useLanguage } from '@/contexts/LanguageContext';
-import { CircleCheck, Clock, ArrowRight, Play, RotateCcw, BarChart } from 'lucide-react';
-import { Progress } from '@/components/ui/progress';
-import { Separator } from '@/components/ui/separator';
-import { cn } from '@/lib/utils';
-import { useWorkflowState } from '@/contexts/WorkflowStateContext';
-import { ScrollArea } from '@/components/ui/scroll-area';
+import { WorkflowType, useWorkflow } from '@/hooks/use-workflow';
 import { workflowDefinitions } from '@/data/workflow-definitions';
-import { useAccessibility } from '@/hooks/use-accessibility';
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import useAnnouncement from '@/utils/announcer';
+import WorkflowSteps from '@/components/workflow/WorkflowSteps';
+import WorkflowHistory from '@/components/workflow/WorkflowHistory';
+import { MoreHorizontal, Trello, Calendar, RotateCcw, CheckCircle, Settings, FileText } from 'lucide-react';
+import { ScrollArea } from '@/components/ui/scroll-area';
+import { useWorkflowState } from '@/contexts/WorkflowStateContext';
+import { useToast } from '@/components/ui/toast';
+import { cn } from '@/lib/utils';
 
 interface WorkflowManagerProps {
   className?: string;
-  defaultWorkflow?: WorkflowType;
 }
 
 /**
- * A complete workflow management interface that allows users to view, start,
- * continue, reset, and track progress across all workflows.
+ * Comprehensive workflow management component
+ * Allows users to view, manage, and reset their workflows
  */
-const WorkflowManager: React.FC<WorkflowManagerProps> = ({ 
-  className,
-  defaultWorkflow = 'steuer'
-}) => {
-  const { language, t } = useLanguage();
-  const navigate = useNavigate();
-  const [activeTab, setActiveTab] = useState<WorkflowType>(defaultWorkflow);
-  const { workflows } = useWorkflowState();
-  const { announce } = useAccessibility();
-  const { announce: announceToScreenReader } = useAnnouncement();
-  const [showResetDialog, setShowResetDialog] = useState(false);
+const WorkflowManager: React.FC<WorkflowManagerProps> = ({ className }) => {
+  const { language } = useLanguage();
+  const { toast } = useToast();
+  const { resetWorkflow } = useWorkflowState();
+  const [activeTab, setActiveTab] = useState<WorkflowType>('steuer');
+  const [isResetDialogOpen, setIsResetDialogOpen] = useState<boolean>(false);
+  const [isResetting, setIsResetting] = useState<boolean>(false);
   
-  // Get workflow for the active tab
-  const workflow = useWorkflow(activeTab);
-  const workflowSteps = workflow.getStepsWithStatus();
-  const completedSteps = workflowSteps.filter(step => step.isComplete);
-  const currentStep = workflow.getCurrentStep() || workflowSteps[0]?.id;
-  const progress = workflow.getWorkflowProgress();
+  // Initialize workflow hooks for each workflow type
+  const steuerWorkflow = useWorkflow('steuer');
+  const immobilienWorkflow = useWorkflow('immobilien');
+  const finanzierungWorkflow = useWorkflow('finanzierung');
+  const analyseWorkflow = useWorkflow('analyse');
   
-  // Format the last interaction date
-  const getLastInteractionDate = () => {
-    const lastInteractionAt = workflows[`workflow_${activeTab}`]?.lastInteractionAt;
-    if (!lastInteractionAt) return null;
+  // Get the active workflow based on the selected tab
+  const getActiveWorkflow = () => {
+    switch (activeTab) {
+      case 'steuer':
+        return steuerWorkflow;
+      case 'immobilien':
+        return immobilienWorkflow;
+      case 'finanzierung':
+        return finanzierungWorkflow;
+      case 'analyse':
+      default:
+        return analyseWorkflow;
+    }
+  };
+  
+  // Get workflow progress information
+  const getWorkflowProgress = (workflowType: WorkflowType) => {
+    const workflow = (() => {
+      switch (workflowType) {
+        case 'steuer': return steuerWorkflow;
+        case 'immobilien': return immobilienWorkflow;
+        case 'finanzierung': return finanzierungWorkflow;
+        case 'analyse': return analyseWorkflow;
+      }
+    })();
     
-    return new Date(lastInteractionAt).toLocaleDateString(
-      language === 'de' ? 'de-DE' : 'en-US',
-      { year: 'numeric', month: 'short', day: 'numeric' }
-    );
+    const steps = workflow.getStepsWithStatus();
+    const completedSteps = steps.filter(step => step.isComplete).length;
+    const progress = workflow.getWorkflowProgress();
+    
+    return {
+      total: steps.length,
+      completed: completedSteps,
+      progress: progress
+    };
   };
   
-  // Reset the current workflow
+  // Handle workflow reset
   const handleResetWorkflow = () => {
-    workflow.resetWorkflow();
-    setShowResetDialog(false);
-
-    // Announce reset
-    announce(
-      language === 'de'
-        ? `Workflow ${workflowDefinitions[activeTab].title.de} wurde zurückgesetzt`
-        : `${workflowDefinitions[activeTab].title.en} workflow has been reset`,
-      'polite'
-    );
-
-    announceToScreenReader(
-      language === 'de'
-        ? `Workflow wurde zurückgesetzt. Alle Fortschritte wurden gelöscht.`
-        : `Workflow has been reset. All progress has been cleared.`
-    );
-  };
-  
-  // Navigate to a step
-  const navigateToStep = (step: { id: string; path: string; label: any }) => {
-    workflow.setCurrentStep(step.id);
-    navigate(step.path);
-
-    // Announce step navigation
-    const stepName = step.label[language as keyof typeof step.label];
-    announceToScreenReader(
-      language === 'de'
-        ? `Navigation zu ${stepName}`
-        : `Navigating to ${stepName}`
-    );
-  };
-  
-  // Continue the workflow from where the user left off
-  const continueWorkflow = () => {
-    const stepToNavigate = workflow.getCurrentStep() 
-      ? workflowSteps.find(step => step.id === workflow.getCurrentStep())
-      : workflowSteps[0];
+    setIsResetting(true);
+    
+    setTimeout(() => {
+      const activeWorkflow = getActiveWorkflow();
+      activeWorkflow.resetWorkflow();
       
-    if (stepToNavigate) {
-      navigateToStep(stepToNavigate);
-    }
+      toast({
+        title: language === 'de' ? 'Workflow zurückgesetzt' : 'Workflow reset',
+        description: language === 'de'
+          ? `Der ${workflowDefinitions[activeTab].title.de}-Workflow wurde zurückgesetzt.`
+          : `The ${workflowDefinitions[activeTab].title.en} workflow has been reset.`,
+        variant: 'default'
+      });
+      
+      setIsResetting(false);
+      setIsResetDialogOpen(false);
+    }, 1000);
   };
-
-  // Handle tab change
-  const handleTabChange = (value: string) => {
-    setActiveTab(value as WorkflowType);
-    announceToScreenReader(
-      language === 'de'
-        ? `Workflow gewechselt zu ${workflowDefinitions[value as WorkflowType].title.de}`
-        : `Switched workflow to ${workflowDefinitions[value as WorkflowType].title.en}`
-    );
+  
+  // Get workflow summary
+  const getWorkflowSummary = () => {
+    const steuerProgress = getWorkflowProgress('steuer');
+    const immobilienProgress = getWorkflowProgress('immobilien');
+    const finanzierungProgress = getWorkflowProgress('finanzierung');
+    const analyseProgress = getWorkflowProgress('analyse');
+    
+    const totalSteps = steuerProgress.total + immobilienProgress.total + finanzierungProgress.total + analyseProgress.total;
+    const totalCompleted = steuerProgress.completed + immobilienProgress.completed + finanzierungProgress.completed + analyseProgress.completed;
+    
+    return {
+      totalSteps,
+      totalCompleted,
+      overallProgress: totalSteps > 0 ? Math.round((totalCompleted / totalSteps) * 100) : 0
+    };
   };
-
-  // Keyboard navigation through workflow steps
-  const handleKeyNavigation = (event: React.KeyboardEvent, index: number) => {
-    if (event.key === 'Enter' || event.key === ' ') {
-      event.preventDefault();
-      navigateToStep(workflowSteps[index]);
-    }
-  };
+  
+  const summary = getWorkflowSummary();
   
   return (
-    <>
-      <Card className={cn("", className)}>
-        <CardHeader>
-          <CardTitle className="text-xl">
-            {language === 'de' ? 'Workflow-Manager' : 'Workflow Manager'}
-          </CardTitle>
-          <CardDescription>
-            {language === 'de'
-              ? 'Verwalten Sie Ihre Workflows und verfolgen Sie Ihren Fortschritt'
-              : 'Manage your workflows and track your progress'
-            }
-          </CardDescription>
-          <Tabs value={activeTab} onValueChange={handleTabChange}>
-            <TabsList className="grid grid-cols-4 w-full">
-              {Object.keys(workflowDefinitions).map((wfType) => (
-                <TabsTrigger key={wfType} value={wfType}>
-                  {workflowDefinitions[wfType as WorkflowType].title[language as keyof typeof workflowDefinitions[keyof typeof workflowDefinitions]['title']]}
-                </TabsTrigger>
-              ))}
-            </TabsList>
-          </Tabs>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="flex items-center justify-between">
-            <div>
-              <h3 className="font-medium">
-                {workflowDefinitions[activeTab].title[language as keyof typeof workflowDefinitions[keyof typeof workflowDefinitions]['title']]}
-              </h3>
-              <p className="text-sm text-muted-foreground">
-                {workflowDefinitions[activeTab].description[language as keyof typeof workflowDefinitions[keyof typeof workflowDefinitions]['description']]}
-              </p>
-            </div>
-            <div className="text-right">
-              <span className="font-semibold">
-                {completedSteps.length}/{workflowSteps.length}
-              </span>
-              <p className="text-xs text-muted-foreground">
-                {language === 'de' ? 'Schritte abgeschlossen' : 'Steps completed'}
-              </p>
-            </div>
-          </div>
-          
-          <Progress value={progress} className="h-2" />
-          
+    <Card className={cn("", className)}>
+      <CardHeader>
+        <div className="flex items-center justify-between">
           <div>
-            <div className="flex items-center justify-between text-xs text-muted-foreground mb-2">
-              <span>
-                {language === 'de' ? 'Fortschritt' : 'Progress'}: {progress}%
-              </span>
-              {getLastInteractionDate() && (
-                <span className="flex items-center">
-                  <Clock className="h-3 w-3 mr-1" aria-hidden="true" />
-                  {language === 'de' ? 'Zuletzt bearbeitet' : 'Last updated'}: {getLastInteractionDate()}
-                </span>
-              )}
-            </div>
-            
-            <ScrollArea className="max-h-60 pr-3">
-              <div className="space-y-1">
-                {workflowSteps.map((step, index) => (
-                  <div key={step.id} className="relative">
-                    <Button 
-                      variant={step.id === currentStep ? "secondary" : "ghost"}
-                      size="sm"
-                      className={cn(
-                        "flex items-center justify-between w-full",
-                        step.isComplete && "text-green-600 dark:text-green-400",
-                      )}
-                      onClick={() => navigateToStep(step)}
-                      onKeyDown={(e) => handleKeyNavigation(e, index)}
-                      aria-current={step.id === currentStep ? "step" : undefined}
-                    >
-                      <div className="flex items-center">
-                        {step.isComplete ? (
-                          <CircleCheck className="h-4 w-4 mr-2" aria-hidden="true" />
-                        ) : (
-                          <span className="flex items-center justify-center h-4 w-4 rounded-full border mr-2 text-xs">
-                            {index + 1}
-                          </span>
-                        )}
-                        <span>
-                          {step.label[language as keyof typeof step.label]}
-                        </span>
-                      </div>
-                      {step.estimatedTime && (
-                        <span className="text-xs text-muted-foreground">
-                          {step.estimatedTime} {language === 'de' ? 'Min.' : 'min'}
-                        </span>
-                      )}
-                    </Button>
-                    {index < workflowSteps.length - 1 && (
-                      <div className="absolute left-4 top-[28px] h-4 w-px bg-border" aria-hidden="true"></div>
-                    )}
-                  </div>
-                ))}
-              </div>
-            </ScrollArea>
+            <CardTitle>
+              {language === 'de' ? 'Workflow-Manager' : 'Workflow Manager'}
+            </CardTitle>
+            <CardDescription>
+              {language === 'de' ? 'Verwalten Sie alle Ihre Workflows' : 'Manage all your workflows'}
+            </CardDescription>
           </div>
-        </CardContent>
-        <CardFooter className="flex justify-between">
-          <Dialog open={showResetDialog} onOpenChange={setShowResetDialog}>
-            <DialogTrigger asChild>
-              <Button 
-                variant="outline" 
-                size="sm" 
-                className="text-xs"
-              >
-                <RotateCcw className="h-3 w-3 mr-1" aria-hidden="true" />
-                {language === 'de' ? 'Zurücksetzen' : 'Reset'}
-              </Button>
-            </DialogTrigger>
-            <DialogContent>
-              <DialogHeader>
-                <DialogTitle>
-                  {language === 'de' 
-                    ? 'Workflow zurücksetzen?' 
-                    : 'Reset workflow?'
-                  }
-                </DialogTitle>
-                <DialogDescription>
-                  {language === 'de'
-                    ? 'Möchten Sie diesen Workflow wirklich zurücksetzen? Alle Fortschritte gehen verloren.'
-                    : 'Are you sure you want to reset this workflow? All progress will be lost.'
-                  }
-                </DialogDescription>
-              </DialogHeader>
-              <DialogFooter>
-                <Button variant="outline" onClick={() => setShowResetDialog(false)}>
-                  {language === 'de' ? 'Abbrechen' : 'Cancel'}
-                </Button>
-                <Button variant="destructive" onClick={handleResetWorkflow}>
+          <Badge variant="outline">
+            {summary.totalCompleted}/{summary.totalSteps} {language === 'de' ? 'Schritte' : 'steps'}
+          </Badge>
+        </div>
+      </CardHeader>
+      <CardContent>
+        <Tabs defaultValue={activeTab} onValueChange={(value) => setActiveTab(value as WorkflowType)}>
+          <div className="flex items-center justify-between mb-4">
+            <TabsList>
+              <TabsTrigger value="steuer">
+                {language === 'de' ? 'Steuer' : 'Tax'}
+              </TabsTrigger>
+              <TabsTrigger value="immobilien">
+                {language === 'de' ? 'Immobilien' : 'Property'}
+              </TabsTrigger>
+              <TabsTrigger value="finanzierung">
+                {language === 'de' ? 'Finanzierung' : 'Financing'}
+              </TabsTrigger>
+              <TabsTrigger value="analyse">
+                {language === 'de' ? 'Analyse' : 'Analysis'}
+              </TabsTrigger>
+            </TabsList>
+            
+            <Dialog open={isResetDialogOpen} onOpenChange={setIsResetDialogOpen}>
+              <DialogTrigger asChild>
+                <Button variant="outline" size="sm">
+                  <RotateCcw className="h-4 w-4 mr-1" />
                   {language === 'de' ? 'Zurücksetzen' : 'Reset'}
                 </Button>
-              </DialogFooter>
-            </DialogContent>
-          </Dialog>
+              </DialogTrigger>
+              <DialogContent>
+                <DialogHeader>
+                  <DialogTitle>
+                    {language === 'de'
+                      ? `Workflow "${workflowDefinitions[activeTab].title.de}" zurücksetzen?`
+                      : `Reset "${workflowDefinitions[activeTab].title.en}" workflow?`
+                    }
+                  </DialogTitle>
+                  <DialogDescription>
+                    {language === 'de'
+                      ? 'Dies wird den Fortschritt und alle gespeicherten Daten für diesen Workflow löschen. Diese Aktion kann nicht rückgängig gemacht werden.'
+                      : 'This will delete all progress and saved data for this workflow. This action cannot be undone.'
+                    }
+                  </DialogDescription>
+                </DialogHeader>
+                <div className="flex justify-end gap-2 mt-4">
+                  <Button
+                    variant="outline"
+                    onClick={() => setIsResetDialogOpen(false)}
+                    disabled={isResetting}
+                  >
+                    {language === 'de' ? 'Abbrechen' : 'Cancel'}
+                  </Button>
+                  <Button
+                    variant="destructive"
+                    onClick={handleResetWorkflow}
+                    disabled={isResetting}
+                  >
+                    {isResetting
+                      ? (language === 'de' ? 'Wird zurückgesetzt...' : 'Resetting...')
+                      : (language === 'de' ? 'Ja, zurücksetzen' : 'Yes, reset')
+                    }
+                  </Button>
+                </div>
+              </DialogContent>
+            </Dialog>
+          </div>
           
-          {progress > 0 && progress < 100 && (
-            <Button 
-              variant="default" 
-              size="sm" 
-              onClick={continueWorkflow}
-              className="text-xs"
-            >
-              <Play className="h-3 w-3 mr-1" aria-hidden="true" />
-              {language === 'de' ? 'Fortsetzen' : 'Continue'}
-            </Button>
-          )}
+          <TabsContent value="steuer" className="mt-0">
+            <ScrollArea className="max-h-[500px]">
+              <WorkflowSteps workflowType="steuer" />
+            </ScrollArea>
+          </TabsContent>
           
-          {progress === 0 && (
-            <Button 
-              variant="default" 
-              size="sm" 
-              onClick={continueWorkflow}
-              className="text-xs"
-            >
-              <Play className="h-3 w-3 mr-1" aria-hidden="true" />
-              {language === 'de' ? 'Starten' : 'Start'}
-            </Button>
-          )}
+          <TabsContent value="immobilien" className="mt-0">
+            <ScrollArea className="max-h-[500px]">
+              <WorkflowSteps workflowType="immobilien" />
+            </ScrollArea>
+          </TabsContent>
           
-          {progress === 100 && (
-            <Button 
-              variant="default" 
-              size="sm"
-              className="text-xs bg-green-600 hover:bg-green-700"
-              onClick={() => navigate('/investor-dashboard?tab=analytics')}
-            >
-              <BarChart className="h-3 w-3 mr-1" aria-hidden="true" />
-              {language === 'de' ? 'Ergebnisse anzeigen' : 'View Results'}
-            </Button>
-          )}
-        </CardFooter>
-      </Card>
-    </>
+          <TabsContent value="finanzierung" className="mt-0">
+            <ScrollArea className="max-h-[500px]">
+              <WorkflowSteps workflowType="finanzierung" />
+            </ScrollArea>
+          </TabsContent>
+          
+          <TabsContent value="analyse" className="mt-0">
+            <ScrollArea className="max-h-[500px]">
+              <WorkflowSteps workflowType="analyse" />
+            </ScrollArea>
+          </TabsContent>
+        </Tabs>
+        
+        <div className="mt-6">
+          <WorkflowHistory />
+        </div>
+      </CardContent>
+    </Card>
   );
 };
 

@@ -7,7 +7,6 @@ import { Calculator, HomeIcon, ChevronDown, ChevronUp, Share, Download, Info } f
 import { useIsMobile } from '@/hooks/use-mobile';
 import { GrunderwerbsteuerCalculator } from '@/components/calculators/GrunderwerbsteuerCalculator';
 import WorkflowNavigation from '@/components/workflow/WorkflowNavigation';
-import { WorkflowSuggestions } from '@/components/workflow/WorkflowSuggestions';
 import WorkflowSteps from '@/components/workflow/WorkflowSteps';
 import { WorkflowType } from '@/hooks/use-workflow';
 import EnhancedWorkflowSuggestions from '@/components/workflow/EnhancedWorkflowSuggestions';

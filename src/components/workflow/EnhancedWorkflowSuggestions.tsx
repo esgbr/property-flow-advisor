@@ -1,266 +1,247 @@
 
 import React, { useEffect, useState } from 'react';
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { useNavigate } from 'react-router-dom';
 import { useLanguage } from '@/contexts/LanguageContext';
-import { useWorkflow, WorkflowType } from '@/hooks/use-workflow';
-import { getRelatedWorkflowsForTool, getCommonNextSteps } from '@/utils/workflowUtils';
-import { Badge } from '@/components/ui/badge';
-import { ArrowRight, Lightbulb, CheckCircle, Clock } from 'lucide-react';
-import { useWorkflowState } from '@/contexts/WorkflowStateContext';
-import { useUserPreferences } from '@/contexts/UserPreferencesContext';
-import { useAccessibility } from '@/hooks/use-accessibility';
+import { ArrowRight, Clock, Star, CheckCircle, Trello } from 'lucide-react';
+import { useMarketFilter } from '@/hooks/use-market-filter';
+import { workflowDefinitions } from '@/data/workflow-definitions';
+import { WorkflowType } from '@/hooks/use-workflow';
 import { cn } from '@/lib/utils';
+import { getRelatedWorkflowsForTool, getCommonNextSteps } from '@/utils/workflowUtils';
+import { useAccessibility } from '@/hooks/use-accessibility';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { Badge } from '@/components/ui/badge';
+import { useWorkflowState } from '@/contexts/WorkflowStateContext';
 
 interface EnhancedWorkflowSuggestionsProps {
-  currentTool: string;
-  excludeWorkflows?: WorkflowType[];
-  maxSuggestions?: number;
   className?: string;
+  currentTool?: string;
+  currentWorkflow?: WorkflowType;
+  maxSuggestions?: number;
 }
 
 /**
- * Enhanced workflow suggestions component that provides intelligent
- * recommendations based on user behavior, workflow status, and context.
+ * Enhanced workflow suggestions with more personalized recommendations
+ * Recommends workflows and tools based on user's current task, market, and history
  */
-const EnhancedWorkflowSuggestions: React.FC<EnhancedWorkflowSuggestionsProps> = ({
+export const EnhancedWorkflowSuggestions: React.FC<EnhancedWorkflowSuggestionsProps> = ({
+  className,
   currentTool,
-  excludeWorkflows = [],
-  maxSuggestions = 3,
-  className
+  currentWorkflow,
+  maxSuggestions = 3
 }) => {
   const navigate = useNavigate();
   const { t, language } = useLanguage();
-  const { preferences } = useUserPreferences();
+  const { getCurrentMarket } = useMarketFilter();
   const { announce } = useAccessibility();
-  const { workflowProgress } = useWorkflowState();
+  const { getAllWorkflowsProgress } = useWorkflowState();
   const [suggestions, setSuggestions] = useState<Array<{
+    workflow: WorkflowType;
+    stepId: string;
+    path: string;
     title: string;
     description: string;
-    path: string;
-    workflowType: WorkflowType;
-    stepId: string;
-    priority: number; // Higher = more relevant
-    isCompleted?: boolean;
+    icon: React.ReactNode;
+    type: 'related' | 'popular' | 'next' | 'incomplete';
   }>>([]);
 
-  // Generate suggestions based on various sources
+  const currentMarket = getCurrentMarket();
+  const workflowsProgress = getAllWorkflowsProgress();
+  
+  // Generate suggestions based on current context
   useEffect(() => {
-    const allSuggestions: Array<{
-      title: string;
-      description: string;
-      path: string;
-      workflowType: WorkflowType;
-      stepId: string;
-      priority: number;
-      isCompleted?: boolean;
-    }> = [];
-
-    // 1. Get suggestions from related workflows
-    const relatedWorkflows = getRelatedWorkflowsForTool(currentTool)
-      .filter(wf => !excludeWorkflows.includes(wf));
-
-    // 2. Get common next steps based on typical user paths
-    const commonNextSteps = getCommonNextSteps(currentTool, excludeWorkflows);
-
-    // 3. Get suggestions from incomplete workflows
-    const incompleteWorkflows = findIncompleteWorkflows(workflowProgress, excludeWorkflows);
-
-    // Add related workflow suggestions
-    relatedWorkflows.forEach(workflowType => {
-      const workflow = useWorkflow(workflowType);
-      const firstStep = workflow.getWorkflowSteps()[0];
-
-      if (firstStep) {
+    const allSuggestions = [];
+    
+    // 1. Add suggestions from related workflows based on current tool
+    if (currentTool) {
+      const relatedWorkflows = getRelatedWorkflowsForTool(currentTool);
+      
+      // Filter out current workflow
+      const filteredWorkflows = relatedWorkflows.filter(wf => wf !== currentWorkflow);
+      
+      filteredWorkflows.forEach(workflow => {
+        const workflowDef = workflowDefinitions[workflow];
+        const firstStep = workflowDef.steps[0];
+        
         allSuggestions.push({
-          title: firstStep.label[language as keyof typeof firstStep.label],
-          description: firstStep.description?.[language as keyof typeof firstStep.description] || '',
-          path: firstStep.path,
-          workflowType,
+          workflow,
           stepId: firstStep.id,
-          priority: 5, // Base priority for related workflows
-          isCompleted: firstStep.isComplete
+          path: firstStep.path,
+          title: workflowDef.title[language as keyof typeof workflowDef.title],
+          description: workflowDef.description[language as keyof typeof workflowDef.description],
+          icon: workflowDef.steps[0].icon,
+          type: 'related' as const
         });
+      });
+    }
+    
+    // 2. Add suggestions for next steps across workflows
+    if (currentTool) {
+      const nextSteps = getCommonNextSteps(currentTool, currentWorkflow ? [currentWorkflow] : []);
+      
+      nextSteps.forEach(({ step, workflow }) => {
+        const workflowDef = workflowDefinitions[workflow];
+        
+        allSuggestions.push({
+          workflow,
+          stepId: step.id,
+          path: step.path,
+          title: step.label[language as keyof typeof step.label],
+          description: step.description?.[language as keyof typeof step.description] || '',
+          icon: step.icon,
+          type: 'next' as const
+        });
+      });
+    }
+    
+    // 3. Add incomplete workflows
+    const incompleteWorkflows = findIncompleteWorkflows();
+    if (incompleteWorkflows.length > 0) {
+      incompleteWorkflows.forEach(item => {
+        const workflowDef = workflowDefinitions[item.workflow];
+        
+        allSuggestions.push({
+          workflow: item.workflow,
+          stepId: item.step.id,
+          path: item.step.path,
+          title: `${language === 'de' ? 'Fortfahren mit: ' : 'Continue: '} ${
+            workflowDef.title[language as keyof typeof workflowDef.title]
+          }`,
+          description: item.step.description?.[language as keyof typeof item.step.description] || '',
+          icon: item.step.icon,
+          type: 'incomplete' as const
+        });
+      });
+    }
+    
+    // Remove duplicates and limit suggestions
+    const uniqueSuggestions = allSuggestions.filter((item, index, self) =>
+      index === self.findIndex(t => t.path === item.path)
+    ).slice(0, maxSuggestions);
+    
+    setSuggestions(uniqueSuggestions);
+  }, [currentTool, currentWorkflow, language, maxSuggestions]);
+  
+  // Helper function to find incomplete workflows
+  const findIncompleteWorkflows = () => {
+    const incomplete = [];
+    
+    Object.keys(workflowsProgress).forEach(key => {
+      if (!key.startsWith('workflow_')) return;
+      
+      const workflowType = key.replace('workflow_', '') as WorkflowType;
+      if (workflowType === currentWorkflow) return;
+      
+      const progress = workflowsProgress[key];
+      const workflowDef = workflowDefinitions[workflowType];
+      
+      if (progress && workflowDef) {
+        const completedSteps = progress.completedSteps || [];
+        const totalSteps = workflowDef.steps.length;
+        
+        if (completedSteps.length > 0 && completedSteps.length < totalSteps) {
+          // Find first uncompleted step
+          const nextStep = workflowDef.steps.find(step => !completedSteps.includes(step.id));
+          
+          if (nextStep) {
+            incomplete.push({
+              workflow: workflowType,
+              step: nextStep
+            });
+          }
+        }
       }
     });
-
-    // Add common next steps (higher priority)
-    commonNextSteps.forEach(({ step, workflow: wfType }) => {
-      allSuggestions.push({
-        title: step.label[language as keyof typeof step.label],
-        description: step.description?.[language as keyof typeof step.description] || '',
-        path: step.path,
-        workflowType: wfType,
-        stepId: step.id,
-        priority: 8, // Higher priority for common next steps
-        isCompleted: false // Assume not completed since it's a next step
-      });
-    });
-
-    // Add incomplete workflows (medium priority)
-    incompleteWorkflows.forEach(({ workflow: wfType, step }) => {
-      allSuggestions.push({
-        title: step.label[language as keyof typeof step.label],
-        description: step.description?.[language as keyof typeof step.description] || '',
-        path: step.path,
-        workflowType: wfType,
-        stepId: step.id,
-        priority: 7, // Medium priority for incomplete workflows
-        isCompleted: false // These are incomplete by definition
-      });
-    });
-
-    // Consider user preferences to adjust priorities
-    if (preferences.investmentGoals?.includes('tax-optimization')) {
-      // Boost tax-related suggestions
-      allSuggestions.forEach(suggestion => {
-        if (suggestion.workflowType === 'steuer') {
-          suggestion.priority += 2;
-        }
-      });
-    }
-
-    if (preferences.experienceLevel === 'beginner') {
-      // Simplify path for beginners
-      allSuggestions.forEach(suggestion => {
-        if (suggestion.description.includes('basic') || 
-            suggestion.description.includes('simple') ||
-            suggestion.description.toLowerCase().includes('anfänger')) {
-          suggestion.priority += 2;
-        }
-      });
-    }
-
-    // Sort by priority (high to low) and limit
-    const finalSuggestions = allSuggestions
-      .sort((a, b) => b.priority - a.priority || (a.isCompleted ? 1 : -1) - (b.isCompleted ? 1 : -1))
-      .slice(0, maxSuggestions);
-
-    setSuggestions(finalSuggestions);
-  }, [currentTool, excludeWorkflows, language, preferences, workflowProgress, maxSuggestions]);
-
-  // Navigate to a suggested step
-  const navigateToSuggestion = (path: string, suggestionTitle: string) => {
+    
+    return incomplete;
+  };
+  
+  // Handle navigation to a workflow step
+  const handleStepClick = (workflow: WorkflowType, path: string, title: string) => {
     navigate(path);
+    
     announce(
       language === 'de'
-        ? `Navigation zu ${suggestionTitle}`
-        : `Navigating to ${suggestionTitle}`,
+        ? `Navigation zu ${title}`
+        : `Navigating to ${title}`,
       'polite'
     );
   };
-
-  // No suggestions to show
+  
+  // If there are no suggestions, don't render anything
   if (suggestions.length === 0) {
     return null;
   }
-
+  
   return (
     <Card className={cn("border-dashed", className)}>
-      <CardHeader className="pb-3">
-        <CardTitle className="text-lg flex items-center">
-          <Lightbulb className="h-5 w-5 mr-2 text-amber-500" aria-hidden="true" />
-          {t('suggestedNextSteps')}
-        </CardTitle>
-        <CardDescription>
-          {t('personalizedRecommendations')}
-        </CardDescription>
+      <CardHeader className="pb-2">
+        <CardTitle>{t('relatedWorkflows')}</CardTitle>
+        <CardDescription>{t('otherUsefulTools')}</CardDescription>
       </CardHeader>
       <CardContent className="grid gap-4">
         {suggestions.map((suggestion, index) => (
-          <div 
-            key={`${suggestion.workflowType}-${suggestion.stepId}`}
-            className="flex justify-between items-center"
-          >
-            <div>
-              <h4 className="text-base font-medium flex items-center">
-                {suggestion.isCompleted && (
-                  <CheckCircle className="h-4 w-4 mr-2 text-green-500" aria-hidden="true" />
+          <div key={`${suggestion.workflow}-${suggestion.stepId}-${index}`} className="flex justify-between items-center">
+            <div className="flex items-start gap-3">
+              <div className="bg-primary/10 p-1.5 rounded-lg mt-0.5">
+                {suggestion.icon || (
+                  suggestion.type === 'related' ? <Trello className="h-5 w-5 text-primary" /> :
+                  suggestion.type === 'next' ? <ArrowRight className="h-5 w-5 text-primary" /> :
+                  suggestion.type === 'incomplete' ? <Clock className="h-5 w-5 text-primary" /> :
+                  <Star className="h-5 w-5 text-primary" />
                 )}
-                {!suggestion.isCompleted && suggestion.priority > 7 && (
-                  <Badge variant="outline" className="mr-2 bg-amber-500/10 text-amber-500 border-amber-200">
-                    {t('recommended')}
+              </div>
+              <div>
+                <h3 className="text-base font-medium">
+                  {suggestion.title}
+                </h3>
+                <div className="flex items-center gap-2 mb-1">
+                  <Badge variant="outline" className="text-xs">
+                    {language === 'de' ? (
+                      suggestion.type === 'related' ? 'Verwandt' :
+                      suggestion.type === 'next' ? 'Nächster Schritt' :
+                      suggestion.type === 'incomplete' ? 'Fortsetzen' : 'Beliebt'
+                    ) : (
+                      suggestion.type === 'related' ? 'Related' :
+                      suggestion.type === 'next' ? 'Next Step' :
+                      suggestion.type === 'incomplete' ? 'Continue' : 'Popular'
+                    )}
                   </Badge>
-                )}
-                {suggestion.title}
-              </h4>
-              <p className="text-sm text-muted-foreground">{suggestion.description}</p>
-              {suggestion.priority > 7 && (
-                <div className="flex items-center mt-1 text-xs text-muted-foreground">
-                  <Clock className="h-3 w-3 mr-1" aria-hidden="true" />
-                  {suggestion.workflowType === 'steuer' && t('fiveMins')}
-                  {suggestion.workflowType === 'immobilien' && t('tenMins')}
-                  {suggestion.workflowType === 'finanzierung' && t('sevenMins')}
                 </div>
-              )}
+                <p className="text-sm text-muted-foreground">
+                  {suggestion.description}
+                </p>
+              </div>
             </div>
-            <Button
-              variant="ghost"
-              size="sm"
-              className="ml-2 shrink-0"
-              onClick={() => navigateToSuggestion(suggestion.path, suggestion.title)}
-            >
-              {suggestion.isCompleted ? t('view') : t('start')}
-              <ArrowRight className="ml-1 h-4 w-4" aria-hidden="true" />
-            </Button>
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button 
+                    variant="ghost" 
+                    size="sm"
+                    className="ml-2"
+                    onClick={() => handleStepClick(suggestion.workflow, suggestion.path, suggestion.title)}
+                  >
+                    {suggestion.type === 'incomplete' ? (
+                      language === 'de' ? 'Fortsetzen' : 'Continue'
+                    ) : (
+                      language === 'de' ? 'Starten' : 'Start'
+                    )}
+                    <ArrowRight className="ml-1 h-4 w-4" aria-hidden="true" />
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>
+                  {language === 'de' ? `Zu ${suggestion.title} wechseln` : `Navigate to ${suggestion.title}`}
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
           </div>
         ))}
       </CardContent>
     </Card>
   );
 };
-
-// Helper function to find workflows that need attention
-function findIncompleteWorkflows(
-  workflowProgress: Record<string, { completedSteps: string[]; currentStep: string }>,
-  excludeWorkflows: WorkflowType[] = []
-): Array<{ workflow: WorkflowType; step: { id: string; label: any; description?: any; path: string } }> {
-  const results: Array<{ 
-    workflow: WorkflowType; 
-    step: { id: string; label: any; description?: any; path: string } 
-  }> = [];
-  
-  // Look for workflows that have been started but not completed
-  Object.entries(workflowProgress).forEach(([key, progress]) => {
-    // Extract workflow type from key (e.g., "workflow_steuer" -> "steuer")
-    const matches = key.match(/workflow_(.+)/);
-    if (!matches || matches.length < 2) return;
-    
-    const workflowType = matches[1] as WorkflowType;
-    
-    // Skip excluded workflows
-    if (excludeWorkflows.includes(workflowType)) return;
-    
-    if (progress) {
-      const workflow = useWorkflow(workflowType);
-      const steps = workflow.getStepsWithStatus();
-      const completedCount = progress.completedSteps.length;
-      const totalSteps = steps.length;
-      
-      // If workflow is started but not completed
-      if (completedCount > 0 && completedCount < totalSteps) {
-        // Find the next uncompleted step
-        const nextStep = steps.find(
-          step => !progress.completedSteps.includes(step.id)
-        );
-        
-        if (nextStep) {
-          results.push({ 
-            workflow: workflowType, 
-            step: {
-              id: nextStep.id,
-              label: nextStep.label,
-              description: nextStep.description,
-              path: nextStep.path
-            }
-          });
-        }
-      }
-    }
-  });
-  
-  return results;
-}
 
 export default EnhancedWorkflowSuggestions;
