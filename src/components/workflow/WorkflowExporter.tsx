@@ -1,383 +1,283 @@
 
 import React, { useState } from 'react';
-import { useLanguage } from '@/contexts/LanguageContext';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Input } from '@/components/ui/input';
+import { Separator } from '@/components/ui/separator';
 import { Checkbox } from '@/components/ui/checkbox';
 import { useWorkflow, WorkflowType } from '@/hooks/use-workflow';
-import { FileText, Download, FileCode, FilePdf, Check } from 'lucide-react';
+import { FileText, Download, FileCode, Check } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { toast } from '@/components/ui/use-toast';
 
-const WorkflowExporter: React.FC<{ workflowType: WorkflowType }> = ({ workflowType }) => {
-  const { language } = useLanguage();
-  const { 
-    getStepsWithStatus, 
-    getCurrentStep,
-    getCompleteSteps,
-    getData
-  } = useWorkflow(workflowType);
-  
-  const [exportFormat, setExportFormat] = useState('pdf');
-  const [includedSections, setIncludedSections] = useState({
-    summary: true,
-    steps: true,
+interface WorkflowExporterProps {
+  workflowType: WorkflowType;
+}
+
+const WorkflowExporter: React.FC<WorkflowExporterProps> = ({ workflowType }) => {
+  const { getStepsWithStatus, getData } = useWorkflow(workflowType);
+  const [filename, setFilename] = useState(`workflow-${workflowType}-export`);
+  const [format, setFormat] = useState('json');
+  const [includeOptions, setIncludeOptions] = useState({
+    metadata: true,
     decisions: true,
-    attachments: false,
-    recommendations: true
+    comments: true,
+    timestamps: false
   });
-  const [reportName, setReportName] = useState(() => {
-    return language === 'de' 
-      ? `${workflowType}-Bericht-${new Date().toISOString().split('T')[0]}`
-      : `${workflowType}-report-${new Date().toISOString().split('T')[0]}`;
-  });
-  const [exportStatus, setExportStatus] = useState<'idle' | 'exporting' | 'success' | 'error'>('idle');
-  
-  const steps = getStepsWithStatus();
-  const completedSteps = getCompleteSteps();
-  const currentStep = getCurrentStep();
-  
+
+  const stepsWithStatus = getStepsWithStatus();
+  const completedSteps = stepsWithStatus.filter(step => step.isComplete);
+
   const handleExport = () => {
-    setExportStatus('exporting');
-    
-    // Simulate export process
-    setTimeout(() => {
-      setExportStatus('success');
-      
-      // Reset after showing success message
-      setTimeout(() => {
-        setExportStatus('idle');
-      }, 3000);
-    }, 2000);
-  };
-  
-  const toggleSection = (section: string) => {
-    setIncludedSections(prev => ({
-      ...prev,
-      [section]: !prev[section as keyof typeof prev]
-    }));
-  };
-  
-  const getExportButtonText = () => {
-    switch (exportStatus) {
-      case 'exporting':
-        return language === 'de' ? 'Wird exportiert...' : 'Exporting...';
-      case 'success':
-        return language === 'de' ? 'Erfolgreich exportiert!' : 'Successfully exported!';
-      case 'error':
-        return language === 'de' ? 'Fehler beim Export' : 'Export failed';
+    // Gather data
+    const exportData = {
+      workflowType,
+      exportDate: new Date().toISOString(),
+      completedSteps: completedSteps.length,
+      totalSteps: stepsWithStatus.length,
+      progress: Math.round((completedSteps.length / stepsWithStatus.length) * 100),
+      steps: stepsWithStatus.map(step => ({
+        id: step.id,
+        label: step.label,
+        isComplete: step.isComplete,
+        data: includeOptions.decisions ? getData(step.id) : undefined
+      })),
+      metadata: includeOptions.metadata ? {
+        created: new Date().toISOString(),
+        version: '1.0',
+        exportFormat: format
+      } : undefined,
+      comments: includeOptions.comments ? getData('comments') : undefined,
+      timestamps: includeOptions.timestamps ? {
+        started: getData('startedAt'),
+        lastModified: getData('lastModifiedAt')
+      } : undefined
+    };
+
+    // Create exportable content
+    let exportContent;
+    let mimeType;
+    let fileExtension;
+
+    switch (format) {
+      case 'json':
+        exportContent = JSON.stringify(exportData, null, 2);
+        mimeType = 'application/json';
+        fileExtension = 'json';
+        break;
+      case 'csv':
+        // Simple CSV conversion for steps
+        const headers = ['Step ID', 'Step Label', 'Completed', 'Data'];
+        const rows = stepsWithStatus.map(step => [
+          step.id,
+          step.label.en, // Using English labels for CSV
+          step.isComplete ? 'Yes' : 'No',
+          JSON.stringify(getData(step.id))
+        ]);
+        exportContent = [headers, ...rows].map(row => row.join(',')).join('\n');
+        mimeType = 'text/csv';
+        fileExtension = 'csv';
+        break;
+      case 'html':
+        exportContent = `
+        <html>
+          <head>
+            <title>Workflow Export: ${workflowType}</title>
+            <style>
+              body { font-family: Arial, sans-serif; margin: 20px; }
+              h1 { color: #333; }
+              .step { margin-bottom: 10px; border-bottom: 1px solid #eee; padding-bottom: 10px; }
+              .complete { color: green; }
+              .incomplete { color: orange; }
+              .metadata { color: #666; font-size: 0.9em; }
+            </style>
+          </head>
+          <body>
+            <h1>Workflow Export: ${workflowType}</h1>
+            <div class="metadata">
+              <p>Export Date: ${new Date().toLocaleString()}</p>
+              <p>Progress: ${Math.round((completedSteps.length / stepsWithStatus.length) * 100)}%</p>
+            </div>
+            <h2>Steps</h2>
+            ${stepsWithStatus.map(step => `
+              <div class="step">
+                <h3 class="${step.isComplete ? 'complete' : 'incomplete'}">${step.label.en}</h3>
+                <p>Status: ${step.isComplete ? 'Completed' : 'Incomplete'}</p>
+                ${includeOptions.decisions && getData(step.id) ? `
+                  <p>Data: ${JSON.stringify(getData(step.id))}</p>
+                ` : ''}
+              </div>
+            `).join('')}
+          </body>
+        </html>
+        `;
+        mimeType = 'text/html';
+        fileExtension = 'html';
+        break;
       default:
-        return language === 'de' ? 'Bericht exportieren' : 'Export Report';
+        exportContent = JSON.stringify(exportData);
+        mimeType = 'application/json';
+        fileExtension = 'json';
     }
-  };
-  
-  const renderIcon = () => {
-    switch (exportStatus) {
-      case 'exporting':
-        return <div className="h-4 w-4 rounded-full border-2 border-r-transparent animate-spin" />;
-      case 'success':
-        return <Check className="h-4 w-4" />;
-      default:
-        return <Download className="h-4 w-4" />;
-    }
+
+    // Create and download the file
+    const blob = new Blob([exportContent], { type: mimeType });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `${filename}.${fileExtension}`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+
+    toast({
+      title: "Export Successful",
+      description: `Workflow data exported as ${format.toUpperCase()}`,
+    });
   };
 
   return (
     <Card>
       <CardHeader>
-        <CardTitle>
-          {language === 'de' ? 'Workflow-Datenexport' : 'Workflow Data Export'}
-        </CardTitle>
+        <CardTitle>Workflow-Datenexport</CardTitle>
         <CardDescription>
-          {language === 'de' 
-            ? 'Export aller gesammelten Daten und Entscheidungen als strukturierter Bericht' 
-            : 'Export all collected data and decisions as a structured report'}
+          Exportieren Sie Workflow-Daten und Entscheidungen in verschiedenen Formaten
         </CardDescription>
       </CardHeader>
-      <CardContent>
-        <Tabs defaultValue="content" className="space-y-4">
-          <TabsList>
-            <TabsTrigger value="content">
-              {language === 'de' ? 'Inhalte' : 'Contents'}
-            </TabsTrigger>
-            <TabsTrigger value="format">
-              {language === 'de' ? 'Format' : 'Format'}
-            </TabsTrigger>
-            <TabsTrigger value="preview">
-              {language === 'de' ? 'Vorschau' : 'Preview'}
-            </TabsTrigger>
-          </TabsList>
+      <CardContent className="space-y-6">
+        <div className="space-y-4">
+          <div className="flex flex-col space-y-2">
+            <Label htmlFor="filename">Dateiname</Label>
+            <Input
+              id="filename"
+              value={filename}
+              onChange={(e) => setFilename(e.target.value)}
+              placeholder="Export filename"
+            />
+          </div>
 
-          <TabsContent value="content">
-            <div className="space-y-6">
-              <div className="space-y-4">
-                <Label htmlFor="reportName">
-                  {language === 'de' ? 'Berichtsname' : 'Report Name'}
-                </Label>
-                <Input
-                  id="reportName"
-                  value={reportName}
-                  onChange={(e) => setReportName(e.target.value)}
-                  placeholder={language === 'de' ? 'Mein Workflow-Bericht' : 'My Workflow Report'}
-                />
-              </div>
+          <div className="flex flex-col space-y-2">
+            <Label htmlFor="format">Format</Label>
+            <Select value={format} onValueChange={setFormat}>
+              <SelectTrigger id="format">
+                <SelectValue placeholder="Select format" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="json">
+                  <div className="flex items-center">
+                    <FileCode className="mr-2 h-4 w-4" />
+                    <span>JSON</span>
+                  </div>
+                </SelectItem>
+                <SelectItem value="csv">
+                  <div className="flex items-center">
+                    <FileText className="mr-2 h-4 w-4" />
+                    <span>CSV</span>
+                  </div>
+                </SelectItem>
+                <SelectItem value="html">
+                  <div className="flex items-center">
+                    <FileText className="mr-2 h-4 w-4" />
+                    <span>HTML</span>
+                  </div>
+                </SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
 
-              <div>
-                <h3 className="text-sm font-medium mb-3">
-                  {language === 'de' ? 'Einzuschließende Abschnitte:' : 'Sections to Include:'}
-                </h3>
-                <div className="space-y-2">
-                  <div className="flex items-center space-x-2">
-                    <Checkbox 
-                      id="summary" 
-                      checked={includedSections.summary}
-                      onCheckedChange={() => toggleSection('summary')}
-                    />
-                    <Label htmlFor="summary" className="cursor-pointer">
-                      {language === 'de' ? 'Zusammenfassung' : 'Summary'}
-                    </Label>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <Checkbox 
-                      id="steps" 
-                      checked={includedSections.steps}
-                      onCheckedChange={() => toggleSection('steps')}
-                    />
-                    <Label htmlFor="steps" className="cursor-pointer">
-                      {language === 'de' ? 'Workflow-Schritte' : 'Workflow Steps'}
-                    </Label>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <Checkbox 
-                      id="decisions" 
-                      checked={includedSections.decisions}
-                      onCheckedChange={() => toggleSection('decisions')}
-                    />
-                    <Label htmlFor="decisions" className="cursor-pointer">
-                      {language === 'de' ? 'Getroffene Entscheidungen' : 'Decisions Made'}
-                    </Label>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <Checkbox 
-                      id="attachments" 
-                      checked={includedSections.attachments}
-                      onCheckedChange={() => toggleSection('attachments')}
-                    />
-                    <Label htmlFor="attachments" className="cursor-pointer">
-                      {language === 'de' ? 'Anlagen & Dokumente' : 'Attachments & Documents'}
-                    </Label>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <Checkbox 
-                      id="recommendations" 
-                      checked={includedSections.recommendations}
-                      onCheckedChange={() => toggleSection('recommendations')}
-                    />
-                    <Label htmlFor="recommendations" className="cursor-pointer">
-                      {language === 'de' ? 'Empfehlungen & nächste Schritte' : 'Recommendations & Next Steps'}
-                    </Label>
-                  </div>
-                </div>
-              </div>
+          <div className="space-y-4">
+            <Label>Exportoptionen</Label>
 
-              <Card className="bg-muted/40">
-                <CardHeader className="pb-2">
-                  <CardTitle className="text-sm">{language === 'de' ? 'Fortschritt' : 'Progress'}</CardTitle>
-                </CardHeader>
-                <CardContent className="pb-2">
-                  <div className="flex items-center justify-between text-sm">
-                    <span>{language === 'de' ? 'Abgeschlossene Schritte:' : 'Completed Steps:'}</span>
-                    <span className="font-medium">{completedSteps.length} / {steps.length}</span>
-                  </div>
-                  <div className="flex items-center justify-between text-sm mt-1">
-                    <span>{language === 'de' ? 'Aktueller Schritt:' : 'Current Step:'}</span>
-                    <span className="font-medium">
-                      {currentStep 
-                        ? currentStep.label[language === 'de' ? 'de' : 'en']
-                        : language === 'de' ? 'Nicht festgelegt' : 'Not set'
-                      }
-                    </span>
-                  </div>
-                </CardContent>
-              </Card>
+            <div className="flex items-center space-x-2">
+              <Checkbox
+                id="include-metadata" 
+                checked={includeOptions.metadata}
+                onCheckedChange={(checked) => 
+                  setIncludeOptions(prev => ({ ...prev, metadata: checked === true }))
+                }
+              />
+              <label
+                htmlFor="include-metadata"
+                className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+              >
+                Metadaten einschließen
+              </label>
             </div>
-          </TabsContent>
-
-          <TabsContent value="format">
-            <div className="space-y-6">
-              <div className="space-y-4">
-                <Label>
-                  {language === 'de' ? 'Exportformat auswählen' : 'Select Export Format'}
-                </Label>
-                
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  <div 
-                    className={`border rounded-md p-4 cursor-pointer flex flex-col items-center ${exportFormat === 'pdf' ? 'border-primary bg-primary/5' : 'hover:bg-muted/50'}`}
-                    onClick={() => setExportFormat('pdf')}
-                  >
-                    <FilePdf className="h-8 w-8 mb-2 text-primary" />
-                    <span className="font-medium">PDF</span>
-                    <span className="text-xs text-muted-foreground mt-1">
-                      {language === 'de' ? 'Vollständiger Bericht' : 'Complete report'}
-                    </span>
-                  </div>
-                  
-                  <div 
-                    className={`border rounded-md p-4 cursor-pointer flex flex-col items-center ${exportFormat === 'excel' ? 'border-primary bg-primary/5' : 'hover:bg-muted/50'}`}
-                    onClick={() => setExportFormat('excel')}
-                  >
-                    <FileText className="h-8 w-8 mb-2 text-primary" />
-                    <span className="font-medium">Excel</span>
-                    <span className="text-xs text-muted-foreground mt-1">
-                      {language === 'de' ? 'Tabellarisches Format' : 'Tabular format'}
-                    </span>
-                  </div>
-                  
-                  <div 
-                    className={`border rounded-md p-4 cursor-pointer flex flex-col items-center ${exportFormat === 'json' ? 'border-primary bg-primary/5' : 'hover:bg-muted/50'}`}
-                    onClick={() => setExportFormat('json')}
-                  >
-                    <FileCode className="h-8 w-8 mb-2 text-primary" />
-                    <span className="font-medium">JSON</span>
-                    <span className="text-xs text-muted-foreground mt-1">
-                      {language === 'de' ? 'Für Entwickler' : 'For developers'}
-                    </span>
-                  </div>
-                </div>
-              </div>
-
-              <div className="space-y-4">
-                <Label>
-                  {language === 'de' ? 'Weitere Optionen' : 'Additional Options'}
-                </Label>
-                
-                <div className="space-y-2">
-                  <div className="flex items-center space-x-2">
-                    <Checkbox id="include-timestamps" defaultChecked />
-                    <Label htmlFor="include-timestamps" className="cursor-pointer">
-                      {language === 'de' ? 'Zeitstempel einschließen' : 'Include timestamps'}
-                    </Label>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <Checkbox id="include-metadata" defaultChecked />
-                    <Label htmlFor="include-metadata" className="cursor-pointer">
-                      {language === 'de' ? 'Metadaten einschließen' : 'Include metadata'}
-                    </Label>
-                  </div>
-                  {exportFormat === 'pdf' && (
-                    <div className="flex items-center space-x-2">
-                      <Checkbox id="password-protect" />
-                      <Label htmlFor="password-protect" className="cursor-pointer">
-                        {language === 'de' ? 'Mit Passwort schützen' : 'Password protect'}
-                      </Label>
-                    </div>
-                  )}
-                </div>
-              </div>
+            
+            <div className="flex items-center space-x-2">
+              <Checkbox 
+                id="include-decisions" 
+                checked={includeOptions.decisions}
+                onCheckedChange={(checked) => 
+                  setIncludeOptions(prev => ({ ...prev, decisions: checked === true }))
+                }
+              />
+              <label
+                htmlFor="include-decisions"
+                className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+              >
+                Entscheidungsdaten einschließen
+              </label>
             </div>
-          </TabsContent>
 
-          <TabsContent value="preview">
-            <div className="space-y-6">
-              <Card className="bg-muted/30 overflow-hidden">
-                <CardHeader className="pb-2 border-b">
-                  <div className="flex justify-between items-center">
-                    <CardTitle className="text-lg">{reportName}</CardTitle>
-                    <Badge variant="outline">
-                      {exportFormat.toUpperCase()}
-                    </Badge>
-                  </div>
-                </CardHeader>
-                <CardContent className="p-0">
-                  <div className="p-4 border-b">
-                    <h3 className="text-sm font-medium mb-2">
-                      {language === 'de' ? 'Zusammenfassung' : 'Summary'}
-                    </h3>
-                    <div className="text-sm text-muted-foreground">
-                      {language === 'de' 
-                        ? `Dieser Bericht enthält Daten für den "${workflowType}"-Workflow mit ${completedSteps.length} abgeschlossenen Schritten.`
-                        : `This report contains data for the "${workflowType}" workflow with ${completedSteps.length} completed steps.`
-                      }
-                    </div>
-                  </div>
-                  
-                  <div className="p-4 border-b">
-                    <h3 className="text-sm font-medium mb-2">
-                      {language === 'de' ? 'Workflow-Schritte' : 'Workflow Steps'}
-                    </h3>
-                    <div className="space-y-2 max-h-32 overflow-y-auto text-sm">
-                      {steps.map((step) => (
-                        <div key={step.id} className="flex items-center">
-                          <div className={`h-3 w-3 rounded-full mr-2 ${step.isComplete ? 'bg-primary' : 'bg-muted'}`} />
-                          <span className={step.isComplete ? 'font-medium' : 'text-muted-foreground'}>
-                            {step.label[language === 'de' ? 'de' : 'en']}
-                          </span>
-                          {step.isComplete && (
-                            <Check className="h-3 w-3 text-primary ml-2" />
-                          )}
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                  
-                  <div className="px-4 py-12 text-center text-muted-foreground text-sm">
-                    {language === 'de' 
-                      ? 'Vollständige Vorschau im ausgewählten Format verfügbar nach dem Export.'
-                      : 'Full preview available in selected format after export.'}
-                  </div>
-                </CardContent>
-              </Card>
-
-              <div className="flex justify-between">
-                <Select defaultValue="newest">
-                  <SelectTrigger className="w-[180px]">
-                    <SelectValue placeholder={language === 'de' ? 'Version wählen' : 'Select version'} />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="newest">
-                      {language === 'de' ? 'Neueste Version' : 'Newest version'}
-                    </SelectItem>
-                    <SelectItem value="with-comments">
-                      {language === 'de' ? 'Mit Kommentaren' : 'With comments'}
-                    </SelectItem>
-                    <SelectItem value="simplified">
-                      {language === 'de' ? 'Vereinfacht' : 'Simplified'}
-                    </SelectItem>
-                  </SelectContent>
-                </Select>
-                
-                <div className="flex space-x-2">
-                  <Button variant="outline">
-                    {language === 'de' ? 'Vorschau' : 'Preview'}
-                  </Button>
-                  <Button 
-                    onClick={handleExport}
-                    disabled={exportStatus === 'exporting'}
-                    className="min-w-[150px]"
-                  >
-                    {renderIcon()}
-                    <span className="ml-2">{getExportButtonText()}</span>
-                  </Button>
-                </div>
-              </div>
+            <div className="flex items-center space-x-2">
+              <Checkbox 
+                id="include-comments" 
+                checked={includeOptions.comments}
+                onCheckedChange={(checked) => 
+                  setIncludeOptions(prev => ({ ...prev, comments: checked === true }))
+                }
+              />
+              <label
+                htmlFor="include-comments"
+                className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+              >
+                Kommentare einschließen
+              </label>
             </div>
-          </TabsContent>
-        </Tabs>
-      </CardContent>
-      <CardFooter className="justify-between border-t pt-6">
-        <div className="text-sm text-muted-foreground">
-          {language === 'de' 
-            ? 'Exportierte Daten können für behördliche Zwecke oder zur Dokumentation verwendet werden.'
-            : 'Exported data can be used for regulatory purposes or documentation.'}
+
+            <div className="flex items-center space-x-2">
+              <Checkbox 
+                id="include-timestamps" 
+                checked={includeOptions.timestamps}
+                onCheckedChange={(checked) => 
+                  setIncludeOptions(prev => ({ ...prev, timestamps: checked === true }))
+                }
+              />
+              <label
+                htmlFor="include-timestamps"
+                className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+              >
+                Zeitstempel einschließen
+              </label>
+            </div>
+          </div>
         </div>
-        <Button variant={exportStatus === 'idle' ? 'default' : 'outline'} onClick={handleExport}>
-          {renderIcon()}
-          <span className="ml-2">{getExportButtonText()}</span>
+
+        <Separator />
+
+        <div className="space-y-2">
+          <div className="flex justify-between items-center">
+            <div>
+              <p className="text-sm font-medium">Workflow-Fortschritt</p>
+              <p className="text-xs text-muted-foreground">
+                {completedSteps.length} von {stepsWithStatus.length} Schritten abgeschlossen
+              </p>
+            </div>
+            <Badge variant="outline">
+              {Math.round((completedSteps.length / stepsWithStatus.length) * 100)}%
+            </Badge>
+          </div>
+        </div>
+
+        <Button onClick={handleExport} className="w-full">
+          <Download className="mr-2 h-4 w-4" />
+          Workflow-Daten exportieren
         </Button>
-      </CardFooter>
+      </CardContent>
     </Card>
   );
 };
