@@ -1,3 +1,4 @@
+
 import { useState, useEffect, useCallback } from 'react';
 import { useUserPreferences, InvestmentMarket } from '@/contexts/UserPreferencesContext';
 import { useLanguage } from '@/contexts/LanguageContext';
@@ -6,6 +7,7 @@ import {
   getLocalizedMarketName, 
   availableMarkets 
 } from '@/utils/marketHelpers';
+import { toast } from 'sonner';
 
 // Feature configuration interface
 export interface FeatureMarketConfig {
@@ -60,7 +62,15 @@ export const useMarketFilter = () => {
   const setUserMarket = useCallback((market: InvestmentMarket) => {
     setUserMarketState(market);
     updatePreferences({ investmentMarket: market });
-  }, [updatePreferences]);
+    
+    // Show feedback toast for better UX
+    toast.success(
+      language === 'de' 
+        ? `Markt auf ${getLocalizedMarketName(market, language)} eingestellt` 
+        : `Market set to ${getLocalizedMarketName(market, language)}`,
+      { duration: 3000 }
+    );
+  }, [updatePreferences, language]);
 
   // Get display name for current market
   const getMarketDisplayNameFormatted = useCallback((): string => {

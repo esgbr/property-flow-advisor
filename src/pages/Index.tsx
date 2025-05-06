@@ -7,17 +7,15 @@ import { useLanguage } from '@/contexts/FixedLanguageContext';
 import { 
   Building, 
   Home, 
-  Loader2,
   BarChart3,
   Calculator,
   Euro,
-  Briefcase,
   Globe,
   TrendingUp,
-  Users,
   FileText,
   MapPin,
-  Settings
+  Settings,
+  ArrowRight
 } from 'lucide-react';
 import { useMarketFilter } from '@/hooks/use-market-filter';
 import { Badge } from '@/components/ui/badge';
@@ -25,9 +23,9 @@ import { InvestmentMarket } from '@/contexts/UserPreferencesContext';
 import ErrorBoundary from '@/components/ErrorBoundary';
 import PageLoader from '@/components/ui/page-loader';
 import { useComponentPerformance } from '@/utils/performanceUtils';
-import useLazyComponent from '@/hooks/use-lazy-load';
 import { useAccessibility } from '@/components/accessibility/A11yProvider';
 import AccessibilitySettingsButton from '@/components/accessibility/AccessibilitySettingsButton';
+import WorkflowSuggestions from '@/components/workflow/WorkflowSuggestions';
 
 // Lazy load components for better initial loading performance
 const FeatureGrid = lazy(() => import('@/components/home/FeatureGrid'));
@@ -46,7 +44,7 @@ const Index: React.FC = () => {
   useComponentPerformance('IndexPage');
   const navigate = useNavigate();
   const { t, language } = useLanguage();
-  const { shouldShowFeature, userMarket } = useMarketFilter();
+  const { shouldShowFeature, userMarket, setUserMarket } = useMarketFilter();
   const [isLoading, setIsLoading] = useState(true);
   const { largeText } = useAccessibility();
 
@@ -59,82 +57,50 @@ const Index: React.FC = () => {
     return () => clearTimeout(timer);
   }, []);
 
-  // Properly typed features array
+  // Consolidated features array with removed duplicates and merged similar features
   const features: Feature[] = [
     {
       id: 'portfolio',
       title: t('Portfolio Management'),
-      description: t('Portfolio Management Description'),
+      description: t('Manage all your properties and investments in one place'),
       icon: <Building className="h-8 w-8 text-primary" />,
-      action: () => navigate('/properties'),
+      action: () => navigate('/investor-dashboard'),
       markets: ['global']
     },
     {
-      id: 'investment',
-      title: t('Investment Analysis'),
-      description: t('Investment Analysis Description'),
+      id: 'analytics',
+      title: t('Investment Analytics'),
+      description: t('Analyze performance and discover opportunities'),
       icon: <BarChart3 className="h-8 w-8 text-primary" />,
       action: () => navigate('/investor-dashboard'),
       markets: ['global']
     },
     {
       id: 'calculators',
-      title: t('Financial Calculators'),
-      description: t('Financial Calculators Description'),
+      title: t('Financial Tools'),
+      description: t('Financing, ROI, and investment calculators'),
       icon: <Calculator className="h-8 w-8 text-primary" />,
       action: () => navigate('/calculators'),
       markets: ['global']
     },
     {
-      id: 'german-tools',
-      title: language === 'de' ? 'Deutsche Immobilien-Tools' : 'German Real Estate Tools',
+      id: 'regional-tools',
+      title: language === 'de' ? 'Regionale Immobilien-Tools' : 'Regional Real Estate Tools',
       description: language === 'de' 
-        ? 'Spezielle Tools für den deutschen Immobilienmarkt, inkl. Grunderwerbsteuer, Mietkauf und AfA-Rechner.'
-        : 'Specialized tools for the German real estate market, including transfer tax, rent-to-own and depreciation calculators.',
-      icon: <Euro className="h-8 w-8 text-primary" />,
-      action: () => navigate('/deutsche-immobilien-tools'),
-      markets: ['germany', 'austria', 'switzerland']
-    },
-    {
-      id: 'us-tools',
-      title: language === 'de' ? 'US-Immobilien-Tools' : 'US Real Estate Tools',
-      description: language === 'de'
-        ? 'Spezielle Tools für den US-Immobilienmarkt, inkl. 1031 Exchange, Property Tax und Depreciation Calculator.'
-        : 'Specialized tools for the US real estate market, including 1031 exchange, property tax and depreciation calculators.',
-      icon: <Briefcase className="h-8 w-8 text-primary" />,
-      action: () => navigate('/us-real-estate-tools'),
-      markets: ['usa', 'canada']
+        ? 'Spezialisierte Tools für verschiedene Immobilienmärkte'
+        : 'Specialized tools for different real estate markets',
+      icon: <Globe className="h-8 w-8 text-primary" />,
+      action: () => navigate(userMarket === 'germany' || userMarket === 'austria' 
+                ? '/deutsche-immobilien-tools' 
+                : '/market-explorer'),
+      markets: ['global', 'germany', 'austria', 'switzerland', 'usa', 'canada']
     },
     {
       id: 'market',
       title: t('Market Explorer'),
-      description: t('Market Explorer Description'),
+      description: t('Research and analyze real estate markets'),
       icon: <MapPin className="h-8 w-8 text-primary" />,
       action: () => navigate('/market-explorer'),
-      markets: ['global']
-    },
-    {
-      id: 'insights',
-      title: t('Global Insights'),
-      description: t('Global Insights Description'),
-      icon: <Globe className="h-8 w-8 text-primary" />,
-      action: () => navigate('/market-analysis'),
-      markets: ['global']
-    },
-    {
-      id: 'performance',
-      title: t('Performance Analytics'),
-      description: t('Track and analyze the performance of your real estate investments'),
-      icon: <TrendingUp className="h-8 w-8 text-primary" />,
-      action: () => navigate('/portfolio-analytics'),
-      markets: ['global']
-    },
-    {
-      id: 'tenant',
-      title: t('Tenant Management'),
-      description: t('Manage tenant relationships, leases, and communications'),
-      icon: <Users className="h-8 w-8 text-primary" />,
-      action: () => navigate('/tenant-management'),
       markets: ['global']
     },
     {
@@ -144,21 +110,46 @@ const Index: React.FC = () => {
       icon: <FileText className="h-8 w-8 text-primary" />,
       action: () => navigate('/documents'),
       markets: ['global']
-    },
-    {
-      id: 'accessibility',
-      title: t('Accessibility Settings'),
-      description: t('Customize your experience to make the application more accessible'),
-      icon: <Settings className="h-8 w-8 text-primary" />,
-      action: () => navigate('/accessibility'),
-      markets: ['global']
     }
   ];
+
+  // Add German-specific tools only for German-speaking markets
+  if (userMarket === 'germany' || userMarket === 'austria' || userMarket === 'switzerland' || language === 'de') {
+    features.push({
+      id: 'german-tools',
+      title: language === 'de' ? 'Deutsche Immobilien-Tools' : 'German Real Estate Tools',
+      description: language === 'de' 
+        ? 'Spezielle Tools für den deutschen Immobilienmarkt'
+        : 'Specialized tools for the German real estate market',
+      icon: <Euro className="h-8 w-8 text-primary" />,
+      action: () => navigate('/deutsche-immobilien-tools'),
+      markets: ['germany', 'austria', 'switzerland']
+    });
+  }
 
   // Filter features based on user's market preference
   const filteredFeatures = features.filter(feature => 
     !feature.markets || shouldShowFeature({ id: feature.id, markets: feature.markets })
   );
+  
+  // Quick access workflows based on user's most likely needs
+  const quickAccessWorkflows = [
+    {
+      id: 'analyse',
+      title: language === 'de' ? 'Immobilien analysieren' : 'Analyze Properties',
+      action: () => navigate('/investor-dashboard')
+    },
+    {
+      id: 'finance',
+      title: language === 'de' ? 'Finanzierung berechnen' : 'Calculate Financing',
+      action: () => navigate('/calculators')
+    },
+    {
+      id: 'market',
+      title: language === 'de' ? 'Markt erkunden' : 'Explore Market',
+      action: () => navigate('/market-explorer')
+    }
+  ];
   
   if (isLoading) {
     return <PageLoader message={t('Loading PropertyFlow...')} size="lg" />;
@@ -166,7 +157,7 @@ const Index: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-background to-background/80">
-      <div className="container mx-auto px-4 py-16">
+      <div className="container mx-auto px-4 py-8 md:py-16">
         <header className="text-center mb-16">
           <div className="flex justify-center mb-4">
             <Building className="h-16 w-16 text-primary" aria-hidden="true" />
@@ -187,23 +178,57 @@ const Index: React.FC = () => {
           )}
           
           <div className="flex flex-wrap justify-center gap-4 mt-8">
-            <Button size="lg" onClick={() => navigate('/dashboard')}>
+            <Button size="lg" onClick={() => navigate('/dashboard')} className="group">
               <Home className="mr-2 h-5 w-5" aria-hidden="true" />
               {t('Go to Dashboard')}
+              <ArrowRight className="ml-2 h-4 w-4 opacity-0 group-hover:opacity-100 group-hover:translate-x-1 transition-all" />
             </Button>
-            <Button size="lg" variant="outline" onClick={() => navigate('/properties')}>
+            <Button size="lg" variant="outline" onClick={() => navigate('/investor-dashboard')} className="group">
               <Building className="mr-2 h-5 w-5" aria-hidden="true" />
-              {t('View Properties')}
+              {t('View Portfolio')}
+              <ArrowRight className="ml-2 h-4 w-4 opacity-0 group-hover:opacity-100 group-hover:translate-x-1 transition-all" />
             </Button>
             <AccessibilitySettingsButton variant="secondary" size="lg" />
           </div>
         </header>
+
+        {/* Quick Access Workflow Cards */}
+        <div className="mb-16">
+          <h2 className={`text-2xl font-bold mb-6 text-center ${largeText ? 'text-3xl' : ''}`}>
+            {language === 'de' ? 'Schnellzugriff-Workflows' : 'Quick Access Workflows'}
+          </h2>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            {quickAccessWorkflows.map((workflow) => (
+              <Card 
+                key={workflow.id} 
+                className="cursor-pointer hover:shadow-md transition-all hover:border-primary/30 hover:bg-primary/5"
+                onClick={workflow.action}
+              >
+                <div className="p-6 text-center">
+                  <h3 className="text-lg font-medium mb-2">{workflow.title}</h3>
+                  <Button variant="ghost" size="sm" className="group">
+                    {language === 'de' ? 'Starten' : 'Start'} 
+                    <ArrowRight className="ml-1 h-4 w-4 group-hover:translate-x-1 transition-transform" />
+                  </Button>
+                </div>
+              </Card>
+            ))}
+          </div>
+        </div>
 
         <ErrorBoundary>
           <Suspense fallback={<PageLoader size="md" />}>
             <FeatureGrid features={filteredFeatures} />
           </Suspense>
         </ErrorBoundary>
+        
+        {/* Recommended Next Steps */}
+        <WorkflowSuggestions
+          currentTool="home"
+          workflowType="analyse"
+          maxSuggestions={3}
+          className="mb-16"
+        />
 
         <section className="text-center mb-16">
           <h2 className={`text-3xl font-bold mb-6 ${largeText ? 'text-4xl' : ''}`}>
@@ -214,10 +239,11 @@ const Index: React.FC = () => {
           </p>
           <Button 
             size="lg" 
-            className="mt-6"
+            className="mt-6 group"
             onClick={() => navigate('/investor-dashboard')}
           >
             {t('Start Investing')}
+            <ArrowRight className="ml-2 h-4 w-4 opacity-0 group-hover:opacity-100 group-hover:translate-x-1 transition-all" />
           </Button>
         </section>
 

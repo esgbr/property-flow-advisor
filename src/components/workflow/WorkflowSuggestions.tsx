@@ -66,7 +66,7 @@ const WorkflowSuggestions: React.FC<WorkflowSuggestionsProps> = ({
         {nextSteps.map((step) => (
           <Card 
             key={step.id} 
-            className="cursor-pointer hover:shadow-md transition-all hover:border-primary/30"
+            className="cursor-pointer hover:shadow-md transition-all hover:border-primary/30 hover:bg-primary/5"
             onClick={() => handleStepSelection(step.id)}
           >
             <CardHeader className="pb-2">

@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useLanguage } from '@/contexts/LanguageContext';
@@ -26,6 +27,8 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useWorkflow } from '@/hooks/use-workflow';
 import { useMarketFilter } from '@/hooks/use-market-filter';
+import WorkflowProgressCard from '@/components/workflow/WorkflowProgressCard';
+import WorkflowSuggestions from '@/components/workflow/WorkflowSuggestions';
 
 const InvestorDashboard: React.FC = () => {
   const { t, language } = useLanguage();
@@ -74,7 +77,7 @@ const InvestorDashboard: React.FC = () => {
 
   // Currency formatter based on user language
   const getCurrencySymbol = () => {
-    // Fixed: Using type-safe language comparison by checking language directly
+    // Using type-safe language comparison by checking language directly
     if (language === 'de') return '€';
     
     // For all other cases (including 'en'), return '$'
@@ -109,6 +112,34 @@ const InvestorDashboard: React.FC = () => {
         </h1>
         <p className="text-muted-foreground">{t('completeInvestmentToolsuite')}</p>
       </div>
+
+      {/* Active Workflow Progress Card */}
+      {defaultTab === 'portfolio' && (
+        <WorkflowProgressCard
+          workflowType="analyse"
+          currentStep="portfolio"
+          className="mb-4"
+          showProgress={true}
+        />
+      )}
+      
+      {defaultTab === 'financing' && (
+        <WorkflowProgressCard
+          workflowType="finanzierung"
+          currentStep="calculator"
+          className="mb-4"
+          showProgress={true}
+        />
+      )}
+      
+      {defaultTab === 'tax' && (
+        <WorkflowProgressCard
+          workflowType="steuer"
+          currentStep="planning"
+          className="mb-4"
+          showProgress={true}
+        />
+      )}
 
       <Tabs defaultValue={defaultTab} value={defaultTab} onValueChange={handleTabChange} className="w-full">
         <TabsList className={`grid w-full ${isMobile ? 'grid-cols-3 gap-1 mb-2' : 'md:w-auto md:inline-grid grid-cols-5'}`}>
@@ -152,6 +183,14 @@ const InvestorDashboard: React.FC = () => {
         <TabsContent value="portfolio" className="mt-6">
           <UnifiedPortfolioDashboard />
           
+          {/* Workflow Suggestions for better transitions between tools */}
+          <WorkflowSuggestions
+            currentTool="portfolio"
+            workflowType="analyse"
+            maxSuggestions={2}
+            className="mt-6 mb-4"
+          />
+          
           {/* Intelligente Workflow-Empfehlung */}
           <Card className="mt-6 hover:shadow-md transition-all border-primary/20">
             <CardHeader>
@@ -184,6 +223,14 @@ const InvestorDashboard: React.FC = () => {
 
         <TabsContent value="market" className="mt-6">
           <MarketAnalysisTools />
+          
+          {/* Workflow Suggestions for better transitions between tools */}
+          <WorkflowSuggestions
+            currentTool="market"
+            workflowType="analyse"
+            maxSuggestions={2}
+            className="mt-6 mb-4"
+          />
           
           {/* Intelligente Workflow-Empfehlung */}
           <Card className="mt-6 hover:shadow-md transition-all border-primary/20">
@@ -218,6 +265,14 @@ const InvestorDashboard: React.FC = () => {
         <TabsContent value="financing" className="mt-6">
           <MortgageCalculator />
           
+          {/* Workflow Suggestions for better transitions between tools */}
+          <WorkflowSuggestions
+            currentTool="calculator"
+            workflowType="finanzierung"
+            maxSuggestions={2}
+            className="mt-6 mb-4"
+          />
+          
           {/* Intelligente Workflow-Empfehlung */}
           <Card className="mt-6 hover:shadow-md transition-all border-primary/20">
             <CardHeader>
@@ -251,6 +306,14 @@ const InvestorDashboard: React.FC = () => {
         <TabsContent value="tax" className="mt-6">
           <TaxPlanner />
           
+          {/* Workflow Suggestions for better transitions between tools */}
+          <WorkflowSuggestions
+            currentTool="planning"
+            workflowType="steuer"
+            maxSuggestions={2}
+            className="mt-6 mb-4"
+          />
+          
           {/* Intelligente Workflow-Empfehlung */}
           <Card className="mt-6 hover:shadow-md transition-all border-primary/20">
             <CardHeader>
@@ -283,6 +346,14 @@ const InvestorDashboard: React.FC = () => {
 
         <TabsContent value="duediligence" className="mt-6">
           <DueDiligenceChecklist />
+          
+          {/* Workflow Suggestions for better transitions between tools */}
+          <WorkflowSuggestions
+            currentTool="duediligence"
+            workflowType="analyse"
+            maxSuggestions={2}
+            className="mt-6 mb-4"
+          />
           
           {/* Intelligente Workflow-Empfehlung */}
           <Card className="mt-6 hover:shadow-md transition-all border-primary/20">
