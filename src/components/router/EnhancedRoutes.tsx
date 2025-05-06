@@ -1,5 +1,5 @@
 
-import React, { Suspense, lazy, useEffect } from 'react';
+import React, { Suspense, lazy } from 'react';
 import { Route, Routes, Navigate, useLocation } from 'react-router-dom';
 import PageLoader from '@/components/ui/page-loader';
 import EnhancedLayout from '@/layouts/EnhancedLayout';
@@ -31,6 +31,9 @@ const MarketAnalysisDashboardPage = lazy(() => import('@/pages/MarketAnalysisDas
 const AccessibilitySettingsPage = lazy(() => import('@/components/accessibility/AccessibilitySettings'));
 const OnboardingWizard = lazy(() => import('@/components/onboarding/OnboardingWizard'));
 const SecurityPage = lazy(() => import('@/pages/SecurityPage'));
+const AdvancedMarketAnalysisPage = lazy(() => import('@/pages/AdvancedMarketAnalysisPage'));
+const TaxFinancingPage = lazy(() => import('@/pages/TaxFinancingPage'));
+const DynamicWorkflowPage = lazy(() => import('@/pages/DynamicWorkflowPage'));
 
 // Loading fallback component
 const PageLoadingFallback: React.FC<{ message?: string }> = ({ message }) => (
@@ -51,8 +54,6 @@ const PageSuspense: React.FC<{
 
 const RouteTracker: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const location = useLocation();
-  
-  // You can implement analytics tracking here if needed
   
   // Scroll to top on route change
   React.useEffect(() => {
@@ -183,6 +184,24 @@ const EnhancedRoutes: React.FC = () => {
           <Route path="/market-explorer" element={
             <PageSuspense message="Loading market explorer...">
               <MarketExplorerPage />
+            </PageSuspense>
+          } />
+          
+          <Route path="/advanced-market-analysis" element={
+            <PageSuspense message="Loading advanced market analysis...">
+              <AdvancedMarketAnalysisPage />
+            </PageSuspense>
+          } />
+          
+          <Route path="/tax-financing" element={
+            <PageSuspense message="Loading tax & financing tools...">
+              <TaxFinancingPage />
+            </PageSuspense>
+          } />
+          
+          <Route path="/advanced-workflows" element={
+            <PageSuspense message="Loading advanced workflow features...">
+              <DynamicWorkflowPage />
             </PageSuspense>
           } />
           

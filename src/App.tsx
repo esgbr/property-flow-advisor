@@ -33,7 +33,9 @@ const InvestorDashboard = lazy(() => import('@/pages/InvestorDashboard'));
 const NotificationsPage = lazy(() => import('@/pages/NotFound')); // Placeholder until a proper page is created
 const ProfilePage = lazy(() => import('@/pages/UserProfile'));
 const HelpSupportPage = lazy(() => import('@/pages/NotFound')); // Placeholder until a proper page is created
-const WorkflowsPage = lazy(() => import('@/pages/WorkflowsPage')); // New workflows page
+const WorkflowsPage = lazy(() => import('@/pages/WorkflowsPage'));
+const TaxFinancingPage = lazy(() => import('@/pages/TaxFinancingPage'));
+const DynamicWorkflowPage = lazy(() => import('@/pages/DynamicWorkflowPage'));
 
 const App: React.FC = () => {
   return (
@@ -127,6 +129,18 @@ const App: React.FC = () => {
                       <WorkflowOverviewPage />
                     </AuthGuard>
                   } />
+                  <Route path="/advanced-workflows" element={
+                    <AuthGuard>
+                      <DynamicWorkflowPage />
+                    </AuthGuard>
+                  } />
+                  
+                  {/* Tax & Financing Page */}
+                  <Route path="/tax-financing" element={
+                    <AuthGuard>
+                      <TaxFinancingPage />
+                    </AuthGuard>
+                  } />
                   
                   {/* Admin routes */}
                   <Route path="/admin-tools" element={
@@ -138,7 +152,7 @@ const App: React.FC = () => {
                   {/* 404 route */}
                   <Route path="*" element={<div>404 - Seite nicht gefunden</div>} />
                   
-                  {/* Add our advanced market analysis route */}
+                  {/* Advanced analysis routes */}
                   <Route path="/advanced-analytics" element={<AdvancedAnalyticsPage />} />
                   <Route path="/advanced-market-analysis" element={<AdvancedMarketAnalysisPage />} />
                 </Routes>
