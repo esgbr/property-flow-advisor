@@ -30,7 +30,7 @@ const WorkflowSummary: React.FC<WorkflowSummaryProps> = ({
   const progress = workflow.getWorkflowProgress();
   const isComplete = progress === 100;
   
-  const langKey = language as keyof typeof workflowDefinitions[workflowType].title;
+  const langKey = language as keyof typeof workflowDefinitions[typeof workflowType]["title"];
   const title = workflowDefinitions[workflowType].title[langKey];
   
   return (
