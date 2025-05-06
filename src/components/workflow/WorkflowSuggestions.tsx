@@ -11,6 +11,18 @@ import { useWorkflow } from '@/hooks/use-workflow';
 import { toast } from 'sonner';
 import { useMarketFilter } from '@/hooks/use-market-filter';
 
+// Updated WorkflowStep interface to include progress and estimatedTime
+export interface EnhancedWorkflowStep {
+  id: string;
+  path: string;
+  label: { de: string; en: string };
+  icon?: React.ReactNode;
+  description?: { de: string; en: string };
+  isComplete?: boolean;
+  progress?: number;
+  estimatedTime?: number;
+}
+
 interface WorkflowSuggestionsProps {
   currentTool: string;
   className?: string;
@@ -34,8 +46,8 @@ const WorkflowSuggestions: React.FC<WorkflowSuggestionsProps> = ({
   // Use the enhanced workflow hook
   const workflow = useWorkflow(workflowType);
   
-  // Get next steps from the workflow
-  const nextSteps = workflow.getNextSteps(currentTool, maxSuggestions);
+  // Get next steps from the workflow - pass currentTool parameter
+  const nextSteps = workflow.getNextSteps(currentTool, maxSuggestions) as EnhancedWorkflowStep[];
   
   // Get user's progress in this workflow
   const workflowProgress = workflow.getWorkflowProgress();
@@ -57,6 +69,16 @@ const WorkflowSuggestions: React.FC<WorkflowSuggestionsProps> = ({
   };
 
   if (nextSteps.length === 0) return null;
+
+  // Helper functions to mimic missing API methods
+  const getAllSteps = () => {
+    return workflow.steps as EnhancedWorkflowStep[];
+  };
+  
+  const isStepCompleted = (stepId: string) => {
+    const step = workflow.steps.find(s => s.id === stepId);
+    return step?.isComplete || false;
+  };
 
   return (
     <div className={cn("mt-8", className)}>
@@ -150,29 +172,29 @@ const WorkflowSuggestions: React.FC<WorkflowSuggestionsProps> = ({
           </div>
           
           <div className="flex items-center gap-2 overflow-x-auto pb-2 hide-scrollbar">
-            {workflow.getAllSteps().slice(0, 5).map((step, index) => (
+            {getAllSteps().slice(0, 5).map((step, index) => (
               <React.Fragment key={step.id}>
                 <Button 
                   variant={step.id === currentTool ? "default" : "outline"} 
                   size="sm"
                   className={cn(
                     "whitespace-nowrap",
-                    workflow.isStepCompleted(step.id) && "border-green-500 bg-green-500/10"
+                    isStepCompleted(step.id) && "border-green-500 bg-green-500/10"
                   )}
                   onClick={() => handleStepSelection(step.id)}
                 >
-                  {workflow.isStepCompleted(step.id) && (
+                  {isStepCompleted(step.id) && (
                     <CheckCircle className="h-3 w-3 mr-1 text-green-500" />
                   )}
                   {step.label[language as keyof typeof step.label]}
                 </Button>
-                {index < workflow.getAllSteps().slice(0, 5).length - 1 && (
+                {index < getAllSteps().slice(0, 5).length - 1 && (
                   <ChevronRight className="h-4 w-4 text-muted-foreground flex-shrink-0" />
                 )}
               </React.Fragment>
             ))}
             
-            {workflow.getAllSteps().length > 5 && (
+            {getAllSteps().length > 5 && (
               <Button 
                 variant="ghost" 
                 size="sm" 

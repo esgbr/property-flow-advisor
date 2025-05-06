@@ -31,6 +31,14 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useMarketFilter } from '@/hooks/use-market-filter';
 import { Badge } from '@/components/ui/badge';
 
+// Define correct type for navigation items with optional badge
+interface NavItem {
+  icon: React.ReactElement;
+  label: string;
+  path: string;
+  badge?: number;
+}
+
 export const MobileNavigation: React.FC = () => {
   const { t, language } = useLanguage();
   const location = useLocation();
@@ -43,7 +51,7 @@ export const MobileNavigation: React.FC = () => {
   
   // Market-aware navigation items
   const getNavItems = () => {
-    const baseItems = [
+    const baseItems: NavItem[] = [
       { icon: <Home className="h-5 w-5" />, label: t('dashboard'), path: '/dashboard' },
       { icon: <Building className="h-5 w-5" />, label: t('properties'), path: '/properties' },
       { icon: <BarChart3 className="h-5 w-5" />, label: t('investorDashboard'), path: '/investor-dashboard' }

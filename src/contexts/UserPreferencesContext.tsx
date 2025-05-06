@@ -46,6 +46,15 @@ export interface UserPreferences {
   // Adding properties needed for WelcomeModal
   isFirstVisit?: boolean;
   
+  // Add missing property for AuthGuard.tsx
+  emailVerified?: boolean;
+  
+  // Add missing property for UserMenu.tsx
+  profileImage?: string;
+  
+  // Add recentMarkets for useMarketFilter.tsx
+  recentMarkets?: InvestmentMarket[];
+  
   // Add accessibility settings as individual properties
   reduceMotion?: boolean;
   highContrast?: boolean;

@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from 'react';
 import { Navigate, useLocation, useNavigate } from 'react-router-dom';
 import { useUserPreferences } from '@/contexts/UserPreferencesContext';
@@ -113,7 +112,7 @@ const AuthGuard: React.FC<AuthGuardProps> = ({
   }
   
   // Check for verified email if required
-  if (requireVerified && !preferences.emailVerified) {
+  if (requireVerified && preferences.emailVerified === false) {
     return (
       <div className="p-4">
         <Alert variant="destructive">
