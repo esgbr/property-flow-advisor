@@ -4,7 +4,7 @@ import { InvestmentMarket, InvestmentMarketOption } from '@/contexts/UserPrefere
 /**
  * Available markets for investment
  */
-export const availableMarkets = [
+export const availableMarkets: InvestmentMarketOption[] = [
   { id: 'germany', name: 'Germany' },
   { id: 'austria', name: 'Austria' },
   { id: 'switzerland', name: 'Switzerland' },
@@ -38,14 +38,14 @@ export const getLocalizedMarketName = (market: InvestmentMarket, language: strin
  */
 export const getFilteredMarketOptions = (language: string = 'en'): InvestmentMarketOption[] => {
   return [
-    { id: 'germany', label: getLocalizedMarketName('germany', language) },
-    { id: 'austria', label: getLocalizedMarketName('austria', language) },
-    { id: 'switzerland', label: getLocalizedMarketName('switzerland', language) },
-    { id: 'usa', label: getLocalizedMarketName('usa', language) },
-    { id: 'canada', label: getLocalizedMarketName('canada', language) },
-    { id: 'global', label: getLocalizedMarketName('global', language) },
-    { id: 'uk', label: getLocalizedMarketName('uk', language) },
-    { id: 'europe', label: getLocalizedMarketName('europe', language) }
+    { id: 'germany', name: getLocalizedMarketName('germany', language) },
+    { id: 'austria', name: getLocalizedMarketName('austria', language) },
+    { id: 'switzerland', name: getLocalizedMarketName('switzerland', language) },
+    { id: 'usa', name: getLocalizedMarketName('usa', language) },
+    { id: 'canada', name: getLocalizedMarketName('canada', language) },
+    { id: 'global', name: getLocalizedMarketName('global', language) },
+    { id: 'uk', name: getLocalizedMarketName('uk', language) },
+    { id: 'europe', name: getLocalizedMarketName('europe', language) }
   ];
 };
 

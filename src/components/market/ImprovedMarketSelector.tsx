@@ -3,7 +3,7 @@ import React, { useState } from 'react';
 import { Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { InvestmentMarket } from '@/contexts/UserPreferencesContext';
 import { useLanguage } from '@/contexts/LanguageContext';
-import { getLocalizedMarketName, availableMarkets } from '@/utils/marketHelpers';
+import { getLocalizedMarketName } from '@/utils/marketHelpers';
 import { Badge } from '@/components/ui/badge';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { Building, TrendingUp, MapPin } from 'lucide-react';
@@ -57,6 +57,17 @@ const ImprovedMarketSelector: React.FC<ImprovedMarketSelectorProps> = ({
     
     return growthIndicators[market] || { trend: 'stable', value: 0 };
   };
+  
+  const availableMarkets = [
+    { id: 'germany' as InvestmentMarket, name: 'Germany' },
+    { id: 'austria' as InvestmentMarket, name: 'Austria' },
+    { id: 'switzerland' as InvestmentMarket, name: 'Switzerland' },
+    { id: 'usa' as InvestmentMarket, name: 'USA' },
+    { id: 'canada' as InvestmentMarket, name: 'Canada' },
+    { id: 'global' as InvestmentMarket, name: 'Global' },
+    { id: 'uk' as InvestmentMarket, name: 'United Kingdom' },
+    { id: 'europe' as InvestmentMarket, name: 'Europe' }
+  ];
   
   const renderMarketItem = (market: {id: InvestmentMarket, name: string}) => {
     const growth = getMarketGrowthIndicator(market.id);

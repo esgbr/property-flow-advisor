@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
@@ -29,7 +28,7 @@ export const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ onComplete, onSk
   const { t } = useLanguage();
   const { toast } = useToast();
   const [currentStep, setCurrentStep] = useState(0);
-  const [data, setData] = useState<OnboardingData>({
+  const [data, setData] = useState<Partial<OnboardingData>>({
     name: initialData?.name || '',
     experienceLevel: initialData?.experienceLevel || 'beginner',
     investmentGoals: initialData?.investmentGoals || [],

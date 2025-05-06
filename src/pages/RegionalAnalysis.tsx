@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -6,7 +5,7 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { Progress } from '@/components/ui/progress';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useLanguage } from '@/contexts/LanguageContext';
-import { Map, LineChart, ArrowRight, Buildings, TrendingUp, ChevronRight, ArrowRightLeft } from 'lucide-react';
+import { Map, LineChart, ArrowRight, Building, TrendingUp, ChevronRight, ArrowRightLeft } from 'lucide-react';
 
 const RegionalAnalysis: React.FC = () => {
   const { language } = useLanguage();
@@ -271,7 +270,7 @@ const RegionalAnalysis: React.FC = () => {
                   <Card key={item}>
                     <CardContent className="p-4">
                       <div className="h-40 bg-muted/30 rounded-md mb-3 flex items-center justify-center">
-                        <Buildings className="h-10 w-10 text-muted-foreground" />
+                        <Building className="h-10 w-10 text-muted-foreground" />
                       </div>
                       <h3 className="font-medium">
                         {language === 'de' ? 'Immobilienangebot' : 'Property Listing'} {item}

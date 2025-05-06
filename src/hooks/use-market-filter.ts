@@ -1,4 +1,3 @@
-
 import { useContext } from 'react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { UserPreferencesContext, InvestmentMarket, InvestmentMarketOption } from '@/contexts/UserPreferencesContext';
@@ -81,12 +80,22 @@ export const useMarketFilter = () => {
   
   // Get market display name
   const getMarketDisplayName = (): string => {
-    const marketName = availableMarkets.find(m => m.id === userMarket)?.name || 'Global';
+    const marketName = getAvailableMarkets().find(m => m.id === userMarket)?.name || 'Global';
     return marketName;
   };
   
   // Get market options for dropdowns and selectors
-  const getMarketOptions = () => {
+  const getMarketOptions = (): InvestmentMarketOption[] => {
+    const availableMarkets = [
+      { id: 'germany', name: language === 'de' ? 'Deutschland' : 'Germany' },
+      { id: 'austria', name: language === 'de' ? 'Österreich' : 'Austria' },
+      { id: 'switzerland', name: language === 'de' ? 'Schweiz' : 'Switzerland' },
+      { id: 'usa', name: 'USA' },
+      { id: 'canada', name: language === 'de' ? 'Kanada' : 'Canada' },
+      { id: 'global', name: 'Global' },
+      { id: 'uk', name: language === 'de' ? 'Vereinigtes Königreich' : 'United Kingdom' },
+      { id: 'europe', name: language === 'de' ? 'Europa' : 'Europe' }
+    ];
     return availableMarkets;
   };
 
