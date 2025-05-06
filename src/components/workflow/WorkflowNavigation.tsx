@@ -1,158 +1,266 @@
 
 import React from 'react';
-import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent } from '@/components/ui/card';
-import { ChevronRight, ArrowRight, CheckCircle } from 'lucide-react';
-import { useLanguage } from '@/contexts/LanguageContext';
+import { Card } from '@/components/ui/card';
+import { useNavigate } from 'react-router-dom';
 import { useWorkflow, WorkflowType } from '@/hooks/use-workflow';
+import { useLanguage } from '@/contexts/LanguageContext';
+import { ArrowLeft, ArrowRight, CheckCircle, List } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { useIsMobile } from '@/hooks/use-mobile';
+import { Progress } from '@/components/ui/progress';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { useAccessibility } from '@/hooks/use-accessibility';
 
 interface WorkflowNavigationProps {
   workflowType: WorkflowType;
   currentStep: string;
-  showPrevious?: boolean;
-  showNext?: boolean;
+  onComplete?: () => void;
+  variant?: 'default' | 'compact' | 'minimal';
+  showAllSteps?: boolean;
   className?: string;
-  variant?: 'compact' | 'default' | 'breadcrumb';
-  onStepChange?: (stepId: string) => void;
 }
 
 /**
- * WorkflowNavigation - A component that provides navigation controls for workflows
- * Enhances user experience by providing clear next/previous steps
+ * Navigation component for moving between steps in a workflow
  */
-export const WorkflowNavigation: React.FC<WorkflowNavigationProps> = ({
+const WorkflowNavigation: React.FC<WorkflowNavigationProps> = ({
   workflowType,
   currentStep,
-  showPrevious = true,
-  showNext = true,
-  className = '',
+  onComplete,
   variant = 'default',
-  onStepChange
+  showAllSteps = false,
+  className
 }) => {
-  const { language } = useLanguage();
   const navigate = useNavigate();
   const workflow = useWorkflow(workflowType);
-  const isMobile = useIsMobile();
+  const { language } = useLanguage();
+  const { announce } = useAccessibility();
   
-  // Get current workflow step
-  const currentStepObj = workflow.getCurrentStep(currentStep);
+  const workflowSteps = workflow.getWorkflowSteps();
+  const currentIndex = workflowSteps.findIndex(step => step.id === currentStep);
+  const previousStep = currentIndex > 0 ? workflowSteps[currentIndex - 1] : null;
+  const nextStep = currentIndex < workflowSteps.length - 1 ? workflowSteps[currentIndex + 1] : null;
+  const progress = workflow.getWorkflowProgress(currentStep);
   
-  // Get previous and next steps
-  const previousStep = workflow.getPreviousStep(currentStep);
-  const nextSteps = workflow.getNextSteps(currentStep, 1);
-  const nextStep = nextSteps.length > 0 ? nextSteps[0] : null;
-  
-  // Handle navigation between steps
-  const navigateToStep = (stepId: string) => {
-    if (onStepChange) {
-      onStepChange(stepId);
-    } else {
-      workflow.goToStep(stepId);
+  // Handle navigation to previous step
+  const handlePrevious = () => {
+    if (previousStep) {
+      navigate(previousStep.path);
+      
+      const stepName = previousStep.label[language as keyof typeof previousStep.label];
+      announce(
+        language === 'de'
+          ? `Zurück zu ${stepName}`
+          : `Back to ${stepName}`,
+        'polite'
+      );
     }
   };
   
-  if (variant === 'breadcrumb') {
-    // Create an array of steps from start to current step
-    const pathToCurrentStep = workflow.getPathToStep(currentStep);
-    
-    return (
-      <div className={cn("flex items-center overflow-x-auto hide-scrollbar py-2", className)}>
-        {pathToCurrentStep.map((step, index) => (
-          <React.Fragment key={step.id}>
-            <Button
-              variant={step.id === currentStep ? "default" : "ghost"}
-              size="sm"
-              className={cn(
-                "whitespace-nowrap text-sm",
-                step.isComplete && "text-green-600",
-              )}
-              onClick={() => navigateToStep(step.id)}
-            >
-              {step.isComplete && <CheckCircle className="h-3 w-3 mr-1" />}
-              {step.label[language as keyof typeof step.label]}
-            </Button>
-            {index < pathToCurrentStep.length - 1 && (
-              <ChevronRight className="h-4 w-4 mx-1 flex-shrink-0" />
-            )}
-          </React.Fragment>
-        ))}
-      </div>
-    );
-  }
-  
-  if (variant === 'compact') {
-    return (
-      <div className={cn("flex items-center justify-between", className)}>
-        {showPrevious && previousStep && (
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => navigateToStep(previousStep.id)}
-            className="text-sm"
-          >
-            ← {isMobile ? '' : (language === 'de' ? 'Zurück' : 'Back')}
-          </Button>
-        )}
-        
-        {showNext && nextStep && (
-          <Button
-            variant="default"
-            size="sm"
-            onClick={() => navigateToStep(nextStep.id)}
-            className="text-sm ml-auto"
-          >
-            {isMobile ? '' : (language === 'de' ? 'Weiter' : 'Next')} →
-          </Button>
-        )}
-      </div>
-    );
-  }
-  
-  // Default variant with cards for previous and next steps
-  return (
-    <div className={cn("grid grid-cols-1 sm:grid-cols-2 gap-4", className)}>
-      {showPrevious && previousStep && (
-        <Card 
-          className="cursor-pointer hover:shadow-md transition-all border-slate-200"
-          onClick={() => navigateToStep(previousStep.id)}
-        >
-          <CardContent className="p-4 flex items-center">
-            <div className="mr-2 text-muted-foreground">←</div>
-            <div className="flex-1">
-              <p className="text-sm text-muted-foreground">
-                {language === 'de' ? 'Vorheriger Schritt' : 'Previous Step'}
-              </p>
-              <p className="font-medium">
-                {previousStep.label[language as keyof typeof previousStep.label]}
-              </p>
-            </div>
-          </CardContent>
-        </Card>
-      )}
+  // Handle navigation to next step
+  const handleNext = () => {
+    if (nextStep) {
+      // Mark current step as complete
+      workflow.markStepComplete(currentStep);
       
-      {showNext && nextStep && (
-        <Card 
-          className="cursor-pointer hover:shadow-md transition-all border-primary/30 bg-primary/5"
-          onClick={() => navigateToStep(nextStep.id)}
-        >
-          <CardContent className="p-4 flex items-center">
-            <div className="flex-1">
-              <p className="text-sm text-muted-foreground">
-                {language === 'de' ? 'Nächster Schritt' : 'Next Step'}
-              </p>
-              <p className="font-medium">
-                {nextStep.label[language as keyof typeof nextStep.label]}
-              </p>
+      // Call onComplete callback if provided
+      if (onComplete) {
+        onComplete();
+      }
+      
+      // Navigate to next step
+      navigate(nextStep.path);
+      
+      const stepName = nextStep.label[language as keyof typeof nextStep.label];
+      announce(
+        language === 'de'
+          ? `Weiter zu ${stepName}`
+          : `Continue to ${stepName}`,
+        'polite'
+      );
+    } else {
+      // This is the last step, just mark it as complete
+      workflow.markStepComplete(currentStep);
+      
+      if (onComplete) {
+        onComplete();
+      }
+      
+      announce(
+        language === 'de'
+          ? 'Workflow abgeschlossen!'
+          : 'Workflow completed!',
+        'polite'
+      );
+    }
+  };
+  
+  // Handle viewing all steps
+  const handleViewAllSteps = () => {
+    // Navigate to workflow overview
+    navigate(`/workflows/${workflowType}`);
+    
+    announce(
+      language === 'de'
+        ? 'Alle Schritte anzeigen'
+        : 'View all steps',
+      'polite'
+    );
+  };
+  
+  // Determine component based on variant
+  const renderNavigationContent = () => {
+    switch (variant) {
+      case 'compact':
+        return (
+          <div className="flex justify-between items-center">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handlePrevious}
+              disabled={!previousStep}
+            >
+              <ArrowLeft className="h-4 w-4 mr-2" aria-hidden="true" />
+              {language === 'de' ? 'Zurück' : 'Back'}
+            </Button>
+            
+            <div className="flex items-center gap-2">
+              <span className="text-sm font-medium">
+                {currentIndex + 1}/{workflowSteps.length}
+              </span>
+              <Progress 
+                value={progress} 
+                className="h-2 w-16"
+              />
             </div>
-            <ArrowRight className="h-5 w-5 ml-2 text-primary" />
-          </CardContent>
-        </Card>
-      )}
-    </div>
-  );
+            
+            <Button
+              variant={nextStep ? "default" : "success"}
+              size="sm"
+              onClick={handleNext}
+            >
+              {!nextStep ? (
+                <>
+                  <CheckCircle className="h-4 w-4 mr-2" aria-hidden="true" />
+                  {language === 'de' ? 'Abschließen' : 'Complete'}
+                </>
+              ) : (
+                <>
+                  {language === 'de' ? 'Weiter' : 'Next'}
+                  <ArrowRight className="h-4 w-4 ml-2" aria-hidden="true" />
+                </>
+              )}
+            </Button>
+          </div>
+        );
+      
+      case 'minimal':
+        return (
+          <div className="flex justify-between">
+            {previousStep ? (
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={handlePrevious}
+                className="text-muted-foreground"
+              >
+                <ArrowLeft className="h-4 w-4 mr-1" aria-hidden="true" />
+                {language === 'de' ? 'Zurück' : 'Back'}
+              </Button>
+            ) : (
+              <div /> // Empty div for spacing
+            )}
+            
+            {nextStep ? (
+              <Button size="sm" onClick={handleNext}>
+                {language === 'de' ? 'Weiter' : 'Next'}
+                <ArrowRight className="h-4 w-4 ml-1" aria-hidden="true" />
+              </Button>
+            ) : (
+              <Button size="sm" onClick={handleNext} variant="success">
+                <CheckCircle className="h-4 w-4 mr-1" aria-hidden="true" />
+                {language === 'de' ? 'Abschließen' : 'Complete'}
+              </Button>
+            )}
+          </div>
+        );
+      
+      case 'default':
+      default:
+        return (
+          <Card className="p-4">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+              <div className="flex flex-col sm:flex-row sm:items-center gap-2">
+                <div className="flex items-center">
+                  <span className="text-sm font-medium mr-2">
+                    {language === 'de' ? 'Fortschritt:' : 'Progress:'}
+                  </span>
+                  <Progress 
+                    value={progress} 
+                    className="h-2 w-16 sm:w-24"
+                  />
+                  <span className="ml-2 text-sm font-medium">{progress}%</span>
+                </div>
+                
+                {showAllSteps && (
+                  <Button
+                    variant="link"
+                    size="sm"
+                    onClick={handleViewAllSteps}
+                    className="ml-0 sm:ml-4 p-0"
+                  >
+                    <List className="h-4 w-4 mr-1" aria-hidden="true" />
+                    {language === 'de' ? 'Alle Schritte anzeigen' : 'View all steps'}
+                  </Button>
+                )}
+              </div>
+              
+              <div className="flex gap-2">
+                <TooltipProvider>
+                  {previousStep && (
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Button
+                          variant="outline"
+                          onClick={handlePrevious}
+                        >
+                          <ArrowLeft className="h-4 w-4 mr-2" aria-hidden="true" />
+                          {language === 'de' ? 'Zurück' : 'Back'}
+                        </Button>
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        {previousStep.label[language as keyof typeof previousStep.label]}
+                      </TooltipContent>
+                    </Tooltip>
+                  )}
+                  
+                  {nextStep ? (
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Button onClick={handleNext}>
+                          {language === 'de' ? 'Weiter' : 'Next'}
+                          <ArrowRight className="h-4 w-4 ml-2" aria-hidden="true" />
+                        </Button>
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        {nextStep.label[language as keyof typeof nextStep.label]}
+                      </TooltipContent>
+                    </Tooltip>
+                  ) : (
+                    <Button onClick={handleNext} className="bg-green-600 hover:bg-green-700">
+                      <CheckCircle className="h-4 w-4 mr-2" aria-hidden="true" />
+                      {language === 'de' ? 'Abschließen' : 'Complete'}
+                    </Button>
+                  )}
+                </TooltipProvider>
+              </div>
+            </div>
+          </Card>
+        );
+    }
+  };
+  
+  return <div className={className}>{renderNavigationContent()}</div>;
 };
 
 export default WorkflowNavigation;

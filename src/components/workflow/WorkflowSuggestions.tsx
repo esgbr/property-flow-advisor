@@ -1,146 +1,101 @@
 
-import React, { useRef, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { BadgeInfo, ChevronRight, ArrowRight } from 'lucide-react';
-import { useLanguage } from '@/contexts/LanguageContext';
-import { WorkflowType, useWorkflow } from '@/hooks/use-workflow';
+import React from 'react';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { useNavigate } from 'react-router-dom';
+import { useLanguage } from '@/contexts/LanguageContext';
+import { ArrowRight } from 'lucide-react';
+import { useMarketFilter } from '@/hooks/use-market-filter';
+import { workflowDefinitions } from '@/data/workflow-definitions';
+import { WorkflowType } from '@/hooks/use-workflow';
 import { cn } from '@/lib/utils';
-import { useUserPreferences } from '@/contexts/UserPreferencesContext';
-import { toast } from 'sonner';
+import { getMarketRelevantWorkflows } from '@/utils/workflowUtils';
+import { useAccessibility } from '@/hooks/use-accessibility';
 
 interface WorkflowSuggestionsProps {
-  currentTool: string;
-  workflowType: WorkflowType;
-  maxSuggestions?: number;
   className?: string;
-  variant?: 'default' | 'compact' | 'inline';
+  currentWorkflow?: WorkflowType;
+  limit?: number;
 }
 
 /**
- * WorkflowSuggestions component - Suggests the next steps or related tools
- * in a workflow to guide the user through logical processes
+ * Component that displays workflow suggestions based on the user's current market
  */
-const WorkflowSuggestions: React.FC<WorkflowSuggestionsProps> = ({
-  currentTool,
-  workflowType,
-  maxSuggestions = 3,
+export const WorkflowSuggestions: React.FC<WorkflowSuggestionsProps> = ({
   className,
-  variant = 'default'
+  currentWorkflow,
+  limit = 3
 }) => {
-  const { language, t } = useLanguage();
   const navigate = useNavigate();
-  const { getNextSteps, markStepComplete } = useWorkflow(workflowType);
-  const { preferences } = useUserPreferences();
-  const suggestionsRef = useRef<HTMLDivElement>(null);
+  const { t, language } = useLanguage();
+  const { getCurrentMarket } = useMarketFilter();
+  const { announce } = useAccessibility();
+  const currentMarket = getCurrentMarket();
+
+  // Get workflows that are relevant to the current market
+  const relevantWorkflows = getMarketRelevantWorkflows(currentMarket);
   
-  // Get next steps from the current tool
-  const suggestedNextSteps = getNextSteps(currentTool, maxSuggestions);
+  // Filter out the current workflow if provided
+  const filteredWorkflows = relevantWorkflows
+    .filter(workflow => workflow !== currentWorkflow)
+    .slice(0, limit);
   
-  // Mark this step as viewed in the user's progress
-  useEffect(() => {
-    if (preferences.trackWorkflowProgress) {
-      markStepComplete(currentTool);
-    }
-  }, [currentTool, markStepComplete, preferences.trackWorkflowProgress]);
-  
-  // Navigate to selected step
-  const handleStepClick = (step: { id: string; path: string }) => {
-    toast.success(
-      language === 'de' 
-        ? 'Navigiere zum nächsten Schritt' 
-        : 'Navigating to next step'
-    );
-    navigate(step.path);
-  };
-  
-  if (suggestedNextSteps.length === 0) {
+  // If there are no suggestions after filtering, don't render anything
+  if (filteredWorkflows.length === 0) {
     return null;
   }
-  
-  if (variant === 'inline') {
-    return (
-      <div className={cn("flex flex-wrap gap-2", className)} ref={suggestionsRef}>
-        {suggestedNextSteps.map(step => (
-          <Button
-            key={step.id}
-            variant="outline"
-            size="sm"
-            className="bg-background/80 flex items-center"
-            onClick={() => handleStepClick(step)}
-          >
-            {step.label[language as keyof typeof step.label]}
-            <ArrowRight className="h-3 w-3 ml-1" />
-          </Button>
-        ))}
-      </div>
+
+  // Handle navigation to a workflow
+  const handleNavigation = (workflow: WorkflowType) => {
+    const firstStepPath = workflowDefinitions[workflow].steps[0].path;
+    
+    const workflowName = 
+      language === 'de' 
+        ? workflowDefinitions[workflow].title.de 
+        : workflowDefinitions[workflow].title.en;
+        
+    announce(
+      language === 'de'
+        ? `Navigation zu ${workflowName}`
+        : `Navigating to ${workflowName}`,
+      'polite'
     );
-  }
+    
+    navigate(firstStepPath);
+  };
   
-  if (variant === 'compact') {
-    return (
-      <Card className={cn("bg-muted/20", className)} ref={suggestionsRef}>
-        <CardContent className="p-4">
-          <div className="flex items-center justify-between mb-2">
-            <h3 className="flex items-center text-sm font-medium text-muted-foreground">
-              <BadgeInfo className="h-3 w-3 mr-1" />
-              {language === 'de' ? 'Nächste Schritte' : 'Next Steps'}
-            </h3>
-          </div>
-          
-          <div className="flex flex-wrap gap-2">
-            {suggestedNextSteps.map(step => (
-              <Button
-                key={step.id}
-                variant="secondary"
-                size="sm"
-                onClick={() => handleStepClick(step)}
-                className="text-xs"
-              >
-                {step.label[language as keyof typeof step.label]}
-              </Button>
-            ))}
-          </div>
-        </CardContent>
-      </Card>
-    );
-  }
-  
-  // Default variant
   return (
-    <Card className={cn("bg-muted/40", className)} ref={suggestionsRef}>
+    <Card className={cn("border-dashed", className)}>
       <CardHeader className="pb-2">
-        <CardTitle className="text-base flex items-center">
-          <BadgeInfo className="h-4 w-4 mr-1" />
-          {language === 'de' ? 'Nächste empfohlene Schritte' : 'Next recommended steps'}
-        </CardTitle>
+        <CardTitle>{t('relatedWorkflows')}</CardTitle>
+        <CardDescription>{t('otherUsefulTools')}</CardDescription>
       </CardHeader>
-      <CardContent className="pt-0">
-        <div className="grid gap-2">
-          {suggestedNextSteps.map(step => (
-            <Button 
-              key={step.id}
-              variant="ghost"
-              className="justify-start h-auto py-3 px-4 bg-background/80 hover:bg-background"
-              onClick={() => handleStepClick(step)}
-            >
-              <div className="flex items-center justify-between w-full">
-                <div className="flex flex-col items-start text-left">
-                  <span className="font-medium mb-0.5">
-                    {step.label[language as keyof typeof step.label]}
-                  </span>
-                  {step.description && (
-                    <span className="text-xs text-muted-foreground">
-                      {step.description[language as keyof typeof step.description]}
-                    </span>
-                  )}
-                </div>
-                <ChevronRight className="h-4 w-4 ml-2 flex-shrink-0" />
+      <CardContent className="grid gap-4">
+        {filteredWorkflows.map(workflow => {
+          const workflowDef = workflowDefinitions[workflow];
+          
+          return (
+            <div key={workflow} className="flex justify-between items-center">
+              <div>
+                <h3 className="text-base font-medium">
+                  {workflowDef.title[language as keyof typeof workflowDef.title]}
+                </h3>
+                <p className="text-sm text-muted-foreground">
+                  {workflowDef.description[language as keyof typeof workflowDef.description]}
+                </p>
               </div>
-            </Button>
-          ))}
-        </div>
+              <Button 
+                variant="ghost" 
+                size="sm"
+                className="ml-2"
+                onClick={() => handleNavigation(workflow)}
+              >
+                {t('start')}
+                <ArrowRight className="ml-1 h-4 w-4" aria-hidden="true" />
+              </Button>
+            </div>
+          );
+        })}
       </CardContent>
     </Card>
   );

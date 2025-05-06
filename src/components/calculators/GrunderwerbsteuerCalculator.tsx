@@ -8,9 +8,11 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useMarketFilter } from '@/hooks/use-market-filter';
 import { useToast } from '@/components/ui/use-toast';
-import { Calculator, Save, Share } from 'lucide-react';
+import { Calculator, Save, Share, Download, Printer } from 'lucide-react';
 import { WorkflowType, useWorkflow } from '@/hooks/use-workflow';
 import WorkflowNavigation from '@/components/workflow/WorkflowNavigation';
+import { useAccessibility } from '@/hooks/use-accessibility';
+import { formatNumber } from '@/utils/formatters';
 
 // Grunderwerbsteuer rates by German state
 const germanyTaxRates = {
@@ -46,6 +48,7 @@ export const GrunderwerbsteuerCalculator: React.FC<GrunderwerbsteuerCalculatorPr
   const { language, t } = useLanguage();
   const { toast } = useToast();
   const { getCurrentMarket } = useMarketFilter();
+  const { announce } = useAccessibility();
   const currentMarket = getCurrentMarket();
   
   // Initialize workflow navigation if part of a workflow
@@ -56,14 +59,21 @@ export const GrunderwerbsteuerCalculator: React.FC<GrunderwerbsteuerCalculatorPr
   const [selectedState, setSelectedState] = useState<string>('bayern');
   const [taxRate, setTaxRate] = useState<number>(3.5);
   const [taxAmount, setTaxAmount] = useState<number>(7000);
+  const [errorMessage, setErrorMessage] = useState<string>('');
 
   // Calculate tax when inputs change
   useEffect(() => {
-    if (propertyValue && taxRate) {
-      const calculatedTax = (propertyValue * taxRate) / 100;
-      setTaxAmount(calculatedTax);
+    try {
+      if (propertyValue && taxRate) {
+        const calculatedTax = (propertyValue * taxRate) / 100;
+        setTaxAmount(calculatedTax);
+        setErrorMessage('');
+      }
+    } catch (error) {
+      console.error('Calculation error:', error);
+      setErrorMessage(t('calculationError'));
     }
-  }, [propertyValue, taxRate]);
+  }, [propertyValue, taxRate, t]);
 
   // Update tax rate when state changes
   useEffect(() => {
@@ -72,8 +82,28 @@ export const GrunderwerbsteuerCalculator: React.FC<GrunderwerbsteuerCalculatorPr
     }
   }, [selectedState]);
 
+  // Handle value change with validation
+  const handlePropertyValueChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = parseFloat(e.target.value);
+    if (isNaN(value)) {
+      setPropertyValue(0);
+      setErrorMessage(t('invalidNumber'));
+    } else if (value < 0) {
+      setPropertyValue(0);
+      setErrorMessage(t('valueMustBePositive'));
+    } else {
+      setPropertyValue(value);
+    }
+  };
+
   // Handle form submission
   const handleCalculate = () => {
+    if (propertyValue <= 0) {
+      setErrorMessage(t('propertyValueRequired'));
+      announce(t('propertyValueRequired'), 'assertive');
+      return;
+    }
+
     const result = {
       propertyValue,
       state: selectedState,
@@ -84,9 +114,16 @@ export const GrunderwerbsteuerCalculator: React.FC<GrunderwerbsteuerCalculatorPr
     toast({
       title: language === 'de' ? 'Berechnung abgeschlossen' : 'Calculation complete',
       description: language === 'de' 
-        ? `Grunderwerbsteuer für ${propertyValue.toLocaleString('de')} €: ${taxAmount.toLocaleString('de')} €` 
-        : `Real estate transfer tax for ${propertyValue.toLocaleString('en')} €: ${taxAmount.toLocaleString('en')} €`
+        ? `Grunderwerbsteuer für ${formatNumber(propertyValue, language)} €: ${formatNumber(taxAmount, language)} €` 
+        : `Real estate transfer tax for ${formatNumber(propertyValue, language)} €: ${formatNumber(taxAmount, language)} €`
     });
+    
+    // Announce for screen readers
+    announce(language === 'de'
+      ? `Berechnete Grunderwerbsteuer: ${formatNumber(taxAmount, language)} Euro`
+      : `Calculated transfer tax: ${formatNumber(taxAmount, language)} Euros`, 
+      'polite'
+    );
     
     if (onCalculationComplete) {
       onCalculationComplete(result);
@@ -115,6 +152,30 @@ export const GrunderwerbsteuerCalculator: React.FC<GrunderwerbsteuerCalculatorPr
         ? 'Die Berechnung wurde in Ihrem Profil gespeichert' 
         : 'The calculation has been saved to your profile'
     });
+    
+    // Announce for screen readers
+    announce(language === 'de' 
+      ? 'Die Berechnung wurde gespeichert' 
+      : 'Calculation saved',
+      'polite'
+    );
+  };
+
+  // Export as PDF
+  const handleExport = () => {
+    // This would connect to a PDF generation service in a real app
+    toast({
+      title: language === 'de' ? 'Export gestartet' : 'Export initiated',
+      description: language === 'de'
+        ? 'Ihr PDF wird erstellt und heruntergeladen'
+        : 'Your PDF is being created and downloaded'
+    });
+  };
+
+  // Print calculation
+  const handlePrint = () => {
+    window.print();
+    announce(language === 'de' ? 'Druckdialog geöffnet' : 'Print dialog opened', 'polite');
   };
 
   return (
@@ -122,7 +183,7 @@ export const GrunderwerbsteuerCalculator: React.FC<GrunderwerbsteuerCalculatorPr
       {standalone && (
         <div>
           <h1 className="text-3xl font-bold flex items-center">
-            <Calculator className="mr-2 h-7 w-7" />
+            <Calculator className="mr-2 h-7 w-7" aria-hidden="true" />
             {language === 'de' ? 'Grunderwerbsteuer-Rechner' : 'Real Estate Transfer Tax Calculator'}
           </h1>
           <p className="text-muted-foreground">
@@ -154,10 +215,15 @@ export const GrunderwerbsteuerCalculator: React.FC<GrunderwerbsteuerCalculatorPr
                 id="propertyValue"
                 type="number"
                 value={propertyValue}
-                onChange={(e) => setPropertyValue(Number(e.target.value))}
+                onChange={handlePropertyValueChange}
                 className="text-right"
                 min={0}
+                aria-invalid={!!errorMessage}
+                aria-describedby={errorMessage ? "property-value-error" : undefined}
               />
+              {errorMessage && (
+                <p className="text-sm text-destructive" id="property-value-error">{errorMessage}</p>
+              )}
             </div>
             
             <div className="space-y-2">
@@ -165,7 +231,7 @@ export const GrunderwerbsteuerCalculator: React.FC<GrunderwerbsteuerCalculatorPr
                 {language === 'de' ? 'Bundesland' : 'Federal State'}
               </Label>
               <Select value={selectedState} onValueChange={setSelectedState}>
-                <SelectTrigger className="w-full">
+                <SelectTrigger className="w-full" id="federalState">
                   <SelectValue placeholder={language === 'de' ? 'Bundesland auswählen' : 'Select federal state'} />
                 </SelectTrigger>
                 <SelectContent>
@@ -201,25 +267,29 @@ export const GrunderwerbsteuerCalculator: React.FC<GrunderwerbsteuerCalculatorPr
                   {language === 'de' ? 'Grunderwerbsteuer' : 'Transfer Tax'}
                 </p>
                 <p className="text-2xl font-bold">
-                  {taxAmount.toLocaleString(language === 'de' ? 'de' : 'en')} €
+                  {formatNumber(taxAmount, language)} €
                 </p>
               </div>
             </div>
           </div>
         </CardContent>
-        <CardFooter className="flex justify-between">
+        <CardFooter className="flex justify-between flex-wrap gap-2">
           <div className="flex space-x-2">
-            <Button variant="outline" onClick={handleSave}>
-              <Save className="h-4 w-4 mr-2" />
+            <Button variant="outline" size="sm" onClick={handleSave}>
+              <Save className="h-4 w-4 mr-2" aria-hidden="true" />
               {language === 'de' ? 'Speichern' : 'Save'}
             </Button>
-            <Button variant="outline">
-              <Share className="h-4 w-4 mr-2" />
-              {language === 'de' ? 'Teilen' : 'Share'}
+            <Button variant="outline" size="sm" onClick={handleExport}>
+              <Download className="h-4 w-4 mr-2" aria-hidden="true" />
+              {language === 'de' ? 'Exportieren' : 'Export'}
+            </Button>
+            <Button variant="outline" size="sm" onClick={handlePrint}>
+              <Printer className="h-4 w-4 mr-2" aria-hidden="true" />
+              {language === 'de' ? 'Drucken' : 'Print'}
             </Button>
           </div>
           <Button onClick={handleCalculate}>
-            <Calculator className="h-4 w-4 mr-2" />
+            <Calculator className="h-4 w-4 mr-2" aria-hidden="true" />
             {language === 'de' ? 'Berechnen' : 'Calculate'}
           </Button>
         </CardFooter>
