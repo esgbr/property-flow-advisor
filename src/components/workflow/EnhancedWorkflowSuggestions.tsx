@@ -68,7 +68,7 @@ const EnhancedWorkflowSuggestions: React.FC<EnhancedWorkflowSuggestionsProps> = 
       // Add common next step suggestions
       commonNext.forEach(nextStep => {
         const labelKey = language as keyof typeof nextStep.step.label;
-        const descriptionKey = language as keyof (typeof nextStep.step.description || {});
+        const descriptionKey = language as keyof (typeof nextStep.step.description);
         
         newSuggestions.push({
           type: 'next',
@@ -97,7 +97,7 @@ const EnhancedWorkflowSuggestions: React.FC<EnhancedWorkflowSuggestionsProps> = 
         
         if (incompleteStep) {
           const labelKey = language as keyof typeof incompleteStep.label;
-          const descriptionKey = language as keyof (typeof incompleteStep.description || {});
+          const descriptionKey = language as keyof (typeof incompleteStep.description);
           
           // Check if this suggestion is not already in the list
           if (!newSuggestions.some(s => s.workflow === workflow && s.stepId === incompleteStep.id)) {
@@ -122,7 +122,7 @@ const EnhancedWorkflowSuggestions: React.FC<EnhancedWorkflowSuggestionsProps> = 
         if (newSuggestions.length >= maxSuggestions) return;
         
         const labelKey = language as keyof typeof item.step.label;
-        const descriptionKey = language as keyof (typeof item.step.description || {});
+        const descriptionKey = language as keyof (typeof item.step.description);
         
         // Check if this suggestion is not already in the list
         if (!newSuggestions.some(s => s.workflow === item.workflow && s.stepId === item.step.id)) {
