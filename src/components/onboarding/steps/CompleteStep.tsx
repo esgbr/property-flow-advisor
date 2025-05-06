@@ -1,30 +1,37 @@
 
 import React from 'react';
+import { Button } from '@/components/ui/button';
 import { useLanguage } from '@/contexts/LanguageContext';
-import { Check } from 'lucide-react';
 import { OnboardingStepProps } from '../types';
-import { getLocalizedMarketName } from '@/utils/marketHelpers';
-import { InvestmentMarket } from '@/contexts/UserPreferencesContext';
+import { CheckCircle } from 'lucide-react';
 
-const CompleteStep: React.FC<OnboardingStepProps> = ({ data }) => {
-  const { t, language } = useLanguage();
-  
+const CompleteStep: React.FC<OnboardingStepProps> = ({ data, onNext }) => {
+  const { language } = useLanguage();
+
   return (
-    <div className="flex flex-col items-center text-center space-y-4">
-      <div className="rounded-full bg-primary/10 p-3">
-        <Check className="h-8 w-8 text-primary" aria-hidden="true" />
+    <div className="space-y-6 text-center">
+      <div className="flex justify-center">
+        <div className="h-16 w-16 rounded-full bg-green-100 dark:bg-green-900 flex items-center justify-center">
+          <CheckCircle className="h-8 w-8 text-green-600 dark:text-green-400" />
+        </div>
       </div>
-      <h3 className="text-xl font-medium">{t('profileCompleted')}</h3>
-      <p className="text-muted-foreground">
-        {t('weveCustomizedYourExperience')}
-        {data.investmentMarket && (
-          <span className="block mt-2">
-            {language === 'de' 
-              ? `Spezifische Tools für ${getLocalizedMarketName(data.investmentMarket as InvestmentMarket, 'de')} wurden für Sie vorbereitet.` 
-              : `Specific tools for ${getLocalizedMarketName(data.investmentMarket as InvestmentMarket, 'en')} have been prepared for you.`}
-          </span>
-        )}
-      </p>
+      
+      <div>
+        <h3 className="text-lg font-medium">
+          {language === 'de' 
+            ? `Wunderbar, ${data.name}!` 
+            : `Great job, ${data.name}!`}
+        </h3>
+        <p className="text-muted-foreground mt-1">
+          {language === 'de'
+            ? 'Ihr Profil wurde erstellt. Sie können jetzt loslegen!'
+            : 'Your profile has been created. You can now get started!'}
+        </p>
+      </div>
+      
+      <Button onClick={onNext} className="w-full">
+        {language === 'de' ? 'Zum Dashboard' : 'Go to Dashboard'}
+      </Button>
     </div>
   );
 };

@@ -1,259 +1,249 @@
-
-import React, { useState } from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { toast } from 'sonner';
-import { cn } from '@/lib/utils';
-import { useLanguage } from '@/contexts/LanguageContext';
-import { Shield, Lock, Eye, EyeOff, Copy, Check, RefreshCw, AlertTriangle } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
-import { checkPasswordStrength, generateSecurePassword } from '@/utils/securityUtils';
-import { useAccessibility } from '@/hooks/use-accessibility';
+import { useLanguage } from '@/contexts/LanguageContext';
+import { checkPasswordStrength, PasswordStrength } from '@/utils/securityUtils';
+import { Label } from '@/components/ui/label';
 
-interface SecurityUtilsProps {
+interface SecurityDashboardProps {
   className?: string;
 }
 
+interface PasswordStrengthState {
+  score: number;
+  feedback: string;
+  suggestions: string[];
+}
+
 /**
- * Security utilities component 
- * Provides password generation and strength testing tools
+ * Comprehensive security management component
+ * Allows users to view, manage, and enhance their account security
  */
-const SecurityUtils: React.FC<SecurityUtilsProps> = ({ className }) => {
+const SecurityDashboard: React.FC<SecurityDashboardProps> = ({ className }) => {
   const { language } = useLanguage();
-  const { announce } = useAccessibility();
-  const [password, setPassword] = useState<string>('');
-  const [showPassword, setShowPassword] = useState<boolean>(false);
-  const [copied, setCopied] = useState<boolean>(false);
-  const [passwordStrength, setPasswordStrength] = useState<{ 
-    score: number;
-    feedback: string; 
-    suggestions: string[];
-  }>({ score: 0, feedback: '', suggestions: [] });
-  const [generatingPassword, setGeneratingPassword] = useState<boolean>(false);
+  const [password, setPassword] = useState('');
+  const [passwordStrength, setPasswordStrength] = useState<PasswordStrengthState>({
+    score: 0,
+    feedback: '',
+    suggestions: [],
+  });
+  const [email, setEmail] = useState('');
+  const [isEmailVerified, setIsEmailVerified] = useState(false);
+  const [isTwoFactorEnabled, setIsTwoFactorEnabled] = useState(false);
+  const [securitySettings, setSecuritySettings] = useState({
+    security: true,
+    price: true,
+    news: true,
+    portfolio: true,
+  });
 
-  // Check password strength when password changes
+  useEffect(() => {
+    const strength = checkPasswordStrength(password);
+    setPasswordStrength({
+      score: strength.score,
+      feedback: strength.feedback,
+      suggestions: strength.suggestions,
+    });
+  }, [password]);
+
   const handlePasswordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const newPassword = e.target.value;
-    setPassword(newPassword);
-    
-    // Check strength
-    if (newPassword) {
-      const strength = checkPasswordStrength(newPassword);
-      setPasswordStrength(strength);
-    } else {
-      setPasswordStrength({ score: 0, feedback: '', suggestions: [] });
-    }
+    setPassword(e.target.value);
   };
 
-  // Generate a secure password
-  const handleGeneratePassword = () => {
-    setGeneratingPassword(true);
-    
-    // Simulate a slight delay for better UX
-    setTimeout(() => {
-      const newPassword = generateSecurePassword(16);
-      setPassword(newPassword);
-      
-      const strength = checkPasswordStrength(newPassword);
-      setPasswordStrength(strength);
-      
-      setGeneratingPassword(false);
-      
-      announce(
-        language === 'de'
-          ? 'Sicheres Passwort wurde generiert'
-          : 'Secure password has been generated',
-        'polite'
-      );
-    }, 500);
+  const handleEmailChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setEmail(e.target.value);
   };
 
-  // Copy password to clipboard
-  const handleCopyPassword = () => {
-    if (password) {
-      navigator.clipboard.writeText(password);
-      setCopied(true);
-      
-      setTimeout(() => {
-        setCopied(false);
-      }, 2000);
-      
-      toast.success(
-        language === 'de'
-          ? 'Passwort in die Zwischenablage kopiert'
-          : 'Password copied to clipboard'
-      );
-      
-      announce(
-        language === 'de'
-          ? 'Passwort wurde in die Zwischenablage kopiert'
-          : 'Password has been copied to clipboard',
-        'polite'
-      );
-    }
+  const handleVerifyEmail = () => {
+    // Simulate email verification process
+    setIsEmailVerified(true);
   };
 
-  // Toggle password visibility
-  const togglePasswordVisibility = () => {
-    setShowPassword(!showPassword);
-    
-    announce(
-      language === 'de'
-        ? showPassword ? 'Passwort ausgeblendet' : 'Passwort angezeigt'
-        : showPassword ? 'Password hidden' : 'Password shown',
-      'polite'
-    );
+  const handleEnableTwoFactor = () => {
+    // Simulate enabling two-factor authentication
+    setIsTwoFactorEnabled(true);
   };
 
-  // Get color for password strength indicator
-  const getStrengthColor = () => {
-    if (passwordStrength.score < 30) return 'bg-red-500';
-    if (passwordStrength.score < 60) return 'bg-yellow-500';
-    return 'bg-green-500';
+  const handleSecuritySettingsChange = (setting: string, value: boolean) => {
+    setSecuritySettings(prevSettings => ({
+      ...prevSettings,
+      [setting]: value,
+    }));
   };
 
   return (
-    <Card className={cn("", className)}>
-      <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          <Shield className="h-5 w-5 text-primary" />
-          {language === 'de' ? 'Sicherheits-Tools' : 'Security Tools'}
-        </CardTitle>
-        <CardDescription>
-          {language === 'de'
-            ? 'Tools zur Verbesserung Ihrer Sicherheit'
-            : 'Tools to enhance your security'
-          }
-        </CardDescription>
-      </CardHeader>
-      <CardContent className="space-y-4">
-        <div className="space-y-2">
-          <div className="flex items-center justify-between">
-            <div className="text-sm font-medium">
-              {language === 'de' ? 'Passwortgenerator' : 'Password Generator'}
-            </div>
-            <Button 
-              variant="outline" 
-              size="sm"
-              onClick={handleGeneratePassword}
-              disabled={generatingPassword}
-              className="h-8 gap-1"
-            >
-              {generatingPassword ? (
-                <RefreshCw className="h-3.5 w-3.5 animate-spin" />
-              ) : (
-                <RefreshCw className="h-3.5 w-3.5" />
-              )}
-              {language === 'de' ? 'Generieren' : 'Generate'}
+    <div className={className}>
+      <Card>
+        <CardHeader>
+          <CardTitle>
+            {language === 'de' ? 'Passwort ändern' : 'Change Password'}
+          </CardTitle>
+          <CardDescription>
+            {language === 'de'
+              ? 'Aktualisieren Sie Ihr Passwort, um die Sicherheit zu erhöhen'
+              : 'Update your password to enhance security'}
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="grid gap-4">
+          <div className="grid gap-2">
+            <Label htmlFor="password">
+              {language === 'de' ? 'Neues Passwort' : 'New Password'}
+            </Label>
+            <Input
+              type="password"
+              id="password"
+              value={password}
+              onChange={handlePasswordChange}
+            />
+            <Progress value={passwordStrength.score * 20} max={100} className="h-2" />
+            <p className="text-sm text-muted-foreground">
+              {passwordStrength.feedback}
+            </p>
+            {passwordStrength.suggestions.length > 0 && (
+              <ul className="list-disc list-inside text-sm text-muted-foreground">
+                {passwordStrength.suggestions.map((suggestion, index) => (
+                  <li key={index}>{suggestion}</li>
+                ))}
+              </ul>
+            )}
+          </div>
+          <Button>
+            {language === 'de' ? 'Passwort aktualisieren' : 'Update Password'}
+          </Button>
+        </CardContent>
+      </Card>
+
+      <Card className="mt-6">
+        <CardHeader>
+          <CardTitle>
+            {language === 'de' ? 'E-Mail-Adresse verwalten' : 'Manage Email Address'}
+          </CardTitle>
+          <CardDescription>
+            {language === 'de'
+              ? 'Überprüfen und aktualisieren Sie Ihre E-Mail-Adresse'
+              : 'Verify and update your email address'}
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="grid gap-4">
+          <div className="grid gap-2">
+            <Label htmlFor="email">
+              {language === 'de' ? 'E-Mail-Adresse' : 'Email Address'}
+            </Label>
+            <Input
+              type="email"
+              id="email"
+              value={email}
+              onChange={handleEmailChange}
+            />
+            {!isEmailVerified && (
+              <Button variant="secondary" onClick={handleVerifyEmail}>
+                {language === 'de' ? 'E-Mail verifizieren' : 'Verify Email'}
+              </Button>
+            )}
+            {isEmailVerified && (
+              <p className="text-sm text-green-500">
+                {language === 'de' ? 'E-Mail verifiziert' : 'Email Verified'}
+              </p>
+            )}
+          </div>
+          <Button>
+            {language === 'de' ? 'E-Mail aktualisieren' : 'Update Email'}
+          </Button>
+        </CardContent>
+      </Card>
+
+      <Card className="mt-6">
+        <CardHeader>
+          <CardTitle>
+            {language === 'de' ? 'Zwei-Faktor-Authentifizierung' : 'Two-Factor Authentication'}
+          </CardTitle>
+          <CardDescription>
+            {language === 'de'
+              ? 'Fügen Sie eine zusätzliche Sicherheitsebene hinzu'
+              : 'Add an extra layer of security'}
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="grid gap-4">
+          <p>
+            {language === 'de'
+              ? 'Aktivieren Sie die Zwei-Faktor-Authentifizierung für zusätzlichen Schutz.'
+              : 'Enable two-factor authentication for added protection.'}
+          </p>
+          {!isTwoFactorEnabled && (
+            <Button variant="secondary" onClick={handleEnableTwoFactor}>
+              {language === 'de' ? 'Aktivieren' : 'Enable'}
             </Button>
-          </div>
-          
-          <div className="flex mt-2">
-            <div className="relative flex-grow">
-              <Input
-                type={showPassword ? 'text' : 'password'}
-                placeholder={
-                  language === 'de'
-                    ? 'Passwort eingeben oder generieren'
-                    : 'Enter or generate password'
-                }
-                value={password}
-                onChange={handlePasswordChange}
-                className="pr-20"
-              />
-              <button
-                type="button"
-                onClick={togglePasswordVisibility}
-                className="absolute inset-y-0 right-10 flex items-center px-2 text-muted-foreground hover:text-foreground"
-              >
-                {showPassword ? (
-                  <EyeOff className="h-4 w-4" />
-                ) : (
-                  <Eye className="h-4 w-4" />
-                )}
-                <span className="sr-only">
-                  {showPassword
-                    ? (language === 'de' ? 'Passwort ausblenden' : 'Hide password')
-                    : (language === 'de' ? 'Passwort anzeigen' : 'Show password')
-                  }
-                </span>
-              </button>
-              <button
-                type="button"
-                onClick={handleCopyPassword}
-                disabled={!password}
-                className={cn(
-                  "absolute inset-y-0 right-0 flex items-center px-2",
-                  "text-muted-foreground hover:text-foreground",
-                  !password && "opacity-50 cursor-not-allowed"
-                )}
-              >
-                {copied ? (
-                  <Check className="h-4 w-4 text-green-500" />
-                ) : (
-                  <Copy className="h-4 w-4" />
-                )}
-                <span className="sr-only">
-                  {language === 'de' ? 'Passwort kopieren' : 'Copy password'}
-                </span>
-              </button>
-            </div>
-          </div>
-          
-          {password && (
-            <div className="mt-3 space-y-2">
-              <div className="flex items-center justify-between">
-                <div className="text-xs text-muted-foreground">
-                  {language === 'de' ? 'Passwortstärke' : 'Password strength'}
-                </div>
-                <div className="text-xs font-medium">
-                  {passwordStrength.feedback}
-                </div>
-              </div>
-              <Progress
-                value={passwordStrength.score}
-                max={100}
-                className="h-1.5"
-                indicatorClassName={getStrengthColor()}
-              />
-              
-              {passwordStrength.suggestions.length > 0 && (
-                <div className="mt-2 text-sm bg-muted/50 p-2 rounded-md">
-                  <div className="flex items-start gap-2 text-muted-foreground">
-                    <AlertTriangle className="h-4 w-4 mt-0.5 flex-shrink-0" />
-                    <div>
-                      <span className="font-medium text-xs">
-                        {language === 'de' ? 'Vorschläge zur Verbesserung:' : 'Improvement suggestions:'}
-                      </span>
-                      <ul className="text-xs list-disc pl-4 mt-1 space-y-0.5">
-                        {passwordStrength.suggestions.map((suggestion, index) => (
-                          <li key={index}>{suggestion}</li>
-                        ))}
-                      </ul>
-                    </div>
-                  </div>
-                </div>
-              )}
-            </div>
           )}
-        </div>
-        
-        <div className="pt-4 border-t">
-          <h3 className="flex items-center gap-1.5 text-sm font-medium mb-2">
-            <Lock className="h-4 w-4 text-primary" />
-            {language === 'de' ? 'Sicherheits-Tipps' : 'Security Tips'}
-          </h3>
-          <ul className="text-xs space-y-1 text-muted-foreground">
-            <li>• {language === 'de' ? 'Verwenden Sie für jeden Dienst ein einzigartiges Passwort' : 'Use a unique password for each service'}</li>
-            <li>• {language === 'de' ? 'Aktivieren Sie 2FA, wo immer möglich' : 'Enable 2FA wherever possible'}</li>
-            <li>• {language === 'de' ? 'Vermeiden Sie es, persönliche Informationen in Passwörtern zu verwenden' : 'Avoid using personal information in passwords'}</li>
-            <li>• {language === 'de' ? 'Aktualisieren Sie regelmäßig Ihre Passwörter' : 'Update your passwords regularly'}</li>
-          </ul>
-        </div>
-      </CardContent>
-    </Card>
+          {isTwoFactorEnabled && (
+            <p className="text-sm text-green-500">
+              {language === 'de' ? 'Zwei-Faktor-Authentifizierung aktiviert' : 'Two-Factor Authentication Enabled'}
+            </p>
+          )}
+        </CardContent>
+      </Card>
+
+      <Card className="mt-6">
+        <CardHeader>
+          <CardTitle>
+            {language === 'de' ? 'Benachrichtigungseinstellungen' : 'Notification Settings'}
+          </CardTitle>
+          <CardDescription>
+            {language === 'de'
+              ? 'Passen Sie Ihre Benachrichtigungseinstellungen an'
+              : 'Customize your notification preferences'}
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="grid gap-4">
+          <div className="flex items-center justify-between">
+            <Label htmlFor="security">
+              {language === 'de' ? 'Sicherheitsbenachrichtigungen' : 'Security Notifications'}
+            </Label>
+            <input
+              type="checkbox"
+              id="security"
+              checked={securitySettings.security || false}
+              onChange={(e) => handleSecuritySettingsChange('security', e.target.checked)}
+            />
+          </div>
+          <div className="flex items-center justify-between">
+            <Label htmlFor="price">
+              {language === 'de' ? 'Preisbenachrichtigungen' : 'Price Notifications'}
+            </Label>
+            <input
+              type="checkbox"
+              id="price"
+              checked={securitySettings.price || false}
+              onChange={(e) => handleSecuritySettingsChange('price', e.target.checked)}
+            />
+          </div>
+          <div className="flex items-center justify-between">
+            <Label htmlFor="news">
+              {language === 'de' ? 'Nachrichtenbenachrichtigungen' : 'News Notifications'}
+            </Label>
+            <input
+              type="checkbox"
+              id="news"
+              checked={securitySettings.news || false}
+              onChange={(e) => handleSecuritySettingsChange('news', e.target.checked)}
+            />
+          </div>
+          <div className="flex items-center justify-between">
+            <Label htmlFor="portfolio">
+              {language === 'de' ? 'Portfoliobenachrichtigungen' : 'Portfolio Notifications'}
+            </Label>
+            <input
+              type="checkbox"
+              id="portfolio"
+              checked={securitySettings.portfolio || false}
+              onChange={(e) => handleSecuritySettingsChange('portfolio', e.target.checked)}
+            />
+          </div>
+        </CardContent>
+      </Card>
+    </div>
   );
 };
 
-export default SecurityUtils;
+export default SecurityDashboard;

@@ -2,129 +2,122 @@
 import React from 'react';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { ArrowRight, CheckCircle2 } from 'lucide-react';
-import { useLanguage } from '@/contexts/LanguageContext';
-import { useNavigate } from 'react-router-dom';
-import { useWorkflow, WorkflowType } from '@/hooks/use-workflow';
 import { Progress } from '@/components/ui/progress';
+import { useLanguage } from '@/contexts/LanguageContext';
+import { WorkflowType, useWorkflow } from '@/hooks/use-workflow';
+import { ArrowRight, CheckCheck } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 
 interface WorkflowProgressCardProps {
   workflowType: WorkflowType;
-  currentStep: string;
   className?: string;
-  showProgress?: boolean;
-  showNextStep?: boolean;
-  onNext?: (nextStep: string) => void;
+  onNavigate?: (step: string) => void;
 }
 
 /**
- * Ein wiederverwendbares Workflow-Fortschritts-Card zur Verbesserung der Benutzerführung
- * zwischen verschiedenen Funktionen und zur Anzeige des aktuellen Status
+ * Card showing progress for a specific workflow
  */
 const WorkflowProgressCard: React.FC<WorkflowProgressCardProps> = ({
   workflowType,
-  currentStep,
-  className = '',
-  showProgress = true,
-  showNextStep = true,
-  onNext
+  className,
+  onNavigate
 }) => {
   const { language } = useLanguage();
   const navigate = useNavigate();
   const workflow = useWorkflow(workflowType);
   
-  // Berechne den aktuellen Fortschritt
-  const progress = workflow.getWorkflowProgress(currentStep);
+  // Get all steps and their status
+  const steps = workflow.getStepsWithStatus();
   
-  // Hole den nächsten Schritt
-  const nextSteps = workflow.getNextSteps(currentStep, 1);
-  const nextStep = nextSteps.length > 0 ? nextSteps[0] : null;
+  // Calculate progress percentage
+  const completedSteps = steps.filter(step => step.isComplete);
+  const progress = workflow.getWorkflowProgress();
   
-  // Hole den aktuellen Schritt
-  const currentStepObj = workflow.getCurrentStep(currentStep);
+  // Get the current active step
+  const currentStep = steps.find(step => step.isActive) || steps[0];
   
-  // Wenn wir keinen nächsten Schritt haben und nicht explizit anzeigen sollen, zeigen wir nichts an
-  if (!nextStep && !showNextStep) return null;
+  // Find the next uncompleted step, if any
+  const nextIncompleteStep = steps.find(step => !step.isComplete);
   
-  const handleNext = () => {
-    if (nextStep) {
-      workflow.markStepComplete(currentStep);
-      workflow.goToStep(nextStep.id);
-      
-      if (onNext) {
-        onNext(nextStep.id);
+  // Handle navigation to the next step
+  const handleNavigate = () => {
+    if (nextIncompleteStep) {
+      if (onNavigate) {
+        onNavigate(nextIncompleteStep.id);
+      } else {
+        // Default navigation behavior
+        navigate(`/${workflowType}/${nextIncompleteStep.id}`);
       }
     }
   };
   
+  // Get workflow title based on type
+  const getWorkflowTitle = () => {
+    switch (workflowType) {
+      case 'steuer':
+        return language === 'de' ? 'Steueroptimierung' : 'Tax Optimization';
+      case 'immobilien':
+        return language === 'de' ? 'Immobilienverwaltung' : 'Property Management';
+      case 'finanzierung':
+        return language === 'de' ? 'Finanzierung' : 'Financing';
+      case 'analyse':
+        return language === 'de' ? 'Analyse' : 'Analysis';
+      default:
+        return workflowType;
+    }
+  };
+  
+  // Format the step label based on language
+  const getStepLabel = (step: any) => {
+    return language === 'de' ? (step.label.de || step.label.en) : step.label.en;
+  };
+  
+  const isComplete = completedSteps.length === steps.length;
+  
   return (
-    <Card className={`hover:shadow-md transition-all border-primary/20 ${className}`}>
+    <Card className={className}>
       <CardHeader className="pb-2">
-        <CardTitle className="flex items-center justify-between">
-          <div className="flex items-center">
-            {currentStepObj?.icon}
-            <span className="ml-2">
-              {language === 'de' 
-                ? `${workflow.getStepLabel(currentStep)} - ${progress.toFixed(0)}% abgeschlossen` 
-                : `${workflow.getStepLabel(currentStep)} - ${progress.toFixed(0)}% completed`}
-            </span>
-          </div>
-          {currentStepObj?.isComplete && (
-            <CheckCircle2 className="h-5 w-5 text-green-500" />
-          )}
-        </CardTitle>
+        <CardTitle>{getWorkflowTitle()}</CardTitle>
         <CardDescription>
-          {currentStepObj?.description 
-            ? currentStepObj.description[language as keyof typeof currentStepObj.description]
-            : (language === 'de' ? 'Aktueller Schritt im Workflow' : 'Current step in workflow')}
+          {language === 'de' ? 'Fortschritt' : 'Progress'}: {completedSteps.length}/{steps.length} {language === 'de' ? 'Schritte' : 'steps'}
         </CardDescription>
-        
-        {showProgress && (
-          <Progress value={progress} className="h-2 mt-3" />
-        )}
       </CardHeader>
-      
-      {nextStep && showNextStep && (
-        <CardContent className="pt-2">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="font-medium">
-                {language === 'de' ? 'Nächster Schritt:' : 'Next step:'}
-              </p>
-              <p className="text-sm text-muted-foreground">
-                {nextStep.label[language as keyof typeof nextStep.label]}
-              </p>
+      <CardContent>
+        <div className="space-y-4">
+          <Progress value={progress} className="h-2" />
+          
+          {!isComplete ? (
+            <div className="text-sm">
+              <div className="text-muted-foreground mb-1">
+                {language === 'de' ? 'Nächster Schritt' : 'Next step'}:
+              </div>
+              <div className="font-medium">
+                {nextIncompleteStep ? getStepLabel(nextIncompleteStep) : getStepLabel(currentStep)}
+              </div>
             </div>
-            <Button 
-              size="sm" 
-              className="group"
-              onClick={handleNext}
-            >
-              {language === 'de' ? 'Fortfahren' : 'Continue'}
-              <ArrowRight className="ml-2 h-4 w-4 group-hover:translate-x-1 transition-transform" />
-            </Button>
-          </div>
-        </CardContent>
-      )}
-      
-      {!nextStep && showNextStep && (
-        <CardFooter className="pt-0">
-          <div className="w-full">
-            <p className="text-center text-sm text-muted-foreground">
-              {language === 'de' 
-                ? 'Workflow abgeschlossen' 
-                : 'Workflow completed'}
-            </p>
-            <Button 
-              variant="outline" 
-              className="mt-2 w-full"
-              onClick={() => workflow.resetWorkflow()}
-            >
-              {language === 'de' ? 'Workflow neu starten' : 'Restart workflow'}
-            </Button>
-          </div>
-        </CardFooter>
-      )}
+          ) : (
+            <div className="flex items-center text-green-600 text-sm">
+              <CheckCheck className="h-4 w-4 mr-1" />
+              <span>
+                {language === 'de' ? 'Alle Schritte abgeschlossen' : 'All steps completed'}
+              </span>
+            </div>
+          )}
+        </div>
+      </CardContent>
+      <CardFooter>
+        <Button 
+          variant="outline" 
+          className="w-full" 
+          onClick={handleNavigate}
+          disabled={isComplete}
+        >
+          {isComplete
+            ? (language === 'de' ? 'Abgeschlossen' : 'Completed')
+            : (language === 'de' ? 'Fortfahren' : 'Continue')}
+          {!isComplete && <ArrowRight className="ml-2 h-4 w-4" />}
+        </Button>
+      </CardFooter>
     </Card>
   );
 };

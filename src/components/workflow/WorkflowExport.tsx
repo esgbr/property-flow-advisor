@@ -6,7 +6,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { WorkflowType, useWorkflow } from '@/hooks/use-workflow';
 import { FileText, Download, Upload } from 'lucide-react';
-import { useToast } from '@/components/ui/toast';
+import { useToast } from '@/hooks/use-toast';
 import { Label } from '@/components/ui/label';
 
 interface WorkflowExportProps {

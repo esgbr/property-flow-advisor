@@ -1,141 +1,102 @@
 
 import React from 'react';
 import { Button } from '@/components/ui/button';
-import { Card } from '@/components/ui/card';
-import { useWorkflow, WorkflowType } from '@/hooks/use-workflow';
 import { useLanguage } from '@/contexts/LanguageContext';
-import { CheckCircle, ArrowRight, Clock } from 'lucide-react';
+import { WorkflowType, useWorkflow } from '@/hooks/use-workflow';
+import { Check, ChevronRight } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { Badge } from '@/components/ui/badge';
 import { useNavigate } from 'react-router-dom';
 
 interface WorkflowStepsListProps {
   workflowType: WorkflowType;
+  onStepSelect?: (stepId: string) => void;
   className?: string;
 }
 
 /**
- * Displays the steps of a workflow with their completion status
+ * Lists all steps in a workflow with their completion status
  */
 const WorkflowStepsList: React.FC<WorkflowStepsListProps> = ({
   workflowType,
+  onStepSelect,
   className
 }) => {
-  const navigate = useNavigate();
   const { language } = useLanguage();
+  const navigate = useNavigate();
   const workflow = useWorkflow(workflowType);
   
+  // Get steps with their completion status
   const steps = workflow.getStepsWithStatus();
-  const progress = workflow.getWorkflowProgress();
-
-  // Navigate to a step
-  const handleStepClick = (stepPath: string) => {
-    navigate(stepPath);
+  
+  // Get workflow title based on type
+  const getWorkflowTitle = () => {
+    switch (workflowType) {
+      case 'steuer':
+        return language === 'de' ? 'Steueroptimierung' : 'Tax Optimization';
+      case 'immobilien':
+        return language === 'de' ? 'Immobilienverwaltung' : 'Property Management';
+      case 'finanzierung':
+        return language === 'de' ? 'Finanzierung' : 'Financing';
+      case 'analyse':
+        return language === 'de' ? 'Analyse' : 'Analysis';
+      default:
+        return workflowType;
+    }
   };
-
+  
+  // Format the step label based on language
+  const getStepLabel = (step: any) => {
+    return language === 'de' ? (step.label.de || step.label.en) : step.label.en;
+  };
+  
+  const handleStepSelect = (stepId: string) => {
+    if (onStepSelect) {
+      onStepSelect(stepId);
+    } else {
+      workflow.goToStep(stepId);
+      navigate(`/${workflowType}/${stepId}`);
+    }
+  };
+  
   return (
-    <div className={cn("space-y-4", className)}>
-      <div className="flex items-center justify-between">
-        <div>
-          <h2 className="text-xl font-semibold">
-            {language === 'de' ? 
-              workflow.workflow.title.de :
-              workflow.workflow.title.en
-            }
-          </h2>
-          <p className="text-sm text-muted-foreground">
-            {language === 'de' ? 
-              workflow.workflow.description.de :
-              workflow.workflow.description.en
-            }
-          </p>
-        </div>
-        <div className="text-right">
-          <span className="text-sm font-medium">{progress}%</span>
-        </div>
-      </div>
+    <div className={cn("space-y-1", className)}>
+      <h3 className="font-medium mb-2">{getWorkflowTitle()}</h3>
       
-      <div className="relative">
-        {/* Steps connector line */}
-        <div className="absolute left-3.5 top-5 h-full w-px bg-border" aria-hidden="true" />
-        
-        <div className="space-y-3">
-          {steps.map((step, index) => {
-            const isActive = false; // Could be controlled by parent
-            const stepName = language === 'de' ? step.label.de : step.label.en;
-            const stepDescription = step.description 
-              ? (language === 'de' ? step.description.de : step.description.en)
-              : undefined;
-            
-            return (
-              <Card
-                key={step.id}
-                className={cn(
-                  "p-3 flex items-start gap-3 relative",
-                  isActive && "border-primary bg-primary/5",
-                  step.isComplete && "border-green-500/30 bg-green-500/5"
-                )}
-              >
-                <div className={cn(
-                  "h-7 w-7 rounded-full flex items-center justify-center border text-xs font-medium",
-                  isActive && "bg-primary text-primary-foreground border-primary",
-                  step.isComplete && "bg-green-500 text-white border-green-500",
-                  !isActive && !step.isComplete && "bg-background border-muted-foreground/20"
-                )}>
+      <div className="rounded-md border">
+        {steps.map((step, index) => {
+          const isBlocked = step.dependencies?.some(
+            depId => !steps.find(s => s.id === depId)?.isComplete
+          );
+          
+          return (
+            <Button
+              key={step.id}
+              variant="ghost"
+              className={cn(
+                "w-full justify-start rounded-none border-b text-sm relative h-auto py-3 px-4",
+                index === steps.length - 1 && "border-b-0",
+                step.isActive && "bg-muted",
+                isBlocked && "opacity-60 cursor-not-allowed"
+              )}
+              onClick={() => !isBlocked && handleStepSelect(step.id)}
+              disabled={isBlocked}
+            >
+              <div className="flex items-center w-full">
+                <div className="mr-3 flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full border">
                   {step.isComplete ? (
-                    <CheckCircle className="h-4 w-4" />
+                    <Check className="h-3 w-3" />
                   ) : (
-                    index + 1
+                    <span className="text-xs">{index + 1}</span>
                   )}
                 </div>
-                
-                <div className="flex-1">
-                  <div className="flex items-center justify-between">
-                    <h4 className={cn(
-                      "font-medium",
-                      isActive && "text-primary",
-                      step.isComplete && "text-green-700 dark:text-green-400"
-                    )}>
-                      {stepName}
-                    </h4>
-                    
-                    {step.estimatedTime && (
-                      <Badge variant="outline" className="text-xs">
-                        {step.estimatedTime} {language === 'de' ? 'Min.' : 'min'}
-                      </Badge>
-                    )}
-                  </div>
-                  
-                  {stepDescription && (
-                    <p className="text-sm text-muted-foreground mt-1">{stepDescription}</p>
-                  )}
-                  
-                  <div className="mt-2 flex justify-end">
-                    <Button
-                      variant={isActive ? "default" : (step.isComplete ? "outline" : "ghost")}
-                      size="sm"
-                      className={cn(
-                        step.isComplete && !isActive && "text-green-700 dark:text-green-400"
-                      )}
-                      onClick={() => handleStepClick(step.path)}
-                    >
-                      {isActive ? (
-                        language === 'de' ? 'Aktueller Schritt' : 'Current Step'
-                      ) : step.isComplete ? (
-                        language === 'de' ? 'Ansehen' : 'View'
-                      ) : (
-                        <>
-                          {language === 'de' ? 'Gehe zu' : 'Go to'}
-                          <ArrowRight className="ml-1 h-4 w-4" />
-                        </>
-                      )}
-                    </Button>
-                  </div>
+                <div className="flex-grow text-left">
+                  {getStepLabel(step)}
                 </div>
-              </Card>
-            );
-          })}
-        </div>
+                <ChevronRight className="h-4 w-4 flex-shrink-0 text-muted-foreground" />
+              </div>
+            </Button>
+          );
+        })}
       </div>
     </div>
   );

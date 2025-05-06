@@ -2,7 +2,7 @@
 import React from 'react';
 import { Building, Calculator, FileText, Map, Database, Euro, PiggyBank, CheckCircle } from 'lucide-react';
 
-export type WorkflowType = 'steuer' | 'investment' | 'finanzierung' | 'immobilien';
+export type WorkflowType = 'steuer' | 'immobilien' | 'finanzierung' | 'analyse';
 
 // Enhanced workflow step with progress tracking and time estimates
 export interface WorkflowStep {
@@ -12,7 +12,7 @@ export interface WorkflowStep {
   description?: { de: string; en: string };
   icon?: React.ReactNode;
   isComplete?: boolean;
-  requiredSteps?: string[];
+  dependencies?: string[];
   progress?: number;
   estimatedTime?: number; // in minutes
 }
@@ -54,7 +54,7 @@ export const workflowDefinitions: Record<WorkflowType, WorkflowDefinition> = {
           en: 'Calculate tax depreciation for properties' 
         },
         icon: React.createElement(Calculator, { className: "h-5 w-5 text-primary" }),
-        requiredSteps: ['grunderwerbsteuer'],
+        dependencies: ['grunderwerbsteuer'],
         estimatedTime: 10
       },
       {
@@ -66,7 +66,7 @@ export const workflowDefinitions: Record<WorkflowType, WorkflowDefinition> = {
           en: 'Calculate potential speculation tax when selling property'
         },
         icon: React.createElement(Euro, { className: "h-5 w-5 text-primary" }),
-        requiredSteps: ['afa'],
+        dependencies: ['afa'],
         estimatedTime: 8
       },
       {
@@ -78,110 +78,8 @@ export const workflowDefinitions: Record<WorkflowType, WorkflowDefinition> = {
           en: 'Overview of all tax implications'
         },
         icon: React.createElement(FileText, { className: "h-5 w-5 text-primary" }),
-        requiredSteps: ['spekulationssteuer'],
+        dependencies: ['spekulationssteuer'],
         estimatedTime: 3
-      }
-    ]
-  },
-  investment: {
-    id: 'investment',
-    title: { en: 'Investment Analysis', de: 'Investitionsanalyse' },
-    description: {
-      en: 'Analyze and optimize your real estate investments',
-      de: 'Analysieren und optimieren Sie Ihre Immobilieninvestitionen'
-    },
-    steps: [
-      {
-        id: 'rendite',
-        path: '/renditerechner',
-        label: { de: 'Renditerechner', en: 'Yield Calculator' },
-        description: {
-          de: 'Berechnen Sie die potenzielle Rendite Ihrer Investition',
-          en: 'Calculate the potential yield of your investment'
-        },
-        icon: React.createElement(Calculator, { className: "h-5 w-5 text-primary" }),
-        estimatedTime: 8
-      },
-      {
-        id: 'marktanalyse',
-        path: '/market-explorer',
-        label: { de: 'Marktanalyse', en: 'Market Analysis' },
-        description: { 
-          de: 'Analyse des Immobilienmarkts', 
-          en: 'Analyze the real estate market' 
-        },
-        icon: React.createElement(Map, { className: "h-5 w-5 text-primary" }),
-        requiredSteps: ['rendite'],
-        estimatedTime: 10
-      },
-      {
-        id: 'portfolio',
-        path: '/portfolio-optimization',
-        label: { de: 'Portfolio-Optimierung', en: 'Portfolio Optimization' },
-        description: {
-          de: 'Optimieren Sie Ihr Immobilienportfolio',
-          en: 'Optimize your real estate portfolio'
-        },
-        icon: React.createElement(Building, { className: "h-5 w-5 text-primary" }),
-        requiredSteps: ['marktanalyse'],
-        estimatedTime: 12
-      },
-      {
-        id: 'investment-report',
-        path: '/investment-report',
-        label: { de: 'Investitionsbericht', en: 'Investment Report' },
-        description: {
-          de: 'Erstellen Sie einen umfassenden Investitionsbericht',
-          en: 'Generate a comprehensive investment report'
-        },
-        icon: React.createElement(FileText, { className: "h-5 w-5 text-primary" }),
-        requiredSteps: ['portfolio'],
-        estimatedTime: 5
-      }
-    ]
-  },
-  finanzierung: {
-    id: 'finanzierung',
-    title: { en: 'Financing', de: 'Finanzierung' },
-    description: {
-      en: 'Plan and optimize your property financing',
-      de: 'Planen und optimieren Sie Ihre Immobilienfinanzierung'
-    },
-    steps: [
-      {
-        id: 'calculator',
-        path: '/darlehensrechner',
-        label: { de: 'Finanzierungsrechner', en: 'Financing Calculator' },
-        description: { 
-          de: 'Berechnung der Finanzierungsoptionen', 
-          en: 'Calculate financing options' 
-        },
-        icon: React.createElement(Calculator, { className: "h-5 w-5 text-primary" }),
-        estimatedTime: 10
-      },
-      {
-        id: 'offers',
-        path: '/financing/compare-offers',
-        label: { de: 'Angebote vergleichen', en: 'Compare Offers' },
-        description: { 
-          de: 'Vergleichen Sie verschiedene Finanzierungsangebote', 
-          en: 'Compare different financing offers' 
-        },
-        icon: React.createElement(Database, { className: "h-5 w-5 text-primary" }),
-        requiredSteps: ['calculator'],
-        estimatedTime: 15
-      },
-      {
-        id: 'tilgung',
-        path: '/tilgungsplan',
-        label: { de: 'Tilgungsplan', en: 'Repayment Plan' },
-        description: {
-          de: 'Erstellen Sie einen detaillierten Tilgungsplan',
-          en: 'Create a detailed repayment plan'
-        },
-        icon: React.createElement(PiggyBank, { className: "h-5 w-5 text-primary" }),
-        requiredSteps: ['offers'],
-        estimatedTime: 12
       }
     ]
   },
@@ -213,7 +111,7 @@ export const workflowDefinitions: Record<WorkflowType, WorkflowDefinition> = {
           en: 'Manage your rental properties and tenants'
         },
         icon: React.createElement(Database, { className: "h-5 w-5 text-primary" }),
-        requiredSteps: ['objekterfassung'],
+        dependencies: ['objekterfassung'],
         estimatedTime: 12
       },
       {
@@ -225,8 +123,110 @@ export const workflowDefinitions: Record<WorkflowType, WorkflowDefinition> = {
           en: 'Calculate and manage additional costs'
         },
         icon: React.createElement(Calculator, { className: "h-5 w-5 text-primary" }),
-        requiredSteps: ['mietverwaltung'],
+        dependencies: ['mietverwaltung'],
         estimatedTime: 10
+      }
+    ]
+  },
+  finanzierung: {
+    id: 'finanzierung',
+    title: { en: 'Financing', de: 'Finanzierung' },
+    description: {
+      en: 'Plan and optimize your property financing',
+      de: 'Planen und optimieren Sie Ihre Immobilienfinanzierung'
+    },
+    steps: [
+      {
+        id: 'calculator',
+        path: '/darlehensrechner',
+        label: { de: 'Finanzierungsrechner', en: 'Financing Calculator' },
+        description: { 
+          de: 'Berechnung der Finanzierungsoptionen', 
+          en: 'Calculate financing options' 
+        },
+        icon: React.createElement(Calculator, { className: "h-5 w-5 text-primary" }),
+        estimatedTime: 10
+      },
+      {
+        id: 'offers',
+        path: '/financing/compare-offers',
+        label: { de: 'Angebote vergleichen', en: 'Compare Offers' },
+        description: { 
+          de: 'Vergleichen Sie verschiedene Finanzierungsangebote', 
+          en: 'Compare different financing offers' 
+        },
+        icon: React.createElement(Database, { className: "h-5 w-5 text-primary" }),
+        dependencies: ['calculator'],
+        estimatedTime: 15
+      },
+      {
+        id: 'tilgung',
+        path: '/tilgungsplan',
+        label: { de: 'Tilgungsplan', en: 'Repayment Plan' },
+        description: {
+          de: 'Erstellen Sie einen detaillierten Tilgungsplan',
+          en: 'Create a detailed repayment plan'
+        },
+        icon: React.createElement(PiggyBank, { className: "h-5 w-5 text-primary" }),
+        dependencies: ['offers'],
+        estimatedTime: 12
+      }
+    ]
+  },
+  analyse: {
+    id: 'analyse',
+    title: { en: 'Investment Analysis', de: 'Investitionsanalyse' },
+    description: {
+      en: 'Analyze and optimize your real estate investments',
+      de: 'Analysieren und optimieren Sie Ihre Immobilieninvestitionen'
+    },
+    steps: [
+      {
+        id: 'rendite',
+        path: '/renditerechner',
+        label: { de: 'Renditerechner', en: 'Yield Calculator' },
+        description: {
+          de: 'Berechnen Sie die potenzielle Rendite Ihrer Investition',
+          en: 'Calculate the potential yield of your investment'
+        },
+        icon: React.createElement(Calculator, { className: "h-5 w-5 text-primary" }),
+        estimatedTime: 8
+      },
+      {
+        id: 'marktanalyse',
+        path: '/market-explorer',
+        label: { de: 'Marktanalyse', en: 'Market Analysis' },
+        description: { 
+          de: 'Analyse des Immobilienmarkts', 
+          en: 'Analyze the real estate market' 
+        },
+        icon: React.createElement(Map, { className: "h-5 w-5 text-primary" }),
+        dependencies: ['rendite'],
+        estimatedTime: 10
+      },
+      {
+        id: 'portfolio',
+        path: '/portfolio-optimization',
+        label: { de: 'Portfolio-Optimierung', en: 'Portfolio Optimization' },
+        description: {
+          de: 'Optimieren Sie Ihr Immobilienportfolio',
+          en: 'Optimize your real estate portfolio'
+        },
+        icon: React.createElement(Building, { className: "h-5 w-5 text-primary" }),
+        dependencies: ['marktanalyse'],
+        estimatedTime: 12
+      },
+      {
+        id: 'investment-report',
+        path: '/investment-report',
+        label: { de: 'Investitionsbericht', en: 'Investment Report' },
+        description: {
+          de: 'Erstellen Sie einen umfassenden Investitionsbericht',
+          en: 'Generate a comprehensive investment report'
+        },
+        icon: React.createElement(FileText, { className: "h-5 w-5 text-primary" }),
+        dependencies: ['portfolio'],
+        estimatedTime: 5
       }
     ]
   }

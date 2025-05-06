@@ -7,7 +7,7 @@ import { DialogTrigger } from '@/components/ui/dialog';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { WorkflowType, useWorkflow } from '@/hooks/use-workflow';
 import { RotateCcw } from 'lucide-react';
-import { useToast } from '@/components/ui/toast';
+import { useToast } from '@/hooks/use-toast';
 import WorkflowTabs from './WorkflowTabs';
 import WorkflowResetDialog from './WorkflowResetDialog';
 
@@ -80,8 +80,8 @@ const WorkflowManager: React.FC<WorkflowManagerProps> = ({ className }) => {
       toast({
         title: language === 'de' ? 'Workflow zurückgesetzt' : 'Workflow reset',
         description: language === 'de'
-          ? `Der ${activeWorkflow.workflow.title.de}-Workflow wurde zurückgesetzt.`
-          : `The ${activeWorkflow.workflow.title.en} workflow has been reset.`,
+          ? `Der ${activeTab}-Workflow wurde zurückgesetzt.`
+          : `The ${activeTab} workflow has been reset.`,
         variant: 'default'
       });
       
