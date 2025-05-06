@@ -1,10 +1,11 @@
+
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { ChevronRight } from 'lucide-react';
-import { InvestmentMarket, OnboardingData } from '@/contexts/UserPreferencesContext';
+import { InvestmentMarket, OnboardingData, InvestmentPreference } from '@/contexts/UserPreferencesContext';
 
 // Import step components
 import WelcomeStep from './steps/WelcomeStep';

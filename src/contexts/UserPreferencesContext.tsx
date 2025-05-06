@@ -4,6 +4,13 @@ import React, { useState, useEffect, useContext, createContext } from 'react';
 export type ExperienceLevel = 'beginner' | 'intermediate' | 'advanced' | 'expert';
 export type InvestmentMarket = 'germany' | 'austria' | 'switzerland' | 'usa' | 'canada' | 'global' | 'uk' | 'europe';
 export type InvestmentPreference = 'conservative' | 'balanced' | 'growth' | 'aggressive' | 'income';
+export type AppLockMethod = 'pin' | 'biometric' | 'password' | 'none';
+
+export interface InvestmentMarketOption {
+  id: InvestmentMarket;
+  name: string;
+  description?: string;
+}
 
 export interface UserPreferences {
   name?: string;
@@ -38,13 +45,15 @@ export interface UserPreferences {
   interests: string[];
   investmentGoals: string[];
   preferredPropertyTypes: string[];
-  // Added properties to fix type errors
+  // Added missing properties
   appLockEnabled?: boolean;
+  appLockMethod?: AppLockMethod;
   role?: string;
   emailVerified?: boolean;
   profileImage?: string;
   sidebarPreferences?: {
     collapsed?: boolean;
+    favorites?: string[];
   };
   notifications?: {
     security?: boolean;
@@ -53,6 +62,20 @@ export interface UserPreferences {
     portfolio?: boolean;
   };
   lastPasswordChange?: string;
+  notificationPreferences?: {
+    email?: boolean;
+    push?: boolean;
+    sms?: boolean;
+  };
+  analyticsConsent?: boolean;
+  theme?: 'light' | 'dark' | 'system';
+  accessibility?: {
+    reduceMotion?: boolean;
+    highContrast?: boolean;
+    largeText?: boolean;
+    screenReader?: boolean;
+  };
+  recentMarkets?: InvestmentMarket[];
 }
 
 export interface OnboardingData {
@@ -74,11 +97,12 @@ interface UserPreferencesContextProps {
   updatePreferences: (newPrefs: Partial<UserPreferences>) => void;
   resetPreferences: (preserveFields?: Partial<UserPreferences>) => void;
   saveOnboardingData: (data: OnboardingData) => void;
-  // Added properties to fix type errors
+  // Added properties to make them available in the context
   isAuthenticated?: boolean;
   loginUser?: (email: string, password: string) => Promise<boolean>;
   registerUser?: (name: string, email: string, password: string) => Promise<boolean>;
   logoutUser?: () => void;
+  resetOnboarding?: () => void;
 }
 
 const defaultPreferences: UserPreferences = {
@@ -108,7 +132,15 @@ const defaultPreferences: UserPreferences = {
   preferredPropertyTypes: []
 };
 
-const UserPreferencesContext = createContext<Partial<UserPreferencesContextProps>>({});
+// Export the context directly for use with useContext in other files
+export const UserPreferencesContext = createContext<UserPreferencesContextProps>({
+  isFirstVisit: true,
+  setIsFirstVisit: () => {},
+  preferences: defaultPreferences,
+  updatePreferences: () => {},
+  resetPreferences: () => {},
+  saveOnboardingData: () => {}
+});
 
 export const UserPreferencesProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [preferences, setPreferences] = useState<UserPreferences>(() => {
