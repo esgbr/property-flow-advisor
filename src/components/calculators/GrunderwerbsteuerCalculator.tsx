@@ -38,7 +38,7 @@ interface GrunderwerbsteuerCalculatorProps {
   standalone?: boolean;
 }
 
-const GrunderwerbsteuerCalculator: React.FC<GrunderwerbsteuerCalculatorProps> = ({ 
+export const GrunderwerbsteuerCalculator: React.FC<GrunderwerbsteuerCalculatorProps> = ({ 
   onCalculationComplete,
   workflowStep = 'grunderwerbsteuer',
   standalone = true

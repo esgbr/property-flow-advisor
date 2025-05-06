@@ -1,322 +1,265 @@
 
 import React, { useState } from 'react';
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { useLanguage } from '@/contexts/LanguageContext';
-import { useNavigate } from 'react-router-dom';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { BarChart3, Building, Calculator, Calendar, FileText, Map, PlusCircle, Settings, TrendingUp } from 'lucide-react';
-import { workflowDefinitions, WorkflowType } from '@/data/workflow-definitions';
-import { useWorkflow } from '@/hooks/use-workflow';
-import WorkflowSuggestions from '@/components/workflow/WorkflowSuggestions';
-import { useToast } from '@/components/ui/use-toast';
-import { useMarketFilter } from '@/hooks/use-market-filter';
-import { useUserPreferences } from '@/contexts/UserPreferencesContext';
+import { useLanguage } from '@/contexts/LanguageContext';
+import { WorkflowType, useWorkflow } from '@/hooks/use-workflow';
+import { Button } from '@/components/ui/button';
+import { Building, Calculator, FileText, ArrowRight, Map, Euro, PiggyBank, CheckCircle } from 'lucide-react';
+import { Progress } from '@/components/ui/progress';
+import { Badge } from '@/components/ui/badge';
+import { useIsMobile } from '@/hooks/use-mobile';
+import { useNavigate } from 'react-router-dom';
 
-/**
- * UnifiedWorkflowDashboard Component
- * 
- * A comprehensive dashboard that integrates all workflows and provides:
- * - Quick access to workflows and tools
- * - Personalized recommendations
- * - Progress tracking
- * - Market-aware information
- */
+interface WorkflowDisplay {
+  type: WorkflowType;
+  icon: React.ReactNode;
+  completedSteps?: number;
+  totalSteps?: number;
+}
+
 const UnifiedWorkflowDashboard: React.FC = () => {
-  const { language, t } = useLanguage();
+  const { language } = useLanguage();
+  const isMobile = useIsMobile();
   const navigate = useNavigate();
-  const { toast } = useToast();
-  const { getCurrentMarket, getMarketDisplayName } = useMarketFilter();
-  const { preferences } = useUserPreferences();
-  const currentMarket = getCurrentMarket();
-  const marketName = getMarketDisplayName();
-  
-  // Track active workflow
-  const [activeWorkflowType, setActiveWorkflowType] = useState<WorkflowType>('investment');
-  const workflow = useWorkflow(activeWorkflowType);
-  
-  // Get available workflows for the current market
-  const availableWorkflows = Object.keys(workflowDefinitions).filter(key => {
-    // Filter based on market, user experience or other criteria
-    if (currentMarket === 'germany' && ['steuer', 'immobilien'].includes(key)) {
-      return true;
-    }
-    if (currentMarket === 'usa' && ['investment', 'financing'].includes(key)) {
-      return true;
-    }
-    // Global workflows available to all
-    return true;
-  }) as WorkflowType[];
-  
-  // Get recommended workflow step
-  const getRecommendedStep = (workflowType: WorkflowType) => {
-    const wf = useWorkflow(workflowType);
-    const steps = wf.getWorkflowSteps();
-    
-    // Find first incomplete step
-    const nextStep = steps.find(step => !step.isComplete);
-    return nextStep ? nextStep.id : steps[0].id;
+  const [activeTab, setActiveTab] = useState<WorkflowType>('steuer');
+
+  // Initialize all workflow hooks
+  const steuerWorkflow = useWorkflow('steuer');
+  const immobilienWorkflow = useWorkflow('immobilien');
+  const finanzierungWorkflow = useWorkflow('finanzierung');
+  const analyseWorkflow = useWorkflow('analyse');
+
+  // Get steps with completion status for each workflow
+  const steuerSteps = steuerWorkflow.getStepsWithStatus?.() || [];
+  const immobilienSteps = immobilienWorkflow.getStepsWithStatus?.() || [];
+  const finanzierungSteps = finanzierungWorkflow.getStepsWithStatus?.() || [];
+  const analyseSteps = analyseWorkflow.getStepsWithStatus?.() || [];
+
+  // Calculate completion percentages
+  const calculateCompletion = (steps: any[]) => {
+    if (!steps || steps.length === 0) return 0;
+    const completed = steps.filter(step => step.isComplete).length;
+    return Math.round((completed / steps.length) * 100);
   };
-  
-  // Handle starting a workflow
-  const handleStartWorkflow = (workflowType: WorkflowType) => {
-    const workflowSteps = workflow.getWorkflowSteps();
-    const firstIncompleteStep = workflowSteps.find(step => !step.isComplete);
-    const targetStep = firstIncompleteStep || workflowSteps[0];
-    
-    if (targetStep) {
-      navigate(targetStep.path);
-      toast({
-        title: language === 'de' ? 'Workflow gestartet' : 'Workflow started',
-        description: language === 'de'
-          ? `Sie haben den Workflow "${workflowDefinitions[workflowType].title.de}" gestartet`
-          : `You started the "${workflowDefinitions[workflowType].title.en}" workflow`
-      });
+
+  const workflows: Record<WorkflowType, WorkflowDisplay> = {
+    'steuer': {
+      type: 'steuer',
+      icon: <Euro className="h-5 w-5" />,
+      completedSteps: steuerSteps.filter(step => step.isComplete).length,
+      totalSteps: steuerSteps.length
+    },
+    'immobilien': {
+      type: 'immobilien',
+      icon: <Building className="h-5 w-5" />,
+      completedSteps: immobilienSteps.filter(step => step.isComplete).length,
+      totalSteps: immobilienSteps.length
+    },
+    'finanzierung': {
+      type: 'finanzierung',
+      icon: <Calculator className="h-5 w-5" />,
+      completedSteps: finanzierungSteps.filter(step => step.isComplete).length,
+      totalSteps: finanzierungSteps.length
+    },
+    'analyse': {
+      type: 'analyse',
+      icon: <CheckCircle className="h-5 w-5" />,
+      completedSteps: analyseSteps.filter(step => step.isComplete).length,
+      totalSteps: analyseSteps.length
     }
   };
-  
-  // Calculate overall progress for all workflows
-  const calculateOverallProgress = () => {
-    const workflowTypes = Object.keys(workflowDefinitions) as WorkflowType[];
-    let totalSteps = 0;
-    let completedSteps = 0;
-    
-    workflowTypes.forEach(type => {
-      const wf = useWorkflow(type);
-      totalSteps += wf.steps.length;
-      completedSteps += wf.getCompleteSteps().length;
-    });
-    
-    return Math.round((completedSteps / totalSteps) * 100);
-  };
-  
-  const overallProgress = calculateOverallProgress();
-  
-  // Get recommended workflow based on user preferences and market
-  const getRecommendedWorkflow = (): WorkflowType => {
-    if (preferences.experienceLevel === 'beginner') {
-      return currentMarket === 'germany' ? 'immobilien' : 'investment';
+
+  // Get the current workflow's steps
+  const getCurrentWorkflowSteps = () => {
+    switch (activeTab) {
+      case 'steuer':
+        return steuerSteps;
+      case 'immobilien':
+        return immobilienSteps;
+      case 'finanzierung':
+        return finanzierungSteps;
+      case 'analyse':
+        return analyseSteps;
+      default:
+        return [];
     }
-    
-    if (preferences.experienceLevel === 'advanced' || preferences.experienceLevel === 'expert') {
-      return currentMarket === 'germany' ? 'steuer' : 'finanzierung';
-    }
-    
-    return 'investment';
   };
-  
-  const recommendedWorkflow = getRecommendedWorkflow();
-  
+
+  // Navigate to a workflow step
+  const goToWorkflowStep = (workflowType: WorkflowType, stepId: string) => {
+    switch (workflowType) {
+      case 'steuer':
+        steuerWorkflow.goToStep(stepId);
+        break;
+      case 'immobilien':
+        immobilienWorkflow.goToStep(stepId);
+        break;
+      case 'finanzierung':
+        finanzierungWorkflow.goToStep(stepId);
+        break;
+      case 'analyse':
+        analyseWorkflow.goToStep(stepId);
+        break;
+    }
+  };
+
   return (
-    <div className="space-y-6 animate-fade-in">
+    <div className="space-y-6">
       <div>
-        <h1 className="text-3xl font-bold">{language === 'de' ? 'Dashboard' : 'Dashboard'}</h1>
+        <h1 className="text-3xl font-bold">
+          {language === 'de' ? 'Workflow Dashboard' : 'Workflow Dashboard'}
+        </h1>
         <p className="text-muted-foreground">
           {language === 'de' 
-            ? `Willkommen zurück. Hier ist eine Übersicht Ihrer Immobilieninvestitionstools für ${marketName}.` 
-            : `Welcome back. Here's an overview of your real estate investment tools for ${marketName}.`}
+            ? 'Verwalten und überwachen Sie alle Ihre Workflows an einem Ort'
+            : 'Manage and monitor all your workflows in one place'}
         </p>
       </div>
-      
-      {/* Market-specific recommendation card */}
-      <Card className="bg-gradient-to-br from-primary/10 to-primary/5 border-primary/20">
-        <CardHeader>
-          <CardTitle>
-            {language === 'de' ? 'Empfohlener Workflow' : 'Recommended Workflow'}
-          </CardTitle>
-          <CardDescription>
-            {language === 'de' 
-              ? 'Basierend auf Ihren Einstellungen und dem aktuellen Markt' 
-              : 'Based on your settings and current market'}
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="flex items-center justify-between">
-            <div>
-              <h3 className="text-lg font-semibold">
-                {workflowDefinitions[recommendedWorkflow].title[language as keyof typeof workflowDefinitions[recommendedWorkflow].title]}
-              </h3>
-              <p className="text-sm text-muted-foreground">
-                {workflowDefinitions[recommendedWorkflow].description[language as keyof typeof workflowDefinitions[recommendedWorkflow].description]}
-              </p>
-            </div>
-            <Button onClick={() => handleStartWorkflow(recommendedWorkflow)}>
-              {language === 'de' ? 'Starten' : 'Start'}
-            </Button>
-          </div>
-        </CardContent>
-      </Card>
-      
-      {/* Workflow tabs */}
-      <Tabs defaultValue={activeWorkflowType} onValueChange={value => setActiveWorkflowType(value as WorkflowType)}>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        {Object.values(workflows).map((workflow) => (
+          <Card 
+            key={workflow.type}
+            className={`cursor-pointer hover:shadow-md transition-all ${activeTab === workflow.type ? 'border-primary' : ''}`}
+            onClick={() => setActiveTab(workflow.type)}
+          >
+            <CardHeader className="p-4 pb-2">
+              <div className="flex items-center justify-between">
+                <CardTitle className="text-lg flex items-center">
+                  <span className="bg-primary/10 p-1.5 rounded-lg mr-2">{workflow.icon}</span>
+                  {language === 'de' ? (
+                    workflow.type === 'steuer' ? 'Steueroptimierung' :
+                    workflow.type === 'immobilien' ? 'Immobilienverwaltung' :
+                    workflow.type === 'finanzierung' ? 'Finanzierungsanalyse' : 'Investitionsanalyse'
+                  ) : (
+                    workflow.type === 'steuer' ? 'Tax Optimization' :
+                    workflow.type === 'immobilien' ? 'Property Management' :
+                    workflow.type === 'finanzierung' ? 'Financing Analysis' : 'Investment Analysis'
+                  )}
+                </CardTitle>
+              </div>
+            </CardHeader>
+            <CardContent className="p-4 pt-2">
+              <div className="flex justify-between mb-1 text-sm">
+                <span>{language === 'de' ? 'Fortschritt' : 'Progress'}</span>
+                <span>{workflow.completedSteps} / {workflow.totalSteps}</span>
+              </div>
+              <Progress 
+                value={calculateCompletion(
+                  workflow.type === 'steuer' ? steuerSteps :
+                  workflow.type === 'immobilien' ? immobilienSteps :
+                  workflow.type === 'finanzierung' ? finanzierungSteps : analyseSteps
+                )} 
+                max={100} 
+                className="h-2"
+              />
+            </CardContent>
+          </Card>
+        ))}
+      </div>
+
+      <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as WorkflowType)}>
         <TabsList className="mb-4">
-          {workflowDefinitions.steuer && (
-            <TabsTrigger value="steuer">
-              <Calculator className="h-4 w-4 mr-2" />
-              {language === 'de' ? 'Steuer' : 'Tax'}
-            </TabsTrigger>
-          )}
-          <TabsTrigger value="investment">
-            <TrendingUp className="h-4 w-4 mr-2" />
-            {language === 'de' ? 'Investition' : 'Investment'}
-          </TabsTrigger>
-          <TabsTrigger value="finanzierung">
-            <FileText className="h-4 w-4 mr-2" />
-            {language === 'de' ? 'Finanzierung' : 'Financing'}
+          <TabsTrigger value="steuer">
+            <Euro className="mr-2 h-4 w-4" />
+            {language === 'de' ? 'Steueroptimierung' : 'Tax Optimization'}
           </TabsTrigger>
           <TabsTrigger value="immobilien">
-            <Building className="h-4 w-4 mr-2" />
-            {language === 'de' ? 'Immobilien' : 'Properties'}
+            <Building className="mr-2 h-4 w-4" />
+            {language === 'de' ? 'Immobilienverwaltung' : 'Property Management'}
+          </TabsTrigger>
+          <TabsTrigger value="finanzierung">
+            <Calculator className="mr-2 h-4 w-4" />
+            {language === 'de' ? 'Finanzierungsanalyse' : 'Financing Analysis'}
+          </TabsTrigger>
+          <TabsTrigger value="analyse">
+            <CheckCircle className="mr-2 h-4 w-4" />
+            {language === 'de' ? 'Investitionsanalyse' : 'Investment Analysis'}
           </TabsTrigger>
         </TabsList>
-        
-        {Object.entries(workflowDefinitions).map(([key, definition]) => (
-          <TabsContent key={key} value={key}>
-            <Card>
-              <CardHeader>
-                <CardTitle>{definition.title[language as keyof typeof definition.title]}</CardTitle>
-                <CardDescription>{definition.description[language as keyof typeof definition.description]}</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-                    {definition.steps.map(step => {
-                      const wf = useWorkflow(key as WorkflowType);
-                      const isComplete = wf.getCompleteSteps().some(s => s.id === step.id);
-                      
-                      return (
-                        <Card 
-                          key={step.id} 
-                          className={`cursor-pointer transition-all hover:shadow-md ${isComplete ? 'border-green-500/40 bg-green-50/30 dark:bg-green-900/10' : ''}`}
-                          onClick={() => navigate(step.path)}
-                        >
-                          <CardContent className="p-4 flex items-center">
-                            <div className="mr-3 text-primary">
-                              {step.icon}
-                            </div>
-                            <div>
-                              <h4 className="font-medium mb-1">
-                                {step.label[language as keyof typeof step.label]}
-                                {isComplete && (
-                                  <span className="ml-2 text-xs text-green-600">
-                                    {language === 'de' ? '✓ Erledigt' : '✓ Completed'}
-                                  </span>
-                                )}
-                              </h4>
-                              {step.description && (
-                                <p className="text-xs text-muted-foreground">
-                                  {step.description[language as keyof typeof step.description]}
-                                </p>
-                              )}
-                            </div>
-                          </CardContent>
-                        </Card>
-                      );
-                    })}
-                    
-                    {/* Add custom step */}
-                    <Card className="cursor-pointer transition-all hover:shadow-md border-dashed">
-                      <CardContent className="p-4 flex items-center justify-center">
-                        <PlusCircle className="h-4 w-4 mr-2 text-muted-foreground" />
-                        <span className="text-muted-foreground">
-                          {language === 'de' ? 'Eigenen Schritt hinzufügen' : 'Add custom step'}
-                        </span>
-                      </CardContent>
-                    </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle>
+              {language === 'de' ? `${activeTab === 'steuer' ? 'Steueroptimierung' : 
+                activeTab === 'immobilien' ? 'Immobilienverwaltung' : 
+                activeTab === 'finanzierung' ? 'Finanzierungsanalyse' : 'Investitionsanalyse'} Workflow`
+                : 
+                `${activeTab === 'steuer' ? 'Tax Optimization' : 
+                activeTab === 'immobilien' ? 'Property Management' : 
+                activeTab === 'finanzierung' ? 'Financing Analysis' : 'Investment Analysis'} Workflow`}
+            </CardTitle>
+            <CardDescription>
+              {language === 'de' ? 'Verfolgen Sie Ihren Fortschritt und führen Sie die nächsten Schritte durch' 
+                : 'Track your progress and perform next steps'}
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-6">
+              {getCurrentWorkflowSteps().map((step, index) => (
+                <div key={step.id} className="flex items-center">
+                  <div className={`relative flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full border ${
+                    step.isComplete ? 'bg-primary text-primary-foreground' : 'bg-muted'
+                  }`}>
+                    {step.isComplete ? (
+                      <CheckCircle className="h-6 w-6" />
+                    ) : (
+                      <span>{index + 1}</span>
+                    )}
+                    {index < getCurrentWorkflowSteps().length - 1 && (
+                      <div className="absolute top-10 left-1/2 h-full w-px -translate-x-1/2 bg-border" />
+                    )}
+                  </div>
+                  <div className="ml-4 space-y-1 flex-1">
+                    <div className="flex items-center justify-between">
+                      <p className="text-sm font-medium leading-none">
+                        {language === 'de' ? step.label.de : step.label.en}
+                      </p>
+                      {step.estimatedTime && (
+                        <Badge variant="outline" className="text-xs">
+                          {step.estimatedTime} {language === 'de' ? 'Min.' : 'min'}
+                        </Badge>
+                      )}
+                    </div>
+                    <p className="text-sm text-muted-foreground">
+                      {step.description ? (language === 'de' ? step.description.de : step.description.en) : ''}
+                    </p>
+                    <div className="pt-2">
+                      <Button 
+                        variant={step.isComplete ? "outline" : "default"} 
+                        size="sm" 
+                        className="mt-1"
+                        onClick={() => goToWorkflowStep(activeTab, step.id)}
+                      >
+                        {step.isComplete ? 
+                          (language === 'de' ? 'Überprüfen' : 'Review') : 
+                          (language === 'de' ? 'Starten' : 'Start')}
+                        <ArrowRight className="ml-2 h-4 w-4" />
+                      </Button>
+                    </div>
                   </div>
                 </div>
-              </CardContent>
-              <CardFooter className="flex justify-between">
-                <div className="text-sm text-muted-foreground">
-                  {language === 'de' 
-                    ? `${useWorkflow(key as WorkflowType).getCompleteSteps().length} von ${definition.steps.length} Schritten abgeschlossen` 
-                    : `${useWorkflow(key as WorkflowType).getCompleteSteps().length} of ${definition.steps.length} steps completed`}
+              ))}
+
+              {getCurrentWorkflowSteps().length === 0 && (
+                <div className="text-center py-8">
+                  <p className="text-muted-foreground">
+                    {language === 'de' ? 'Keine Workflow-Schritte gefunden.' : 'No workflow steps found.'}
+                  </p>
+                  <Button 
+                    variant="outline" 
+                    className="mt-4"
+                    onClick={() => navigate('/dashboard')}
+                  >
+                    {language === 'de' ? 'Zurück zum Dashboard' : 'Back to Dashboard'}
+                  </Button>
                 </div>
-                <Button 
-                  size="sm" 
-                  onClick={() => handleStartWorkflow(key as WorkflowType)}
-                >
-                  {language === 'de' ? 'Fortsetzen' : 'Continue'}
-                </Button>
-              </CardFooter>
-            </Card>
-          </TabsContent>
-        ))}
+              )}
+            </div>
+          </CardContent>
+        </Card>
       </Tabs>
-      
-      {/* Quick access tools */}
-      <div>
-        <h2 className="text-xl font-semibold mb-4">
-          {language === 'de' ? 'Schnellzugriff auf Tools' : 'Quick Access Tools'}
-        </h2>
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          <Card className="cursor-pointer hover:shadow-md transition-all" onClick={() => navigate('/calculators')}>
-            <CardContent className="p-4 flex flex-col items-center justify-center">
-              <Calculator className="h-8 w-8 mb-2 text-primary" />
-              <h3 className="font-medium text-center">
-                {language === 'de' ? 'Rechner' : 'Calculators'}
-              </h3>
-            </CardContent>
-          </Card>
-          
-          <Card className="cursor-pointer hover:shadow-md transition-all" onClick={() => navigate('/market-explorer')}>
-            <CardContent className="p-4 flex flex-col items-center justify-center">
-              <Map className="h-8 w-8 mb-2 text-primary" />
-              <h3 className="font-medium text-center">
-                {language === 'de' ? 'Marktanalyse' : 'Market Analysis'}
-              </h3>
-            </CardContent>
-          </Card>
-          
-          <Card className="cursor-pointer hover:shadow-md transition-all" onClick={() => navigate('/portfolio-analytics')}>
-            <CardContent className="p-4 flex flex-col items-center justify-center">
-              <BarChart3 className="h-8 w-8 mb-2 text-primary" />
-              <h3 className="font-medium text-center">
-                {language === 'de' ? 'Portfolio Analyse' : 'Portfolio Analysis'}
-              </h3>
-            </CardContent>
-          </Card>
-          
-          <Card className="cursor-pointer hover:shadow-md transition-all" onClick={() => navigate('/settings')}>
-            <CardContent className="p-4 flex flex-col items-center justify-center">
-              <Settings className="h-8 w-8 mb-2 text-primary" />
-              <h3 className="font-medium text-center">
-                {language === 'de' ? 'Einstellungen' : 'Settings'}
-              </h3>
-            </CardContent>
-          </Card>
-        </div>
-      </div>
-      
-      {/* Calendar integration */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center">
-            <Calendar className="h-5 w-5 mr-2" />
-            {language === 'de' ? 'Anstehende Termine' : 'Upcoming Tasks'}
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="text-center py-4">
-            <p className="text-muted-foreground">
-              {language === 'de' 
-                ? 'Keine anstehenden Termine in den nächsten 7 Tagen.' 
-                : 'No upcoming tasks in the next 7 days.'}
-            </p>
-            <Button variant="link" className="mt-2">
-              {language === 'de' ? 'Termin hinzufügen' : 'Add task'}
-            </Button>
-          </div>
-        </CardContent>
-      </Card>
-      
-      {/* Next steps suggestions */}
-      <WorkflowSuggestions
-        currentTool="dashboard"
-        workflowType={activeWorkflowType}
-        maxSuggestions={4}
-        variant="default"
-      />
     </div>
   );
 };

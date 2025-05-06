@@ -10,6 +10,7 @@ import { WorkflowNavigation } from '@/components/workflow/WorkflowNavigation';
 import { WorkflowSuggestions } from '@/components/workflow/WorkflowSuggestions';
 import WorkflowSteps from '@/components/workflow/WorkflowSteps';
 import { WorkflowType } from '@/hooks/use-workflow';
+import EnhancedWorkflowSuggestions from '@/components/workflow/EnhancedWorkflowSuggestions';
 
 const GrunderwerbsteuerPage: React.FC = () => {
   const { t, language } = useLanguage();
@@ -71,10 +72,10 @@ const GrunderwerbsteuerPage: React.FC = () => {
           variant="compact"
         />
 
-        <WorkflowSuggestions
+        <EnhancedWorkflowSuggestions
           currentTool={currentStep}
-          workflowType={workflowType}
           maxSuggestions={2}
+          className="mt-6"
         />
       </div>
     </div>
