@@ -50,7 +50,8 @@ const WorkflowHistory: React.FC<WorkflowHistoryProps> = ({
       value.completedSteps.forEach(stepId => {
         const step = workflowDefinitions[workflowType].steps.find(s => s.id === stepId);
         if (step) {
-          const stepLabel = step.label[language as keyof typeof step.label];
+          const langKey = language as keyof typeof step.label;
+          const stepLabel = step.label[langKey];
           const item = {
             date: value.lastInteractionAt ? new Date(value.lastInteractionAt) : new Date(),
             workflowType,
@@ -92,9 +93,8 @@ const WorkflowHistory: React.FC<WorkflowHistoryProps> = ({
       <ScrollArea className="max-h-[200px]">
         <div className="space-y-2">
           {historyItems.map((item, index) => {
-            const workflowTitle = workflowDefinitions[item.workflowType].title[
-              language as keyof typeof workflowDefinitions[item.workflowType].title
-            ];
+            const langKey = language as keyof typeof workflowDefinitions[item.workflowType].title;
+            const workflowTitle = workflowDefinitions[item.workflowType].title[langKey];
             
             return (
               <div 

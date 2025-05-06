@@ -47,7 +47,8 @@ const WorkflowSteps: React.FC<WorkflowStepsProps> = ({
     }
     
     // Announce for screen readers
-    const stepName = step.label[language as keyof typeof step.label];
+    const langKey = language as keyof typeof step.label;
+    const stepName = step.label[langKey];
     announce(
       language === 'de'
         ? `Navigation zu ${stepName}`
@@ -80,7 +81,8 @@ const WorkflowSteps: React.FC<WorkflowStepsProps> = ({
         <div className="space-y-3">
           {steps.map((step, index) => {
             const isActive = step.id === currentStep;
-            const stepName = step.label[language as keyof typeof step.label];
+            const langKey = language as keyof typeof step.label;
+            const stepName = step.label[langKey];
             const stepDescription = step.description ? step.description[language as keyof typeof step.description] : undefined;
             
             return (
