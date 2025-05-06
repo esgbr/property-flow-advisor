@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { OnboardingData } from '@/contexts/UserPreferencesContext';
 import { useNavigate } from 'react-router-dom';
@@ -18,7 +19,7 @@ const OnboardingPage: React.FC = () => {
   const { t, language } = useLanguage();
   const [currentStep, setCurrentStep] = useState(0);
   
-  // Initialize OnboardingData with all required fields
+  // Initialize OnboardingData with all required fields and correct typing
   const [onboardingData, setOnboardingData] = useState<OnboardingData>({
     name: '',
     experienceLevel: 'beginner',

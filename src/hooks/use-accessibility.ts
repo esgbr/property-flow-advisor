@@ -1,3 +1,4 @@
+
 import { useEffect, useState } from 'react';
 import { useUserPreferences } from '@/contexts/UserPreferencesContext';
 import { useLanguage } from '@/contexts/LanguageContext';
@@ -20,6 +21,7 @@ export const useAccessibility = () => {
     largeText = false,
     reduceMotion = false,
     dyslexiaFriendly = false,
+    screenReader = false,
   } = preferences.accessibility || {};
 
   // Setup media queries for user preferences
@@ -88,7 +90,16 @@ export const useAccessibility = () => {
     } else {
       document.body.classList.remove('reduce-motion');
     }
-  }, [highContrast, largeText, reduceMotion, dyslexiaFriendly]);
+    
+    // Apply screen reader optimization
+    if (screenReader) {
+      document.body.classList.add('screen-reader-optimized');
+      document.body.setAttribute('aria-live', 'polite');
+    } else {
+      document.body.classList.remove('screen-reader-optimized');
+      document.body.removeAttribute('aria-live');
+    }
+  }, [highContrast, largeText, reduceMotion, dyslexiaFriendly, screenReader]);
 
   /**
    * Toggle high contrast mode
@@ -109,6 +120,12 @@ export const useAccessibility = () => {
         : `High contrast ${newValue ? 'enabled' : 'disabled'}`,
       'polite'
     );
+    
+    toast({
+      description: language === 'de'
+        ? `Hoher Kontrast ${newValue ? 'aktiviert' : 'deaktiviert'}`
+        : `High contrast ${newValue ? 'enabled' : 'disabled'}`
+    });
   };
 
   /**
@@ -126,6 +143,12 @@ export const useAccessibility = () => {
         : `Large text ${newValue ? 'enabled' : 'disabled'}`,
       'polite'
     );
+    
+    toast({
+      description: language === 'de'
+        ? `Große Schrift ${newValue ? 'aktiviert' : 'deaktiviert'}`
+        : `Large text ${newValue ? 'enabled' : 'disabled'}`
+    });
   };
 
   /**
@@ -137,7 +160,7 @@ export const useAccessibility = () => {
       accessibility: {
         ...preferences.accessibility,
         reduceMotion: newValue,
-        reduceMotionOverride: true
+        reducedMotionOverride: true
       }
     });
 
@@ -147,6 +170,12 @@ export const useAccessibility = () => {
         : `Reduced motion ${newValue ? 'enabled' : 'disabled'}`,
       'polite'
     );
+    
+    toast({
+      description: language === 'de'
+        ? `Reduzierte Bewegung ${newValue ? 'aktiviert' : 'deaktiviert'}`
+        : `Reduced motion ${newValue ? 'enabled' : 'disabled'}`
+    });
   };
 
   /**
@@ -164,6 +193,35 @@ export const useAccessibility = () => {
         : `Dyslexia friendly mode ${newValue ? 'enabled' : 'disabled'}`,
       'polite'
     );
+    
+    toast({
+      description: language === 'de'
+        ? `Legasthenie-freundlicher Modus ${newValue ? 'aktiviert' : 'deaktiviert'}`
+        : `Dyslexia friendly mode ${newValue ? 'enabled' : 'disabled'}`
+    });
+  };
+  
+  /**
+  * Toggle screen reader optimizations
+  */
+  const toggleScreenReader = () => {
+    const newValue = !screenReader;
+    updatePreferences({
+      accessibility: { ...preferences.accessibility, screenReader: newValue }
+    });
+
+    announce(
+      language === 'de'
+        ? `Bildschirmleser-Optimierungen ${newValue ? 'aktiviert' : 'deaktiviert'}`
+        : `Screen reader optimizations ${newValue ? 'enabled' : 'disabled'}`,
+      'assertive'
+    );
+    
+    toast({
+      description: language === 'de'
+        ? `Bildschirmleser-Optimierungen ${newValue ? 'aktiviert' : 'deaktiviert'}`
+        : `Screen reader optimizations ${newValue ? 'enabled' : 'disabled'}`
+    });
   };
 
   // Helper function to announce messages to screen readers
@@ -209,10 +267,12 @@ export const useAccessibility = () => {
     largeText,
     reduceMotion,
     dyslexiaFriendly,
+    screenReader,
     toggleHighContrast,
     toggleLargeText,
     toggleReduceMotion,
     toggleDyslexiaFriendly,
+    toggleScreenReader,
     announce: announceSRMessage,
     // Add these methods for compatibility
     setHighContrast,

@@ -29,7 +29,16 @@ const Settings = () => {
   const { t } = useLanguage();
   const { preferences, updatePreferences, resetPreferences } = useUserPreferences();
   const navigate = useNavigate();
-  const { reduceMotion, highContrast, largeText, screenReader } = useAccessibility();
+  const { 
+    reduceMotion, 
+    highContrast, 
+    largeText, 
+    screenReader,
+    toggleReduceMotion,
+    toggleHighContrast,
+    toggleLargeText,
+    toggleScreenReader
+  } = useAccessibility();
   
   // Add a resetOnboarding function if it's missing from context
   const resetOnboarding = () => {

@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import { toast } from 'sonner';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { useToast } from '@/components/ui/use-toast';
 
 // Define available market types
 export type InvestmentMarket = 'germany' | 'austria' | 'switzerland' | 'usa' | 'canada' | 'global';
@@ -52,6 +52,8 @@ export interface UserPreferences {
     enabled?: boolean;
     largeText?: boolean;
     dyslexiaFriendly?: boolean;
+    highContrastOverride?: boolean;
+    reducedMotionOverride?: boolean;
   };
   dashboardLayout?: {
     widgets: string[];
@@ -217,6 +219,7 @@ export const UserPreferencesProvider: React.FC<{ children: React.ReactNode }> = 
   
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
   const [isFirstVisit, setIsFirstVisit] = useState<boolean>(true);
+  const { toast } = useToast();
 
   // Update localStorage whenever preferences change
   useEffect(() => {
@@ -319,7 +322,11 @@ export const UserPreferencesProvider: React.FC<{ children: React.ReactNode }> = 
       preferredPropertyTypes: []
     });
     
+    // Get language context here to avoid issues
+    const { t } = useLanguage();
+    
     toast({
+      title: t('onboardingReset'),
       description: t('onboardingResetDescription'),
     });
   };
