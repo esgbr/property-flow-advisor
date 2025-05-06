@@ -23,22 +23,13 @@ import { InvestmentMarket } from '@/contexts/UserPreferencesContext';
 import ErrorBoundary from '@/components/ErrorBoundary';
 import PageLoader from '@/components/ui/page-loader';
 import { useComponentPerformance } from '@/utils/performanceUtils';
-import { useAccessibility } from '@/components/accessibility/A11yProvider';
+import { useAccessibility } from '@/hooks/use-accessibility';
 import AccessibilitySettingsButton from '@/components/accessibility/AccessibilitySettingsButton';
 import WorkflowSuggestions from '@/components/workflow/WorkflowSuggestions';
+import { useUserPreferences } from '@/contexts/UserPreferencesContext';
 
 // Lazy load components for better initial loading performance
 const FeatureGrid = lazy(() => import('@/components/home/FeatureGrid'));
-
-// Define Feature type for better type safety
-interface Feature {
-  id: string;
-  title: string;
-  description: string;
-  icon: React.ReactNode;
-  action: () => void;
-  markets: InvestmentMarket[];
-}
 
 const Index: React.FC = () => {
   useComponentPerformance('IndexPage');
@@ -47,6 +38,14 @@ const Index: React.FC = () => {
   const { shouldShowFeature, userMarket, setUserMarket } = useMarketFilter();
   const [isLoading, setIsLoading] = useState(true);
   const { largeText } = useAccessibility();
+  const { preferences } = useUserPreferences();
+  
+  // Check if user has completed onboarding, if not redirect to onboarding page
+  useEffect(() => {
+    if (!preferences.onboardingCompleted) {
+      navigate('/onboarding');
+    }
+  }, [preferences.onboardingCompleted, navigate]);
 
   // Simulate loading state for demonstration
   useEffect(() => {
@@ -158,6 +157,11 @@ const Index: React.FC = () => {
   
   if (isLoading) {
     return <PageLoader message={t('Loading PropertyFlow...')} size="lg" />;
+  }
+
+  // If user hasn't completed onboarding, don't render the index page content
+  if (!preferences.onboardingCompleted) {
+    return <PageLoader message={t('Redirecting to onboarding...')} size="lg" />;
   }
 
   return (
