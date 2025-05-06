@@ -209,12 +209,16 @@ export const useAccessibility = () => {
     dyslexiaFriendly,
     screenReader,
     
+    // For components still using the old naming
+    reduceMotion: reducedMotion,
+    
     // Toggle functions
     toggleHighContrast,
     toggleLargeText,
     toggleReducedMotion,
     toggleDyslexiaFriendly,
     toggleScreenReader,
+    toggleReduceMotion: toggleReducedMotion,
     
     // Setters
     setHighContrast,
@@ -222,6 +226,7 @@ export const useAccessibility = () => {
     setReducedMotion,
     setDyslexiaFriendly,
     setScreenReader,
+    setReduceMotion: setReducedMotion,
     
     // Utility functions
     announce,

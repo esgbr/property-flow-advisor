@@ -10,6 +10,7 @@ interface MarketFilterHook {
   getCurrentMarket: () => InvestmentMarket;
   setUserMarket: (market: InvestmentMarket) => void;
   isMarketAvailable: (market: InvestmentMarket) => boolean;
+  getAvailableMarkets: () => InvestmentMarket[];
 }
 
 /**
@@ -59,10 +60,15 @@ export const useMarketFilter = (): MarketFilterHook => {
     ];
   }, [language]);
   
+  // Get available markets as an array of IDs
+  const getAvailableMarkets = useCallback((): InvestmentMarket[] => {
+    return ['germany', 'austria', 'switzerland', 'usa', 'canada', 'france', 'global'];
+  }, []);
+  
   // Check if a market is available
   const isMarketAvailable = useCallback((market: InvestmentMarket): boolean => {
-    return getMarketOptions().some(m => m.id === market);
-  }, [getMarketOptions]);
+    return getAvailableMarkets().includes(market);
+  }, [getAvailableMarkets]);
   
   // Get current market (for API calls, etc.)
   const getCurrentMarket = useCallback((): InvestmentMarket => {
@@ -75,7 +81,8 @@ export const useMarketFilter = (): MarketFilterHook => {
     getMarketOptions,
     getCurrentMarket,
     setUserMarket,
-    isMarketAvailable
+    isMarketAvailable,
+    getAvailableMarkets
   };
 };
 

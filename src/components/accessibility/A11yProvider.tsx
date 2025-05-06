@@ -6,6 +6,8 @@ interface AccessibilityContextType {
   setHighContrast: (value: boolean) => void;
   largeText: boolean;
   setLargeText: (value: boolean) => void;
+  reducedMotion: boolean;
+  setReducedMotion: (value: boolean) => void;
   reduceMotion: boolean;
   setReduceMotion: (value: boolean) => void;
   screenReader: boolean;
@@ -17,6 +19,8 @@ const defaultSettings: AccessibilityContextType = {
   setHighContrast: () => {},
   largeText: false,
   setLargeText: () => {},
+  reducedMotion: false,
+  setReducedMotion: () => {},
   reduceMotion: false,
   setReduceMotion: () => {},
   screenReader: false,
@@ -34,7 +38,7 @@ export interface A11yProviderProps {
 export const A11yProvider: React.FC<A11yProviderProps> = ({ children }) => {
   const [highContrast, setHighContrast] = useState(false);
   const [largeText, setLargeText] = useState(false);
-  const [reduceMotion, setReduceMotion] = useState(false);
+  const [reducedMotion, setReducedMotion] = useState(false);
   const [screenReader, setScreenReader] = useState(false);
   
   // Load saved preferences
@@ -45,7 +49,7 @@ export const A11yProvider: React.FC<A11yProviderProps> = ({ children }) => {
         const parsedSettings = JSON.parse(savedSettings);
         setHighContrast(parsedSettings.highContrast || false);
         setLargeText(parsedSettings.largeText || false);
-        setReduceMotion(parsedSettings.reduceMotion || false);
+        setReducedMotion(parsedSettings.reducedMotion || false);
         setScreenReader(parsedSettings.screenReader || false);
       } else {
         // Check system preferences as default if no saved settings
@@ -82,7 +86,7 @@ export const A11yProvider: React.FC<A11yProviderProps> = ({ children }) => {
     // Reduced motion preference
     const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     if (prefersReducedMotion) {
-      setReduceMotion(true);
+      setReducedMotion(true);
     }
     
     // Check for high contrast mode
@@ -104,7 +108,7 @@ export const A11yProvider: React.FC<A11yProviderProps> = ({ children }) => {
       localStorage.setItem('a11y-settings', JSON.stringify({
         highContrast,
         largeText,
-        reduceMotion,
+        reducedMotion,
         screenReader
       }));
       
@@ -123,7 +127,7 @@ export const A11yProvider: React.FC<A11yProviderProps> = ({ children }) => {
         rootElement.classList.remove('large-text');
       }
       
-      if (reduceMotion) {
+      if (reducedMotion) {
         rootElement.classList.add('reduce-motion');
       } else {
         rootElement.classList.remove('reduce-motion');
@@ -138,7 +142,11 @@ export const A11yProvider: React.FC<A11yProviderProps> = ({ children }) => {
     } catch (error) {
       console.error('Error saving accessibility settings', error);
     }
-  }, [highContrast, largeText, reduceMotion, screenReader]);
+  }, [highContrast, largeText, reducedMotion, screenReader]);
+  
+  // For backward compatibility
+  const setReduceMotion = setReducedMotion;
+  const reduceMotion = reducedMotion;
   
   return (
     <AccessibilityContext.Provider 
@@ -147,6 +155,8 @@ export const A11yProvider: React.FC<A11yProviderProps> = ({ children }) => {
         setHighContrast,
         largeText,
         setLargeText,
+        reducedMotion,
+        setReducedMotion,
         reduceMotion,
         setReduceMotion,
         screenReader,

@@ -20,13 +20,24 @@ export interface UserAccessibilityPreferences {
   screenReader?: boolean;
 }
 
+export interface UserNotificationPreferences {
+  email?: boolean;
+  push?: boolean;
+  frequency?: 'daily' | 'weekly' | 'monthly' | 'never';
+  alerts?: {
+    security?: boolean;
+    price?: boolean;
+    news?: boolean;
+    portfolio?: boolean;
+  };
+}
+
 export interface UserPreferences {
   name?: string;
   email?: string;
   language?: string;
   theme?: 'light' | 'dark' | 'system';
   market?: InvestmentMarket;
-  // Add missing properties
   marketFilter?: InvestmentMarket;
   investmentMarket?: InvestmentMarket;
   dismissedSecurityAlert?: boolean;
@@ -35,9 +46,11 @@ export interface UserPreferences {
   lastVisitedPage?: string;
   lastActive?: string;
   appLockEnabled?: boolean;
+  appLockMethod?: 'pin' | 'password' | 'biometric';
   emailVerified?: boolean;
   role?: 'user' | 'admin';
   profileImage?: string;
+  onboardingCompleted?: boolean;
   sidebarPreferences?: {
     collapsed?: boolean;
     width?: number;
@@ -53,11 +66,7 @@ export interface UserPreferences {
     hiddenWidgets?: string[];
     widgetOrder?: string[];
   };
-  notifications?: {
-    email?: boolean;
-    push?: boolean;
-    frequency?: 'daily' | 'weekly' | 'monthly' | 'never';
-  };
+  notifications?: UserNotificationPreferences;
 }
 
 // Define OnboardingData interface
@@ -80,8 +89,8 @@ export interface OnboardingStep {
 export interface OnboardingStepProps {
   data: Partial<OnboardingData>;
   updateData: (fieldName: keyof OnboardingData, value: any) => void;
-  onNext: () => void;
-  onBack: () => void;
+  onNext?: () => void;
+  onBack?: () => void;
 }
 
 interface UserPreferencesContextType {
@@ -90,7 +99,6 @@ interface UserPreferencesContextType {
   isAuthenticated: boolean;
   setIsAuthenticated: (value: boolean) => void;
   resetPreferences: () => void;
-  // Add missing functions
   registerUser: (name: string, email: string, password: string) => Promise<boolean>;
   loginUser: (email: string, password: string) => Promise<boolean>;
   logoutUser: () => void;
@@ -103,6 +111,7 @@ const defaultPreferences: UserPreferences = {
   theme: 'system',
   market: 'global',
   marketFilter: 'global',
+  onboardingCompleted: false,
   accessibility: {
     highContrast: false,
     largeText: false,
@@ -123,7 +132,13 @@ const defaultPreferences: UserPreferences = {
   notifications: {
     email: true,
     push: true,
-    frequency: 'weekly'
+    frequency: 'weekly',
+    alerts: {
+      security: true,
+      price: true,
+      news: true,
+      portfolio: true
+    }
   }
 };
 

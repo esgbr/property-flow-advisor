@@ -35,8 +35,16 @@ export const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ onComplete, onSk
     investmentGoals: initialData?.investmentGoals || [],
     preferredPropertyTypes: initialData?.preferredPropertyTypes || [],
     interests: initialData?.interests || [],
-    investmentMarket: initialData?.investmentMarket || '' as InvestmentMarket
+    investmentMarket: initialData?.investmentMarket || 'global'
   });
+
+  // Helper function to update data by field name
+  const updateDataField = (fieldName: keyof OnboardingData, value: any) => {
+    setData(prev => ({
+      ...prev,
+      [fieldName]: value
+    }));
+  };
 
   // Define the onboarding steps
   const steps: OnboardingStep[] = [
@@ -44,43 +52,43 @@ export const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ onComplete, onSk
       id: 'welcome',
       title: t('welcomeToPropertyFlow'),
       description: t('onboardingWelcomeDescription'),
-      component: <WelcomeStep data={data} updateData={setData} />
+      component: <WelcomeStep data={data} updateData={updateDataField} onNext={() => handleNext()} onBack={() => handleBack()} />
     },
     {
       id: 'market',
       title: t('investmentMarket'),
       description: t('whereDoYouPlanToInvest'),
-      component: <MarketStep data={data} updateData={setData} />
+      component: <MarketStep data={data} updateData={updateDataField} onNext={() => handleNext()} onBack={() => handleBack()} />
     },
     {
       id: 'experience',
       title: t('yourExperienceLevel'),
       description: t('tellUsAboutYourExperience'),
-      component: <ExperienceStep data={data} updateData={setData} />
+      component: <ExperienceStep data={data} updateData={updateDataField} onNext={() => handleNext()} onBack={() => handleBack()} />
     },
     {
       id: 'investment-goals',
       title: t('investmentGoals'),
       description: t('whatAreYourPrimaryInvestmentGoals'),
-      component: <GoalsStep data={data} updateData={setData} />
+      component: <GoalsStep data={data} updateData={updateDataField} onNext={() => handleNext()} onBack={() => handleBack()} />
     },
     {
       id: 'property-types',
       title: t('propertyPreferences'),
       description: t('whatTypesOfPropertiesInterestYou'),
-      component: <PropertyTypesStep data={data} updateData={setData} />
+      component: <PropertyTypesStep data={data} updateData={updateDataField} onNext={() => handleNext()} onBack={() => handleBack()} />
     },
     {
       id: 'interests',
       title: t('yourInterests'),
       description: t('whatTopicsInterestYou'),
-      component: <InterestsStep data={data} updateData={setData} />
+      component: <InterestsStep data={data} updateData={updateDataField} onNext={() => handleNext()} onBack={() => handleBack()} />
     },
     {
       id: 'complete',
       title: t('allSet'),
       description: t('yourProfileIsReady'),
-      component: <CompleteStep data={data} updateData={setData} />
+      component: <CompleteStep data={data} updateData={updateDataField} onNext={() => handleNext()} onBack={() => handleBack()} />
     }
   ];
 
@@ -93,6 +101,12 @@ export const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ onComplete, onSk
         description: t('yourPreferencesHaveBeenSaved'),
       });
       onComplete(data);
+    }
+  };
+
+  const handleBack = () => {
+    if (currentStep > 0) {
+      setCurrentStep(currentStep - 1);
     }
   };
 

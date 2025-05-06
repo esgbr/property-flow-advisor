@@ -20,6 +20,6 @@ export interface OnboardingStep {
 export interface OnboardingStepProps {
   data: Partial<OnboardingData>;
   updateData: (fieldName: keyof OnboardingData, value: any) => void;
-  onNext: () => void;
-  onBack: () => void;
+  onNext?: () => void;
+  onBack?: () => void;
 }

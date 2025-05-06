@@ -175,6 +175,14 @@ export const useWorkflow = (workflowType: WorkflowType) => {
     return Math.round((completedSteps.length / steps.length) * 100);
   }, [workflowType, workflowState]);
   
+  // Get current step
+  const getCurrentStep = useCallback(() => {
+    if (!workflowState.activeStep) return null;
+    
+    const { steps } = workflowDefinitions[workflowType];
+    return steps.find(step => step.id === workflowState.activeStep) || null;
+  }, [workflowType, workflowState.activeStep]);
+  
   return {
     getStepsWithStatus,
     goToStep,
@@ -186,6 +194,8 @@ export const useWorkflow = (workflowType: WorkflowType) => {
     getWorkflowProgress,
     isUpdating,
     activeStep: workflowState.activeStep,
-    completedSteps: workflowState.completedSteps
+    completedSteps: workflowState.completedSteps,
+    getCurrentStep,
+    steps: workflowDefinitions[workflowType]?.steps || []
   };
 };
