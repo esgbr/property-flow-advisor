@@ -1,4 +1,3 @@
-
 /**
  * Utility functions for security-related operations
  * Provides password validation, strength checking, and security-related helpers
@@ -181,4 +180,43 @@ export const mightContainSensitiveInfo = (input: string): boolean => {
   ];
   
   return patterns.some(pattern => pattern.test(input));
+};
+
+/**
+ * Log security events for monitoring and auditing
+ * @param eventType Type of security event
+ * @param data Additional event data
+ * @param options Event logging options
+ */
+export const logSecurityEvent = (
+  eventType: 'login' | 'logout' | 'password_change' | 'login_failure' | 'security_setting_change',
+  data: Record<string, any> = {},
+  options: {
+    severity?: 'info' | 'warning' | 'error';
+    notifyUser?: boolean;
+  } = { severity: 'info', notifyUser: true }
+) => {
+  // Create event log
+  const eventLog = {
+    type: eventType,
+    timestamp: new Date().toISOString(),
+    data,
+    severity: options.severity || 'info'
+  };
+
+  // In a real app, you might send this to a security monitoring service
+  console.log('[Security Event]', eventLog);
+  
+  // Store in browser for audit
+  try {
+    const securityLogs = JSON.parse(localStorage.getItem('security_logs') || '[]');
+    securityLogs.push(eventLog);
+    // Keep only the most recent 100 logs
+    if (securityLogs.length > 100) {
+      securityLogs.shift();
+    }
+    localStorage.setItem('security_logs', JSON.stringify(securityLogs));
+  } catch (error) {
+    console.error('Error storing security log:', error);
+  }
 };

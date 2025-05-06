@@ -81,7 +81,7 @@ const WorkflowSteps: React.FC<WorkflowStepsProps> = ({
           {steps.map((step, index) => {
             const isActive = step.id === currentStep;
             const stepName = step.label[language as keyof typeof step.label];
-            const stepDescription = step.description?.[language as keyof typeof step.description];
+            const stepDescription = step.description ? step.description[language as keyof typeof step.description] : undefined;
             
             return (
               <Card
