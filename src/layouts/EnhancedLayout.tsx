@@ -11,7 +11,7 @@ import { useIsMobile } from '@/hooks/use-mobile';
 import { EnhancedToaster } from '@/components/ui/enhanced-toaster';
 import { ButtonScrollToTop } from '@/components/ui/scroll-to-top';
 import { UserPreferences } from '@/contexts/UserPreferencesContext';
-import { TooltipProvider } from '@/components/ui/tooltip'; // Import TooltipProvider
+import { TooltipProvider } from '@/components/ui/tooltip';
 
 const EnhancedLayout: React.FC = () => {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
@@ -77,7 +77,7 @@ const EnhancedLayout: React.FC = () => {
       <UserPreferencesProvider>
         <AppLockProvider>
           <A11yProvider>
-            <TooltipProvider> {/* Add TooltipProvider to wrap everything */}
+            <TooltipProvider>
               <div className="flex h-screen overflow-hidden">
                 <SkipToContent contentId="main-content" />
                 
