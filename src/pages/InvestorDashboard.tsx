@@ -1,6 +1,7 @@
+
 import React, { useEffect, useState } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { useLanguage } from '@/contexts/LanguageContext';
+import { useLanguage, SupportedLanguage } from '@/contexts/LanguageContext';
 import { 
   Building, 
   Calculator, 
@@ -60,7 +61,8 @@ const InvestorDashboard: React.FC = () => {
 
   // Currency formatter based on user language
   const getCurrencySymbol = () => {
-    switch (language) {
+    const currentLanguage = language as string;
+    switch (currentLanguage) {
       case 'de':
       case 'fr':
       case 'it':

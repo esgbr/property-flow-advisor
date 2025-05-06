@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
@@ -34,14 +34,14 @@ const DeutscheImmobilienPage: React.FC = () => {
   const { language } = useLanguage();
   const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState('');
-  const { userMarket, setUserMarket } = useMarketFilter();
+  const marketFilter = useMarketFilter();
   
-  // Beim Laden der Seite den Markt auf Deutschland setzen
-  React.useEffect(() => {
-    if (userMarket !== 'germany') {
-      setUserMarket('germany');
+  // Set the market to Germany when the page loads
+  useEffect(() => {
+    if (marketFilter.userMarket !== 'germany') {
+      marketFilter.setUserMarket('germany');
     }
-  }, [userMarket, setUserMarket]);
+  }, [marketFilter]);
 
   const steuerTipps = [
     {

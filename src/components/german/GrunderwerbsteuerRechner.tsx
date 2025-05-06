@@ -31,11 +31,15 @@ const bundeslaender = [
   { id: 'th', nameDe: 'Thüringen', nameEn: 'Thuringia', steuersatz: 6.5 }
 ];
 
-interface GrunderwerbsteuerRechnerProps {
+export interface GrunderwerbsteuerRechnerProps {
   className?: string;
+  onCalculationComplete?: (result: any) => void;
 }
 
-export const GrunderwerbsteuerRechner: React.FC<GrunderwerbsteuerRechnerProps> = ({ className }) => {
+export const GrunderwerbsteuerRechner: React.FC<GrunderwerbsteuerRechnerProps> = ({ 
+  className,
+  onCalculationComplete 
+}) => {
   const { language } = useLanguage();
   const { toast } = useToast();
   
@@ -67,12 +71,25 @@ export const GrunderwerbsteuerRechner: React.FC<GrunderwerbsteuerRechnerProps> =
         setNebenkosten(weitereNebenkosten);
         
         // Gesamtkosten
-        setGesamtkosten(kaufpreisValue + grunderwerbsteuerValue + weitereNebenkosten);
+        const gesamtkostenValue = kaufpreisValue + grunderwerbsteuerValue + weitereNebenkosten;
+        setGesamtkosten(gesamtkostenValue);
+        
+        // Notify parent component when calculation is complete
+        if (onCalculationComplete) {
+          onCalculationComplete({
+            kaufpreis: kaufpreisValue,
+            bundesland: selectedBundesland,
+            steuersatz: selectedBundesland.steuersatz,
+            grunderwerbsteuer: grunderwerbsteuerValue,
+            nebenkosten: weitereNebenkosten,
+            gesamtkosten: gesamtkostenValue
+          });
+        }
       }
     } catch (error) {
       console.error('Fehler bei der Berechnung:', error);
     }
-  }, [kaufpreis, bundeslandId, nebenKostenProzent]);
+  }, [kaufpreis, bundeslandId, nebenKostenProzent, onCalculationComplete]);
   
   // Exportiere die Berechnung
   const handleExport = () => {

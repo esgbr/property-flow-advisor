@@ -11,25 +11,25 @@ export const useMarketFilter = () => {
     preferences.investmentMarket || 'global'
   );
 
-  // Synchronisiere lokalen State mit User-Preferences
+  // Synchronize local state with user preferences
   useEffect(() => {
-    if (preferences.investmentMarket) {
+    if (preferences.investmentMarket && preferences.investmentMarket !== userMarket) {
       setUserMarketState(preferences.investmentMarket);
     }
-  }, [preferences.investmentMarket]);
+  }, [preferences.investmentMarket, userMarket]);
 
-  // Setze Markt und aktualisiere Preferences
+  // Set market and update preferences
   const setUserMarket = useCallback((market: InvestmentMarket) => {
     setUserMarketState(market);
     updatePreferences({ investmentMarket: market });
   }, [updatePreferences]);
 
-  // Hole formatierten Marktnamen 
+  // Get formatted market name
   const getMarketDisplayNameFormatted = useCallback(() => {
     return getMarketDisplayName(userMarket);
   }, [userMarket]);
 
-  // Hole lokalisierten Marktnamen
+  // Get localized market name
   const getLocalizedMarketNameFormatted = useCallback(() => {
     return getLocalizedMarketName(userMarket, language);
   }, [userMarket, language]);
@@ -38,6 +38,9 @@ export const useMarketFilter = () => {
     userMarket,
     setUserMarket,
     getMarketDisplayName: getMarketDisplayNameFormatted,
-    getLocalizedMarketName: getLocalizedMarketNameFormatted
+    getLocalizedMarketName: getLocalizedMarketNameFormatted,
+    shouldShowFeature: (feature: any) => true, // Simplified implementation
+    filterFeaturesByMarket: <T extends any>(features: T[]) => features, // Simplified implementation
+    getAvailableMarkets: () => [] // Simplified implementation
   };
 };

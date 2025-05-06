@@ -38,11 +38,15 @@ const buildingTypes = [
 // Erwerbsjahre für die Simulation
 const acquisitionYears = Array.from({ length: 11 }, (_, i) => (new Date().getFullYear() - 5 + i).toString());
 
-interface GermanAfaCalculatorProps {
+export interface GermanAfaCalculatorProps {
   className?: string;
+  onCalculationComplete?: (result: any) => void;
 }
 
-export const GermanAfaCalculator: React.FC<GermanAfaCalculatorProps> = ({ className }) => {
+export const GermanAfaCalculator: React.FC<GermanAfaCalculatorProps> = ({ 
+  className,
+  onCalculationComplete 
+}) => {
   const { language } = useLanguage();
   const { toast } = useToast();
   
@@ -106,10 +110,22 @@ export const GermanAfaCalculator: React.FC<GermanAfaCalculatorProps> = ({ classN
       
       // Berechne Gesamt-AfA
       setTotalAfa(calculatedYearlyAfa * afaYears);
+      
+      // Notify parent component when calculation is complete
+      if (onCalculationComplete) {
+        onCalculationComplete({
+          yearlyAfa: calculatedYearlyAfa,
+          monthlyAfa: calculatedYearlyAfa / 12,
+          totalAfa: calculatedYearlyAfa * afaYears,
+          afaRate,
+          afaYears,
+          buildingValue: totalBuildingValue
+        });
+      }
     } catch (error) {
       console.error('Fehler bei der AfA-Berechnung:', error);
     }
-  }, [buildingValue, afaRate, afaYears, renovationCosts]);
+  }, [buildingValue, afaRate, afaYears, renovationCosts, onCalculationComplete]);
   
   // Exportiere die Berechnung
   const handleExport = () => {

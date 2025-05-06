@@ -26,14 +26,15 @@ import MarketChart from '@/components/analysis/MarketChart';
 const MarketExplorerPage: React.FC = () => {
   const { language } = useLanguage();
   const [searchQuery, setSearchQuery] = useState('');
-  const { userMarket, setUserMarket } = useMarketFilter();
+  const marketFilter = useMarketFilter();
+  const userMarket = marketFilter.userMarket;
   
-  // Hier wurde die Korrektur des Fehlers vorgenommen - Entfernen des zweiten Arguments
-  const marketName = userMarket ? useMarketFilter().getMarketDisplayName() : '';
+  // Get the market display name
+  const marketName = userMarket ? marketFilter.getMarketDisplayName() : '';
 
-  // Handler für Marktänderungen
+  // Handler for market changes
   const handleMarketChange = (value: string) => {
-    setUserMarket(value as InvestmentMarket);
+    marketFilter.setUserMarket(value as InvestmentMarket);
   };
 
   return (
