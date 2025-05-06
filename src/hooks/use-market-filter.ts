@@ -77,11 +77,26 @@ export const useMarketFilter = () => {
     );
   }, [getCurrentMarket]);
   
+  const getAvailableMarkets = useCallback((): InvestmentMarket[] => {
+    return getMarketOptions().map(option => option.id as InvestmentMarket);
+  }, [getMarketOptions]);
+  
+  // Create a userMarket object for backward compatibility
+  const userMarket = {
+    current: getCurrentMarket(),
+    display: getMarketDisplayName(),
+    getAvailableMarkets
+  };
+  
   return {
     getCurrentMarket,
     getMarketOptions,
     getMarketDisplayName,
     isMarketSpecific,
-    filterMarketData
+    filterMarketData,
+    getAvailableMarkets,
+    userMarket // Add the userMarket property for compatibility
   };
 };
+
+export default useMarketFilter;
