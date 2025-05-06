@@ -50,8 +50,8 @@ export function useEnhancedMarket() {
     return availableMarkets
       .filter(market => market.id !== currentMarket)
       .sort((a, b) => {
-        const simA = getMarketSimilarity(a.id as InvestmentMarket, currentMarket);
-        const simB = getMarketSimilarity(b.id as InvestmentMarket, currentMarket);
+        const simA = getMarketSimilarity(a.id, currentMarket);
+        const simB = getMarketSimilarity(b.id, currentMarket);
         return simB - simA;
       })
       .slice(0, 3);

@@ -1,4 +1,3 @@
-
 import { InvestmentMarket } from '@/contexts/UserPreferencesContext';
 
 /**
@@ -9,10 +8,32 @@ export const getLocalizedMarketName = (market: InvestmentMarket, language: strin
     'germany': { en: 'Germany', de: 'Deutschland' },
     'austria': { en: 'Austria', de: 'Österreich' },
     'switzerland': { en: 'Switzerland', de: 'Schweiz' },
-    'netherlands': { en: 'Netherlands', de: 'Niederlande' }
+    'usa': { en: 'United States', de: 'USA' },
+    'canada': { en: 'Canada', de: 'Kanada' },
+    'global': { en: 'Global', de: 'Global' }
   };
   
-  return marketNames[market][language as 'en' | 'de'] || market;
+  return marketNames[market]?.[language as 'en' | 'de'] || market;
+};
+
+/**
+ * Available markets with their display names
+ */
+export const availableMarkets = [
+  { id: 'germany' as InvestmentMarket, name: 'Deutschland/Germany' },
+  { id: 'austria' as InvestmentMarket, name: 'Österreich/Austria' },
+  { id: 'switzerland' as InvestmentMarket, name: 'Schweiz/Switzerland' },
+  { id: 'usa' as InvestmentMarket, name: 'USA/United States' },
+  { id: 'canada' as InvestmentMarket, name: 'Kanada/Canada' },
+  { id: 'global' as InvestmentMarket, name: 'Global' }
+];
+
+/**
+ * Get display name for a market
+ */
+export const getMarketDisplayName = (market: InvestmentMarket): string => {
+  const foundMarket = availableMarkets.find(m => m.id === market);
+  return foundMarket ? foundMarket.name : 'Global';
 };
 
 /**
@@ -25,22 +46,28 @@ export const getRecommendedMarkets = (
   // Mapping of potential related markets based on investment preference
   const recommendationMap: Record<string, Record<InvestmentMarket, InvestmentMarket[]>> = {
     'growth': {
-      'germany': ['netherlands', 'austria'],
+      'germany': ['austria', 'switzerland'],
       'austria': ['germany', 'switzerland'],
-      'switzerland': ['germany', 'netherlands'],
-      'netherlands': ['germany', 'austria']
+      'switzerland': ['austria', 'germany'],
+      'usa': ['canada'],
+      'canada': ['usa'],
+      'global': ['germany', 'usa']
     },
     'income': {
-      'germany': ['austria', 'netherlands'],
-      'austria': ['germany', 'netherlands'],
+      'germany': ['austria', 'switzerland'],
+      'austria': ['germany', 'switzerland'],
       'switzerland': ['austria', 'germany'],
-      'netherlands': ['germany', 'austria']
+      'usa': ['canada'],
+      'canada': ['usa'],
+      'global': ['germany', 'usa']
     },
     'balanced': {
-      'germany': ['austria', 'netherlands', 'switzerland'],
-      'austria': ['germany', 'switzerland', 'netherlands'],
-      'switzerland': ['austria', 'germany', 'netherlands'],
-      'netherlands': ['germany', 'austria', 'switzerland']
+      'germany': ['austria', 'switzerland', 'usa'],
+      'austria': ['germany', 'switzerland', 'usa'],
+      'switzerland': ['austria', 'germany', 'usa'],
+      'usa': ['canada', 'germany'],
+      'canada': ['usa', 'germany'],
+      'global': ['germany', 'usa', 'switzerland']
     }
   };
   
@@ -117,9 +144,88 @@ export const formatMarketValue = (
   }
 };
 
+/**
+ * Get market similarity score (0-1) between two markets
+ */
+export const getMarketSimilarity = (
+  marketA: InvestmentMarket, 
+  marketB: InvestmentMarket
+): number => {
+  // Base similarity matrix (higher values = more similar)
+  const similarityMatrix: Record<InvestmentMarket, Record<InvestmentMarket, number>> = {
+    'germany': {
+      'germany': 1.0,
+      'austria': 0.85,
+      'switzerland': 0.75,
+      'usa': 0.4,
+      'canada': 0.35,
+      'global': 0.5
+    },
+    'austria': {
+      'germany': 0.85,
+      'austria': 1.0,
+      'switzerland': 0.8,
+      'usa': 0.3,
+      'canada': 0.3,
+      'global': 0.5
+    },
+    'switzerland': {
+      'germany': 0.75,
+      'austria': 0.8,
+      'switzerland': 1.0,
+      'usa': 0.4,
+      'canada': 0.4,
+      'global': 0.5
+    },
+    'usa': {
+      'germany': 0.4,
+      'austria': 0.3,
+      'switzerland': 0.4,
+      'usa': 1.0,
+      'canada': 0.85,
+      'global': 0.5
+    },
+    'canada': {
+      'germany': 0.35,
+      'austria': 0.3,
+      'switzerland': 0.4,
+      'usa': 0.85,
+      'canada': 1.0,
+      'global': 0.5
+    },
+    'global': {
+      'germany': 0.5,
+      'austria': 0.5,
+      'switzerland': 0.5,
+      'usa': 0.5,
+      'canada': 0.5,
+      'global': 1.0
+    }
+  };
+  
+  return similarityMatrix[marketA]?.[marketB] || 0;
+};
+
+/**
+ * Filter markets by region
+ */
+export const getFilteredMarketOptions = (region: string): InvestmentMarket[] => {
+  if (region === 'europe') {
+    return ['germany', 'austria', 'switzerland'];
+  }
+  if (region === 'northamerica') {
+    return ['usa', 'canada'];
+  }
+  return ['germany', 'austria', 'switzerland', 'usa', 'canada', 'global'];
+};
+
 export default {
   getLocalizedMarketName,
   getRecommendedMarkets,
   calculateMarketPotentialScore,
-  formatMarketValue
+  formatMarketValue,
+  getMarketDisplayName,
+  availableMarkets,
+  getMarketSimilarity,
+  getFilteredMarketOptions
 };

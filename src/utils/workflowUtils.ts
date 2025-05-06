@@ -1,3 +1,4 @@
+
 import { WorkflowType } from '@/data/workflow-definitions';
 import { workflowDefinitions } from '@/data/workflow-definitions';
 import { InvestmentMarket } from '@/contexts/UserPreferencesContext';
@@ -137,8 +138,71 @@ export const findIncompleteWorkflows = (
   return results;
 };
 
+/**
+ * Creates a recommended workflow path based on user preferences and progress
+ */
+export const createRecommendedWorkflowPath = (
+  workflowType: WorkflowType,
+  userPreferences: any
+): string[] => {
+  // Base workflow path
+  const basePath = workflowDefinitions[workflowType].steps.map(step => step.id);
+  
+  // Customize path based on user preferences
+  if (userPreferences.experience === 'beginner') {
+    // For beginners, include more educational steps
+    return basePath;
+  } else if (userPreferences.experience === 'advanced') {
+    // For advanced users, provide a more streamlined path
+    return basePath.filter(step => 
+      !step.includes('intro') && !step.includes('basic')
+    );
+  }
+  
+  return basePath;
+};
+
+/**
+ * Calculates the estimated time to complete a workflow
+ */
+export const calculateWorkflowEstimatedTime = (
+  workflowType: WorkflowType,
+  completedSteps: string[]
+): number => {
+  // Average time in minutes for each step
+  const stepTimes: Record<string, number> = {
+    'calculator': 5,
+    'rendite': 8,
+    'grunderwerbsteuer': 4,
+    'planning': 10,
+    'afa': 7,
+    'offers': 6,
+    'tilgung': 5,
+    'marktanalyse': 12,
+    'portfolio': 15,
+    'default': 5 // Default time if not specified
+  };
+  
+  let totalTime = 0;
+  
+  // Get all remaining steps
+  const remainingSteps = workflowDefinitions[workflowType].steps
+    .filter(step => !completedSteps.includes(step.id))
+    .map(step => step.id);
+  
+  // Sum up time estimates for remaining steps
+  remainingSteps.forEach(stepId => {
+    totalTime += stepTimes[stepId] || stepTimes.default;
+  });
+  
+  return totalTime;
+};
+
 export default {
   getRelatedWorkflowsForTool,
+  getMarketRelevantWorkflows,
+  getCommonNextSteps,
+  findIncompleteWorkflows,
   createRecommendedWorkflowPath,
   calculateWorkflowEstimatedTime
 };

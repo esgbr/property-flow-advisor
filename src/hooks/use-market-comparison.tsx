@@ -38,13 +38,29 @@ const marketMetricsData: Record<InvestmentMarket, MarketMetrics> = {
     vacancy: 0.9,
     investmentVolume: 42700000
   },
-  'netherlands': {
-    averagePrice: 3900,
-    rentalYield: 4.2,
-    yearOverYearGrowth: 6.1,
-    averageRent: 16.7,
-    vacancy: 1.1,
-    investmentVolume: 24500000
+  'usa': {
+    averagePrice: 3200,
+    rentalYield: 5.2,
+    yearOverYearGrowth: 4.3,
+    averageRent: 18.5,
+    vacancy: 2.1,
+    investmentVolume: 125000000
+  },
+  'canada': {
+    averagePrice: 3500,
+    rentalYield: 4.5,
+    yearOverYearGrowth: 3.9,
+    averageRent: 17.2,
+    vacancy: 1.8,
+    investmentVolume: 35600000
+  },
+  'global': {
+    averagePrice: 4500,
+    rentalYield: 4.0,
+    yearOverYearGrowth: 4.5,
+    averageRent: 18.0,
+    vacancy: 1.5,
+    investmentVolume: 75000000
   }
 };
 

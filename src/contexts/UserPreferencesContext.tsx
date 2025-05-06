@@ -1,232 +1,171 @@
 
-import React, { createContext, useState, useContext, useEffect } from 'react';
+import React, { createContext, useContext, useState, useEffect } from 'react';
 
-// Update InvestmentMarket type to include 'other'
-export type InvestmentMarket = 'germany' | 'austria' | 'switzerland' | 'france' | 'usa' | 'canada' | 'global' | 'other' | '';
+// Define available market types
+export type InvestmentMarket = 'germany' | 'austria' | 'switzerland' | 'usa' | 'canada' | 'global';
 
-// Add InvestmentMarketOption interface
 export interface InvestmentMarketOption {
   id: InvestmentMarket;
   name: string;
 }
 
-// Update UserPreferences interface with all missing properties
 export interface UserPreferences {
-  language?: string;
-  theme?: string;
-  investmentMarket?: InvestmentMarket;
-  notifications?: {
-    email?: boolean;
-    push?: boolean;
-    frequency?: 'daily' | 'weekly' | 'monthly' | 'never';
-    security?: boolean;
-    price?: boolean;
-    news?: boolean;
-    portfolio?: boolean;
-    alerts?: boolean;
-  };
-  onboardingCompleted?: boolean;
-  isAuthenticated?: boolean;
-  lastPasswordChange?: string;
   darkMode?: boolean;
-  notificationsEnabled?: boolean;
-  analyticsConsent?: boolean;
-  visitedInvestorDashboard?: boolean;
-  interests?: string[];
-  investmentGoals?: string[];
-  preferredPropertyTypes?: string[];
-  name?: string;
-  email?: string;
-  role?: 'user' | 'admin' | 'guest';
-  appLockEnabled?: boolean;
-  appLockMethod?: 'pin' | 'biometric' | 'password';
-  emailVerified?: boolean;
-  experienceLevel?: 'beginner' | 'intermediate' | 'advanced' | 'expert';
-  dismissedSecurityAlert?: boolean;
-  visitedPages?: string[];
-  lastVisitedPage?: string;
-  lastActive?: string;
+  language?: string;
+  investmentMarket?: InvestmentMarket;
+  investmentPreference?: 'growth' | 'income' | 'balanced';
+  onboardingCompleted?: boolean;
+  propertyTypes?: string[];
+  experience?: 'beginner' | 'intermediate' | 'advanced';
+  goals?: string[];
   recentMarkets?: InvestmentMarket[];
-  sidebarPreferences?: {
-    collapsed?: boolean;
-    theme?: 'light' | 'dark';
+  marketPreferences?: {
+    favoriteRegions?: string[];
+    priceRange?: {
+      min: number;
+      max: number;
+    };
+    propertyTypes?: string[];
   };
-  profileImage?: string;
-  marketFilter?: InvestmentMarket;
-  accessibility?: {
+  notificationPreferences?: {
+    email: boolean;
+    push: boolean;
+    sms: boolean;
+  };
+  accessibilityPreferences?: {
+    fontSize?: 'small' | 'medium' | 'large';
     highContrast?: boolean;
-    largeText?: boolean;
-    reducedMotion?: boolean;
-    dyslexiaFriendly?: boolean;
+    reduceMotion?: boolean;
     screenReader?: boolean;
-    highContrastOverride?: boolean;
-    reducedMotionOverride?: boolean;
+  };
+  dashboardLayout?: {
+    widgets: string[];
+    layout: 'grid' | 'list';
+  };
+  workflows?: {
+    [key: string]: {
+      progress: number;
+      currentStep: string;
+      completed: boolean;
+    }
   };
 }
 
-// Update the OnboardingData interface
-export interface OnboardingData {
-  name: string;
-  experienceLevel: string;
-  investmentMarket: InvestmentMarket;
-  interests: string[];
-  investmentGoals: string[];
-  preferredPropertyTypes: string[];
-}
-
-export interface UserPreferencesContextType {
+interface UserPreferencesContextValue {
   preferences: UserPreferences;
   updatePreferences: (newPreferences: Partial<UserPreferences>) => void;
-  saveOnboardingData: (data: OnboardingData) => void;
-  updatePreference: (key: keyof UserPreferences, value: any) => void;
   resetPreferences: () => void;
-  isFirstVisit: boolean;
-  setIsFirstVisit: (value: boolean) => void;
-  resetOnboarding: () => void;
-  loginUser: (email: string, password: string) => Promise<boolean>;
-  logoutUser: () => void;
-  registerUser: (name: string, email: string, password: string) => Promise<boolean>;
-  isAuthenticated: boolean;
+  hasCompletedOnboarding: boolean;
+  isAccessibilityEnabled: boolean;
 }
 
-// Create the context with a default value
-export const UserPreferencesContext = createContext<UserPreferencesContextType>({
-  preferences: {},
+const defaultPreferences: UserPreferences = {
+  darkMode: false,
+  language: 'en',
+  investmentMarket: 'germany',
+  investmentPreference: 'balanced',
+  onboardingCompleted: false,
+  propertyTypes: [],
+  experience: 'beginner',
+  goals: [],
+  recentMarkets: [],
+  marketPreferences: {
+    favoriteRegions: [],
+    priceRange: {
+      min: 0,
+      max: 1000000
+    },
+    propertyTypes: []
+  },
+  notificationPreferences: {
+    email: true,
+    push: true,
+    sms: false
+  },
+  accessibilityPreferences: {
+    fontSize: 'medium',
+    highContrast: false,
+    reduceMotion: false,
+    screenReader: false
+  },
+  dashboardLayout: {
+    widgets: ['portfolio', 'market', 'tasks', 'news'],
+    layout: 'grid'
+  },
+  workflows: {}
+};
+
+// Create context with default values
+export const UserPreferencesContext = createContext<UserPreferencesContextValue>({
+  preferences: defaultPreferences,
   updatePreferences: () => {},
-  saveOnboardingData: () => {},
-  updatePreference: () => {},
   resetPreferences: () => {},
-  isFirstVisit: true,
-  setIsFirstVisit: () => {},
-  resetOnboarding: () => {},
-  loginUser: () => Promise.resolve(false),
-  logoutUser: () => {},
-  registerUser: () => Promise.resolve(false),
-  isAuthenticated: false
+  hasCompletedOnboarding: false,
+  isAccessibilityEnabled: false
 });
 
-interface UserPreferencesProviderProps {
-  children: React.ReactNode;
-}
-
-export const UserPreferencesProvider: React.FC<UserPreferencesProviderProps> = ({ children }) => {
+// Provider component
+export const UserPreferencesProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [preferences, setPreferences] = useState<UserPreferences>(() => {
-    // Initialize from localStorage
-    const storedPreferences = localStorage.getItem('userPreferences');
-    return storedPreferences ? JSON.parse(storedPreferences) : {};
-  });
-  const [isFirstVisit, setIsFirstVisit] = useState<boolean>(() => {
-    // Check if it's the user's first visit
-    const visited = localStorage.getItem('visitedBefore');
-    return visited ? false : true;
-  });
-
-  // Compute authentication state
-  const isAuthenticated = preferences.isAuthenticated || false;
-
-  useEffect(() => {
-    // Set visitedBefore in localStorage when the component mounts
-    if (isFirstVisit) {
-      localStorage.setItem('visitedBefore', 'true');
+    // Try to load preferences from localStorage on initial render
+    try {
+      const savedPreferences = localStorage.getItem('userPreferences');
+      return savedPreferences ? JSON.parse(savedPreferences) : defaultPreferences;
+    } catch (error) {
+      console.error('Failed to parse user preferences from localStorage', error);
+      return defaultPreferences;
     }
-  }, [isFirstVisit]);
+  });
 
+  // Update localStorage whenever preferences change
   useEffect(() => {
-    // Save preferences to localStorage whenever they change
-    localStorage.setItem('userPreferences', JSON.stringify(preferences));
+    try {
+      localStorage.setItem('userPreferences', JSON.stringify(preferences));
+    } catch (error) {
+      console.error('Failed to save user preferences to localStorage', error);
+    }
   }, [preferences]);
 
+  // Update partial preferences
   const updatePreferences = (newPreferences: Partial<UserPreferences>) => {
-    setPreferences(prev => ({ ...prev, ...newPreferences }));
-  };
-
-  const updatePreference = (key: keyof UserPreferences, value: any) => {
-    setPreferences(prev => ({ ...prev, [key]: value }));
-  };
-
-  const saveOnboardingData = (data: OnboardingData) => {
-    // Save onboarding data to preferences
-    updatePreferences({
-      onboardingCompleted: true,
-      name: data.name,
-      investmentMarket: data.investmentMarket,
-      interests: data.interests,
-      investmentGoals: data.investmentGoals,
-      preferredPropertyTypes: data.preferredPropertyTypes,
-      experienceLevel: data.experienceLevel as any
-    });
-  };
-
-  const resetPreferences = () => {
-    // Clear all preferences
-    setPreferences({});
-    localStorage.removeItem('userPreferences');
-  };
-  
-  const resetOnboarding = () => {
-    updatePreferences({ onboardingCompleted: false });
-  };
-
-  // Mock authentication functions
-  const loginUser = async (email: string, password: string): Promise<boolean> => {
-    // Simulate API call
-    return new Promise((resolve) => {
-      setTimeout(() => {
-        setPreferences(prev => ({ 
-          ...prev, 
-          isAuthenticated: true,
-          email,
-          name: email.split('@')[0],
-          role: 'user'
-        }));
-        resolve(true);
-      }, 1000);
-    });
-  };
-
-  const registerUser = async (name: string, email: string, password: string): Promise<boolean> => {
-    // Simulate API call
-    return new Promise((resolve) => {
-      setTimeout(() => {
-        setPreferences(prev => ({ 
-          ...prev, 
-          isAuthenticated: true,
-          email,
-          name,
-          role: 'user'
-        }));
-        resolve(true);
-      }, 1000);
-    });
-  };
-
-  const logoutUser = () => {
-    setPreferences(prev => ({ 
-      ...prev, 
-      isAuthenticated: false 
+    setPreferences(prevPreferences => ({
+      ...prevPreferences,
+      ...newPreferences
     }));
   };
 
+  // Reset all preferences to defaults
+  const resetPreferences = () => {
+    setPreferences(defaultPreferences);
+    localStorage.removeItem('userPreferences');
+  };
+
+  const hasCompletedOnboarding = Boolean(preferences.onboardingCompleted);
+  
+  // Check if any accessibility feature is enabled
+  const isAccessibilityEnabled = Boolean(
+    preferences.accessibilityPreferences?.highContrast ||
+    preferences.accessibilityPreferences?.reduceMotion ||
+    preferences.accessibilityPreferences?.screenReader ||
+    preferences.accessibilityPreferences?.fontSize !== 'medium'
+  );
+
   return (
-    <UserPreferencesContext.Provider value={{
-      preferences,
-      updatePreferences,
-      saveOnboardingData,
-      updatePreference,
-      resetPreferences,
-      isFirstVisit,
-      setIsFirstVisit,
-      resetOnboarding,
-      loginUser,
-      logoutUser,
-      registerUser,
-      isAuthenticated
-    }}>
+    <UserPreferencesContext.Provider 
+      value={{ 
+        preferences, 
+        updatePreferences, 
+        resetPreferences, 
+        hasCompletedOnboarding,
+        isAccessibilityEnabled
+      }}
+    >
       {children}
     </UserPreferencesContext.Provider>
   );
 };
 
-export const useUserPreferences = (): UserPreferencesContextType => {
-  return useContext(UserPreferencesContext);
-};
+// Custom hook for easier access to the context
+export const useUserPreferences = () => useContext(UserPreferencesContext);
+
+export default UserPreferencesProvider;
