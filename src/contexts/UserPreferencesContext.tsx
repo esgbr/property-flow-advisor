@@ -26,6 +26,22 @@ export interface UserPreferences {
   language?: string;
   theme?: 'light' | 'dark' | 'system';
   market?: InvestmentMarket;
+  // Add missing properties
+  marketFilter?: InvestmentMarket;
+  investmentMarket?: InvestmentMarket;
+  dismissedSecurityAlert?: boolean;
+  experienceLevel?: 'beginner' | 'intermediate' | 'advanced' | 'expert';
+  visitedPages?: string[];
+  lastVisitedPage?: string;
+  lastActive?: string;
+  appLockEnabled?: boolean;
+  emailVerified?: boolean;
+  role?: 'user' | 'admin';
+  profileImage?: string;
+  sidebarPreferences?: {
+    collapsed?: boolean;
+    width?: number;
+  };
   accessibility?: UserAccessibilityPreferences;
   calculatorSettings?: {
     currency?: string;
@@ -44,12 +60,41 @@ export interface UserPreferences {
   };
 }
 
+// Define OnboardingData interface
+export interface OnboardingData {
+  name: string;
+  experienceLevel: 'beginner' | 'intermediate' | 'advanced' | 'expert';
+  investmentGoals: string[];
+  preferredPropertyTypes: string[];
+  interests: string[];
+  investmentMarket: InvestmentMarket;
+}
+
+export interface OnboardingStep {
+  id: string;
+  title: string;
+  description: string;
+  component: React.ReactNode;
+}
+
+export interface OnboardingStepProps {
+  data: Partial<OnboardingData>;
+  updateData: (fieldName: keyof OnboardingData, value: any) => void;
+  onNext: () => void;
+  onBack: () => void;
+}
+
 interface UserPreferencesContextType {
   preferences: UserPreferences;
   updatePreferences: (newPreferences: Partial<UserPreferences>) => void;
   isAuthenticated: boolean;
   setIsAuthenticated: (value: boolean) => void;
   resetPreferences: () => void;
+  // Add missing functions
+  registerUser: (name: string, email: string, password: string) => Promise<boolean>;
+  loginUser: (email: string, password: string) => Promise<boolean>;
+  logoutUser: () => void;
+  saveOnboardingData: (data: OnboardingData) => void;
 }
 
 // Default preferences
@@ -57,6 +102,7 @@ const defaultPreferences: UserPreferences = {
   language: 'en',
   theme: 'system',
   market: 'global',
+  marketFilter: 'global',
   accessibility: {
     highContrast: false,
     largeText: false,
@@ -87,7 +133,11 @@ const UserPreferencesContext = createContext<UserPreferencesContextType>({
   updatePreferences: () => {},
   isAuthenticated: false,
   setIsAuthenticated: () => {},
-  resetPreferences: () => {}
+  resetPreferences: () => {},
+  registerUser: async () => false,
+  loginUser: async () => false,
+  logoutUser: () => {},
+  saveOnboardingData: () => {}
 });
 
 // Export the hook to use this context
@@ -109,6 +159,66 @@ export const UserPreferencesProvider: React.FC<{ children: React.ReactNode }> = 
   // Function to reset preferences to defaults
   const resetPreferences = () => {
     setPreferences(defaultPreferences);
+  };
+
+  // Mock authentication functions
+  const registerUser = async (name: string, email: string, password: string): Promise<boolean> => {
+    // In a real app, this would make an API call to register the user
+    try {
+      // Simulate API delay
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      
+      setPreferences(prev => ({
+        ...prev,
+        name,
+        email,
+        role: 'user',
+        emailVerified: false
+      }));
+      
+      setIsAuthenticated(true);
+      return true;
+    } catch (error) {
+      console.error("Registration error:", error);
+      return false;
+    }
+  };
+  
+  const loginUser = async (email: string, password: string): Promise<boolean> => {
+    // In a real app, this would make an API call to authenticate the user
+    try {
+      // Simulate API delay
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      
+      // For demo purposes, just accept any credentials
+      setIsAuthenticated(true);
+      
+      if (!preferences.email) {
+        setPreferences(prev => ({
+          ...prev,
+          email,
+          role: email.includes('admin') ? 'admin' : 'user'
+        }));
+      }
+      
+      return true;
+    } catch (error) {
+      console.error("Login error:", error);
+      return false;
+    }
+  };
+  
+  const logoutUser = () => {
+    setIsAuthenticated(false);
+  };
+  
+  const saveOnboardingData = (data: OnboardingData) => {
+    updatePreferences({
+      name: data.name,
+      experienceLevel: data.experienceLevel,
+      investmentMarket: data.investmentMarket
+      // Add other fields as needed
+    });
   };
   
   // Check for system preferences on mount
@@ -150,7 +260,11 @@ export const UserPreferencesProvider: React.FC<{ children: React.ReactNode }> = 
         updatePreferences, 
         isAuthenticated, 
         setIsAuthenticated,
-        resetPreferences
+        resetPreferences,
+        registerUser,
+        loginUser,
+        logoutUser,
+        saveOnboardingData
       }}
     >
       {children}

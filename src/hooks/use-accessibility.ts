@@ -1,153 +1,233 @@
 
-import { useContext, useCallback } from 'react';
-import { useAccessibility as useA11yContext } from '@/components/accessibility/A11yProvider';
-import { toast } from 'sonner';
-
-interface AccessibilityOptions {
-  announceChanges?: boolean;
-  respectReduceMotion?: boolean;
-}
+import { useCallback } from 'react';
+import { useUserPreferences } from '@/contexts/UserPreferencesContext';
 
 /**
- * Enhanced accessibility hook that provides additional functionality
- * beyond the basic context functionality
+ * Custom hook for managing accessibility features
  */
-export const useAccessibility = (options: AccessibilityOptions = {}) => {
-  const a11y = useA11yContext();
-  const { announceChanges = true, respectReduceMotion = true } = options;
+export const useAccessibility = () => {
+  const { preferences, updatePreferences } = useUserPreferences();
   
-  // Announce a message to screen readers
-  const announce = useCallback((message: string, priority: 'polite' | 'assertive' = 'polite') => {
-    if (!announceChanges || !a11y.screenReader) return;
+  // Get the current accessibility settings from preferences
+  const highContrast = preferences.accessibility?.highContrast || false;
+  const largeText = preferences.accessibility?.largeText || false;
+  const reducedMotion = preferences.accessibility?.reducedMotion || false;
+  const dyslexiaFriendly = preferences.accessibility?.dyslexiaFriendly || false;
+  const screenReader = preferences.accessibility?.screenReader || false;
+  
+  // Toggle functions for each accessibility feature
+  const toggleHighContrast = useCallback(() => {
+    updatePreferences({
+      accessibility: {
+        ...preferences.accessibility,
+        highContrast: !highContrast
+      }
+    });
+  }, [highContrast, preferences.accessibility, updatePreferences]);
+  
+  const toggleLargeText = useCallback(() => {
+    updatePreferences({
+      accessibility: {
+        ...preferences.accessibility,
+        largeText: !largeText
+      }
+    });
     
-    const announcer = document.getElementById('a11y-announcer');
+    // Apply large text CSS class to body
+    if (!largeText) {
+      document.documentElement.classList.add('large-text');
+    } else {
+      document.documentElement.classList.remove('large-text');
+    }
+  }, [largeText, preferences.accessibility, updatePreferences]);
+  
+  const toggleReducedMotion = useCallback(() => {
+    updatePreferences({
+      accessibility: {
+        ...preferences.accessibility,
+        reducedMotion: !reducedMotion
+      }
+    });
+  }, [reducedMotion, preferences.accessibility, updatePreferences]);
+
+  const toggleDyslexiaFriendly = useCallback(() => {
+    updatePreferences({
+      accessibility: {
+        ...preferences.accessibility,
+        dyslexiaFriendly: !dyslexiaFriendly
+      }
+    });
+    
+    // Apply dyslexic font CSS class to body
+    if (!dyslexiaFriendly) {
+      document.documentElement.classList.add('dyslexic-font');
+    } else {
+      document.documentElement.classList.remove('dyslexic-font');
+    }
+  }, [dyslexiaFriendly, preferences.accessibility, updatePreferences]);
+  
+  const toggleScreenReader = useCallback(() => {
+    updatePreferences({
+      accessibility: {
+        ...preferences.accessibility,
+        screenReader: !screenReader
+      }
+    });
+  }, [screenReader, preferences.accessibility, updatePreferences]);
+  
+  // Helper function to check if animations should be enabled
+  const getAnimationPreference = useCallback(() => {
+    return !reducedMotion;
+  }, [reducedMotion]);
+  
+  // Function to announce a message to screen readers
+  const announce = useCallback((message: string, priority: 'polite' | 'assertive' = 'polite') => {
+    let announcer = document.getElementById('screen-reader-announcer');
     
     if (!announcer) {
-      // Create an announcer element if it doesn't exist
-      const newAnnouncer = document.createElement('div');
-      newAnnouncer.id = 'a11y-announcer';
-      newAnnouncer.setAttribute('aria-live', priority);
-      newAnnouncer.setAttribute('aria-atomic', 'true');
-      newAnnouncer.classList.add('sr-only'); // Screen reader only
-      document.body.appendChild(newAnnouncer);
-      
-      // Set timeout to ensure screen readers pick up the change
-      setTimeout(() => {
-        newAnnouncer.textContent = message;
-      }, 50);
-    } else {
-      // Use existing announcer
+      announcer = document.createElement('div');
+      announcer.id = 'screen-reader-announcer';
+      announcer.className = 'sr-only';
       announcer.setAttribute('aria-live', priority);
-      
-      // Clear and set content with a brief delay
-      announcer.textContent = '';
-      setTimeout(() => {
-        if (announcer) announcer.textContent = message;
-      }, 50);
+      document.body.appendChild(announcer);
+    } else {
+      announcer.setAttribute('aria-live', priority);
     }
-  }, [a11y.screenReader, announceChanges]);
-  
-  // Get appropriate animation settings based on user preferences
-  const getAnimationPreference = useCallback(() => {
-    if (!respectReduceMotion) return true;
     
-    // Check browser's prefers-reduced-motion setting
-    const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    
-    // App setting takes precedence over browser setting
-    return !a11y.reduceMotion && !prefersReducedMotion;
-  }, [a11y.reduceMotion, respectReduceMotion]);
-  
-  // Apply a focus style temporarily to an element
-  const focusElement = useCallback((element: HTMLElement | null, duration = 1000) => {
-    if (!element) return;
-    
-    const originalOutline = element.style.outline;
-    const originalTransition = element.style.transition;
-    
-    // Apply focus style
-    element.style.outline = '2px solid var(--focus-ring, #3b82f6)';
-    element.style.outlineOffset = '2px';
-    element.style.transition = 'outline-color 0.2s ease-out';
-    
-    // Reset after duration
+    // Clear and set the announcer text
+    announcer.textContent = '';
     setTimeout(() => {
-      if (element) {
-        element.style.outline = originalOutline;
-        element.style.transition = originalTransition;
-      }
-    }, duration);
-    
-    // Focus the element for screen readers
-    element.focus();
-    
+      if (announcer) announcer.textContent = message;
+    }, 50);
   }, []);
   
-  // Toggle high contrast mode with announcement
-  const toggleHighContrast = useCallback(() => {
-    a11y.setHighContrast(!a11y.highContrast);
+  // Helper function to focus an element with optional animation
+  const focusElement = useCallback((element: HTMLElement, duration = 300) => {
+    if (!element) return;
     
-    if (announceChanges) {
-      const message = !a11y.highContrast
-        ? 'High contrast mode enabled'
-        : 'High contrast mode disabled';
-        
-      toast(message);
-      announce(message);
-    }
-  }, [a11y, announce, announceChanges]);
+    element.focus();
+    
+    // If reduced motion is enabled, skip the animation
+    if (reducedMotion) return;
+    
+    element.style.outline = '2px solid var(--color-primary)';
+    element.style.outlineOffset = '4px';
+    element.style.transition = `outline ${duration}ms ease-in-out`;
+    
+    setTimeout(() => {
+      element.style.outline = '';
+      element.style.outlineOffset = '';
+      element.style.transition = '';
+    }, duration);
+  }, [reducedMotion]);
   
-  // Toggle large text mode with announcement
-  const toggleLargeText = useCallback(() => {
-    a11y.setLargeText(!a11y.largeText);
-    
-    if (announceChanges) {
-      const message = !a11y.largeText
-        ? 'Large text mode enabled'
-        : 'Large text mode disabled';
-        
-      toast(message);
-      announce(message);
+  // Set up CSS class for high contrast on mount
+  const setupHighContrast = useCallback(() => {
+    if (highContrast) {
+      document.documentElement.classList.add('high-contrast');
+    } else {
+      document.documentElement.classList.remove('high-contrast');
     }
-  }, [a11y, announce, announceChanges]);
+  }, [highContrast]);
   
-  // Toggle reduce motion mode with announcement
-  const toggleReduceMotion = useCallback(() => {
-    a11y.setReduceMotion(!a11y.reduceMotion);
-    
-    if (announceChanges) {
-      const message = !a11y.reduceMotion
-        ? 'Reduced motion enabled'
-        : 'Reduced motion disabled';
-        
-      toast(message);
-      announce(message);
+  // Set up CSS class for dyslexic font on mount
+  const setupDyslexicFont = useCallback(() => {
+    if (dyslexiaFriendly) {
+      document.documentElement.classList.add('dyslexic-font');
+    } else {
+      document.documentElement.classList.remove('dyslexic-font');
     }
-  }, [a11y, announce, announceChanges]);
+  }, [dyslexiaFriendly]);
   
-  // Toggle screen reader optimizations
-  const toggleScreenReader = useCallback(() => {
-    a11y.setScreenReader(!a11y.screenReader);
-    
-    if (announceChanges) {
-      const message = !a11y.screenReader
-        ? 'Screen reader optimizations enabled'
-        : 'Screen reader optimizations disabled';
-        
-      toast(message);
-      announce(message);
+  // Set up CSS class for large text on mount
+  const setupLargeText = useCallback(() => {
+    if (largeText) {
+      document.documentElement.classList.add('large-text');
+    } else {
+      document.documentElement.classList.remove('large-text');
     }
-  }, [a11y, announce, announceChanges]);
+  }, [largeText]);
+
+  // Apply all accessibility settings
+  const applyAllSettings = useCallback(() => {
+    setupHighContrast();
+    setupDyslexicFont();
+    setupLargeText();
+  }, [setupHighContrast, setupDyslexicFont, setupLargeText]);
+
+  // Set the current setters
+  const setHighContrast = useCallback((value: boolean) => {
+    updatePreferences({
+      accessibility: {
+        ...preferences.accessibility,
+        highContrast: value
+      }
+    });
+  }, [preferences.accessibility, updatePreferences]);
+  
+  const setLargeText = useCallback((value: boolean) => {
+    updatePreferences({
+      accessibility: {
+        ...preferences.accessibility,
+        largeText: value
+      }
+    });
+  }, [preferences.accessibility, updatePreferences]);
+  
+  const setReducedMotion = useCallback((value: boolean) => {
+    updatePreferences({
+      accessibility: {
+        ...preferences.accessibility,
+        reducedMotion: value
+      }
+    });
+  }, [preferences.accessibility, updatePreferences]);
+  
+  const setDyslexiaFriendly = useCallback((value: boolean) => {
+    updatePreferences({
+      accessibility: {
+        ...preferences.accessibility,
+        dyslexiaFriendly: value
+      }
+    });
+  }, [preferences.accessibility, updatePreferences]);
+  
+  const setScreenReader = useCallback((value: boolean) => {
+    updatePreferences({
+      accessibility: {
+        ...preferences.accessibility,
+        screenReader: value
+      }
+    });
+  }, [preferences.accessibility, updatePreferences]);
   
   return {
-    ...a11y,
+    // Current state
+    highContrast,
+    largeText,
+    reducedMotion,
+    dyslexiaFriendly,
+    screenReader,
+    
+    // Toggle functions
+    toggleHighContrast,
+    toggleLargeText,
+    toggleReducedMotion,
+    toggleDyslexiaFriendly,
+    toggleScreenReader,
+    
+    // Setters
+    setHighContrast,
+    setLargeText,
+    setReducedMotion,
+    setDyslexiaFriendly,
+    setScreenReader,
+    
+    // Utility functions
     announce,
     getAnimationPreference,
     focusElement,
-    toggleHighContrast,
-    toggleLargeText,
-    toggleReduceMotion,
-    toggleScreenReader
+    applyAllSettings
   };
 };
 

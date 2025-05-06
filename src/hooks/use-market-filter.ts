@@ -6,7 +6,7 @@ import { useLanguage } from '@/contexts/LanguageContext';
 interface MarketFilterHook {
   userMarket: InvestmentMarket;
   getMarketDisplayName: () => string;
-  getAvailableMarkets: () => InvestmentMarketOption[];
+  getMarketOptions: () => InvestmentMarketOption[];
   getCurrentMarket: () => InvestmentMarket;
   setUserMarket: (market: InvestmentMarket) => void;
   isMarketAvailable: (market: InvestmentMarket) => boolean;
@@ -24,7 +24,7 @@ export const useMarketFilter = (): MarketFilterHook => {
   
   // Set user market preference
   const setUserMarket = useCallback((market: InvestmentMarket) => {
-    updatePreferences({ market });
+    updatePreferences({ market, marketFilter: market });
   }, [updatePreferences]);
   
   // Get display name for current market
@@ -45,7 +45,7 @@ export const useMarketFilter = (): MarketFilterHook => {
   }, [userMarket, language]);
   
   // Get list of available markets
-  const getAvailableMarkets = useCallback((): InvestmentMarketOption[] => {
+  const getMarketOptions = useCallback((): InvestmentMarketOption[] => {
     const currentLang = language as 'en' | 'de';
     
     return [
@@ -61,8 +61,8 @@ export const useMarketFilter = (): MarketFilterHook => {
   
   // Check if a market is available
   const isMarketAvailable = useCallback((market: InvestmentMarket): boolean => {
-    return getAvailableMarkets().some(m => m.id === market);
-  }, [getAvailableMarkets]);
+    return getMarketOptions().some(m => m.id === market);
+  }, [getMarketOptions]);
   
   // Get current market (for API calls, etc.)
   const getCurrentMarket = useCallback((): InvestmentMarket => {
@@ -72,7 +72,7 @@ export const useMarketFilter = (): MarketFilterHook => {
   return {
     userMarket,
     getMarketDisplayName,
-    getAvailableMarkets,
+    getMarketOptions,
     getCurrentMarket,
     setUserMarket,
     isMarketAvailable

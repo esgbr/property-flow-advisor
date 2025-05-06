@@ -1,4 +1,3 @@
-
 import React, { useMemo } from 'react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useMarketFilter } from '@/hooks/use-market-filter';
@@ -122,6 +121,18 @@ const marketFeatures: Record<InvestmentMarket, MarketFeature[]> = {
       },
       icon: <Home className="h-4 w-4" />,
       badge: 'CA'
+    }
+  ],
+  'france': [
+    {
+      id: 'french-tax',
+      title: { en: 'French Property Tax', de: 'Französische Grundsteuer' },
+      description: {
+        en: 'Calculate French property taxes and fees',
+        de: 'Berechnen Sie französische Immobiliensteuern und Gebühren'
+      },
+      icon: <Euro className="h-4 w-4" />,
+      badge: 'FR'
     }
   ]
 };
