@@ -29,21 +29,20 @@ const AccessibilityPanel: React.FC<AccessibilityPanelProps> = ({
 }) => {
   const {
     highContrast,
-    setHighContrast,
+    toggleHighContrast,
     largeText,
-    setLargeText,
+    toggleLargeText,
     reduceMotion,
-    setReduceMotion,
+    toggleReduceMotion,
     screenReader,
-    setScreenReader,
-    focusElement,
+    toggleScreenReader,
     announce
   } = useAccessibility();
   const { language } = useLanguage();
 
   const handleTextSizeChange = (value: number[]) => {
     // Using a slider value to adjust text size (1 = normal, 2 = large, 3 = very large)
-    setLargeText(value[0] > 1);
+    toggleLargeText();
     announce(language === 'de' 
       ? `Textgröße auf ${value[0] === 1 ? 'normal' : value[0] === 2 ? 'groß' : 'sehr groß'} eingestellt`
       : `Text size set to ${value[0] === 1 ? 'normal' : value[0] === 2 ? 'large' : 'very large'}`
@@ -83,7 +82,7 @@ const AccessibilityPanel: React.FC<AccessibilityPanelProps> = ({
             <Switch
               id="high-contrast"
               checked={highContrast}
-              onCheckedChange={setHighContrast}
+              onCheckedChange={toggleHighContrast}
               aria-label={language === 'de' ? 'Hohen Kontrast aktivieren' : 'Enable high contrast'}
             />
           </div>
@@ -123,7 +122,7 @@ const AccessibilityPanel: React.FC<AccessibilityPanelProps> = ({
             <Switch
               id="reduce-motion"
               checked={reduceMotion}
-              onCheckedChange={setReduceMotion}
+              onCheckedChange={toggleReduceMotion}
               aria-label={language === 'de' ? 'Bewegungen reduzieren' : 'Reduce motion'}
             />
           </div>
@@ -138,7 +137,7 @@ const AccessibilityPanel: React.FC<AccessibilityPanelProps> = ({
             <Switch
               id="screen-reader"
               checked={screenReader}
-              onCheckedChange={setScreenReader}
+              onCheckedChange={toggleScreenReader}
               aria-label={language === 'de' ? 'Für Bildschirmleser optimieren' : 'Optimize for screen readers'}
             />
           </div>

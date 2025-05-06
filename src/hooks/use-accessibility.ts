@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { useUserPreferences } from '@/contexts/UserPreferencesContext';
 import { toast } from 'sonner';
@@ -162,6 +163,61 @@ export function useAccessibility() {
       : 'Enabled (No specific settings)';
   };
 
+  // Helper function to announce messages to screen readers
+  const announce = (message: string, politeness: 'polite' | 'assertive' = 'polite') => {
+    // Create or find the announcer element
+    let announcer = document.getElementById('a11y-announcer');
+    if (!announcer) {
+      announcer = document.createElement('div');
+      announcer.id = 'a11y-announcer';
+      announcer.setAttribute('aria-live', politeness);
+      announcer.setAttribute('aria-atomic', 'true');
+      announcer.className = 'sr-only';
+      document.body.appendChild(announcer);
+    } else {
+      announcer.setAttribute('aria-live', politeness);
+    }
+    
+    // Set text content to trigger screen reader announcement
+    announcer.textContent = '';
+    setTimeout(() => {
+      if (announcer) announcer.textContent = message;
+    }, 50);
+  };
+
+  // For compatibility with components expecting setX instead of toggleX functions
+  const setHighContrast = (value: boolean) => {
+    if (value !== highContrast) {
+      toggleHighContrast();
+    }
+  };
+
+  const setLargeText = (value: boolean) => {
+    if (value !== largeText) {
+      toggleLargeText();
+    }
+  };
+
+  const setReduceMotion = (value: boolean) => {
+    if (value !== reduceMotion) {
+      toggleReduceMotion();
+    }
+  };
+
+  const setScreenReader = (value: boolean) => {
+    if (value !== screenReader) {
+      toggleScreenReader();
+    }
+  };
+  
+  // Add a placeholder focusElement function to satisfy components
+  const focusElement = (element: HTMLElement) => {
+    if (element) {
+      element.focus();
+      announce(`Focused ${element.getAttribute('aria-label') || 'element'}`);
+    }
+  };
+
   return {
     enabled,
     highContrast,
@@ -177,7 +233,14 @@ export function useAccessibility() {
     toggleScreenReader,
     resetAccessibilitySettings,
     enableAllAccessibilitySettings,
-    getAccessibilityStatus
+    getAccessibilityStatus,
+    // Add the additional methods needed by other components
+    setHighContrast,
+    setLargeText,
+    setReduceMotion,
+    setScreenReader,
+    focusElement,
+    announce
   };
 }
 

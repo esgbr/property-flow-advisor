@@ -1,4 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
+import { toast } from 'sonner';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 // Define available market types
 export type InvestmentMarket = 'germany' | 'austria' | 'switzerland' | 'usa' | 'canada' | 'global';
@@ -67,7 +69,7 @@ export interface UserPreferences {
   appLockMethod?: string;
   dismissedSecurityAlert?: boolean;
   lastPasswordChange?: string;
-  lastActive?: string; // Added this field
+  lastActive?: string;
   notifications?: {
     security: boolean;
     updates: boolean;
@@ -96,7 +98,7 @@ export interface UserPreferences {
 
 export interface OnboardingData {
   name: string;
-  experienceLevel: string;
+  experienceLevel: 'beginner' | 'intermediate' | 'advanced' | 'expert';
   interests: string[];
   investmentGoals: string[];
   preferredPropertyTypes: string[];
@@ -110,7 +112,7 @@ interface UserPreferencesContextValue {
   preferences: UserPreferences;
   updatePreferences: (newPreferences: Partial<UserPreferences>) => void;
   resetPreferences: () => void;
-  resetOnboarding?: () => void; // Added this field
+  resetOnboarding?: () => void;
   hasCompletedOnboarding: boolean;
   isAccessibilityEnabled: boolean;
   // Auth related functions
@@ -292,6 +294,17 @@ export const UserPreferencesProvider: React.FC<{ children: React.ReactNode }> = 
     preferences.accessibilityPreferences?.fontSize !== 'medium'
   );
 
+  // Import language context (mock if not available in this context)
+  const langContext = { t: (key: string) => key }; // Default implementation
+  let t = (key: string) => key;
+  
+  try {
+    // Try to use the language context if available
+    t = useLanguage()?.t || ((key: string) => key);
+  } catch (e) {
+    console.warn('Language context not available in UserPreferencesContext');
+  }
+  
   // Reset onboarding data
   const resetOnboarding = () => {
     updatePreferences({

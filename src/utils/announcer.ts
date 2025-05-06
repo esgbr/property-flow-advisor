@@ -1,35 +1,57 @@
 
-import { useState, useCallback } from 'react';
+/**
+ * Screen reader announcement utility
+ */
 
-type AnnouncementPriority = 'polite' | 'assertive';
+// Create a singleton announcer element
+const getAnnouncer = (assertive = false): HTMLElement => {
+  let announcer = document.getElementById('a11y-announcer');
+  
+  if (!announcer) {
+    announcer = document.createElement('div');
+    announcer.id = 'a11y-announcer';
+    announcer.setAttribute('aria-live', assertive ? 'assertive' : 'polite');
+    announcer.setAttribute('aria-atomic', 'true');
+    announcer.className = 'sr-only';
+    announcer.style.position = 'absolute';
+    announcer.style.width = '1px';
+    announcer.style.height = '1px';
+    announcer.style.padding = '0';
+    announcer.style.margin = '-1px';
+    announcer.style.overflow = 'hidden';
+    announcer.style.clip = 'rect(0, 0, 0, 0)';
+    announcer.style.whiteSpace = 'nowrap';
+    announcer.style.border = '0';
+    document.body.appendChild(announcer);
+  } else {
+    announcer.setAttribute('aria-live', assertive ? 'assertive' : 'polite');
+  }
+  
+  return announcer;
+};
 
 /**
- * Custom hook for making announcements to screen readers
+ * Announce a message to screen readers
+ * @param message - The message to be announced
+ * @param politeness - Whether to use assertive (interrupt) or polite priority
  */
-const useAnnouncement = () => {
-  const [politeMessage, setPoliteMessage] = useState('');
-  const [assertiveMessage, setAssertiveMessage] = useState('');
+export const announce = (
+  message: string,
+  politeness: 'polite' | 'assertive' = 'polite'
+): void => {
+  const element = getAnnouncer(politeness === 'assertive');
+  
+  // Clear previous content to ensure announcement
+  element.textContent = '';
+  
+  // Add new content after a brief delay
+  setTimeout(() => {
+    if (element) element.textContent = message;
+  }, 50);
+};
 
-  /**
-   * Announce a message to screen readers
-   * @param message Message to announce
-   * @param priority Politeness level ('polite' or 'assertive')
-   */
-  const announce = useCallback((message: string, priority: AnnouncementPriority = 'polite') => {
-    if (priority === 'assertive') {
-      setAssertiveMessage('');
-      setTimeout(() => setAssertiveMessage(message), 100);
-    } else {
-      setPoliteMessage('');
-      setTimeout(() => setPoliteMessage(message), 100);
-    }
-  }, []);
-
-  return {
-    announce,
-    politeMessage,
-    assertiveMessage
-  };
+export const useAnnouncement = () => {
+  return { announce };
 };
 
 export default useAnnouncement;

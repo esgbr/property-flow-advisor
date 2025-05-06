@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { 
   Card, 
@@ -22,11 +23,13 @@ import AIAssistant from '@/components/ai/AIAssistant';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { useNavigate } from 'react-router-dom';
 import { InvestmentMarket } from '@/contexts/UserPreferencesContext';
-import { useAccessibility } from '@/components/accessibility/A11yProvider';
+import { useAccessibility } from '@/hooks/use-accessibility';
 
 const Settings = () => {
   const { t } = useLanguage();
   const { preferences, updatePreferences, resetPreferences } = useUserPreferences();
+  const navigate = useNavigate();
+  const { reduceMotion, highContrast, largeText, screenReader } = useAccessibility();
   
   // Add a resetOnboarding function if it's missing from context
   const resetOnboarding = () => {
