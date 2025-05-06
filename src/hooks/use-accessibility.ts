@@ -125,6 +125,20 @@ export const useAccessibility = (options: AccessibilityOptions = {}) => {
     }
   }, [a11y, announce, announceChanges]);
   
+  // Toggle screen reader optimizations
+  const toggleScreenReader = useCallback(() => {
+    a11y.setScreenReader(!a11y.screenReader);
+    
+    if (announceChanges) {
+      const message = !a11y.screenReader
+        ? 'Screen reader optimizations enabled'
+        : 'Screen reader optimizations disabled';
+        
+      toast(message);
+      announce(message);
+    }
+  }, [a11y, announce, announceChanges]);
+  
   return {
     ...a11y,
     announce,
@@ -132,7 +146,8 @@ export const useAccessibility = (options: AccessibilityOptions = {}) => {
     focusElement,
     toggleHighContrast,
     toggleLargeText,
-    toggleReduceMotion
+    toggleReduceMotion,
+    toggleScreenReader
   };
 };
 

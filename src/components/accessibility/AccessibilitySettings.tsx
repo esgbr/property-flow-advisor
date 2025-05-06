@@ -3,7 +3,7 @@ import React from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
-import { useAccessibility } from '@/components/accessibility/A11yProvider';
+import { useAccessibility } from '@/hooks/use-accessibility';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ZoomIn, ZoomOut, Eye, MonitorUp, PanelTopClose, Sun, Moon } from 'lucide-react';
 import { Separator } from '@/components/ui/separator';

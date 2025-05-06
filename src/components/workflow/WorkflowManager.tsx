@@ -1,256 +1,215 @@
 
-import React, { useState, useEffect } from 'react';
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import React, { useState } from 'react';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { ArrowRight, Building, Calculator, CheckCircle, Clock, Euro } from 'lucide-react';
-import { useLanguage } from '@/contexts/LanguageContext';
-import { WorkflowType, useWorkflow } from '@/hooks/use-workflow';
-import { Badge } from '@/components/ui/badge';
-import { Progress } from '@/components/ui/progress';
 import { useNavigate } from 'react-router-dom';
-import { useToast } from '@/components/ui/use-toast';
+import { useWorkflow, WorkflowType, workflowDefinitions } from '@/hooks/use-workflow';
+import { useLanguage } from '@/contexts/LanguageContext';
+import { CircleCheck, Clock, ArrowRight, Play, RotateCcw, BarChart } from 'lucide-react';
+import { Progress } from '@/components/ui/progress';
+import { Separator } from '@/components/ui/separator';
+import { cn } from '@/lib/utils';
+import { useWorkflowState } from '@/contexts/WorkflowStateContext';
+import { ScrollArea } from '@/components/ui/scroll-area';
 
 interface WorkflowManagerProps {
   className?: string;
-  defaultWorkflow?: WorkflowType;
 }
 
-const WorkflowManager: React.FC<WorkflowManagerProps> = ({
-  className,
-  defaultWorkflow = 'steuer'
-}) => {
-  const { t, language } = useLanguage();
+const WorkflowManager: React.FC<WorkflowManagerProps> = ({ className }) => {
+  const { language } = useLanguage();
   const navigate = useNavigate();
-  const { toast } = useToast();
-  const [activeWorkflow, setActiveWorkflow] = useState<WorkflowType>(defaultWorkflow);
+  const [activeTab, setActiveTab] = useState<WorkflowType>('immobilien');
+  const { workflows, resetWorkflow } = useWorkflowState();
   
-  // Get workflow hooks for all workflow types
-  const steuerWorkflow = useWorkflow('steuer');
-  const immobilienWorkflow = useWorkflow('immobilien');
-  const finanzierungWorkflow = useWorkflow('finanzierung');
-  const analyseWorkflow = useWorkflow('analyse');
+  // Get workflow for the active tab
+  const workflow = useWorkflow(activeTab);
+  const workflowSteps = workflow.getStepsWithStatus();
+  const completedSteps = workflowSteps.filter(step => step.isComplete);
+  const currentStep = workflow.getCurrentStep() || workflowSteps[0]?.id;
+  const progress = workflow.getWorkflowProgress();
   
-  // Get the active workflow based on the current selection
-  const getActiveWorkflow = () => {
-    switch(activeWorkflow) {
-      case 'steuer':
-        return steuerWorkflow;
-      case 'immobilien':
-        return immobilienWorkflow;
-      case 'finanzierung':
-        return finanzierungWorkflow;
-      case 'analyse':
-        return analyseWorkflow;
-      default:
-        return steuerWorkflow;
+  // Format the last interaction date
+  const getLastInteractionDate = () => {
+    const lastInteractionAt = workflows[`workflow_${activeTab}`]?.lastInteractionAt;
+    if (!lastInteractionAt) return null;
+    
+    return new Date(lastInteractionAt).toLocaleDateString(
+      language === 'de' ? 'de-DE' : 'en-US',
+      { year: 'numeric', month: 'short', day: 'numeric' }
+    );
+  };
+  
+  // Reset the current workflow
+  const handleResetWorkflow = () => {
+    if (window.confirm(
+      language === 'de'
+        ? 'Möchten Sie diesen Workflow wirklich zurücksetzen? Alle Fortschritte gehen verloren.'
+        : 'Are you sure you want to reset this workflow? All progress will be lost.'
+    )) {
+      resetWorkflow(`workflow_${activeTab}`);
     }
   };
   
-  // Get all steps for the active workflow with completion status
-  const steps = getActiveWorkflow().getStepsWithStatus?.() || [];
-  
-  // Calculate how many steps are complete
-  const completedSteps = steps.filter(step => step.isComplete).length;
-  
-  // Calculate workflow progress
-  const workflowProgress = steps.length > 0 ? Math.round((completedSteps / steps.length) * 100) : 0;
-  
-  // Function to get the next incomplete step
-  const getNextStep = () => {
-    return steps.find(step => !step.isComplete);
+  // Navigate to a step
+  const navigateToStep = (step: { id: string; path: string }) => {
+    workflow.setCurrentStep(step.id);
+    navigate(step.path);
   };
   
-  // Function to navigate to the next step
-  const goToNextStep = () => {
-    const nextStep = getNextStep();
-    if (nextStep) {
-      getActiveWorkflow().goToStep(nextStep.id);
+  // Continue the workflow from where the user left off
+  const continueWorkflow = () => {
+    const stepToNavigate = workflow.getCurrentStep() 
+      ? workflowSteps.find(step => step.id === workflow.getCurrentStep())
+      : workflowSteps[0];
+      
+    if (stepToNavigate) {
+      navigateToStep(stepToNavigate);
     }
-  };
-  
-  // Function to navigate to a specific step
-  const goToStep = (stepId: string) => {
-    getActiveWorkflow().goToStep(stepId);
-  };
-  
-  // Function to reset the current workflow
-  const resetWorkflow = () => {
-    toast({
-      title: language === 'de' ? 'Workflow zurückgesetzt' : 'Workflow Reset',
-      description: language === 'de' 
-        ? 'Der Workflow wurde zurückgesetzt. Sie können nun von vorne beginnen.' 
-        : 'The workflow has been reset. You can now start fresh.'
-    });
-    
-    getActiveWorkflow().resetWorkflow();
-  };
-  
-  // Function to get workflow title based on the current language
-  const getWorkflowTitle = (type: WorkflowType) => {
-    switch(type) {
-      case 'steuer':
-        return language === 'de' ? 'Steueroptimierung' : 'Tax Optimization';
-      case 'immobilien':
-        return language === 'de' ? 'Immobilienverwaltung' : 'Property Management';
-      case 'finanzierung':
-        return language === 'de' ? 'Finanzierungsanalyse' : 'Financing Analysis';
-      case 'analyse':
-        return language === 'de' ? 'Investitionsanalyse' : 'Investment Analysis';
-      default:
-        return '';
-    }
-  };
-  
-  // Function to get workflow icon
-  const getWorkflowIcon = (type: WorkflowType) => {
-    switch(type) {
-      case 'steuer':
-        return <Euro className="h-5 w-5" />;
-      case 'immobilien':
-        return <Building className="h-5 w-5" />;
-      case 'finanzierung':
-        return <Calculator className="h-5 w-5" />;
-      case 'analyse':
-        return <CheckCircle className="h-5 w-5" />;
-      default:
-        return null;
-    }
-  };
-  
-  // Calculate estimated time remaining
-  const calculateRemainingTime = () => {
-    const remainingSteps = steps.filter(step => !step.isComplete);
-    const totalMinutes = remainingSteps.reduce((sum, step) => sum + (step.estimatedTime || 0), 0);
-    
-    if (totalMinutes === 0) return language === 'de' ? 'Fertig!' : 'Completed!';
-    
-    if (totalMinutes < 60) {
-      return language === 'de' 
-        ? `Ca. ${totalMinutes} Minuten verbleibend` 
-        : `Approx. ${totalMinutes} minutes remaining`;
-    }
-    
-    const hours = Math.floor(totalMinutes / 60);
-    const minutes = totalMinutes % 60;
-    
-    return language === 'de'
-      ? `Ca. ${hours} Std. ${minutes > 0 ? `${minutes} Min.` : ''} verbleibend`
-      : `Approx. ${hours} hr${hours > 1 ? 's' : ''} ${minutes > 0 ? `${minutes} min.` : ''} remaining`;
   };
   
   return (
-    <Card className={className}>
+    <Card className={cn("", className)}>
       <CardHeader>
-        <div className="flex items-center justify-between">
-          <div className="flex items-center space-x-2">
-            {getWorkflowIcon(activeWorkflow)}
-            <CardTitle>{getWorkflowTitle(activeWorkflow)}</CardTitle>
-          </div>
-          <div className="flex items-center space-x-2">
-            <Clock className="h-4 w-4 text-muted-foreground" />
-            <span className="text-sm text-muted-foreground">{calculateRemainingTime()}</span>
-          </div>
-        </div>
+        <CardTitle className="text-xl">
+          {language === 'de' ? 'Workflow-Manager' : 'Workflow Manager'}
+        </CardTitle>
         <CardDescription>
           {language === 'de'
-            ? 'Verfolgen Sie Ihren Fortschritt und führen Sie Schritt für Schritt Ihren Workflow durch'
-            : 'Track your progress and complete your workflow step by step'}
+            ? 'Verwalten Sie Ihre Workflows und verfolgen Sie Ihren Fortschritt'
+            : 'Manage your workflows and track your progress'
+          }
         </CardDescription>
-        
-        <div className="mt-2">
-          <div className="flex justify-between mb-1 text-sm">
-            <span>
-              {language === 'de' ? 'Fortschritt' : 'Progress'}: {completedSteps}/{steps.length} {language === 'de' ? 'Schritte' : 'steps'}
-            </span>
-            <span>{workflowProgress}%</span>
-          </div>
-          <Progress value={workflowProgress} max={100} className="h-2" />
-        </div>
-      </CardHeader>
-      <CardContent>
-        <Tabs value={activeWorkflow} onValueChange={(value) => setActiveWorkflow(value as WorkflowType)}>
-          <TabsList className="mb-4">
-            <TabsTrigger value="steuer">
-              <Euro className="mr-2 h-4 w-4" />
-              {language === 'de' ? 'Steueroptimierung' : 'Tax Optimization'}
-            </TabsTrigger>
-            <TabsTrigger value="immobilien">
-              <Building className="mr-2 h-4 w-4" />
-              {language === 'de' ? 'Immobilienverwaltung' : 'Property Management'}
-            </TabsTrigger>
-            <TabsTrigger value="finanzierung">
-              <Calculator className="mr-2 h-4 w-4" />
-              {language === 'de' ? 'Finanzierungsanalyse' : 'Financing Analysis'}
-            </TabsTrigger>
-            <TabsTrigger value="analyse">
-              <CheckCircle className="mr-2 h-4 w-4" />
-              {language === 'de' ? 'Investitionsanalyse' : 'Investment Analysis'}
-            </TabsTrigger>
+        <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as WorkflowType)}>
+          <TabsList className="grid grid-cols-4 w-full">
+            {Object.keys(workflowDefinitions).map((wfType) => (
+              <TabsTrigger key={wfType} value={wfType}>
+                {workflowDefinitions[wfType as WorkflowType].title[language as keyof typeof workflowDefinitions[keyof typeof workflowDefinitions]['title']]}
+              </TabsTrigger>
+            ))}
           </TabsList>
-          
-          <TabsContent value={activeWorkflow} className="mt-0">
-            <div className="space-y-4">
-              {steps.length > 0 ? steps.map((step, index) => (
-                <div key={step.id} className="flex items-start space-x-3">
-                  <div className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full border ${
-                    step.isComplete ? 'bg-primary text-primary-foreground' : 'bg-background'
-                  }`}>
-                    {step.isComplete ? <CheckCircle className="h-4 w-4" /> : (index + 1)}
-                  </div>
-                  <div className="flex-grow">
-                    <div className="flex items-center justify-between">
-                      <h3 className="text-sm font-medium">{language === 'de' ? step.label.de : step.label.en}</h3>
-                      {step.estimatedTime && (
-                        <Badge variant="outline" className="text-xs">
-                          {step.estimatedTime} {language === 'de' ? 'Min.' : 'min'}
-                        </Badge>
-                      )}
-                    </div>
-                    {step.description && (
-                      <p className="text-xs text-muted-foreground mt-1">
-                        {language === 'de' ? step.description.de : step.description.en}
-                      </p>
-                    )}
-                    <Button 
-                      variant={step.isComplete ? "outline" : "default"}
-                      size="sm"
-                      className="mt-2"
-                      onClick={() => goToStep(step.id)}
-                    >
-                      {step.isComplete 
-                        ? (language === 'de' ? 'Überprüfen' : 'Review') 
-                        : (language === 'de' ? 'Starten' : 'Start')}
-                      <ArrowRight className="ml-1 h-4 w-4" />
-                    </Button>
-                  </div>
-                </div>
-              )) : (
-                <div className="text-center py-4">
-                  <p className="text-muted-foreground">
-                    {language === 'de' 
-                      ? 'Keine Workflow-Schritte gefunden.' 
-                      : 'No workflow steps found.'}
-                  </p>
-                </div>
-              )}
-            </div>
-          </TabsContent>
         </Tabs>
+      </CardHeader>
+      <CardContent className="space-y-4">
+        <div className="flex items-center justify-between">
+          <div>
+            <h3 className="font-medium">
+              {workflowDefinitions[activeTab].title[language as keyof typeof workflowDefinitions[keyof typeof workflowDefinitions]['title']]}
+            </h3>
+            <p className="text-sm text-muted-foreground">
+              {workflowDefinitions[activeTab].description[language as keyof typeof workflowDefinitions[keyof typeof workflowDefinitions]['description']]}
+            </p>
+          </div>
+          <div className="text-right">
+            <span className="font-semibold">
+              {completedSteps.length}/{workflowSteps.length}
+            </span>
+            <p className="text-xs text-muted-foreground">
+              {language === 'de' ? 'Schritte abgeschlossen' : 'Steps completed'}
+            </p>
+          </div>
+        </div>
+        
+        <Progress value={progress} className="h-2" />
+        
+        <div>
+          <div className="flex items-center justify-between text-xs text-muted-foreground mb-2">
+            <span>
+              {language === 'de' ? 'Fortschritt' : 'Progress'}: {progress}%
+            </span>
+            {getLastInteractionDate() && (
+              <span className="flex items-center">
+                <Clock className="h-3 w-3 mr-1" />
+                {language === 'de' ? 'Zuletzt bearbeitet' : 'Last updated'}: {getLastInteractionDate()}
+              </span>
+            )}
+          </div>
+          
+          <ScrollArea className="max-h-60 pr-3">
+            <div className="space-y-1">
+              {workflowSteps.map((step, index) => (
+                <div key={step.id} className="relative">
+                  <Button 
+                    variant={step.id === currentStep ? "secondary" : "ghost"}
+                    size="sm"
+                    className={cn(
+                      "flex items-center justify-between w-full",
+                      step.isComplete && "text-green-600",
+                    )}
+                    onClick={() => navigateToStep(step)}
+                  >
+                    <div className="flex items-center">
+                      {step.isComplete ? (
+                        <CircleCheck className="h-4 w-4 mr-2" />
+                      ) : (
+                        <span className="flex items-center justify-center h-4 w-4 rounded-full border mr-2 text-xs">
+                          {index + 1}
+                        </span>
+                      )}
+                      <span>
+                        {step.label[language as keyof typeof step.label]}
+                      </span>
+                    </div>
+                    {step.estimatedTime && (
+                      <span className="text-xs text-muted-foreground">
+                        {step.estimatedTime} {language === 'de' ? 'Min.' : 'min'}
+                      </span>
+                    )}
+                  </Button>
+                  {index < workflowSteps.length - 1 && (
+                    <div className="absolute left-4 top-[28px] h-4 w-px bg-border"></div>
+                  )}
+                </div>
+              ))}
+            </div>
+          </ScrollArea>
+        </div>
       </CardContent>
       <CardFooter className="flex justify-between">
-        <Button variant="outline" size="sm" onClick={resetWorkflow}>
-          {language === 'de' ? 'Workflow zurücksetzen' : 'Reset Workflow'}
+        <Button 
+          variant="outline" 
+          size="sm" 
+          onClick={handleResetWorkflow}
+          className="text-xs"
+        >
+          <RotateCcw className="h-3 w-3 mr-1" />
+          {language === 'de' ? 'Zurücksetzen' : 'Reset'}
         </Button>
-        {getNextStep() ? (
-          <Button size="sm" onClick={goToNextStep}>
-            {language === 'de' ? 'Nächster Schritt' : 'Next Step'}
-            <ArrowRight className="ml-1 h-4 w-4" />
+        
+        {progress > 0 && progress < 100 && (
+          <Button 
+            variant="default" 
+            size="sm" 
+            onClick={continueWorkflow}
+            className="text-xs"
+          >
+            <Play className="h-3 w-3 mr-1" />
+            {language === 'de' ? 'Fortsetzen' : 'Continue'}
           </Button>
-        ) : (
-          <Button size="sm" disabled={steps.length === 0}>
-            {language === 'de' ? 'Abgeschlossen' : 'Completed'}
-            <CheckCircle className="ml-1 h-4 w-4" />
+        )}
+        
+        {progress === 0 && (
+          <Button 
+            variant="default" 
+            size="sm" 
+            onClick={continueWorkflow}
+            className="text-xs"
+          >
+            <Play className="h-3 w-3 mr-1" />
+            {language === 'de' ? 'Starten' : 'Start'}
+          </Button>
+        )}
+        
+        {progress === 100 && (
+          <Button 
+            variant="default" 
+            size="sm"
+            className="text-xs bg-green-600 hover:bg-green-700"
+            onClick={() => navigate('/investor-dashboard?tab=analytics')}
+          >
+            <BarChart className="h-3 w-3 mr-1" />
+            {language === 'de' ? 'Ergebnisse anzeigen' : 'View Results'}
           </Button>
         )}
       </CardFooter>

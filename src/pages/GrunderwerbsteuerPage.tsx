@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Calculator, HomeIcon } from 'lucide-react';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { GrunderwerbsteuerCalculator } from '@/components/calculators/GrunderwerbsteuerCalculator';
-import { WorkflowNavigation } from '@/components/workflow/WorkflowNavigation';
+import WorkflowNavigation from '@/components/workflow/WorkflowNavigation';
 import { WorkflowSuggestions } from '@/components/workflow/WorkflowSuggestions';
 import WorkflowSteps from '@/components/workflow/WorkflowSteps';
 import { WorkflowType } from '@/hooks/use-workflow';

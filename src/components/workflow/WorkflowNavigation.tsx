@@ -23,7 +23,7 @@ interface WorkflowNavigationProps {
  * WorkflowNavigation - A component that provides navigation controls for workflows
  * Enhances user experience by providing clear next/previous steps
  */
-const WorkflowNavigation: React.FC<WorkflowNavigationProps> = ({
+export const WorkflowNavigation: React.FC<WorkflowNavigationProps> = ({
   workflowType,
   currentStep,
   showPrevious = true,

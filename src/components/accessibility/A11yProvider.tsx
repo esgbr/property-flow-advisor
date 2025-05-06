@@ -47,11 +47,56 @@ export const A11yProvider: React.FC<A11yProviderProps> = ({ children }) => {
         setLargeText(parsedSettings.largeText || false);
         setReduceMotion(parsedSettings.reduceMotion || false);
         setScreenReader(parsedSettings.screenReader || false);
+      } else {
+        // Check system preferences as default if no saved settings
+        checkSystemPreferences();
       }
     } catch (error) {
       console.error('Error loading accessibility settings', error);
     }
+    
+    // Set up a hidden screen reader announcer
+    const existingAnnouncer = document.getElementById('a11y-announcer');
+    if (!existingAnnouncer) {
+      const announcer = document.createElement('div');
+      announcer.id = 'a11y-announcer';
+      announcer.setAttribute('aria-live', 'polite');
+      announcer.setAttribute('aria-atomic', 'true');
+      
+      // Make it invisible but available to screen readers
+      announcer.style.position = 'absolute';
+      announcer.style.width = '1px';
+      announcer.style.height = '1px';
+      announcer.style.padding = '0';
+      announcer.style.overflow = 'hidden';
+      announcer.style.clip = 'rect(0, 0, 0, 0)';
+      announcer.style.whiteSpace = 'nowrap';
+      announcer.style.border = '0';
+      
+      document.body.appendChild(announcer);
+    }
   }, []);
+  
+  // Check system preferences for accessibility
+  const checkSystemPreferences = () => {
+    // Reduced motion preference
+    const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (prefersReducedMotion) {
+      setReduceMotion(true);
+    }
+    
+    // Check for high contrast mode
+    const prefersHighContrast = window.matchMedia('(prefers-contrast: more)').matches;
+    if (prefersHighContrast) {
+      setHighContrast(true);
+    }
+    
+    // Check if user might be using a screen reader (though this isn't reliable)
+    const hasDisplayCutout = window.matchMedia('(display-mode: standalone)').matches;
+    if (hasDisplayCutout) {
+      setScreenReader(true);
+    }
+  };
   
   // Save settings when they change
   useEffect(() => {

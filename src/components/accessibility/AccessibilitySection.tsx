@@ -4,9 +4,8 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Switch } from '@/components/ui/switch';
 import { Button } from '@/components/ui/button';
 import { Monitor, Eye, Palette, ZoomIn, RotateCcw } from 'lucide-react';
-import { useAccessibility } from './A11yProvider';
+import { useAccessibility } from '@/hooks/use-accessibility';
 import { toast } from 'sonner';
-import { useAnnouncement } from '@/utils/announcer';
 
 interface AccessibilitySectionProps {
   className?: string;
@@ -20,24 +19,32 @@ const AccessibilitySection: React.FC<AccessibilitySectionProps> = ({ className }
     screenReader,
     toggleReduceMotion,
     toggleHighContrast,
-    toggleLargeText, 
+    toggleLargeText,
     toggleScreenReader,
-    resetAllSettings,
-    applySystemSettings
+    announce
   } = useAccessibility();
   
-  const { announce } = useAnnouncement();
-  
   const handleResetSettings = () => {
-    resetAllSettings();
+    // Reset all settings to default
+    if (highContrast) toggleHighContrast();
+    if (largeText) toggleLargeText();
+    if (reduceMotion) toggleReduceMotion();
+    if (screenReader) toggleScreenReader();
+    
     toast.success('Accessibility settings reset to defaults');
-    announce('Accessibility settings reset to defaults', true);
+    announce('Accessibility settings reset to defaults', 'assertive');
   };
   
   const handleApplySystemSettings = () => {
-    applySystemSettings();
+    // Check browser preferences and apply them
+    const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const prefersHighContrast = window.matchMedia('(prefers-contrast: more)').matches;
+    
+    if (prefersReducedMotion !== reduceMotion) toggleReduceMotion();
+    if (prefersHighContrast !== highContrast) toggleHighContrast();
+    
     toast.success('Applied system accessibility settings');
-    announce('Applied system accessibility settings', true);
+    announce('Applied system accessibility settings', 'assertive');
   };
   
   return (
