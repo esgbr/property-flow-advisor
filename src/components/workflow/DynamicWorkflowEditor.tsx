@@ -4,7 +4,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
-import { RefreshCw, ArrowRight, Check, ChevronRight, ArrowLeftRight } from 'lucide-react';
+import { RefreshCw, ArrowRight, Check, ChevronRight, ArrowLeftRight, GitBranch, FileText } from 'lucide-react';
 import { useWorkflow, WorkflowType } from '@/hooks/use-workflow';
 import { toast } from '@/components/ui/use-toast';
 import { Label } from '@/components/ui/label';
@@ -12,6 +12,9 @@ import { Input } from '@/components/ui/input';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Checkbox } from '@/components/ui/checkbox';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { ScrollArea } from '@/components/ui/scroll-area';
+import { getRelatedWorkflowsForTool } from '@/utils/workflowUtils';
 
 interface DynamicWorkflowEditorProps {
   workflowType: WorkflowType;
@@ -32,12 +35,15 @@ const DynamicWorkflowEditor: React.FC<DynamicWorkflowEditorProps> = ({ workflowT
   const [currentStepId, setCurrentStepId] = useState<string | null>(null);
   const [customBranches, setCustomBranches] = useState<Record<string, string[]>>({});
   const [userChoices, setUserChoices] = useState<Record<string, any>>({});
+  const [relatedWorkflows, setRelatedWorkflows] = useState<WorkflowType[]>([]);
 
   // Load initial data
   useEffect(() => {
     const currentWorkflowStep = getCurrentStep();
     if (currentWorkflowStep) {
       setCurrentStepId(currentWorkflowStep.id);
+      // Set related workflows based on the current step
+      setRelatedWorkflows(getRelatedWorkflowsForTool(currentWorkflowStep.id));
     } else if (getStepsWithStatus().length > 0) {
       setCurrentStepId(getStepsWithStatus()[0].id);
     }
@@ -82,6 +88,57 @@ const DynamicWorkflowEditor: React.FC<DynamicWorkflowEditorProps> = ({ workflowT
         [key]: value
       }
     }));
+    
+    // Determine next steps based on choices
+    determineNextStepsBasedOnChoices(stepId, key, value);
+  };
+
+  const determineNextStepsBasedOnChoices = (stepId: string, key: string, value: any) => {
+    // Logic to determine which branch to take based on user choices
+    const choiceBasedBranching: Record<string, Record<string, string[]>> = {
+      'steuer': {
+        // For tax strategy choice
+        'taxStrategy': {
+          'conservative': ['planning', 'afa'],
+          'balanced': ['planning', 'spekulationssteuer'],
+          'aggressive': ['planning', 'spekulationssteuer', 'summary']
+        }
+      },
+      'immobilien': {
+        // For property type choice
+        'propertyType': {
+          'residential': ['objekterfassung', 'mietverwaltung'],
+          'commercial': ['objekterfassung', 'nebenkosten'],
+          'mixed': ['objekterfassung', 'mietverwaltung', 'nebenkosten']
+        }
+      },
+      // Add similar rules for other workflow types
+    };
+
+    // Get the branching rules for this workflow type
+    const workflowRules = choiceBasedBranching[workflowType];
+    if (!workflowRules) return;
+
+    // Get the rules for this specific key
+    const keyRules = workflowRules[key];
+    if (!keyRules) return;
+
+    // Get the next steps based on the value chosen
+    const nextStepsIds = keyRules[value];
+    if (nextStepsIds) {
+      // Update custom branches to include the determined path
+      setCustomBranches(prev => ({
+        ...prev,
+        [stepId]: nextStepsIds
+      }));
+      
+      toast({
+        title: language === 'de' ? "Workflow angepasst" : "Workflow adjusted",
+        description: language === 'de'
+          ? `Basierend auf Ihrer Auswahl wurde der Workflow angepasst`
+          : `The workflow has been adjusted based on your selection`
+      });
+    }
   };
 
   const handleAddBranch = (fromStepId: string, toStepId: string) => {
@@ -159,21 +216,23 @@ const DynamicWorkflowEditor: React.FC<DynamicWorkflowEditorProps> = ({ workflowT
         <Label>
           {language === 'de' ? "Benutzerdefinierte Verzweigung hinzufügen" : "Add Custom Branch"}
         </Label>
-        <div className="space-y-2">
-          {otherSteps.map(step => (
-            <div key={step.id} className="flex items-center justify-between">
-              <span className="text-sm">{step.label[language as keyof typeof step.label]}</span>
-              <Button 
-                size="sm" 
-                variant="outline"
-                onClick={() => currentStepId && handleAddBranch(currentStepId, step.id)}
-              >
-                <ArrowLeftRight className="h-3 w-3 mr-1" />
-                {language === 'de' ? "Verknüpfen" : "Link"}
-              </Button>
-            </div>
-          ))}
-        </div>
+        <ScrollArea className="h-[200px] pr-4">
+          <div className="space-y-2">
+            {otherSteps.map(step => (
+              <div key={step.id} className="flex items-center justify-between">
+                <span className="text-sm">{step.label[language as keyof typeof step.label]}</span>
+                <Button 
+                  size="sm" 
+                  variant="outline"
+                  onClick={() => currentStepId && handleAddBranch(currentStepId, step.id)}
+                >
+                  <ArrowLeftRight className="h-3 w-3 mr-1" />
+                  {language === 'de' ? "Verknüpfen" : "Link"}
+                </Button>
+              </div>
+            ))}
+          </div>
+        </ScrollArea>
       </div>
     );
   };
@@ -192,6 +251,15 @@ const DynamicWorkflowEditor: React.FC<DynamicWorkflowEditorProps> = ({ workflowT
             {value: 'balanced', label: {en: 'Balanced', de: 'Ausgeglichen'}},
             {value: 'aggressive', label: {en: 'Aggressive', de: 'Aggressiv'}}
           ]
+        },
+        {
+          key: 'propertyAge',
+          label: {en: 'Property Age', de: 'Immobilienalter'},
+          options: [
+            {value: 'new', label: {en: 'New Construction', de: 'Neubau'}},
+            {value: 'existing', label: {en: 'Existing Property', de: 'Bestandsimmobilie'}},
+            {value: 'historic', label: {en: 'Historic Building', de: 'Denkmalgeschützte Immobilie'}}
+          ]
         }
       ],
       'immobilien': [
@@ -202,6 +270,15 @@ const DynamicWorkflowEditor: React.FC<DynamicWorkflowEditorProps> = ({ workflowT
             {value: 'residential', label: {en: 'Residential', de: 'Wohnimmobilie'}},
             {value: 'commercial', label: {en: 'Commercial', de: 'Gewerbeimmobilie'}},
             {value: 'mixed', label: {en: 'Mixed Use', de: 'Gemischt genutzte Immobilie'}}
+          ]
+        },
+        {
+          key: 'location',
+          label: {en: 'Location', de: 'Lage'},
+          options: [
+            {value: 'urban', label: {en: 'Urban', de: 'Städtisch'}},
+            {value: 'suburban', label: {en: 'Suburban', de: 'Vorstädtisch'}},
+            {value: 'rural', label: {en: 'Rural', de: 'Ländlich'}}
           ]
         }
       ],
@@ -214,6 +291,15 @@ const DynamicWorkflowEditor: React.FC<DynamicWorkflowEditorProps> = ({ workflowT
             {value: 'cash', label: {en: 'Cash Purchase', de: 'Barkauf'}},
             {value: 'mixed', label: {en: 'Mixed Financing', de: 'Gemischte Finanzierung'}}
           ]
+        },
+        {
+          key: 'loanTerm',
+          label: {en: 'Loan Term', de: 'Kreditlaufzeit'},
+          options: [
+            {value: 'short', label: {en: '5-10 Years', de: '5-10 Jahre'}},
+            {value: 'medium', label: {en: '10-20 Years', de: '10-20 Jahre'}},
+            {value: 'long', label: {en: '20+ Years', de: '20+ Jahre'}}
+          ]
         }
       ],
       'analyse': [
@@ -224,6 +310,15 @@ const DynamicWorkflowEditor: React.FC<DynamicWorkflowEditorProps> = ({ workflowT
             {value: 'basic', label: {en: 'Basic', de: 'Grundlegend'}},
             {value: 'detailed', label: {en: 'Detailed', de: 'Detailliert'}},
             {value: 'expert', label: {en: 'Expert', de: 'Experte'}}
+          ]
+        },
+        {
+          key: 'investmentGoal',
+          label: {en: 'Investment Goal', de: 'Anlageziel'},
+          options: [
+            {value: 'income', label: {en: 'Regular Income', de: 'Regelmäßiges Einkommen'}},
+            {value: 'appreciation', label: {en: 'Capital Appreciation', de: 'Wertsteigerung'}},
+            {value: 'balanced', label: {en: 'Balanced Approach', de: 'Ausgewogener Ansatz'}}
           ]
         }
       ]
@@ -268,6 +363,49 @@ const DynamicWorkflowEditor: React.FC<DynamicWorkflowEditorProps> = ({ workflowT
     );
   };
 
+  // Render related workflows section
+  const renderRelatedWorkflows = () => {
+    if (!currentStepId || relatedWorkflows.length === 0) return null;
+    
+    return (
+      <div className="space-y-2 mt-4">
+        <Label>
+          {language === 'de' ? "Verbundene Workflows" : "Related Workflows"}
+        </Label>
+        <div className="space-y-2">
+          {relatedWorkflows.map(relatedType => (
+            <Button
+              key={relatedType}
+              variant="ghost"
+              size="sm"
+              className="w-full justify-start text-sm"
+              onClick={() => {
+                toast({
+                  title: language === 'de' ? "Workflow verknüpft" : "Workflow linked",
+                  description: language === 'de' 
+                    ? "Verbindung zum verwandten Workflow hergestellt" 
+                    : "Connection to related workflow established"
+                });
+              }}
+            >
+              <GitBranch className="h-4 w-4 mr-2" />
+              {language === 'de' 
+                ? workflowTitles[relatedType].de
+                : workflowTitles[relatedType].en}
+            </Button>
+          ))}
+        </div>
+      </div>
+    );
+  };
+
+  const workflowTitles: Record<WorkflowType, {en: string, de: string}> = {
+    steuer: {en: 'Tax Optimization', de: 'Steueroptimierung'},
+    immobilien: {en: 'Property Management', de: 'Immobilienverwaltung'},
+    finanzierung: {en: 'Financing', de: 'Finanzierung'},
+    analyse: {en: 'Investment Analysis', de: 'Investitionsanalyse'}
+  };
+
   if (!currentStep) {
     return (
       <Card>
@@ -289,9 +427,20 @@ const DynamicWorkflowEditor: React.FC<DynamicWorkflowEditorProps> = ({ workflowT
           <CardTitle>
             {language === 'de' ? "Dynamische Workflow-Verzweigungen" : "Dynamic Workflow Branching"}
           </CardTitle>
-          <Badge variant={progress >= 75 ? "default" : progress >= 50 ? "outline" : "secondary"}>
-            {progress}% {language === 'de' ? "Abgeschlossen" : "Complete"}
-          </Badge>
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Badge variant={progress >= 75 ? "default" : progress >= 50 ? "outline" : "secondary"}>
+                  {progress}% {language === 'de' ? "Abgeschlossen" : "Complete"}
+                </Badge>
+              </TooltipTrigger>
+              <TooltipContent>
+                {language === 'de' 
+                  ? "Fortschritt dieses Workflows" 
+                  : "Progress of this workflow"}
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
         </div>
         <CardDescription>
           {language === 'de'
@@ -336,6 +485,9 @@ const DynamicWorkflowEditor: React.FC<DynamicWorkflowEditorProps> = ({ workflowT
               <TabsTrigger value="branches">
                 {language === 'de' ? "Verzweigungen" : "Branches"}
               </TabsTrigger>
+              <TabsTrigger value="related">
+                {language === 'de' ? "Verknüpfte Workflows" : "Related Workflows"}
+              </TabsTrigger>
             </TabsList>
             <TabsContent value="decisions" className="space-y-4 pt-4">
               {renderStepChoices()}
@@ -345,33 +497,64 @@ const DynamicWorkflowEditor: React.FC<DynamicWorkflowEditorProps> = ({ workflowT
               <Separator />
               {renderNextSteps()}
             </TabsContent>
+            <TabsContent value="related" className="space-y-4 pt-4">
+              {renderRelatedWorkflows()}
+            </TabsContent>
           </Tabs>
         </div>
         
         <Separator />
         
-        <Button 
-          className="w-full"
-          onClick={() => {
-            if (currentStep.isComplete) {
-              const nextSteps = getNextSteps(currentStep.id);
-              if (nextSteps.length > 0 && nextSteps[0]) {
-                goToStep(nextSteps[0].id);
-                setCurrentStepId(nextSteps[0].id);
+        <div className="flex justify-between">
+          <Button 
+            variant="outline" 
+            onClick={() => {
+              // Export workflow data
+              const workflowData = {
+                type: workflowType,
+                currentStep: currentStepId,
+                choices: userChoices,
+                branches: customBranches,
+                progress: progress
+              };
+              
+              // We would normally trigger a download here
+              saveData('exportedWorkflow', workflowData);
+              
+              toast({
+                title: language === 'de' ? "Workflow exportiert" : "Workflow exported",
+                description: language === 'de'
+                  ? "Workflow-Daten wurden gespeichert"
+                  : "Workflow data has been saved"
+              });
+            }}
+          >
+            <FileText className="mr-2 h-4 w-4" />
+            {language === 'de' ? "Workflow exportieren" : "Export Workflow"}
+          </Button>
+          
+          <Button 
+            onClick={() => {
+              if (currentStep.isComplete) {
+                const nextSteps = getNextSteps(currentStep.id);
+                if (nextSteps.length > 0 && nextSteps[0]) {
+                  goToStep(nextSteps[0].id);
+                  setCurrentStepId(nextSteps[0].id);
+                }
+              } else {
+                handleMarkComplete(currentStep.id);
+                const nextSteps = getNextSteps(currentStep.id);
+                if (nextSteps.length > 0 && nextSteps[0]) {
+                  goToStep(nextSteps[0].id);
+                  setCurrentStepId(nextSteps[0].id);
+                }
               }
-            } else {
-              handleMarkComplete(currentStep.id);
-              const nextSteps = getNextSteps(currentStep.id);
-              if (nextSteps.length > 0 && nextSteps[0]) {
-                goToStep(nextSteps[0].id);
-                setCurrentStepId(nextSteps[0].id);
-              }
-            }
-          }}
-        >
-          <ArrowRight className="mr-2 h-4 w-4" />
-          {language === 'de' ? "Zum nächsten Schritt" : "Proceed to Next Step"}
-        </Button>
+            }}
+          >
+            <ArrowRight className="mr-2 h-4 w-4" />
+            {language === 'de' ? "Zum nächsten Schritt" : "Proceed to Next Step"}
+          </Button>
+        </div>
       </CardContent>
     </Card>
   );
