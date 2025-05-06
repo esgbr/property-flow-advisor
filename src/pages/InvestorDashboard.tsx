@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useLanguage } from '@/contexts/LanguageContext';
@@ -75,11 +74,10 @@ const InvestorDashboard: React.FC = () => {
 
   // Currency formatter based on user language
   const getCurrencySymbol = () => {
-    const currentLanguage = language;
-    if (currentLanguage === 'de') return '€';
-    if (currentLanguage === 'fr') return '€';
-    if (currentLanguage === 'it') return '€';
-    if (currentLanguage === 'es') return '€';
+    // Fixed: Using type-safe language comparison by checking language directly
+    if (language === 'de') return '€';
+    
+    // For all other cases (including 'en'), return '$'
     return '$';
   };
   
