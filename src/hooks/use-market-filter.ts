@@ -17,7 +17,7 @@ export type MarketSpecificFeature = FeatureMarketConfig;
 
 // Hook to check if a feature should be shown based on the user's selected market
 export const useMarketFilter = () => {
-  const { preferences } = useUserPreferences();
+  const { preferences, updatePreferences } = useUserPreferences();
   const userMarket = preferences.investmentMarket || 'global';
   
   // Function to determine if a feature should be shown
@@ -46,8 +46,14 @@ export const useMarketFilter = () => {
     return availableMarkets;
   };
   
+  // Set market and update preferences
+  const setUserMarket = (market: InvestmentMarket) => {
+    updatePreferences({ investmentMarket: market });
+  };
+  
   return {
     userMarket,
+    setUserMarket,
     shouldShowFeature,
     filterFeaturesByMarket,
     getMarketDisplayName,
