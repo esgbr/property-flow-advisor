@@ -1,3 +1,4 @@
+
 import React, { lazy, Suspense } from 'react';
 import { Routes, Route } from 'react-router-dom';
 import { ThemeProvider } from '@/components/theme-provider';
@@ -25,6 +26,7 @@ const DeutscheImmobilienPage = lazy(() => import('@/pages/DeutscheImmobilienPage
 const GermanRealEstateInvestor = lazy(() => import('@/pages/GermanRealEstateInvestor'));
 const PortfolioAnalyticsPage = lazy(() => import('@/pages/PortfolioAnalyticsPage'));
 const MarketExplorerPage = lazy(() => import('@/pages/MarketExplorerPage'));
+const AdvancedMarketAnalysisPage = lazy(() => import('@/pages/AdvancedMarketAnalysisPage'));
 const AfaCalculatorPage = lazy(() => import('@/pages/AfaCalculatorPage'));
 const GrunderwerbsteuerPage = lazy(() => import('@/pages/GrunderwerbsteuerPage'));
 const InvestorDashboard = lazy(() => import('@/pages/InvestorDashboard'));
@@ -136,8 +138,9 @@ const App: React.FC = () => {
                   {/* 404 route */}
                   <Route path="*" element={<div>404 - Seite nicht gefunden</div>} />
                   
-                  {/* Add our new page routes */}
+                  {/* Add our advanced market analysis route */}
                   <Route path="/advanced-analytics" element={<AdvancedAnalyticsPage />} />
+                  <Route path="/advanced-market-analysis" element={<AdvancedMarketAnalysisPage />} />
                 </Routes>
                 <Toaster />
               </Suspense>
