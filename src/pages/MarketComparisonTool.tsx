@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -65,6 +66,16 @@ const MarketComparisonTool: React.FC = () => {
       populationGrowth: 0.2,
       constructionActivity: 65000
     },
+    switzerland: {
+      averagePrice: 685000,
+      rentalYield: 3.2,
+      yearOverYearGrowth: 3.5,
+      averageRent: 18.6,
+      vacancy: 1.8,
+      investmentVolume: 24000000000,
+      populationGrowth: 0.7,
+      constructionActivity: 53000
+    },
     usa: {
       averagePrice: 428000,
       rentalYield: 4.2,
@@ -74,6 +85,16 @@ const MarketComparisonTool: React.FC = () => {
       investmentVolume: 632000000000,
       populationGrowth: 0.5,
       constructionActivity: 1450000
+    },
+    canada: {
+      averagePrice: 520000,
+      rentalYield: 3.9,
+      yearOverYearGrowth: 5.8,
+      averageRent: 14.5,
+      vacancy: 3.0,
+      investmentVolume: 95000000000,
+      populationGrowth: 1.1,
+      constructionActivity: 235000
     },
     global: {
       averagePrice: 380000,
@@ -85,7 +106,7 @@ const MarketComparisonTool: React.FC = () => {
       populationGrowth: 0.8,
       constructionActivity: 2000000
     }
-  } as Record<InvestmentMarket, MarketMetric>;
+  };
   
   // Set loading state whenever market selection changes
   const handleMarketChange = (market: string, isPrimary: boolean) => {
