@@ -1,18 +1,18 @@
 
-export type Language = 'en' | 'de';
-
-export type ExperienceLevel = 'beginner' | 'intermediate' | 'advanced' | 'expert';
-export type InvestmentMarket = 'global' | 'germany' | 'usa' | 'austria' | 'switzerland' | 'canada';
-export type PropertyType = 'apartment' | 'house' | 'commercial' | 'land' | 'multi-family';
-export type InvestmentGoal = 'passive-income' | 'wealth-building' | 'tax-benefits' | 'diversification';
+import { InvestmentMarket } from "@/contexts/UserPreferencesContext";
 
 export interface OnboardingData {
   name: string;
-  email?: string;
-  language: Language;
-  experienceLevel: ExperienceLevel;
+  experienceLevel: 'beginner' | 'intermediate' | 'advanced';
+  investmentGoals: string[];
+  preferredPropertyTypes: string[];
+  interests: string[];
   investmentMarket: InvestmentMarket;
-  preferredPropertyTypes: PropertyType[];
-  investmentGoals: InvestmentGoal[];
-  completedAt?: string;
+}
+
+export interface OnboardingStep {
+  id: string;
+  title: string;
+  description: string;
+  component: React.ReactNode;
 }

@@ -17,7 +17,7 @@ import {
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useUserPreferences } from '@/contexts/UserPreferencesContext';
-import { useAccessibility } from '@/components/accessibility/A11yProvider';
+import { useAccessibility } from '@/hooks/use-accessibility';
 import { Button } from '@/components/ui/button';
 import {
   Sheet,

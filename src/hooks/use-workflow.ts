@@ -1,162 +1,191 @@
 
-import { useCallback, useMemo } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { useWorkflowState } from '@/contexts/WorkflowStateContext';
-import { workflowDefinitions, WorkflowType } from '@/data/workflow-definitions';
+import { useCallback, useState } from 'react';
+import { useLocalStorage } from './use-local-storage';
+import { workflowDefinitions } from '@/data/workflow-definitions';
 
-export { WorkflowType } from '@/data/workflow-definitions';
+// Define the WorkflowType type
+export type WorkflowType = 'steuer' | 'immobilien' | 'finanzierung' | 'analyse';
 
+// Define types for workflow step status
 export interface WorkflowStepWithStatus {
   id: string;
-  path: string;
-  label: { de: string; en: string };
-  description?: { de: string; en: string };
-  icon?: React.ReactNode;
-  isComplete?: boolean;
-  requiredSteps?: string[];
-  progress?: number;
+  label: Record<string, string>;
+  isComplete: boolean;
+  isActive: boolean;
+  description?: Record<string, string>;
   estimatedTime?: number;
+  dependencies?: string[];
 }
 
+// Define types for workflow data
+export interface WorkflowData {
+  [key: string]: any;
+}
+
+/**
+ * Custom hook for managing workflow state and navigation
+ */
 export const useWorkflow = (workflowType: WorkflowType) => {
-  const { getCurrentWorkflowStep, getCompletedSteps, markStepComplete, setCurrentStep, saveWorkflowData, getWorkflowData, resetWorkflow } = useWorkflowState();
-  const navigate = useNavigate();
-  
-  const workflow = useMemo(() => workflowDefinitions[workflowType], [workflowType]);
-  
-  // Get current step object
-  const getCurrentStep = useCallback((stepId?: string) => {
-    const id = stepId || getCurrentWorkflowStep(`workflow_${workflowType}`);
-    if (!id) return undefined;
-    return workflow.steps.find(step => step.id === id);
-  }, [workflow.steps, getCurrentWorkflowStep, workflowType]);
-  
-  // Get steps with completion status
-  const getStepsWithStatus = useCallback((): WorkflowStepWithStatus[] => {
-    const completedStepIds = getCompletedSteps(`workflow_${workflowType}`);
+  // Store workflow state in local storage
+  const storageKey = `workflow-${workflowType}-state`;
+  const [workflowState, setWorkflowState] = useLocalStorage<{
+    completedSteps: string[];
+    activeStep: string | null;
+    data: WorkflowData;
+  }>(storageKey, {
+    completedSteps: [],
+    activeStep: null,
+    data: {}
+  });
+
+  const [isUpdating, setIsUpdating] = useState(false);
+
+  // Get steps with status information
+  const getStepsWithStatus = useCallback(() => {
+    const { steps } = workflowDefinitions[workflowType];
+    const { completedSteps, activeStep } = workflowState;
     
-    return workflow.steps.map(step => ({
+    return steps.map(step => ({
       ...step,
-      isComplete: completedStepIds.includes(step.id)
+      isComplete: completedSteps.includes(step.id),
+      isActive: activeStep === step.id
     }));
-  }, [workflow.steps, getCompletedSteps, workflowType]);
-  
-  // Get workflow steps
-  const getWorkflowSteps = useCallback(() => {
-    const completedStepIds = getCompletedSteps(`workflow_${workflowType}`);
-    
-    return workflow.steps.map(step => ({
-      ...step,
-      isComplete: completedStepIds.includes(step.id)
-    }));
-  }, [workflow.steps, getCompletedSteps, workflowType]);
-  
-  // Get completed steps
-  const getCompleteSteps = useCallback(() => {
-    const completedStepIds = getCompletedSteps(`workflow_${workflowType}`);
-    return workflow.steps.filter(step => completedStepIds.includes(step.id));
-  }, [workflow.steps, getCompletedSteps, workflowType]);
-  
-  // Navigate to a step
-  const goToStep = useCallback((stepId: string) => {
-    const step = workflow.steps.find(s => s.id === stepId);
-    if (step) {
-      setCurrentStep(`workflow_${workflowType}`, stepId);
-      navigate(step.path);
-    }
-  }, [workflow.steps, setCurrentStep, workflowType, navigate]);
-  
-  // Mark current step as complete and optionally move to next
-  const completeCurrentStep = useCallback((stepId: string, moveToNext = true) => {
-    markStepComplete(`workflow_${workflowType}`, stepId);
-    
-    if (moveToNext) {
-      const nextSteps = getNextSteps(stepId);
-      if (nextSteps.length > 0) {
-        goToStep(nextSteps[0].id);
-      }
-    }
-  }, [markStepComplete, workflowType, goToStep]);
-  
-  // Get previous step
-  const getPreviousStep = useCallback((currentStepId: string) => {
-    const currentIndex = workflow.steps.findIndex(step => step.id === currentStepId);
-    if (currentIndex > 0) {
-      return workflow.steps[currentIndex - 1];
-    }
-    return null;
-  }, [workflow.steps]);
-  
-  // Get next steps (usually one, but could be multiple in branching workflows)
-  const getNextSteps = useCallback((currentStepId: string, limit?: number) => {
-    const currentIndex = workflow.steps.findIndex(step => step.id === currentStepId);
-    if (currentIndex < workflow.steps.length - 1) {
-      const nextSteps = workflow.steps.slice(currentIndex + 1);
-      return limit ? nextSteps.slice(0, limit) : nextSteps;
-    }
-    return [];
-  }, [workflow.steps]);
-  
-  // Get path from start to current step
-  const getPathToStep = useCallback((targetStepId: string) => {
-    const targetIndex = workflow.steps.findIndex(step => step.id === targetStepId);
-    if (targetIndex >= 0) {
-      const completedStepIds = getCompletedSteps(`workflow_${workflowType}`);
+  }, [workflowType, workflowState]);
+
+  // Check if step is blocked by dependencies
+  const isStepBlocked = useCallback(
+    (stepId: string) => {
+      const { steps } = workflowDefinitions[workflowType];
+      const step = steps.find(s => s.id === stepId);
       
-      return workflow.steps.slice(0, targetIndex + 1).map(step => ({
-        ...step,
-        isComplete: completedStepIds.includes(step.id)
+      if (!step || !step.dependencies || step.dependencies.length === 0) {
+        return false;
+      }
+      
+      return step.dependencies.some(
+        dependencyId => !workflowState.completedSteps.includes(dependencyId)
+      );
+    },
+    [workflowType, workflowState.completedSteps]
+  );
+
+  // Navigate to a specific step
+  const goToStep = useCallback(
+    (stepId: string) => {
+      const { steps } = workflowDefinitions[workflowType];
+      const stepExists = steps.some(s => s.id === stepId);
+      
+      if (!stepExists) {
+        console.error(`Step ${stepId} does not exist in workflow ${workflowType}`);
+        return;
+      }
+      
+      if (isStepBlocked(stepId)) {
+        console.error(`Step ${stepId} is blocked by dependencies`);
+        return;
+      }
+      
+      setWorkflowState(prev => ({
+        ...prev,
+        activeStep: stepId
       }));
-    }
-    return [];
-  }, [workflow.steps, getCompletedSteps, workflowType]);
-  
-  // Calculate overall workflow progress
-  const getWorkflowProgress = useCallback((currentStepId?: string) => {
-    if (!currentStepId) {
-      const completedSteps = getCompletedSteps(`workflow_${workflowType}`).length;
-      return Math.round((completedSteps / workflow.steps.length) * 100);
-    }
+    },
+    [workflowType, isStepBlocked, setWorkflowState]
+  );
+
+  // Mark a step as complete
+  const markStepComplete = useCallback(
+    (stepId: string) => {
+      setIsUpdating(true);
+      
+      setWorkflowState(prev => {
+        if (prev.completedSteps.includes(stepId)) {
+          setIsUpdating(false);
+          return prev;
+        }
+        
+        return {
+          ...prev,
+          completedSteps: [...prev.completedSteps, stepId]
+        };
+      });
+      
+      setTimeout(() => {
+        setIsUpdating(false);
+      }, 500);
+    },
+    [setWorkflowState]
+  );
+
+  // Mark a step as incomplete
+  const markStepIncomplete = useCallback(
+    (stepId: string) => {
+      setWorkflowState(prev => ({
+        ...prev,
+        completedSteps: prev.completedSteps.filter(id => id !== stepId)
+      }));
+    },
+    [setWorkflowState]
+  );
+
+  // Reset workflow progress
+  const resetWorkflow = useCallback(() => {
+    setIsUpdating(true);
     
-    const currentIndex = workflow.steps.findIndex(step => step.id === currentStepId);
-    if (currentIndex >= 0) {
-      return Math.round((currentIndex / (workflow.steps.length - 1)) * 100);
-    }
-    return 0;
-  }, [workflow.steps, getCompletedSteps, workflowType]);
-  
-  // Save data for the workflow
-  const saveData = useCallback(<T,>(key: string, data: T) => {
-    saveWorkflowData(`workflow_${workflowType}`, key, data);
-  }, [saveWorkflowData, workflowType]);
-  
-  // Get data from the workflow
-  const getData = useCallback(<T,>(key: string) => {
-    return getWorkflowData<T>(`workflow_${workflowType}`, key);
-  }, [getWorkflowData, workflowType]);
-  
-  // Reset the workflow
-  const resetWorkflowState = useCallback(() => {
-    resetWorkflow(`workflow_${workflowType}`);
-  }, [resetWorkflow, workflowType]);
+    setWorkflowState({
+      completedSteps: [],
+      activeStep: null,
+      data: {}
+    });
+    
+    setTimeout(() => {
+      setIsUpdating(false);
+    }, 500);
+  }, [setWorkflowState]);
+
+  // Save data for workflow
+  const saveData = useCallback(
+    (key: string, value: any) => {
+      setWorkflowState(prev => ({
+        ...prev,
+        data: {
+          ...prev.data,
+          [key]: value
+        }
+      }));
+    },
+    [setWorkflowState]
+  );
+
+  // Get data from workflow
+  const getData = useCallback(
+    (key: string) => {
+      return workflowState.data[key];
+    },
+    [workflowState.data]
+  );
+
+  // Get workflow progress as percentage
+  const getWorkflowProgress = useCallback(() => {
+    const { steps } = workflowDefinitions[workflowType];
+    const { completedSteps } = workflowState;
+    
+    if (steps.length === 0) return 0;
+    
+    return Math.round((completedSteps.length / steps.length) * 100);
+  }, [workflowType, workflowState]);
   
   return {
-    workflow,
-    getCurrentStep,
     getStepsWithStatus,
-    getWorkflowSteps,
-    getCompleteSteps,
     goToStep,
-    completeCurrentStep,
-    getPreviousStep,
-    getNextSteps,
-    getPathToStep,
-    getWorkflowProgress,
     markStepComplete,
+    markStepIncomplete,
+    resetWorkflow,
     saveData,
     getData,
-    resetWorkflow: resetWorkflowState
+    getWorkflowProgress,
+    isUpdating,
+    activeStep: workflowState.activeStep,
+    completedSteps: workflowState.completedSteps
   };
 };
-
-export default useWorkflow;

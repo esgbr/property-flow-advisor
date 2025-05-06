@@ -1,101 +1,81 @@
 
 import { useCallback } from 'react';
-import { useUserPreferences, InvestmentMarket } from '@/contexts/UserPreferencesContext';
+import { useUserPreferences, InvestmentMarket, InvestmentMarketOption } from '@/contexts/UserPreferencesContext';
 import { useLanguage } from '@/contexts/LanguageContext';
 
-interface MarketOption {
-  id: string;
-  name: string;
-  code?: string;
+interface MarketFilterHook {
+  userMarket: InvestmentMarket;
+  getMarketDisplayName: () => string;
+  getAvailableMarkets: () => InvestmentMarketOption[];
+  getCurrentMarket: () => InvestmentMarket;
+  setUserMarket: (market: InvestmentMarket) => void;
+  isMarketAvailable: (market: InvestmentMarket) => boolean;
 }
 
-export const useMarketFilter = () => {
-  const { preferences } = useUserPreferences();
+/**
+ * Custom hook for filtering and managing market-specific content
+ */
+export const useMarketFilter = (): MarketFilterHook => {
+  const { preferences, updatePreferences } = useUserPreferences();
   const { language } = useLanguage();
   
-  const getMarketOptions = useCallback((): MarketOption[] => {
-    const options: MarketOption[] = [
-      { 
-        id: 'global', 
-        name: language === 'de' ? 'Global' : 'Global',
-        code: 'GLOBAL'
-      },
-      { 
-        id: 'germany', 
-        name: language === 'de' ? 'Deutschland' : 'Germany',
-        code: 'DE'
-      },
-      { 
-        id: 'usa', 
-        name: language === 'de' ? 'USA' : 'USA',
-        code: 'US'
-      },
-      { 
-        id: 'austria', 
-        name: language === 'de' ? 'Österreich' : 'Austria',
-        code: 'AT'
-      },
-      { 
-        id: 'switzerland', 
-        name: language === 'de' ? 'Schweiz' : 'Switzerland',
-        code: 'CH'
-      },
-      { 
-        id: 'canada', 
-        name: language === 'de' ? 'Kanada' : 'Canada',
-        code: 'CA'
-      }
-    ];
+  // Get current user market from preferences
+  const userMarket: InvestmentMarket = preferences.market || 'global';
+  
+  // Set user market preference
+  const setUserMarket = useCallback((market: InvestmentMarket) => {
+    updatePreferences({ market });
+  }, [updatePreferences]);
+  
+  // Get display name for current market
+  const getMarketDisplayName = useCallback(() => {
+    // Market name mappings
+    const marketNames: Record<InvestmentMarket, Record<string, string>> = {
+      'germany': { en: 'Germany', de: 'Deutschland' },
+      'austria': { en: 'Austria', de: 'Österreich' },
+      'switzerland': { en: 'Switzerland', de: 'Schweiz' },
+      'usa': { en: 'United States', de: 'USA' },
+      'canada': { en: 'Canada', de: 'Kanada' },
+      'france': { en: 'France', de: 'Frankreich' },
+      'global': { en: 'Global', de: 'Global' },
+    };
     
-    return options;
+    const currentLang = language as 'en' | 'de';
+    return marketNames[userMarket]?.[currentLang] || marketNames.global[currentLang];
+  }, [userMarket, language]);
+  
+  // Get list of available markets
+  const getAvailableMarkets = useCallback((): InvestmentMarketOption[] => {
+    const currentLang = language as 'en' | 'de';
+    
+    return [
+      { id: 'germany', name: currentLang === 'de' ? 'Deutschland' : 'Germany' },
+      { id: 'austria', name: currentLang === 'de' ? 'Österreich' : 'Austria' },
+      { id: 'switzerland', name: currentLang === 'de' ? 'Schweiz' : 'Switzerland' },
+      { id: 'usa', name: currentLang === 'de' ? 'USA' : 'United States' },
+      { id: 'canada', name: currentLang === 'de' ? 'Kanada' : 'Canada' },
+      { id: 'france', name: currentLang === 'de' ? 'Frankreich' : 'France' },
+      { id: 'global', name: currentLang === 'de' ? 'Global' : 'Global' }
+    ];
   }, [language]);
   
+  // Check if a market is available
+  const isMarketAvailable = useCallback((market: InvestmentMarket): boolean => {
+    return getAvailableMarkets().some(m => m.id === market);
+  }, [getAvailableMarkets]);
+  
+  // Get current market (for API calls, etc.)
   const getCurrentMarket = useCallback((): InvestmentMarket => {
-    return preferences.marketFilter || 'global';
-  }, [preferences.marketFilter]);
-  
-  const getMarketDisplayName = useCallback((): string => {
-    const currentMarket = getCurrentMarket();
-    const marketOption = getMarketOptions().find(option => option.id === currentMarket);
-    return marketOption?.name || (language === 'de' ? 'Global' : 'Global');
-  }, [getCurrentMarket, getMarketOptions, language]);
-  
-  const isMarketSpecific = useCallback((markets: InvestmentMarket[]): boolean => {
-    const currentMarket = getCurrentMarket();
-    return markets.includes(currentMarket);
-  }, [getCurrentMarket]);
-  
-  const filterMarketData = useCallback(<T extends { market?: string }>(data: T[]): T[] => {
-    const currentMarket = getCurrentMarket();
-    
-    if (currentMarket === 'global') {
-      return data;
-    }
-    
-    return data.filter(item => 
-      !item.market || item.market === 'global' || item.market === currentMarket
-    );
-  }, [getCurrentMarket]);
-  
-  const getAvailableMarkets = useCallback((): InvestmentMarket[] => {
-    return getMarketOptions().map(option => option.id as InvestmentMarket);
-  }, [getMarketOptions]);
-  
-  // Create a userMarket object for backward compatibility
-  const userMarket = {
-    current: getCurrentMarket(),
-    display: getMarketDisplayName(),
-    getAvailableMarkets
-  };
+    return userMarket;
+  }, [userMarket]);
   
   return {
-    getCurrentMarket,
-    getMarketOptions,
+    userMarket,
     getMarketDisplayName,
-    isMarketSpecific,
-    filterMarketData,
     getAvailableMarkets,
-    userMarket // Add the userMarket property for compatibility
+    getCurrentMarket,
+    setUserMarket,
+    isMarketAvailable
   };
 };
 

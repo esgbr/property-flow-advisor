@@ -8,7 +8,7 @@ import {
   LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, 
   ReferenceArea, ReferenceLine
 } from 'recharts';
-import { InvestmentMarket } from '@/contexts/UserPreferencesContext';
+import { InvestmentMarket, InvestmentMarketOption } from '@/contexts/UserPreferencesContext';
 
 interface MarketForecastData {
   month: string;
@@ -28,8 +28,7 @@ const generateForecastData = (market: InvestmentMarket): MarketForecastData[] =>
     'austria': 3.0,
     'switzerland': 2.5,
     'canada': 3.8,
-    'global': 3.5,
-    'other': 3.0
+    'global': 3.5
   };
   
   // Use market-specific growth rate or default to global
@@ -83,7 +82,7 @@ const generateForecastData = (market: InvestmentMarket): MarketForecastData[] =>
 };
 
 const MarketGrowthForecast: React.FC = () => {
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   const { userMarket, getAvailableMarkets } = useMarketFilter();
   const [selectedMarket, setSelectedMarket] = useState<InvestmentMarket>(userMarket || 'global');
   const [forecastRange, setForecastRange] = useState<string>('12m');

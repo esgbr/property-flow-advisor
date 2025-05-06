@@ -57,7 +57,7 @@ const MarketAwareDashboard: React.FC = () => {
   // Get content based on user market
   const getContent = () => {
     if (userMarket === 'germany' || userMarket === 'austria') {
-      return marketSpecificContent[userMarket as keyof typeof marketSpecificContent];
+      return marketSpecificContent[userMarket];
     } else if (userMarket === 'usa' || userMarket === 'canada') {
       return marketSpecificContent.usa;
     } else {
