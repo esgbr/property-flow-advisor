@@ -1,7 +1,7 @@
-
 import { useContext } from 'react';
-import { InvestmentMarket, UserPreferencesContext, InvestmentMarketOption } from '@/contexts/UserPreferencesContext';
-import { getLocalizedMarketName as getLocalizedMarketNameUtil, availableMarkets } from '@/utils/marketHelpers';
+import { useLanguage } from '@/contexts/LanguageContext';
+import { UserPreferencesContext, InvestmentMarket } from '@/contexts/UserPreferencesContext';
+import { getLocalizedMarketName, availableMarkets } from '@/utils/marketHelpers';
 import { ReactNode } from 'react';
 
 export interface FeatureMarketConfig {
@@ -33,8 +33,9 @@ export interface MarketFilterHook {
   recentMarkets?: InvestmentMarket[];
 }
 
-export const useMarketFilter = (): MarketFilterHook => {
+export const useMarketFilter = () => {
   const { preferences, updatePreferences } = useContext(UserPreferencesContext);
+  const { language } = useLanguage();
   const userMarket = preferences.investmentMarket || 'global';
 
   // Check if a market is enabled
@@ -69,7 +70,7 @@ export const useMarketFilter = (): MarketFilterHook => {
 
   // Get localized market name
   const getLocalizedMarketName = (): string => {
-    return getLocalizedMarketNameUtil(userMarket, 'en');
+    return getLocalizedMarketName(userMarket, language);
   };
 
   // Get available markets

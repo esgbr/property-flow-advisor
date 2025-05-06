@@ -187,9 +187,22 @@ export const useAccessibility = () => {
   };
 
   const setScreenReader = (value: boolean) => {
-    if (value !== screenReader) {
-      toggleScreenReader();
+    if (value !== preferences.accessibility?.screenReader) {
+      updatePreferences({
+        accessibility: { ...preferences.accessibility, screenReader: value }
+      });
+      announce(
+        language === 'de'
+          ? `Screenreader ${value ? 'aktiviert' : 'deaktiviert'}`
+          : `Screen reader ${value ? 'enabled' : 'disabled'}`,
+        'polite'
+      );
     }
+  };
+
+  const toggleScreenReader = () => {
+    const newValue = !preferences.accessibility?.screenReader;
+    setScreenReader(newValue);
   };
   
   // Add a placeholder focusElement function to satisfy components
@@ -209,6 +222,7 @@ export const useAccessibility = () => {
     toggleLargeText,
     toggleReduceMotion,
     toggleDyslexiaFriendly,
+    toggleScreenReader,
     announce,
     // Add these methods for compatibility
     setHighContrast,

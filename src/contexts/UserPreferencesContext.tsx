@@ -74,6 +74,9 @@ export interface UserPreferences {
     highContrast?: boolean;
     largeText?: boolean;
     screenReader?: boolean;
+    dyslexiaFriendly?: boolean;
+    reducedMotionOverride?: boolean;
+    highContrastOverride?: boolean;
   };
   recentMarkets?: InvestmentMarket[];
 }

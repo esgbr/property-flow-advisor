@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -44,7 +43,7 @@ const MarketComparisonTool: React.FC = () => {
   const [comparisonView, setComparisonView] = useState<'data' | 'charts' | 'map' | 'trends'>('data');
   const [isLoading, setIsLoading] = useState(false);
   
-  // Mock market data
+  // Update the marketData to include uk and europe:
   const marketData: Record<InvestmentMarket, MarketMetric> = {
     germany: {
       averagePrice: 350000,
@@ -105,9 +104,45 @@ const MarketComparisonTool: React.FC = () => {
       investmentVolume: 970000000000,
       populationGrowth: 0.8,
       constructionActivity: 2000000
+    },
+    uk: {
+      averagePrice: 310000,
+      rentalYield: 4.1,
+      yearOverYearGrowth: 2.8,
+      averageRent: 15.3,
+      vacancy: 2.3,
+      investmentVolume: 55000000000,
+      populationGrowth: 0.6,
+      constructionActivity: 180000
+    },
+    europe: {
+      averagePrice: 295000,
+      rentalYield: 3.7,
+      yearOverYearGrowth: 3.2,
+      averageRent: 13.1,
+      vacancy: 2.7,
+      investmentVolume: 342000000000,
+      populationGrowth: 0.4,
+      constructionActivity: 1250000
     }
   };
   
+  // Update the getLocalizedMarketName function to include uk and europe:
+  const getLocalizedMarketName = (market: InvestmentMarket, lang: string): string => {
+    const marketNames: Record<InvestmentMarket, Record<string, string>> = {
+      germany: { de: 'Deutschland', en: 'Germany' },
+      austria: { de: 'Österreich', en: 'Austria' },
+      switzerland: { de: 'Schweiz', en: 'Switzerland' },
+      usa: { de: 'USA', en: 'USA' },
+      canada: { de: 'Kanada', en: 'Canada' },
+      global: { de: 'Global', en: 'Global' },
+      uk: { de: 'Vereinigtes Königreich', en: 'United Kingdom' },
+      europe: { de: 'Europa', en: 'Europe' }
+    };
+    
+    return marketNames[market]?.[lang] || market;
+  };
+
   // Set loading state whenever market selection changes
   const handleMarketChange = (market: string, isPrimary: boolean) => {
     setIsLoading(true);
@@ -134,20 +169,6 @@ const MarketComparisonTool: React.FC = () => {
           : `Comparing ${getLocalizedMarketName(primaryMarket, language)} with ${getLocalizedMarketName(market as InvestmentMarket, language)}`
       });
     }, 800);
-  };
-
-  // Helper function to get the localized market name
-  const getLocalizedMarketName = (market: InvestmentMarket, lang: string): string => {
-    const marketNames: Record<InvestmentMarket, Record<string, string>> = {
-      germany: { de: 'Deutschland', en: 'Germany' },
-      austria: { de: 'Österreich', en: 'Austria' },
-      switzerland: { de: 'Schweiz', en: 'Switzerland' },
-      usa: { de: 'USA', en: 'USA' },
-      canada: { de: 'Kanada', en: 'Canada' },
-      global: { de: 'Global', en: 'Global' }
-    };
-    
-    return marketNames[market]?.[lang] || market;
   };
 
   // Calculate the difference between two metrics
@@ -274,6 +295,8 @@ const MarketComparisonTool: React.FC = () => {
                   <SelectItem value="usa">{getLocalizedMarketName('usa', language)}</SelectItem>
                   <SelectItem value="canada">{getLocalizedMarketName('canada', language)}</SelectItem>
                   <SelectItem value="global">{getLocalizedMarketName('global', language)}</SelectItem>
+                  <SelectItem value="uk">{getLocalizedMarketName('uk', language)}</SelectItem>
+                  <SelectItem value="europe">{getLocalizedMarketName('europe', language)}</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -295,6 +318,8 @@ const MarketComparisonTool: React.FC = () => {
                   <SelectItem value="usa">{getLocalizedMarketName('usa', language)}</SelectItem>
                   <SelectItem value="canada">{getLocalizedMarketName('canada', language)}</SelectItem>
                   <SelectItem value="global">{getLocalizedMarketName('global', language)}</SelectItem>
+                  <SelectItem value="uk">{getLocalizedMarketName('uk', language)}</SelectItem>
+                  <SelectItem value="europe">{getLocalizedMarketName('europe', language)}</SelectItem>
                 </SelectContent>
               </Select>
             </div>

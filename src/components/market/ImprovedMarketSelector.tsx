@@ -3,7 +3,7 @@ import React, { useState } from 'react';
 import { Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { InvestmentMarket } from '@/contexts/UserPreferencesContext';
 import { useLanguage } from '@/contexts/LanguageContext';
-import { getLocalizedMarketName, getMarketDisplayName, availableMarkets } from '@/utils/marketHelpers';
+import { getLocalizedMarketName, availableMarkets } from '@/utils/marketHelpers';
 import { Badge } from '@/components/ui/badge';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { Building, TrendingUp, MapPin } from 'lucide-react';
