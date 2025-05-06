@@ -43,8 +43,8 @@ const DynamicWorkflowEditor: React.FC<DynamicWorkflowEditorProps> = ({ workflowT
     }
     
     // Load saved branches and choices
-    const savedBranches = getData<Record<string, string[]>>('customBranches');
-    const savedChoices = getData<Record<string, any>>('userChoices');
+    const savedBranches = getData('customBranches');
+    const savedChoices = getData('userChoices');
     
     if (savedBranches) setCustomBranches(savedBranches);
     if (savedChoices) setUserChoices(savedChoices);
