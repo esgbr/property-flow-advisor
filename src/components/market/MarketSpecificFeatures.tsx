@@ -1,222 +1,223 @@
 
-import React from 'react';
-import { useMarketFilter } from '@/hooks/use-market-filter';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
+import React, { useMemo } from 'react';
 import { useLanguage } from '@/contexts/LanguageContext';
-import { Calculator, Building, FileText, FileSpreadsheet, BarChartHorizontal, ArrowRight } from 'lucide-react';
-import { InvestmentMarket } from '@/contexts/UserPreferencesContext';
+import { useMarketFilter } from '@/hooks/use-market-filter';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { useNavigate } from 'react-router-dom';
+import { Map, Euro, DollarSign, Building, ChartBar, Home, AlertCircle } from 'lucide-react';
+import { useUserPreferences, InvestmentMarket } from '@/contexts/UserPreferencesContext';
+import { cn } from '@/lib/utils';
 
-// Market-specific feature type
 interface MarketFeature {
   id: string;
-  title: string;
-  description: string;
+  title: { en: string; de: string };
+  description: { en: string; de: string };
   icon: React.ReactNode;
-  path: string;
-  beta?: boolean;
+  badge?: string;
+  badgeVariant?: 'default' | 'outline' | 'secondary';
 }
 
-// Defines features specific to each market
-const marketSpecificFeatures: Record<InvestmentMarket, MarketFeature[]> = {
+interface MarketSpecificFeaturesProps {
+  className?: string;
+  compact?: boolean;
+}
+
+// Market-specific feature collections
+const marketFeatures: Record<InvestmentMarket, MarketFeature[]> = {
+  'global': [
+    {
+      id: 'global-trends',
+      title: { en: 'Global Trends', de: 'Globale Trends' },
+      description: {
+        en: 'Access insights on global real estate market trends',
+        de: 'Zugriff auf Erkenntnisse zu globalen Immobilienmarkttrends'
+      },
+      icon: <Map className="h-4 w-4" />
+    },
+    {
+      id: 'multi-currency',
+      title: { en: 'Multi-Currency', de: 'Mehrwährung' },
+      description: {
+        en: 'Convert and compare investments across different currencies',
+        de: 'Konvertieren und vergleichen Sie Investitionen in verschiedenen Währungen'
+      },
+      icon: <DollarSign className="h-4 w-4" />
+    }
+  ],
   'germany': [
     {
       id: 'grunderwerbsteuer',
-      title: 'Grunderwerbsteuer-Rechner',
-      description: 'Berechnen Sie die Grunderwerbsteuer für verschiedene Bundesländer in Deutschland',
-      icon: <Calculator className="h-5 w-5 text-primary" />,
-      path: '/calculators/grunderwerbsteuer'
+      title: { en: 'Real Estate Transfer Tax', de: 'Grunderwerbsteuer' },
+      description: {
+        en: 'Calculate German real estate transfer tax by federal state',
+        de: 'Berechnen Sie die Grunderwerbsteuer nach Bundesland'
+      },
+      icon: <Euro className="h-4 w-4" />,
+      badge: 'DE'
     },
     {
-      id: 'afaRechner',
-      title: 'AfA-Rechner',
-      description: 'Abschreibungen für deutsche Immobilien berechnen',
-      icon: <FileSpreadsheet className="h-5 w-5 text-primary" />,
-      path: '/calculators/afa'
-    },
-    {
-      id: 'mietrecht',
-      title: 'Mietrecht-Guide',
-      description: 'Praxisorientierter Leitfaden zum deutschen Mietrecht',
-      icon: <FileText className="h-5 w-5 text-primary" />,
-      path: '/guides/mietrecht',
-      beta: true
-    }
-  ],
-  'austria': [
-    {
-      id: 'grunderwerbsteuer-at',
-      title: 'Grunderwerbsteuer-Rechner',
-      description: 'Berechnen Sie die Grunderwerbsteuer für Immobilien in Österreich',
-      icon: <Calculator className="h-5 w-5 text-primary" />,
-      path: '/calculators/grunderwerbsteuer-at'
-    },
-    {
-      id: 'immoErtragsteuer',
-      title: 'ImmoESt-Rechner',
-      description: 'Immobilienertragsteuer für Österreich berechnen',
-      icon: <FileSpreadsheet className="h-5 w-5 text-primary" />,
-      path: '/calculators/immobilienertragsteuer'
-    }
-  ],
-  'switzerland': [
-    {
-      id: 'liegenschaftssteuer',
-      title: 'Liegenschaftssteuer-Rechner',
-      description: 'Berechnung der Liegenschaftssteuer für verschiedene Kantone',
-      icon: <Calculator className="h-5 w-5 text-primary" />,
-      path: '/calculators/liegenschaftssteuer'
-    },
-    {
-      id: 'eigenmietwert',
-      title: 'Eigenmietwert-Rechner',
-      description: 'Berechnung des steuerbaren Eigenmietwerts',
-      icon: <Building className="h-5 w-5 text-primary" />,
-      path: '/calculators/eigenmietwert'
+      id: 'afa',
+      title: { en: 'AfA Calculator', de: 'AfA-Rechner' },
+      description: {
+        en: 'German-specific depreciation calculations for properties',
+        de: 'Deutsche spezifische Abschreibungsberechnungen für Immobilien'
+      },
+      icon: <Building className="h-4 w-4" />,
+      badge: 'DE'
     }
   ],
   'usa': [
     {
-      id: '1031-exchange',
-      title: '1031 Exchange Calculator',
-      description: 'Calculate tax deferral through a 1031 property exchange',
-      icon: <Calculator className="h-5 w-5 text-primary" />,
-      path: '/calculators/1031-exchange'
-    },
-    {
       id: 'property-tax',
-      title: 'Property Tax Estimator',
-      description: 'Estimate property taxes across different US states',
-      icon: <BarChartHorizontal className="h-5 w-5 text-primary" />,
-      path: '/calculators/property-tax'
+      title: { en: 'Property Tax', de: 'Grundsteuer' },
+      description: {
+        en: 'Calculate US property taxes based on state and county',
+        de: 'Berechnen Sie US-Grundsteuern nach Bundesstaat und Bezirk'
+      },
+      icon: <Home className="h-4 w-4" />,
+      badge: 'US'
     },
     {
-      id: 'depreciation-us',
-      title: 'US Depreciation Calculator',
-      description: 'Calculate depreciation for US real estate investments',
-      icon: <FileSpreadsheet className="h-5 w-5 text-primary" />,
-      path: '/calculators/depreciation-us',
-      beta: true
+      id: '1031-exchange',
+      title: { en: '1031 Exchange', de: '1031 Exchange' },
+      description: {
+        en: 'Calculate potential tax savings with 1031 exchanges',
+        de: 'Berechnen Sie potenzielle Steuerersparnisse mit 1031-Tauschgeschäften'
+      },
+      icon: <ChartBar className="h-4 w-4" />,
+      badge: 'US'
+    }
+  ],
+  'austria': [
+    {
+      id: 'immo-est',
+      title: { en: 'ImmoESt Calculator', de: 'ImmoESt-Rechner' },
+      description: {
+        en: 'Calculate Austrian real estate income tax',
+        de: 'Berechnen Sie die österreichische Immobilienertragsteuer'
+      },
+      icon: <Euro className="h-4 w-4" />,
+      badge: 'AT'
+    }
+  ],
+  'switzerland': [
+    {
+      id: 'lex-koller',
+      title: { en: 'Lex Koller Check', de: 'Lex Koller Prüfung' },
+      description: {
+        en: 'Check if Lex Koller restrictions apply to your investment',
+        de: 'Prüfen Sie, ob Lex Koller-Beschränkungen für Ihre Investition gelten'
+      },
+      icon: <AlertCircle className="h-4 w-4" />,
+      badge: 'CH'
     }
   ],
   'canada': [
     {
-      id: 'capital-gains-tax',
-      title: 'Capital Gains Tax Calculator',
-      description: 'Calculate capital gains tax for Canadian real estate',
-      icon: <Calculator className="h-5 w-5 text-primary" />,
-      path: '/calculators/capital-gains-ca'
-    },
-    {
-      id: 'foreign-buyer-tax',
-      title: 'Foreign Buyer Tax Calculator',
-      description: 'Calculate additional taxes for non-resident buyers',
-      icon: <FileSpreadsheet className="h-5 w-5 text-primary" />,
-      path: '/calculators/foreign-buyer-tax'
+      id: 'non-resident-tax',
+      title: { en: 'Non-Resident Tax', de: 'Nichtansässigen-Steuer' },
+      description: {
+        en: 'Calculate Canadian non-resident speculation tax',
+        de: 'Berechnen Sie die kanadische Spekulationssteuer für Nichtansässige'
+      },
+      icon: <Home className="h-4 w-4" />,
+      badge: 'CA'
     }
-  ],
-  'france': [
-    {
-      id: 'frais-de-notaire',
-      title: 'Frais de Notaire Calculator',
-      description: 'Calculate notary fees for French real estate transactions',
-      icon: <Calculator className="h-5 w-5 text-primary" />,
-      path: '/calculators/frais-de-notaire'
-    },
-    {
-      id: 'taxe-fonciere',
-      title: 'Taxe Foncière Estimator',
-      description: 'Estimate property tax (taxe foncière) for French properties',
-      icon: <Building className="h-5 w-5 text-primary" />,
-      path: '/calculators/taxe-fonciere'
-    }
-  ],
-  'global': [],
-  'other': [],
-  '': []
+  ]
 };
 
-interface MarketSpecificFeaturesProps {
-  limit?: number;
-  showTitle?: boolean;
-  showViewAll?: boolean;
-}
-
 const MarketSpecificFeatures: React.FC<MarketSpecificFeaturesProps> = ({ 
-  limit = 3, 
-  showTitle = true,
-  showViewAll = true
+  className = '',
+  compact = false
 }) => {
-  const { t } = useLanguage();
-  const navigate = useNavigate();
-  const { userMarket } = useMarketFilter();
+  const { preferences } = useUserPreferences();
+  const { language } = useLanguage();
+  const { getCurrentMarket } = useMarketFilter();
   
-  // Get features for current market
-  const features = userMarket ? marketSpecificFeatures[userMarket as InvestmentMarket] || [] : [];
+  const currentMarket = getCurrentMarket();
   
-  // Limit the number of features shown
-  const displayedFeatures = features.slice(0, limit);
+  // Get features for the current market
+  const features = useMemo(() => {
+    // Always include global features
+    const globalFeatures = marketFeatures['global'];
+    
+    // If not on global, add market-specific features
+    if (currentMarket !== 'global') {
+      return [...globalFeatures, ...marketFeatures[currentMarket]];
+    }
+    
+    return globalFeatures;
+  }, [currentMarket]);
   
-  // If no market-specific features or not a supported market, don't show anything
-  if (!userMarket || displayedFeatures.length === 0) {
+  if (features.length === 0) {
     return null;
   }
   
-  // Korrigierte Zeile - Nur ein Argument übergeben
-  const marketName = userMarket ? useMarketFilter().getMarketDisplayName() : '';
-
-  return (
-    <Card className="border-primary/20 bg-primary/5">
-      {showTitle && (
-        <CardHeader>
-          <div className="flex items-center justify-between">
-            <div>
-              <CardTitle>{marketName} {t('marketSpecificTools')}</CardTitle>
-              <CardDescription>
-                {t('toolsForSpecificMarket', { market: marketName })}
-              </CardDescription>
+  if (compact) {
+    return (
+      <div className={cn("grid gap-3", className)}>
+        {features.map((feature) => (
+          <div
+            key={feature.id}
+            className="flex items-center p-2 bg-muted/40 rounded-md hover:bg-muted transition-colors"
+          >
+            <div className="mr-3 p-2 bg-primary/10 rounded-md text-primary">
+              {feature.icon}
             </div>
-            <Badge variant="outline" className="bg-primary/10 text-primary">
-              {marketName}
-            </Badge>
+            <div>
+              <div className="font-medium text-sm">
+                {feature.title[language as keyof typeof feature.title]}
+              </div>
+            </div>
+            {feature.badge && (
+              <Badge
+                variant={feature.badgeVariant || 'outline'}
+                className="ml-auto text-xs"
+              >
+                {feature.badge}
+              </Badge>
+            )}
           </div>
-        </CardHeader>
-      )}
-      <CardContent>
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-          {displayedFeatures.map((feature) => (
-            <Card key={feature.id} className="cursor-pointer hover:shadow-md transition-shadow" 
-                  onClick={() => navigate(feature.path)}>
-              <CardHeader className="pb-2">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center">
-                    {feature.icon}
-                    <CardTitle className="text-lg ml-2">{feature.title}</CardTitle>
-                  </div>
-                  {feature.beta && (
-                    <Badge variant="outline" className="bg-orange-100 text-orange-800 text-xs">Beta</Badge>
-                  )}
-                </div>
-              </CardHeader>
-              <CardContent className="pt-0">
-                <p className="text-sm text-muted-foreground mb-3">{feature.description}</p>
-                <Button variant="ghost" size="sm" className="text-primary">
-                  {t('open')} <ArrowRight className="ml-1 h-3 w-3" />
-                </Button>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
-        
-        {showViewAll && features.length > limit && (
-          <div className="mt-4 flex justify-center">
-            <Button onClick={() => navigate(`/market-tools/${userMarket}`)}>
-              {t('viewMarketSpecificTools')} ({features.length})
-            </Button>
+        ))}
+      </div>
+    );
+  }
+  
+  return (
+    <Card className={className}>
+      <CardHeader>
+        <CardTitle className="text-lg flex items-center">
+          <Map className="h-5 w-5 mr-2" />
+          {language === 'de' ? 'Marktspezifische Funktionen' : 'Market-Specific Features'}
+        </CardTitle>
+      </CardHeader>
+      <CardContent className="grid gap-4">
+        {features.map((feature) => (
+          <div
+            key={feature.id}
+            className="flex flex-col sm:flex-row sm:items-center p-3 bg-muted/40 rounded-md hover:bg-muted transition-colors"
+          >
+            <div className="mr-3 p-2 bg-primary/10 rounded-md text-primary mb-2 sm:mb-0 self-start">
+              {feature.icon}
+            </div>
+            <div>
+              <div className="font-medium mb-1 flex items-center">
+                {feature.title[language as keyof typeof feature.title]}
+                {feature.badge && (
+                  <Badge
+                    variant={feature.badgeVariant || 'outline'}
+                    className="ml-2 text-xs"
+                  >
+                    {feature.badge}
+                  </Badge>
+                )}
+              </div>
+              <div className="text-sm text-muted-foreground">
+                {feature.description[language as keyof typeof feature.description]}
+              </div>
+            </div>
           </div>
-        )}
+        ))}
       </CardContent>
     </Card>
   );

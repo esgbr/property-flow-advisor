@@ -1,286 +1,207 @@
+
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import * as LocalAuthentication from 'expo-local-authentication';
-import { Platform } from 'react-native';
-import { useToast } from '@/components/ui/use-toast';
-import { useLanguage } from './LanguageContext';
-import { logSecurityEvent } from '@/utils/securityUtils';
-import { useUserPreferences } from './UserPreferencesContext';
+import { useUserPreferences } from '@/contexts/UserPreferencesContext';
+import { toast } from 'sonner';
+import secureStorage from '@/utils/secureStorage';
 
 interface AppLockContextType {
   isLocked: boolean;
-  pin: string | null;
-  setPin: (pin: string | null) => void;
-  isBiometricAuthEnabled: boolean;
-  setIsBiometricAuthEnabled: (enabled: boolean) => void;
   lockApp: () => void;
-  unlockApp: (enteredPin?: string) => Promise<boolean>;
-  authenticateWithBiometrics: () => Promise<boolean>;
-  checkBiometricAvailability: () => Promise<boolean>;
-  setupBiometrics: () => Promise<void>;
+  unlockApp: (pin: string) => boolean;
+  hasPIN: boolean;
+  pin: string | null;
+  setPIN: (newPin: string) => void;
+  clearPIN: () => void;
+  supportsFaceId: boolean;
+  useFaceId: () => Promise<boolean>;
+  isBiometricEnabled: boolean;
+  setBiometricEnabled: (enabled: boolean) => void;
 }
 
-const AppLockContext = createContext<AppLockContextType | undefined>(undefined);
+const AppLockContext = createContext<AppLockContextType>({
+  isLocked: false,
+  lockApp: () => {},
+  unlockApp: () => false,
+  hasPIN: false,
+  pin: null,
+  setPIN: () => {},
+  clearPIN: () => {},
+  supportsFaceId: false,
+  useFaceId: () => Promise.resolve(false),
+  isBiometricEnabled: false,
+  setBiometricEnabled: () => {},
+});
 
 export const AppLockProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const { preferences, updatePreferences } = useUserPreferences();
   const [isLocked, setIsLocked] = useState(false);
   const [pin, setPin] = useState<string | null>(null);
-  const [isBiometricAuthEnabled, setIsBiometricAuthEnabled] = useState(false);
-  const { toast } = useToast();
-  const { t } = useLanguage();
-  const { preferences } = useUserPreferences();
+  const [supportsFaceId, setSupportsFaceId] = useState(false);
+  const [isBiometricEnabled, setBiometricEnabled] = useState(false);
   
-  // Load PIN and biometric settings from localStorage on mount
+  // Check for biometric support - in a real app this would check device capabilities
   useEffect(() => {
-    const loadSettings = async () => {
+    // Simulating capability detection
+    const checkBiometricSupport = async () => {
       try {
-        const storedPin = localStorage.getItem('appPin');
-        setPin(storedPin);
-        
-        const biometricEnabled = localStorage.getItem('isBiometricAuthEnabled');
-        setIsBiometricAuthEnabled(biometricEnabled === 'true');
+        // This is a simplified check - in a real app we would use platform APIs
+        const isWebAuthnSupported = window.PublicKeyCredential !== undefined;
+        setSupportsFaceId(isWebAuthnSupported);
       } catch (error) {
-        console.error('Error loading app lock settings:', error);
+        console.error('Error checking biometric support:', error);
+        setSupportsFaceId(false);
       }
     };
     
-    loadSettings();
+    checkBiometricSupport();
   }, []);
   
-  // Save PIN to localStorage when it changes
+  // Load PIN from secure storage
   useEffect(() => {
+    const savedPin = secureStorage.getItem('appLockPin');
+    if (savedPin) {
+      setPin(savedPin);
+      updatePreferences({ appLockEnabled: true });
+    } else {
+      updatePreferences({ appLockEnabled: false });
+    }
+    
+    const bioEnabled = secureStorage.getItem('biometricEnabled') === 'true';
+    setBiometricEnabled(bioEnabled);
+    if (bioEnabled) {
+      updatePreferences({ appLockMethod: 'biometric' });
+    } else if (savedPin) {
+      updatePreferences({ appLockMethod: 'pin' });
+    }
+  }, [updatePreferences]);
+  
+  // Auto-lock when inactive
+  useEffect(() => {
+    if (!pin) return;
+    
+    const lockTimeout = 5 * 60 * 1000; // 5 minutes inactivity
+    let timeoutId: number;
+    
+    const resetTimeout = () => {
+      if (timeoutId) window.clearTimeout(timeoutId);
+      timeoutId = window.setTimeout(() => lockApp(), lockTimeout);
+    };
+    
+    const handleActivity = () => {
+      if (!isLocked) resetTimeout();
+    };
+    
+    // Monitor for user activity
+    window.addEventListener('mousemove', handleActivity);
+    window.addEventListener('keypress', handleActivity);
+    window.addEventListener('touchstart', handleActivity);
+    window.addEventListener('click', handleActivity);
+    
+    resetTimeout();
+    
+    return () => {
+      if (timeoutId) window.clearTimeout(timeoutId);
+      window.removeEventListener('mousemove', handleActivity);
+      window.removeEventListener('keypress', handleActivity);
+      window.removeEventListener('touchstart', handleActivity);
+      window.removeEventListener('click', handleActivity);
+    };
+  }, [pin, isLocked]);
+  
+  const lockApp = () => {
+    if (pin) {
+      setIsLocked(true);
+      localStorage.setItem('appLocked', 'true');
+    }
+  };
+  
+  const unlockApp = (enteredPin: string): boolean => {
+    if (enteredPin === pin) {
+      setIsLocked(false);
+      localStorage.removeItem('appLocked');
+      return true;
+    }
+    return false;
+  };
+  
+  const setPIN = (newPin: string) => {
+    secureStorage.setItem('appLockPin', newPin);
+    setPin(newPin);
+    updatePreferences({ 
+      appLockEnabled: true,
+      appLockMethod: isBiometricEnabled ? 'biometric' : 'pin' 
+    });
+  };
+  
+  const clearPIN = () => {
+    secureStorage.removeItem('appLockPin');
+    setPin(null);
+    updatePreferences({ 
+      appLockEnabled: false,
+      appLockMethod: undefined 
+    });
+    setBiometricEnabled(false);
+    secureStorage.removeItem('biometricEnabled');
+  };
+  
+  const useFaceId = async (): Promise<boolean> => {
     try {
-      if (pin === null) {
-        localStorage.removeItem('appPin');
-      } else {
-        localStorage.setItem('appPin', pin);
+      // In a real app, this would trigger native biometric authentication
+      // For demo we'll simulate success after a delay
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      
+      if (pin) {
+        setIsLocked(false);
+        localStorage.removeItem('appLocked');
+        return true;
       }
+      return false;
     } catch (error) {
-      console.error('Error saving PIN:', error);
+      console.error('Biometric authentication failed:', error);
+      return false;
+    }
+  };
+  
+  const handleSetBiometricEnabled = (enabled: boolean) => {
+    setBiometricEnabled(enabled);
+    secureStorage.setItem('biometricEnabled', enabled.toString());
+    
+    if (enabled) {
+      updatePreferences({ appLockMethod: 'biometric' });
+      toast.success('Biometrische Authentifizierung aktiviert');
+    } else if (pin) {
+      updatePreferences({ appLockMethod: 'pin' });
+    }
+  };
+  
+  // Check if app was locked before refresh
+  useEffect(() => {
+    if (localStorage.getItem('appLocked') === 'true' && pin) {
+      setIsLocked(true);
     }
   }, [pin]);
   
-  // Save biometric auth setting to localStorage when it changes
-  useEffect(() => {
-    try {
-      localStorage.setItem('isBiometricAuthEnabled', String(isBiometricAuthEnabled));
-    } catch (error) {
-      console.error('Error saving biometric auth setting:', error);
-    }
-  }, [isBiometricAuthEnabled]);
-
-  const lockApp = () => {
-    setIsLocked(true);
-    
-    // Show a toast notification
-    toast({
-      title: t('appLocked'),
-      description: t('appLockedDescription'),
-    });
-  };
-
-  const unlockApp = async (enteredPin?: string): Promise<boolean> => {
-    if (isBiometricAuthEnabled && !enteredPin) {
-      return authenticateWithBiometrics();
-    }
-    
-    if (pin && enteredPin === pin) {
-      setIsLocked(false);
-      
-      // Log successful unlock
-      logSecurityEvent('app_unlock', {
-        method: 'pin',
-        success: true
-      }, {
-        severity: 'info',
-        notifyUser: false
-      });
-      
-      return true;
-    } else {
-      // Log failed unlock attempt
-      logSecurityEvent('app_unlock_failure', {
-        method: 'pin',
-        reason: 'invalid_pin'
-      }, {
-        severity: 'warning',
-        notifyUser: true
-      });
-      
-      toast({
-        title: t('incorrectPIN'),
-        description: t('incorrectPINDescription'),
-        variant: 'destructive'
-      });
-      
-      return false;
-    }
-  };
-  
-  const authenticateWithBiometrics = async (): Promise<boolean> => {
-    try {
-      const result = await LocalAuthentication.authenticateAsync({
-        promptMessage: t('authenticateWithBiometrics'),
-        cancelLabel: t('cancel'),
-        disableDeviceFallback: true,
-      });
-      
-      if (result.success) {
-        setIsLocked(false);
-        
-        // Log successful biometric unlock
-        logSecurityEvent('app_unlock', {
-          method: 'biometric',
-          success: true
-        }, {
-          severity: 'info',
-          notifyUser: false
-        });
-        
-        return true;
-      } else {
-        // Log failed biometric unlock attempt
-        logSecurityEvent('app_unlock_failure', {
-          method: 'biometric',
-          reason: result.error
-        }, {
-          severity: 'warning',
-          notifyUser: true
-        });
-        
-        toast({
-          title: t('biometricAuthFailed'),
-          description: t('biometricAuthFailedDescription'),
-          variant: 'destructive'
-        });
-        
-        return false;
-      }
-    } catch (error) {
-      console.error('Biometric authentication error:', error);
-      
-      // Log biometric auth error
-      logSecurityEvent('app_unlock_failure', {
-        method: 'biometric',
-        reason: 'biometric_error'
-      }, {
-        severity: 'error',
-        notifyUser: true
-      });
-      
-      toast({
-        title: t('biometricAuthError'),
-        description: t('biometricAuthErrorDescription'),
-        variant: 'destructive'
-      });
-      
-      return false;
-    }
-  };
-
-  const checkBiometricAvailability = async (): Promise<boolean> => {
-    try {
-      const types = await LocalAuthentication.supportedAuthenticationTypesAsync();
-      return types.length > 0;
-    } catch (error) {
-      console.error('Error checking biometric availability:', error);
-      return false;
-    }
-  };
-  
-  const setupBiometrics = async () => {
-    try {
-      const isEnrolled = await LocalAuthentication.isEnrolledAsync();
-      
-      if (!isEnrolled) {
-        toast({
-          title: t('noBiometricsEnrolled'),
-          description: t('noBiometricsEnrolledDescription'),
-          variant: 'destructive'
-        });
-        return;
-      }
-      
-      const result = await LocalAuthentication.authenticateAsync({
-        promptMessage: t('enableBiometricAuth'),
-        cancelLabel: t('cancel'),
-        disableDeviceFallback: true,
-      });
-      
-      if (result.success) {
-        setIsBiometricAuthEnabled(true);
-        toast.success(t('biometricAuthEnabled'));
-        
-        // Fixed security logging
-        logSecurityEvent('biometrics_setup', {
-          method: 'biometric',
-          success: result.success
-        }, {
-          severity: 'info',
-          notifyUser: true,
-          persistToDB: true
-        });
-      } else {
-        toast({
-          title: t('biometricSetupFailed'),
-          description: t('biometricSetupFailedDescription'),
-          variant: 'destructive'
-        });
-        
-        // Log failed biometric setup
-        logSecurityEvent('biometrics_setup', {
-          method: 'biometric',
-          success: false,
-          reason: result.error
-        }, {
-          severity: 'warning',
-          notifyUser: true
-        });
-      }
-    } catch (error) {
-      console.error('Error setting up biometrics:', error);
-      
-      // Log biometric setup error
-      logSecurityEvent('biometrics_setup', {
-        method: 'biometric',
-        success: false,
-        reason: 'biometric_error'
-      }, {
-        severity: 'error',
-        notifyUser: true
-      });
-      
-      toast({
-        title: t('biometricSetupError'),
-        description: t('biometricSetupErrorDescription'),
-        variant: 'destructive'
-      });
-    }
-  };
-
-  const value: AppLockContextType = {
-    isLocked,
-    pin,
-    setPin,
-    isBiometricAuthEnabled,
-    setIsBiometricAuthEnabled,
-    lockApp,
-    unlockApp,
-    authenticateWithBiometrics,
-    checkBiometricAvailability,
-    setupBiometrics,
-  };
-
   return (
-    <AppLockContext.Provider value={value}>
+    <AppLockContext.Provider
+      value={{
+        isLocked,
+        lockApp,
+        unlockApp,
+        hasPIN: !!pin,
+        pin,
+        setPIN,
+        clearPIN,
+        supportsFaceId,
+        useFaceId,
+        isBiometricEnabled,
+        setBiometricEnabled: handleSetBiometricEnabled,
+      }}
+    >
       {children}
     </AppLockContext.Provider>
   );
 };
 
-export const useAppLock = (): AppLockContextType => {
-  const context = useContext(AppLockContext);
-  if (!context) {
-    throw new Error('useAppLock must be used within an AppLockProvider');
-  }
-  return context;
-};
+export const useAppLock = () => useContext(AppLockContext);
+
+export default AppLockContext;

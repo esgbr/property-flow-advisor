@@ -1,110 +1,116 @@
 
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { Button } from '@/components/ui/button';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
-import { Check, ChevronDown, Globe, X } from 'lucide-react';
+import React from 'react';
+import { Check, Globe } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
-import { useUserPreferences } from '@/contexts/UserPreferencesContext';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { useUserPreferences, InvestmentMarket } from '@/contexts/UserPreferencesContext';
 import { useMarketFilter } from '@/hooks/use-market-filter';
-import { Badge } from '@/components/ui/badge';
-import { toast } from 'sonner';
-import { InvestmentMarket } from '@/contexts/UserPreferencesContext';
+import { cn } from '@/lib/utils';
 
 interface MarketSelectorProps {
-  variant?: 'default' | 'outline' | 'secondary';
-  size?: 'default' | 'sm' | 'lg';
-  showLabel?: boolean;
-  align?: 'center' | 'start' | 'end';
+  onChange?: (market: InvestmentMarket) => void;
+  minimal?: boolean;
+  appearance?: 'default' | 'mini' | 'inline';
+  className?: string;
 }
 
-const MarketSelector: React.FC<MarketSelectorProps> = ({
-  variant = 'outline',
-  size = 'default',
-  showLabel = true,
-  align = 'end'
-}) => {
-  const { t } = useLanguage();
-  const navigate = useNavigate();
+const MarketSelector = ({
+  onChange,
+  minimal = false,
+  appearance = 'default',
+  className = ''
+}: MarketSelectorProps) => {
+  const { language, t } = useLanguage();
   const { preferences, updatePreferences } = useUserPreferences();
-  const { getMarketDisplayName, getAvailableMarkets } = useMarketFilter();
-  const [isOpen, setIsOpen] = useState(false);
+  const { getMarketOptions, getMarketDisplayName } = useMarketFilter();
   
-  const currentMarket = preferences.investmentMarket || 'global';
-  const markets = getAvailableMarkets();
-  
-  const handleMarketChange = (marketId: InvestmentMarket) => {
-    if (marketId === currentMarket) return;
+  const handleMarketChange = (market: InvestmentMarket) => {
+    updatePreferences({
+      marketFilter: market
+    });
     
-    updatePreferences({ ...preferences, investmentMarket: marketId });
-    
-    toast.success(
-      t('marketChanged'), 
-      { 
-        description: `${t('yourInvestmentMarketHasBeenUpdatedTo')} ${markets.find(m => m.id === marketId)?.name}.`,
-        duration: 3000
-      }
-    );
-    
-    // Close dropdown
-    setIsOpen(false);
-    
-    // Navigate to appropriate tools page for the selected market
-    if (marketId === 'germany' || marketId === 'austria' || marketId === 'switzerland') {
-      navigate('/deutsche-immobilien-tools');
-    } else if (marketId === 'usa' || marketId === 'canada') {
-      navigate('/us-real-estate-tools');
+    if (onChange) {
+      onChange(market);
     }
   };
   
-  return (
-    <DropdownMenu open={isOpen} onOpenChange={setIsOpen}>
-      <DropdownMenuTrigger asChild>
-        <Button variant={variant} size={size} className="flex items-center gap-1.5">
-          <Globe className="h-4 w-4 mr-1" />
-          {showLabel ? (
-            <>
-              <span>{t('market')}: </span>
-              <span className="font-medium">
-                {markets.find(m => m.id === currentMarket)?.name || t('global')}
-              </span>
-            </>
-          ) : (
-            <Badge variant="outline" className="bg-primary/10">
-              {getMarketDisplayName()}
-            </Badge>
-          )}
-          <ChevronDown className="h-3.5 w-3.5 opacity-70" />
-        </Button>
-      </DropdownMenuTrigger>
-      <DropdownMenuContent align={align} className="w-56">
-        <DropdownMenuLabel>{t('selectInvestmentMarket')}</DropdownMenuLabel>
-        <DropdownMenuSeparator />
-        
-        {markets.map((market) => (
-          <DropdownMenuItem
-            key={market.id}
-            className="flex items-center justify-between"
-            onClick={() => handleMarketChange(market.id)}
+  if (minimal) {
+    return (
+      <Select 
+        value={preferences.marketFilter} 
+        onValueChange={handleMarketChange}
+      >
+        <SelectTrigger className="w-[140px]">
+          <SelectValue />
+        </SelectTrigger>
+        <SelectContent>
+          {getMarketOptions().map(option => (
+            <SelectItem key={option.id} value={option.id}>
+              {option.name}
+            </SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
+    );
+  }
+  
+  if (appearance === 'mini') {
+    return (
+      <div className={cn("flex items-center gap-1 text-xs", className)}>
+        <Globe className="h-3 w-3 opacity-70" />
+        <span className="opacity-70">{t('market')}:</span>
+        <span className="font-medium">
+          {getMarketDisplayName()}
+        </span>
+      </div>
+    );
+  }
+  
+  if (appearance === 'inline') {
+    return (
+      <div className={cn("flex flex-wrap gap-2", className)}>
+        {getMarketOptions().map(option => (
+          <button
+            key={option.id}
+            className={cn(
+              "px-2 py-1 text-xs rounded-full border transition-colors",
+              preferences.marketFilter === option.id
+                ? "bg-primary text-primary-foreground border-primary"
+                : "bg-background hover:bg-muted/50 border-muted"
+            )}
+            onClick={() => handleMarketChange(option.id as InvestmentMarket)}
           >
-            <span>{market.name}</span>
-            {market.id === currentMarket && <Check className="h-4 w-4" />}
-          </DropdownMenuItem>
+            {preferences.marketFilter === option.id && (
+              <Check className="h-3 w-3 inline mr-1" />
+            )}
+            {option.name}
+          </button>
         ))}
-        
-        <DropdownMenuSeparator />
-        <DropdownMenuItem onClick={() => navigate('/settings')}>
-          {t('manageMarketSettings')}
-        </DropdownMenuItem>
-      </DropdownMenuContent>
-    </DropdownMenu>
+      </div>
+    );
+  }
+  
+  return (
+    <div className={className}>
+      <label className="block text-sm font-medium mb-1">
+        {t('selectMarket')}
+      </label>
+      <Select 
+        value={preferences.marketFilter} 
+        onValueChange={handleMarketChange}
+      >
+        <SelectTrigger className="w-full">
+          <SelectValue />
+        </SelectTrigger>
+        <SelectContent>
+          {getMarketOptions().map(option => (
+            <SelectItem key={option.id} value={option.id}>
+              {option.name}
+            </SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
+    </div>
   );
 };
 
