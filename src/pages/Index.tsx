@@ -1,4 +1,5 @@
 
+// Add the Feature interface at the top of the file
 import React, { Suspense, lazy, useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -27,6 +28,16 @@ import { useAccessibility } from '@/hooks/use-accessibility';
 import AccessibilitySettingsButton from '@/components/accessibility/AccessibilitySettingsButton';
 import WorkflowSuggestions from '@/components/workflow/WorkflowSuggestions';
 import { useUserPreferences } from '@/contexts/UserPreferencesContext';
+
+// Define the Feature interface
+interface Feature {
+  id: string;
+  title: string;
+  description: string;
+  icon: React.ReactNode;
+  action: () => void;
+  markets: InvestmentMarket[];
+}
 
 // Lazy load components for better initial loading performance
 const FeatureGrid = lazy(() => import('@/components/home/FeatureGrid'));

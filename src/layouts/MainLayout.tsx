@@ -1,4 +1,3 @@
-
 import React, { useEffect, lazy, Suspense } from 'react';
 import { Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { SidebarProvider } from '@/components/ui/sidebar';
@@ -192,7 +191,7 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
 };
 
 // Wrap the MainLayout with the AppThemeProvider
-const ThemedMainLayout = ({ children }: MainLayoutProps) => {
+const ThemedMainLayout: React.FC<MainLayoutProps> = ({ children }) => {
   return (
     <AppThemeProvider>
       <MainLayout>{children}</MainLayout>
