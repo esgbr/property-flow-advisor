@@ -135,12 +135,12 @@ const ImprovedMarketSelector: React.FC<ImprovedMarketSelectorProps> = ({
               <Select 
                 value={selectedMarket} 
                 onValueChange={handleMarketChange}
-                onKeyDown={handleKeyDown}
               >
                 <SelectTrigger 
                   id={labelId}
                   className={`focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 ${sizeClasses[size]}`}
                   aria-label={language === 'de' ? 'Wo möchten Sie investieren' : 'Where do you want to invest'}
+                  onKeyDown={handleKeyDown}
                 >
                   <SelectValue placeholder={language === 'de' ? 'Markt auswählen' : 'Select market'}>
                     <div className="flex items-center gap-2">
