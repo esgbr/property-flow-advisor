@@ -2,7 +2,7 @@
 import { useContext } from 'react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { UserPreferencesContext, InvestmentMarket, InvestmentMarketOption } from '@/contexts/UserPreferencesContext';
-import { getLocalizedMarketName, availableMarkets } from '@/utils/marketHelpers';
+import { getLocalizedMarketName as getLocalizedMarketNameUtil, availableMarkets } from '@/utils/marketHelpers';
 import { ReactNode } from 'react';
 
 export interface FeatureMarketConfig {
@@ -71,8 +71,8 @@ export const useMarketFilter = () => {
 
   // Get localized market name
   const getLocalizedMarketName = (): string => {
-    // Fixed: Remove the language parameter since the function doesn't expect it
-    return getLocalizedMarketName(userMarket);
+    // Fixed: Use the imported utility function with the userMarket parameter
+    return getLocalizedMarketNameUtil(userMarket, language);
   };
 
   // Get available markets
