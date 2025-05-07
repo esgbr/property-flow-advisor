@@ -8,6 +8,21 @@ import { Building, Calculator, Globe, Home, Map, TrendingUp } from 'lucide-react
 import { useNavigate } from 'react-router-dom';
 import { useUserPreferences } from '@/contexts/UserPreferencesContext';
 
+// Define typed interfaces for better organization
+interface ToolItem {
+  id: string;
+  name: string;
+  icon: React.ReactNode;
+  path: string;
+  marketSpecific?: string[];
+}
+
+interface MarketContent {
+  title: string;
+  description: string;
+  featuredTools: ToolItem[];
+}
+
 const MarketAwareDashboard: React.FC = () => {
   const { t } = useLanguage();
   const navigate = useNavigate();
@@ -15,49 +30,51 @@ const MarketAwareDashboard: React.FC = () => {
   const { preferences } = useUserPreferences();
   
   // Market-specific content
-  const marketSpecificContent = {
+  const marketSpecificContent: Record<string, MarketContent> = {
     germany: {
       title: 'German Real Estate Tools',
       description: 'Tools and resources specifically for the German real estate market',
       featuredTools: [
-        { id: 'grunderwerbsteuer', name: 'Property Transfer Tax Calculator', icon: <Calculator className="h-5 w-5 text-primary" />, path: '/german-investor?tool=grunderwerbsteuer' },
-        { id: 'mietkauf', name: 'Rent-to-Own Calculator', icon: <Home className="h-5 w-5 text-primary" />, path: '/german-investor?tool=mietkauf' },
-        { id: 'mietspiegel', name: 'Rental Index Comparator', icon: <Map className="h-5 w-5 text-primary" />, path: '/german-investor?tool=mietspiegel' }
-      ]
-    },
-    usa: {
-      title: 'US Real Estate Tools',
-      description: 'Tools and resources specifically for the US real estate market',
-      featuredTools: [
-        { id: '1031exchange', name: '1031 Exchange Calculator', icon: <Calculator className="h-5 w-5 text-primary" />, path: '/us-real-estate-tools?tool=1031exchange' },
-        { id: 'caprate', name: 'Cap Rate Analysis', icon: <TrendingUp className="h-5 w-5 text-primary" />, path: '/us-real-estate-tools?tool=caprate' },
-        { id: 'markettrends', name: 'Market Trends', icon: <Map className="h-5 w-5 text-primary" />, path: '/us-real-estate-tools?tool=markettrends' }
+        { id: 'grunderwerbsteuer', name: 'Property Transfer Tax Calculator', icon: <Calculator className="h-5 w-5 text-primary" />, path: '/german-investor?tool=grunderwerbsteuer', marketSpecific: ['germany', 'austria'] },
+        { id: 'mietkauf', name: 'Rent-to-Own Calculator', icon: <Home className="h-5 w-5 text-primary" />, path: '/german-investor?tool=mietkauf', marketSpecific: ['germany'] },
+        { id: 'mietspiegel', name: 'Rental Index Comparator', icon: <Map className="h-5 w-5 text-primary" />, path: '/german-investor?tool=mietspiegel', marketSpecific: ['germany'] }
       ]
     },
     austria: {
       title: 'Austrian Real Estate Tools',
       description: 'Tools and resources specifically for the Austrian real estate market',
       featuredTools: [
-        { id: 'grunderwerbsteuer', name: 'Property Transfer Tax Calculator', icon: <Calculator className="h-5 w-5 text-primary" />, path: '/german-investor?tool=grunderwerbsteuer' },
-        { id: 'immoertragsteuer', name: 'Real Estate Income Tax', icon: <TrendingUp className="h-5 w-5 text-primary" />, path: '/german-investor?tool=immoertragsteuer' },
-        { id: 'mietrecht', name: 'Rental Law Guide', icon: <Home className="h-5 w-5 text-primary" />, path: '/german-investor?tool=mietrecht' }
+        { id: 'grunderwerbsteuer', name: 'Property Transfer Tax Calculator', icon: <Calculator className="h-5 w-5 text-primary" />, path: '/german-investor?tool=grunderwerbsteuer', marketSpecific: ['germany', 'austria'] },
+        { id: 'immoertragsteuer', name: 'Real Estate Income Tax', icon: <TrendingUp className="h-5 w-5 text-primary" />, path: '/german-investor?tool=immoertragsteuer', marketSpecific: ['austria'] },
+        { id: 'mietrecht', name: 'Rental Law Guide', icon: <Home className="h-5 w-5 text-primary" />, path: '/german-investor?tool=mietrecht', marketSpecific: ['austria'] }
+      ]
+    },
+    usa: {
+      title: 'US Real Estate Tools',
+      description: 'Tools and resources specifically for the US real estate market',
+      featuredTools: [
+        { id: '1031exchange', name: '1031 Exchange Calculator', icon: <Calculator className="h-5 w-5 text-primary" />, path: '/us-real-estate-tools?tool=1031exchange', marketSpecific: ['usa'] },
+        { id: 'caprate', name: 'Cap Rate Analysis', icon: <TrendingUp className="h-5 w-5 text-primary" />, path: '/us-real-estate-tools?tool=caprate', marketSpecific: ['usa'] },
+        { id: 'markettrends', name: 'Market Trends', icon: <Map className="h-5 w-5 text-primary" />, path: '/us-real-estate-tools?tool=markettrends', marketSpecific: ['usa'] }
       ]
     },
     default: {
       title: 'Global Real Estate Tools',
       description: 'General tools and resources for real estate investors',
       featuredTools: [
-        { id: 'roicalculator', name: 'ROI Calculator', icon: <Calculator className="h-5 w-5 text-primary" />, path: '/calculators?tab=roi' },
-        { id: 'portfoliodashboard', name: 'Portfolio Dashboard', icon: <Building className="h-5 w-5 text-primary" />, path: '/investor-dashboard' },
-        { id: 'marketcomparison', name: 'Market Comparison Tool', icon: <Globe className="h-5 w-5 text-primary" />, path: '/features?feature=marketcomparison' }
+        { id: 'roicalculator', name: 'ROI Calculator', icon: <Calculator className="h-5 w-5 text-primary" />, path: '/calculators?tab=roi', marketSpecific: ['global'] },
+        { id: 'portfoliodashboard', name: 'Portfolio Dashboard', icon: <Building className="h-5 w-5 text-primary" />, path: '/investor-dashboard', marketSpecific: ['global'] },
+        { id: 'marketcomparison', name: 'Market Comparison Tool', icon: <Globe className="h-5 w-5 text-primary" />, path: '/features?feature=marketcomparison', marketSpecific: ['global'] }
       ]
     }
   };
   
   // Get content based on user market
   const getContent = () => {
-    if (userMarket === 'germany' || userMarket === 'austria') {
-      return marketSpecificContent[userMarket];
+    if (userMarket === 'germany') {
+      return marketSpecificContent.germany;
+    } else if (userMarket === 'austria') {
+      return marketSpecificContent.austria;
     } else if (userMarket === 'usa' || userMarket === 'canada') {
       return marketSpecificContent.usa;
     } else {
@@ -67,6 +84,12 @@ const MarketAwareDashboard: React.FC = () => {
   
   const content = getContent();
   const marketDisplay = getMarketDisplayName();
+  
+  // Filter tools to only show those relevant to the current market
+  const filteredTools = content.featuredTools.filter(tool => {
+    if (!tool.marketSpecific) return true;
+    return tool.marketSpecific.includes(userMarket) || tool.marketSpecific.includes('global');
+  });
 
   return (
     <div className="space-y-6">
@@ -83,7 +106,7 @@ const MarketAwareDashboard: React.FC = () => {
           </CardHeader>
           <CardContent>
             <div className="grid gap-4 md:grid-cols-3">
-              {content.featuredTools.map((tool) => (
+              {filteredTools.map((tool) => (
                 <Card key={tool.id} className="cursor-pointer hover:shadow-md transition-shadow" 
                       onClick={() => navigate(tool.path)}>
                   <CardHeader className="pb-2">

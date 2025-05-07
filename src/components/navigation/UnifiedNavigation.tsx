@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { 
@@ -30,6 +30,7 @@ import {
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { useAccessibility } from '../accessibility/A11yProvider';
 import { useUserPreferences } from '@/contexts/UserPreferencesContext';
+import { useMarketFilter } from '@/hooks/use-market-filter';
 
 interface NavigationItem {
   label: string;
@@ -37,6 +38,7 @@ interface NavigationItem {
   path: string;
   highlight?: boolean;
   badge?: string;
+  marketSpecific?: string | string[];
 }
 
 interface NavigationGroup {
@@ -56,6 +58,7 @@ const UnifiedNavigation: React.FC<{
   const location = useLocation();
   const { highContrast, largeText } = useAccessibility();
   const { preferences } = useUserPreferences();
+  const { userMarket } = useMarketFilter();
   
   const [openGroups, setOpenGroups] = useState<Record<string, boolean>>({
     main: true,
@@ -64,6 +67,8 @@ const UnifiedNavigation: React.FC<{
     market: false,
     account: false
   });
+
+  const isGermanMarket = userMarket === 'germany' || userMarket === 'austria';
 
   const toggleGroup = (group: string) => {
     setOpenGroups(prev => ({
@@ -95,23 +100,46 @@ const UnifiedNavigation: React.FC<{
       label: t('tools'),
       icon: <Calculator className="h-5 w-5" />,
       items: [
-        { label: t('tools'), icon: <Search className="h-4 w-4" />, path: '/tools' },
+        { 
+          label: isGermanMarket ? 
+            (language === 'de' ? 'Deutsche Immobilien-Tools' : 'German Real Estate Tools') : 
+            (language === 'de' ? 'Alle Tools' : 'All Tools'),
+          icon: <Search className="h-4 w-4" />, 
+          path: isGermanMarket ? '/deutsche-immobilien-tools' : '/tools'
+        },
         { label: t('calculators'), icon: <Calculator className="h-4 w-4" />, path: '/calculators' },
-        { label: t('portfolioOptimization'), icon: <PieChart className="h-4 w-4" />, path: '/portfolio-optimization', badge: 'new' },
-        { label: t('marketExplorer'), icon: <Globe className="h-4 w-4" />, path: '/market-explorer' },
-        { label: language === 'de' ? 'Steuerplanung' : 'Tax Planning', icon: <Euro className="h-4 w-4" />, path: '/tax-planning' }
+        { 
+          label: t('portfolioOptimization'), 
+          icon: <PieChart className="h-4 w-4" />, 
+          path: '/portfolio-optimization', 
+          badge: 'new' 
+        },
+        { 
+          label: t('marketExplorer'), 
+          icon: <Globe className="h-4 w-4" />, 
+          path: '/market-explorer' 
+        },
+        { 
+          label: language === 'de' ? 'Steuerplanung' : 'Tax Planning', 
+          icon: <Euro className="h-4 w-4" />, 
+          path: '/tax-planning',
+          marketSpecific: ['germany', 'austria']
+        }
       ]
     },
     {
       label: language === 'de' ? 'Markt' : 'Market',
       icon: <Globe className="h-5 w-5" />,
       items: [
-        { label: language === 'de' ? 'Regionale Analyse' : 'Regional Analysis', 
+        { 
+          label: language === 'de' ? 'Regionale Analyse' : 'Regional Analysis', 
           icon: <Search className="h-4 w-4" />, 
           path: '/regional-analysis',
-          badge: 'new' 
+          badge: 'new',
+          marketSpecific: ['germany', 'austria', 'usa']
         },
-        { label: language === 'de' ? 'Marktvergleich' : 'Market Comparison', 
+        { 
+          label: language === 'de' ? 'Marktvergleich' : 'Market Comparison', 
           icon: <BarChart3 className="h-4 w-4" />, 
           path: '/market-comparison',
           badge: 'new' 
@@ -127,6 +155,24 @@ const UnifiedNavigation: React.FC<{
       ]
     }
   ];
+
+  // Filter out items that aren't relevant to the current market
+  const filterNavigationItems = () => {
+    return navigationGroups.map(group => ({
+      ...group,
+      items: group.items.filter(item => {
+        if (!item.marketSpecific) return true;
+        
+        const marketSpecificArray = Array.isArray(item.marketSpecific) 
+          ? item.marketSpecific 
+          : [item.marketSpecific];
+          
+        return !userMarket || marketSpecificArray.includes(userMarket);
+      })
+    })).filter(group => group.items.length > 0);
+  };
+  
+  const filteredNavigationGroups = filterNavigationItems();
 
   return (
     <aside className={cn(
@@ -151,7 +197,7 @@ const UnifiedNavigation: React.FC<{
       </div>
 
       <div className="flex-1 overflow-y-auto py-2">
-        {navigationGroups.map((group) => (
+        {filteredNavigationGroups.map((group) => (
           collapsed ? (
             <TooltipProvider key={group.label} delayDuration={300}>
               <Tooltip>

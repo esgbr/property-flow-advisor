@@ -11,6 +11,7 @@ import {
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useUserPreferences } from '@/contexts/UserPreferencesContext';
+import { useMarketFilter } from '@/hooks/use-market-filter';
 
 // Define navigation item type for better type safety
 interface NavItem {
@@ -19,6 +20,7 @@ interface NavItem {
   icon: React.ReactNode;
   new?: boolean;
   hide?: boolean;
+  marketSpecific?: string | string[];
 }
 
 interface NavCategory {
@@ -30,6 +32,9 @@ const AppSidebar = () => {
   const { t, language } = useLanguage();
   const location = useLocation();
   const { preferences } = useUserPreferences();
+  const { userMarket } = useMarketFilter();
+  
+  const isGermanMarket = userMarket === 'germany' || userMarket === 'austria';
 
   // Organize navigation items by category for better structure
   const navigationCategories: NavCategory[] = [
@@ -72,6 +77,7 @@ const AppSidebar = () => {
           href: '/regional-analysis',
           icon: <Map className="h-5 w-5" />,
           new: true,
+          marketSpecific: ['germany', 'austria', 'usa']
         },
         {
           name: language === 'de' ? 'Erweiterte Analysen' : 'Advanced Analytics',
@@ -84,14 +90,18 @@ const AppSidebar = () => {
       title: t('tools'),
       items: [
         {
-          name: language === 'de' ? 'Alle Tools' : 'All Tools',  // Changed from lowercase 'tools'
-          href: '/tools',
+          name: isGermanMarket ? 
+            (language === 'de' ? 'Deutsche Immobilien-Tools' : 'German Real Estate Tools') : 
+            (language === 'de' ? 'Alle Tools' : 'All Tools'),  
+          href: isGermanMarket ? '/deutsche-immobilien-tools' : '/tools',
           icon: <Banknote className="h-5 w-5" />,
         },
+        // Hide the separate German Tools item when in German market
         {
-          name: language === 'de' ? 'Deutsche Tools' : 'German Tools',  // Combined with general tools
+          name: language === 'de' ? 'Deutsche Tools' : 'German Tools',  
           href: '/deutsche-immobilien-tools',
           icon: <Globe className="h-5 w-5" />,
+          hide: isGermanMarket, // Hide when in German market as it's merged with "All Tools"
         },
         {
           name: t('calculators'),
@@ -119,6 +129,7 @@ const AppSidebar = () => {
           name: language === 'de' ? 'Steuerplanung' : 'Tax Planning',
           href: '/tax-planning',
           icon: <Euro className="h-5 w-5" />,
+          marketSpecific: ['germany', 'austria']
         }
       ]
     },
@@ -155,6 +166,17 @@ const AppSidebar = () => {
     // Skip hidden items
     if (item.hide) return null;
     
+    // Skip items that are not relevant for the current market
+    if (item.marketSpecific) {
+      const marketSpecific = Array.isArray(item.marketSpecific) 
+        ? item.marketSpecific 
+        : [item.marketSpecific];
+      
+      if (!marketSpecific.includes(userMarket) && userMarket) {
+        return null;
+      }
+    }
+    
     return (
       <Link
         key={item.href}
@@ -181,16 +203,23 @@ const AppSidebar = () => {
   };
 
   // Render a category with its items
-  const renderCategory = (category: NavCategory, idx: number) => (
-    <div key={idx} className="mb-6" role="menu" aria-label={category.title}>
-      <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider px-3 mb-2">
-        {category.title}
-      </h3>
-      <div className="space-y-1">
-        {category.items.filter(item => !item.hide).map(renderNavItem)}
+  const renderCategory = (category: NavCategory, idx: number) => {
+    // Filter items based on market specificity
+    const visibleItems = category.items.filter(item => !item.hide);
+    
+    if (visibleItems.length === 0) return null;
+    
+    return (
+      <div key={idx} className="mb-6" role="menu" aria-label={category.title}>
+        <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider px-3 mb-2">
+          {category.title}
+        </h3>
+        <div className="space-y-1">
+          {visibleItems.map(renderNavItem)}
+        </div>
       </div>
-    </div>
-  );
+    );
+  };
 
   return (
     <Sidebar>

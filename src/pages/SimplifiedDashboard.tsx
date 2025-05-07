@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
@@ -6,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { Building, BarChart3, Calculator, Globe, FileText, ArrowLeftRight, Map } from 'lucide-react';
 import { useUserPreferences } from '@/contexts/UserPreferencesContext';
+import { ScrollArea } from '@/components/ui/scroll-area';
 
 const SimplifiedDashboard: React.FC = () => {
   const navigate = useNavigate();
@@ -159,120 +159,124 @@ const SimplifiedDashboard: React.FC = () => {
   };
 
   return (
-    <div className="container mx-auto px-4 py-8">
-      {/* Welcome Header */}
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold mb-2">
-          {language === 'de' 
-            ? `Willkommen${preferences.name ? ', ' + preferences.name : ''}!` 
-            : `Welcome${preferences.name ? ', ' + preferences.name : ''}!`}
-        </h1>
-        <p className="text-muted-foreground">
-          {language === 'de' 
-            ? 'Hier ist ein Überblick über Ihre Immobilieninvestitionstools und -aktivitäten.'
-            : 'Here\'s an overview of your real estate investment tools and activities.'}
-        </p>
-      </div>
-      
-      {/* Tools Grid */}
-      <section className="mb-10">
-        <h2 className="text-xl font-semibold mb-4">
-          {language === 'de' ? 'Tools & Funktionen' : 'Tools & Features'}
-        </h2>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-          {displayedFeatures.map((feature) => (
-            <Card 
-              key={feature.id}
-              className="hover:shadow-md transition-all cursor-pointer"
-              onClick={feature.action}
-            >
-              <CardHeader>
-                <div className="flex items-center justify-between">
-                  {feature.icon}
-                  {feature.new && (
-                    <span className="bg-primary/10 text-primary text-xs px-2 py-0.5 rounded-full">
-                      {language === 'de' ? 'Neu' : 'New'}
-                    </span>
-                  )}
-                </div>
-                <CardTitle className="mt-4">{feature.title}</CardTitle>
-                <CardDescription>{feature.description}</CardDescription>
-              </CardHeader>
+    <div className="h-full">
+      <ScrollArea className="h-full">
+        <div className="container mx-auto px-4 py-8">
+          {/* Welcome Header */}
+          <div className="mb-8">
+            <h1 className="text-3xl font-bold mb-2">
+              {language === 'de' 
+                ? `Willkommen${preferences.name ? ', ' + preferences.name : ''}!` 
+                : `Welcome${preferences.name ? ', ' + preferences.name : ''}!`}
+            </h1>
+            <p className="text-muted-foreground">
+              {language === 'de' 
+                ? 'Hier ist ein Überblick über Ihre Immobilieninvestitionstools und -aktivitäten.'
+                : 'Here\'s an overview of your real estate investment tools and activities.'}
+            </p>
+          </div>
+          
+          {/* Tools Grid */}
+          <section className="mb-10">
+            <h2 className="text-xl font-semibold mb-4">
+              {language === 'de' ? 'Tools & Funktionen' : 'Tools & Features'}
+            </h2>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+              {displayedFeatures.map((feature) => (
+                <Card 
+                  key={feature.id}
+                  className="hover:shadow-md transition-all cursor-pointer"
+                  onClick={feature.action}
+                >
+                  <CardHeader>
+                    <div className="flex items-center justify-between">
+                      {feature.icon}
+                      {feature.new && (
+                        <span className="bg-primary/10 text-primary text-xs px-2 py-0.5 rounded-full">
+                          {language === 'de' ? 'Neu' : 'New'}
+                        </span>
+                      )}
+                    </div>
+                    <CardTitle className="mt-4">{feature.title}</CardTitle>
+                    <CardDescription>{feature.description}</CardDescription>
+                  </CardHeader>
+                  <CardFooter>
+                    <Button variant="ghost" className="w-full justify-start">
+                      {language === 'de' ? 'Öffnen' : 'Open'} →
+                    </Button>
+                  </CardFooter>
+                </Card>
+              ))}
+            </div>
+          </section>
+          
+          {/* Recent Activity */}
+          <section className="mb-10">
+            <h2 className="text-xl font-semibold mb-4">
+              {language === 'de' ? 'Letzte Aktivitäten' : 'Recent Activity'}
+            </h2>
+            <Card>
+              <CardContent className="p-6">
+                <ul className="space-y-4">
+                  {recentActivity.map((activity) => (
+                    <li key={activity.id} className="flex items-start pb-4 last:pb-0 last:border-b-0 border-b">
+                      <div className="w-full">
+                        <div className="flex items-center justify-between">
+                          <p className="font-medium">{activity.type}</p>
+                          <span className="text-xs text-muted-foreground">
+                            {formatRelativeTime(activity.timestamp)}
+                          </span>
+                        </div>
+                        <p className="text-sm text-muted-foreground mt-1">
+                          {activity.description}
+                        </p>
+                      </div>
+                    </li>
+                  ))}
+                </ul>
+              </CardContent>
               <CardFooter>
-                <Button variant="ghost" className="w-full justify-start">
-                  {language === 'de' ? 'Öffnen' : 'Open'} →
+                <Button variant="ghost" className="w-full">
+                  {language === 'de' ? 'Alle Aktivitäten anzeigen' : 'View All Activity'}
                 </Button>
               </CardFooter>
             </Card>
-          ))}
+          </section>
+          
+          {/* Quick Actions */}
+          <section>
+            <h2 className="text-xl font-semibold mb-4">
+              {language === 'de' ? 'Schnellzugriff' : 'Quick Actions'}
+            </h2>
+            <div className="flex flex-wrap gap-2">
+              <Button 
+                variant="outline" 
+                onClick={() => navigate('/market-comparison')}
+                className="flex items-center gap-2"
+              >
+                <ArrowLeftRight className="h-4 w-4" />
+                {language === 'de' ? 'Märkte vergleichen' : 'Compare Markets'}
+              </Button>
+              <Button 
+                variant="outline" 
+                onClick={() => navigate('/calculators')}
+                className="flex items-center gap-2"
+              >
+                <Calculator className="h-4 w-4" />
+                {language === 'de' ? 'ROI berechnen' : 'Calculate ROI'}
+              </Button>
+              <Button 
+                variant="outline" 
+                onClick={() => navigate('/market-explorer')}
+                className="flex items-center gap-2"
+              >
+                <Globe className="h-4 w-4" />
+                {language === 'de' ? 'Markt erkunden' : 'Explore Market'}
+              </Button>
+            </div>
+          </section>
         </div>
-      </section>
-      
-      {/* Recent Activity */}
-      <section className="mb-10">
-        <h2 className="text-xl font-semibold mb-4">
-          {language === 'de' ? 'Letzte Aktivitäten' : 'Recent Activity'}
-        </h2>
-        <Card>
-          <CardContent className="p-6">
-            <ul className="space-y-4">
-              {recentActivity.map((activity) => (
-                <li key={activity.id} className="flex items-start pb-4 last:pb-0 last:border-b-0 border-b">
-                  <div className="w-full">
-                    <div className="flex items-center justify-between">
-                      <p className="font-medium">{activity.type}</p>
-                      <span className="text-xs text-muted-foreground">
-                        {formatRelativeTime(activity.timestamp)}
-                      </span>
-                    </div>
-                    <p className="text-sm text-muted-foreground mt-1">
-                      {activity.description}
-                    </p>
-                  </div>
-                </li>
-              ))}
-            </ul>
-          </CardContent>
-          <CardFooter>
-            <Button variant="ghost" className="w-full">
-              {language === 'de' ? 'Alle Aktivitäten anzeigen' : 'View All Activity'}
-            </Button>
-          </CardFooter>
-        </Card>
-      </section>
-      
-      {/* Quick Actions */}
-      <section>
-        <h2 className="text-xl font-semibold mb-4">
-          {language === 'de' ? 'Schnellzugriff' : 'Quick Actions'}
-        </h2>
-        <div className="flex flex-wrap gap-2">
-          <Button 
-            variant="outline" 
-            onClick={() => navigate('/market-comparison')}
-            className="flex items-center gap-2"
-          >
-            <ArrowLeftRight className="h-4 w-4" />
-            {language === 'de' ? 'Märkte vergleichen' : 'Compare Markets'}
-          </Button>
-          <Button 
-            variant="outline" 
-            onClick={() => navigate('/calculators')}
-            className="flex items-center gap-2"
-          >
-            <Calculator className="h-4 w-4" />
-            {language === 'de' ? 'ROI berechnen' : 'Calculate ROI'}
-          </Button>
-          <Button 
-            variant="outline" 
-            onClick={() => navigate('/market-explorer')}
-            className="flex items-center gap-2"
-          >
-            <Globe className="h-4 w-4" />
-            {language === 'de' ? 'Markt erkunden' : 'Explore Market'}
-          </Button>
-        </div>
-      </section>
+      </ScrollArea>
     </div>
   );
 };
