@@ -33,6 +33,7 @@ import RegionalAnalysis from '@/pages/RegionalAnalysis';
 import TaxPlanning from '@/pages/TaxPlanning';
 import LanguageSettings from '@/pages/LanguageSettings';
 
+// Lazy load heavy components for better initial loading performance
 const AdvancedAnalytics = lazy(() => import('@/pages/AdvancedAnalyticsPage'));
 
 // Create routes outside of the component to avoid recreation on each render

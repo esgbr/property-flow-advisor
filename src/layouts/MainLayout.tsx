@@ -4,6 +4,7 @@ import { cn } from '@/lib/utils';
 import { useUserPreferences } from '@/contexts/UserPreferencesContext';
 import { useAccessibility } from '@/components/accessibility/A11yProvider';
 import SkipToContent from '@/components/accessibility/SkipToContent';
+import StickyTopNav from '@/components/navigation/StickyTopNav';
 
 interface MainLayoutProps {
   children: React.ReactNode;
@@ -31,12 +32,13 @@ const MainLayout: React.FC<MainLayoutProps> = ({
       "flex flex-col h-full overflow-hidden",
       className
     )}>
+      <StickyTopNav />
       <SkipToContent contentId={contentId} />
       <main 
         id={contentId}
         className={cn(
           "flex-1 overflow-y-auto",
-          withPadding && "py-6",
+          withPadding && "py-6 mt-14", // Added mt-14 to account for sticky nav
           largeText && "text-lg"
         )}
       >

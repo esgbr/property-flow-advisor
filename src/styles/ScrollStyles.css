@@ -4,27 +4,33 @@ html, body {
   height: 100%;
   margin: 0;
   padding: 0;
-  overflow: hidden;
+  overflow-x: hidden; /* Prevent horizontal scrolling */
+  overflow-y: auto; /* Allow vertical scrolling */
 }
 
 #root {
   height: 100%;
-  overflow: hidden;
   display: flex;
   flex-direction: column;
+  position: relative; /* For absolute positioning inside */
 }
 
 .layout-container {
   display: flex;
   height: 100%;
   width: 100%;
-  overflow: hidden;
 }
 
 .content-container {
   flex: 1;
   overflow-y: auto;
   overflow-x: hidden;
+  padding-bottom: 2rem; /* Add extra padding at the bottom for better scrolling experience */
+}
+
+/* Add smooth scrolling for a better UX */
+html {
+  scroll-behavior: smooth;
 }
 
 /* Styling for scrollbars */
@@ -58,4 +64,22 @@ html, body {
 
 .dark ::-webkit-scrollbar-thumb:hover {
   background: var(--scrollbar-track-dark, rgba(255, 255, 255, 0.3));
+}
+
+/* Improve scrolling performance with GPU acceleration */
+.scroll-smooth {
+  -webkit-overflow-scrolling: touch;
+  scroll-behavior: smooth;
+}
+
+/* Hide scrollbars on mobile but keep functionality */
+@media (max-width: 768px) {
+  .hide-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+  
+  .hide-scrollbar {
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+  }
 }

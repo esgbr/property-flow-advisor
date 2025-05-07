@@ -21,7 +21,7 @@ const LanguageSettings = () => {
 
   return (
     <div className="container mx-auto px-4 py-8 overflow-y-auto">
-      <SkipToContent contentId="main-content" />
+      <SkipToContent />
       <Card id="main-content">
         <CardHeader>
           <CardTitle>Language Settings</CardTitle>
