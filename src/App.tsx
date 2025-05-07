@@ -1,4 +1,5 @@
-import React from 'react';
+
+import React, { useEffect, lazy, Suspense } from 'react';
 import './App.css';
 import './styles/ScrollStyles.css';
 import { createBrowserRouter, RouterProvider } from 'react-router-dom';
@@ -14,7 +15,6 @@ import DocumentsPage from '@/pages/DocumentsPage';
 import InvestorDashboard from '@/pages/InvestorDashboard';
 import GermanRealEstateInvestor from '@/pages/GermanRealEstateInvestor';
 import { useUserPreferences } from '@/contexts/UserPreferencesContext';
-import { useEffect } from 'react';
 import OnboardingPage from '@/pages/OnboardingPage';
 import Index from '@/pages/Index';
 import SimplifiedDashboard from '@/pages/SimplifiedDashboard';
@@ -31,6 +31,7 @@ import PropertyDetail from '@/pages/PropertyDetail';
 import ToolsPage from '@/pages/ToolsPage';
 import RegionalAnalysis from '@/pages/RegionalAnalysis';
 import TaxPlanning from '@/pages/TaxPlanning';
+import LanguageSettings from '@/pages/LanguageSettings';
 
 const AdvancedAnalytics = lazy(() => import('@/pages/AdvancedAnalyticsPage'));
 
