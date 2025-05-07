@@ -5,11 +5,10 @@ html, body {
   margin: 0;
   padding: 0;
   overflow-x: hidden; /* Prevent horizontal scrolling */
-  overflow-y: auto; /* Allow vertical scrolling */
 }
 
 #root {
-  height: 100%;
+  min-height: 100%; /* Changed from height: 100% to min-height for better content expansion */
   display: flex;
   flex-direction: column;
   position: relative; /* For absolute positioning inside */
@@ -17,7 +16,7 @@ html, body {
 
 .layout-container {
   display: flex;
-  height: 100%;
+  min-height: 100%; /* Changed from height to min-height */
   width: 100%;
 }
 
@@ -31,6 +30,7 @@ html, body {
 /* Add smooth scrolling for a better UX */
 html {
   scroll-behavior: smooth;
+  overflow-y: auto; /* Allow vertical scrolling at the root level */
 }
 
 /* Styling for scrollbars */
@@ -82,4 +82,20 @@ html {
     scrollbar-width: none;
     -ms-overflow-style: none;
   }
+}
+
+/* Add more padding at the bottom of pages to ensure content is fully visible */
+.page-content {
+  padding-bottom: 4rem;
+}
+
+/* Fix for sticky headers potentially hiding content */
+.sticky-header-offset {
+  scroll-margin-top: 5rem;
+}
+
+/* Ensure that fixed elements don't cause layout issues */
+.fixed-element-container {
+  position: relative;
+  z-index: 10;
 }

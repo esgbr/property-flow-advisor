@@ -29,7 +29,7 @@ const MainLayout: React.FC<MainLayoutProps> = ({
 
   return (
     <div className={cn(
-      "flex flex-col h-full overflow-hidden",
+      "flex flex-col min-h-screen w-full",
       className
     )}>
       <StickyTopNav />
@@ -38,14 +38,14 @@ const MainLayout: React.FC<MainLayoutProps> = ({
         id={contentId}
         className={cn(
           "flex-1 overflow-y-auto",
-          withPadding && "py-6 mt-14", // Added mt-14 to account for sticky nav
+          withPadding && "py-6 mt-16", // Increased top margin to ensure content doesn't get hidden under navbar
           largeText && "text-lg"
         )}
       >
         {withContainer ? (
           <div className={cn(
             "container mx-auto",
-            withPadding && "px-4"
+            withPadding && "px-4 pb-8" // Added bottom padding to ensure content is fully visible
           )}>
             {children}
           </div>

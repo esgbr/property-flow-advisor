@@ -3,14 +3,13 @@ import React, { useEffect, useState } from 'react';
 import { cn } from '@/lib/utils';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useUserPreferences } from '@/contexts/UserPreferencesContext';
-import { Link } from 'react-router-dom';
-import { Building, Menu, Search, ChevronDown } from 'lucide-react';
+import { Link, useNavigate } from 'react-router-dom';
+import { Building, Menu, Search, ChevronDown, Settings } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { 
   NavigationMenu,
   NavigationMenuContent,
   NavigationMenuItem,
-  NavigationMenuLink,
   NavigationMenuList,
   NavigationMenuTrigger,
   navigationMenuTriggerStyle,
@@ -28,6 +27,7 @@ const StickyTopNav: React.FC<StickyTopNavProps> = ({ onToggleSidebar }) => {
   const { largeText } = useAccessibility();
   const isMobile = useIsMobile();
   const [isScrolled, setIsScrolled] = useState(false);
+  const navigate = useNavigate();
 
   // Handle scroll events
   useEffect(() => {
@@ -46,6 +46,7 @@ const StickyTopNav: React.FC<StickyTopNavProps> = ({ onToggleSidebar }) => {
     { label: t('dashboard'), path: '/dashboard' },
     { label: t('properties'), path: '/properties' },
     { label: t('analytics'), path: '/market-explorer' },
+    { label: t('settings'), path: '/settings' }, // Added settings tab
   ];
 
   // Show German tools only for German market or language
@@ -92,10 +93,11 @@ const StickyTopNav: React.FC<StickyTopNavProps> = ({ onToggleSidebar }) => {
             <NavigationMenuList>
               {mainMenuItems.map((item) => (
                 <NavigationMenuItem key={item.path}>
-                  <Link to={item.path} legacyBehavior passHref>
-                    <NavigationMenuLink className={navigationMenuTriggerStyle()}>
-                      {item.label}
-                    </NavigationMenuLink>
+                  <Link 
+                    to={item.path}
+                    className={navigationMenuTriggerStyle()}
+                  >
+                    {item.label}
                   </Link>
                 </NavigationMenuItem>
               ))}
@@ -141,9 +143,26 @@ const StickyTopNav: React.FC<StickyTopNavProps> = ({ onToggleSidebar }) => {
 
         {/* Right side actions */}
         <div className="flex items-center gap-2">
-          <Button variant="ghost" size="icon" aria-label={t('search')}>
+          <Button 
+            variant="ghost" 
+            size="icon" 
+            aria-label={t('search')}
+          >
             <Search className="h-5 w-5" />
           </Button>
+          
+          {/* Settings button visible on mobile */}
+          {isMobile && (
+            <Button 
+              variant="ghost" 
+              size="icon" 
+              aria-label={t('settings')}
+              onClick={() => navigate('/settings')}
+            >
+              <Settings className="h-5 w-5" />
+            </Button>
+          )}
+          
           {isMobile && (
             <Button variant="outline" size="sm" className="gap-1">
               {toolsLabel}
