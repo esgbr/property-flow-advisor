@@ -26,9 +26,9 @@ const Dashboard: React.FC = () => {
   ];
 
   return (
-    <div className="h-full">
-      <ScrollArea className="h-full">
-        <div className="container mx-auto p-4 md:p-6 space-y-6">
+    <div className="flex flex-col h-full overflow-hidden">
+      <ScrollArea className="flex-1">
+        <div className="container mx-auto p-4 md:p-6 space-y-6 pb-20">
           
           <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
             <div>

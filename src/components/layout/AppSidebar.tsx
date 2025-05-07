@@ -96,13 +96,6 @@ const AppSidebar = () => {
           href: isGermanMarket ? '/deutsche-immobilien-tools' : '/tools',
           icon: <Banknote className="h-5 w-5" />,
         },
-        // Hide the separate German Tools item when in German market
-        {
-          name: language === 'de' ? 'Deutsche Tools' : 'German Tools',  
-          href: '/deutsche-immobilien-tools',
-          icon: <Globe className="h-5 w-5" />,
-          hide: isGermanMarket, // Hide when in German market as it's merged with "All Tools"
-        },
         {
           name: t('calculators'),
           href: '/calculators',
