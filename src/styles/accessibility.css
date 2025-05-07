@@ -1,5 +1,4 @@
 
-
 /* 
  * Accessibility-focused CSS utilities
  * These classes help improve application accessibility
@@ -173,4 +172,44 @@
   outline: 4px solid black !important;
   outline-offset: 4px !important;
   box-shadow: 0 0 0 8px rgba(255, 255, 0, 0.5) !important;
+}
+
+/* Fix for tab scrolling issues */
+.tabs-scrollable {
+  overflow-x: auto;
+  scrollbar-width: thin;
+  -ms-overflow-style: none;
+}
+
+.tabs-scrollable::-webkit-scrollbar {
+  height: 6px;
+}
+
+.tabs-scrollable::-webkit-scrollbar-thumb {
+  background-color: var(--muted);
+  border-radius: 3px;
+}
+
+.tabs-scrollable::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+/* Ensure tab contents are scrollable when needed */
+.tab-content-scrollable {
+  max-height: 70vh;
+  overflow-y: auto;
+  scrollbar-width: thin;
+}
+
+.tab-content-scrollable::-webkit-scrollbar {
+  width: 6px;
+}
+
+.tab-content-scrollable::-webkit-scrollbar-thumb {
+  background-color: var(--muted);
+  border-radius: 3px;
+}
+
+.tab-content-scrollable::-webkit-scrollbar-track {
+  background: transparent;
 }

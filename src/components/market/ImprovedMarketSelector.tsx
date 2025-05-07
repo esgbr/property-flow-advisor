@@ -36,6 +36,14 @@ const ImprovedMarketSelector: React.FC<ImprovedMarketSelectorProps> = ({
     onMarketChange(market);
   };
   
+  // Handle keyboard navigation
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault();
+      // The Select component from shadcn/ui handles the opening when triggered
+    }
+  };
+  
   // Define market regions for grouping
   const europeanMarkets = ['germany', 'austria', 'switzerland', 'uk', 'europe'];
   const northAmericanMarkets = ['usa', 'canada'];
@@ -110,10 +118,12 @@ const ImprovedMarketSelector: React.FC<ImprovedMarketSelectorProps> = ({
     lg: "h-12 text-lg"
   };
   
+  const labelId = `market-selector-${Math.random().toString(36).substring(7)}`;
+  
   return (
     <div className={className}>
       {showLabel && (
-        <label className="block text-sm font-medium mb-2">
+        <label htmlFor={labelId} className="block text-sm font-medium mb-2">
           {language === 'de' ? 'Markt auswählen' : 'Select Market'}
         </label>
       )}
@@ -125,8 +135,13 @@ const ImprovedMarketSelector: React.FC<ImprovedMarketSelectorProps> = ({
               <Select 
                 value={selectedMarket} 
                 onValueChange={handleMarketChange}
+                onKeyDown={handleKeyDown}
               >
-                <SelectTrigger className={sizeClasses[size]}>
+                <SelectTrigger 
+                  id={labelId}
+                  className={`focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 ${sizeClasses[size]}`}
+                  aria-label={language === 'de' ? 'Wo möchten Sie investieren' : 'Where do you want to invest'}
+                >
                   <SelectValue placeholder={language === 'de' ? 'Markt auswählen' : 'Select market'}>
                     <div className="flex items-center gap-2">
                       {showBadge && (
@@ -139,7 +154,7 @@ const ImprovedMarketSelector: React.FC<ImprovedMarketSelectorProps> = ({
                     </div>
                   </SelectValue>
                 </SelectTrigger>
-                <SelectContent>
+                <SelectContent className="max-h-[300px] overflow-y-auto">
                   <SelectGroup>
                     <SelectLabel>{language === 'de' ? 'Europa' : 'Europe'}</SelectLabel>
                     {availableMarkets

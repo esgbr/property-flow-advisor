@@ -84,9 +84,14 @@ const AppSidebar = () => {
       title: t('tools'),
       items: [
         {
-          name: t('tools'),
+          name: language === 'de' ? 'Alle Tools' : 'All Tools',  // Changed from lowercase 'tools'
           href: '/tools',
           icon: <Banknote className="h-5 w-5" />,
+        },
+        {
+          name: language === 'de' ? 'Deutsche Tools' : 'German Tools',  // Combined with general tools
+          href: '/deutsche-immobilien-tools',
+          icon: <Globe className="h-5 w-5" />,
         },
         {
           name: t('calculators'),
@@ -161,6 +166,8 @@ const AppSidebar = () => {
             : "hover:bg-muted"
         )}
         aria-current={location.pathname === item.href ? "page" : undefined}
+        role="menuitem"
+        tabIndex={0}
       >
         {item.icon}
         <span className="ml-3 flex-1">{item.name}</span>
@@ -175,7 +182,7 @@ const AppSidebar = () => {
 
   // Render a category with its items
   const renderCategory = (category: NavCategory, idx: number) => (
-    <div key={idx} className="mb-6">
+    <div key={idx} className="mb-6" role="menu" aria-label={category.title}>
       <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider px-3 mb-2">
         {category.title}
       </h3>
@@ -189,7 +196,7 @@ const AppSidebar = () => {
     <Sidebar>
       <div className="flex flex-col h-full py-4">
         <div className="px-3 py-2">
-          <Link to="/dashboard" className="flex items-center mb-6">
+          <Link to="/dashboard" className="flex items-center mb-6 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 rounded-md">
             <Building className="h-8 w-8 text-primary" />
             <span className="text-xl font-bold ml-2">PropertyFlow</span>
           </Link>
