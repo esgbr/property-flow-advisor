@@ -71,6 +71,7 @@ export const useMarketFilter = () => {
 
   // Get localized market name
   const getLocalizedMarketName = (): string => {
+    // Fixed: Remove the language parameter since the function doesn't expect it
     return getLocalizedMarketName(userMarket);
   };
 
