@@ -1,14 +1,18 @@
 
 import React from 'react';
 
-const SkipToContent: React.FC = () => {
+interface SkipToContentProps {
+  contentId?: string;
+}
+
+const SkipToContent: React.FC<SkipToContentProps> = ({ contentId = 'main-content' }) => {
   return (
     <a 
-      href="#main-content" 
+      href={`#${contentId}`} 
       className="skip-link"
       onClick={(e) => {
         e.preventDefault();
-        const mainContent = document.getElementById('main-content');
+        const mainContent = document.getElementById(contentId);
         if (mainContent) {
           mainContent.tabIndex = -1;
           mainContent.focus();

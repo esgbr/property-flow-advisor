@@ -9,6 +9,12 @@ interface PerformanceMetrics {
   ttfb: number | null; // Time to First Byte
 }
 
+interface ExtendedPerformanceEntry extends PerformanceEntry {
+  processingStart?: number;
+  hadRecentInput?: boolean;
+  value?: number;
+}
+
 export function usePerformanceMetrics(): PerformanceMetrics {
   const [metrics, setMetrics] = useState<PerformanceMetrics>({
     fcp: null,
@@ -58,9 +64,11 @@ export function usePerformanceMetrics(): PerformanceMetrics {
     const fidObserver = new PerformanceObserver((entryList) => {
       const entries = entryList.getEntries();
       if (entries.length > 0) {
-        const firstInput = entries[0];
-        const fid = firstInput.processingStart - firstInput.startTime;
-        setMetrics(prev => ({ ...prev, fid }));
+        const firstInput = entries[0] as ExtendedPerformanceEntry;
+        if (firstInput.processingStart) {
+          const fid = firstInput.processingStart - firstInput.startTime;
+          setMetrics(prev => ({ ...prev, fid }));
+        }
       }
     });
     
@@ -70,8 +78,9 @@ export function usePerformanceMetrics(): PerformanceMetrics {
     const clsObserver = new PerformanceObserver((entryList) => {
       let clsValue = 0;
       for (const entry of entryList.getEntries()) {
-        if (!(entry as any).hadRecentInput) {
-          clsValue += (entry as any).value;
+        const layoutShiftEntry = entry as ExtendedPerformanceEntry;
+        if (!layoutShiftEntry.hadRecentInput && layoutShiftEntry.value) {
+          clsValue += layoutShiftEntry.value;
         }
       }
       setMetrics(prev => ({ ...prev, cls: clsValue }));

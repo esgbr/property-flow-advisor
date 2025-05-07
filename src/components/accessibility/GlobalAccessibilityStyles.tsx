@@ -13,8 +13,7 @@ const GlobalAccessibilityStyles: React.FC = () => {
     largeText = false,
     reduceMotion = false,
     dyslexiaFriendly = false,
-    customCursor = false,
-    focusIndicatorStyle = 'default'
+    screenReader = false
   } = preferences.accessibility || {};
 
   // Apply accessibility classes to the document body
@@ -28,10 +27,7 @@ const GlobalAccessibilityStyles: React.FC = () => {
       'large-text', 
       'reduce-motion', 
       'dyslexia-friendly',
-      'custom-cursor',
-      'focus-default',
-      'focus-enhanced',
-      'focus-high'
+      'screen-reader-optimized'
     );
     
     // Apply selected accessibility features
@@ -43,10 +39,7 @@ const GlobalAccessibilityStyles: React.FC = () => {
     if (largeText) classList.add('large-text');
     if (reduceMotion) classList.add('reduce-motion');
     if (dyslexiaFriendly) classList.add('dyslexia-friendly');
-    if (customCursor) classList.add('custom-cursor');
-    
-    // Apply focus indicator style
-    classList.add(`focus-${focusIndicatorStyle}`);
+    if (screenReader) classList.add('screen-reader-optimized');
     
     return () => {
       // Clean up classes when component unmounts
@@ -56,19 +49,15 @@ const GlobalAccessibilityStyles: React.FC = () => {
         'large-text', 
         'reduce-motion', 
         'dyslexia-friendly',
-        'custom-cursor',
-        'focus-default',
-        'focus-enhanced',
-        'focus-high'
+        'screen-reader-optimized'
       );
     };
   }, [
     highContrast, 
     largeText, 
     reduceMotion, 
-    dyslexiaFriendly, 
-    customCursor, 
-    focusIndicatorStyle, 
+    dyslexiaFriendly,
+    screenReader,
     preferences.theme
   ]);
 

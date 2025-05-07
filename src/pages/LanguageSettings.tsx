@@ -1,85 +1,43 @@
-
 import React from 'react';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import LanguageStatus from '@/components/language/LanguageStatus';
-import LanguageSwitcher from '@/components/LanguageSwitcher';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import LanguageDetectionBanner from '@/components/language/LanguageDetectionBanner';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
 import SkipToContent from '@/components/accessibility/SkipToContent';
 
-const LanguageSettings: React.FC = () => {
-  const { t } = useLanguage();
+const LanguageSettings = () => {
+  const { language, setLanguage } = useLanguage();
+
+  const handleLanguageChange = (newLanguage: string) => {
+    setLanguage(newLanguage);
+  };
 
   return (
-    <div className="container mx-auto py-8 space-y-6">
-      <SkipToContent contentId="languageSettingsContent" />
-      
-      <div className="flex items-center justify-between flex-wrap gap-4">
-        <div>
-          <h1 className="text-3xl font-bold" id="languageSettingsTitle">{t('languageSettings')}</h1>
-          <p className="text-muted-foreground">{t('manageLanguagePreferences')}</p>
-        </div>
-        <LanguageSwitcher />
-      </div>
-      
-      <LanguageDetectionBanner />
-      
-      <Tabs defaultValue="overview" className="space-y-6" id="languageSettingsContent">
-        <TabsList className="w-full md:w-auto flex flex-wrap" aria-labelledby="languageSettingsTitle">
-          <TabsTrigger value="overview">{t('overview')}</TabsTrigger>
-          <TabsTrigger value="translations">{t('translationStatus')}</TabsTrigger>
-          <TabsTrigger value="preferences">{t('preferences')}</TabsTrigger>
-        </TabsList>
-        
-        <TabsContent value="overview" className="focus:outline-none focus-visible:ring-2">
-          <div className="grid gap-6 md:grid-cols-2">
-            <Card>
-              <CardHeader>
-                <CardTitle>{t('currentLanguage')}</CardTitle>
-                <CardDescription>{t('activeLanguageDescription')}</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="flex items-center gap-4 flex-wrap">
-                  <LanguageSwitcher />
-                  <p>{t('switchLanguageDescription')}</p>
-                </div>
-              </CardContent>
-            </Card>
-            
-            <Card>
-              <CardHeader>
-                <CardTitle>{t('interfaceLanguage')}</CardTitle>
-                <CardDescription>{t('interfaceLanguageDescription')}</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <p className="mb-4">
-                  {t('interfaceLanguageInfo')}
-                </p>
-                <div className="flex gap-2">
-                  <LanguageSwitcher />
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-        </TabsContent>
-        
-        <TabsContent value="translations" className="focus:outline-none focus-visible:ring-2 overflow-x-auto">
-          <LanguageStatus />
-        </TabsContent>
-        
-        <TabsContent value="preferences" className="focus:outline-none focus-visible:ring-2">
-          <Card>
-            <CardHeader>
-              <CardTitle>{t('languagePreferences')}</CardTitle>
-              <CardDescription>{t('languagePreferencesDescription')}</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <p>{t('comingSoon')}</p>
-            </CardContent>
-          </Card>
-        </TabsContent>
-      </Tabs>
+    <div className="container mx-auto px-4 py-8">
+      <SkipToContent contentId="main-content" />
+      <Card>
+        <CardHeader>
+          <CardTitle>Language Settings</CardTitle>
+          <CardDescription>Choose your preferred language</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <Select value={language} onValueChange={handleLanguageChange}>
+            <SelectTrigger className="w-[180px]">
+              <SelectValue placeholder="Select a language" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="en">English</SelectItem>
+              <SelectItem value="de">Deutsch</SelectItem>
+            </SelectContent>
+          </Select>
+        </CardContent>
+      </Card>
     </div>
   );
 };

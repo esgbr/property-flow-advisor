@@ -21,7 +21,7 @@ import {
   X
 } from 'lucide-react';
 import { useMarketFilter } from '@/hooks/use-market-filter';
-import { SkipToContent } from '@/components/accessibility/SkipToContent';
+import SkipToContent from '@/components/accessibility/SkipToContent';
 
 const GermanRealEstateInvestor: React.FC = () => {
   const { language } = useLanguage();
