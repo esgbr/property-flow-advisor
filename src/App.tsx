@@ -1,5 +1,6 @@
-
-import React, { Suspense, lazy } from 'react';
+import React from 'react';
+import './App.css';
+import './styles/ScrollStyles.css';
 import { createBrowserRouter, RouterProvider } from 'react-router-dom';
 import MainLayout from '@/layouts/MainLayout';
 import ErrorBoundary from '@/components/ErrorBoundary';

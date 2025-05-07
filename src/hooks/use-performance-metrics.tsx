@@ -38,61 +38,81 @@ export function usePerformanceMetrics(): PerformanceMetrics {
     }
 
     // First Contentful Paint
-    const fcpObserver = new PerformanceObserver((entryList) => {
-      const entries = entryList.getEntries();
-      if (entries.length > 0) {
-        const fcp = entries[0].startTime;
-        setMetrics(prev => ({ ...prev, fcp }));
-      }
-    });
-    
-    fcpObserver.observe({ type: 'paint', buffered: true });
+    let fcpObserver: PerformanceObserver;
+    try {
+      fcpObserver = new PerformanceObserver((entryList) => {
+        const entries = entryList.getEntries();
+        if (entries.length > 0) {
+          const fcp = entries[0].startTime;
+          setMetrics(prev => ({ ...prev, fcp }));
+        }
+      });
+      
+      fcpObserver.observe({ type: 'paint', buffered: true });
+    } catch (e) {
+      console.error('Error observing FCP:', e);
+    }
 
     // Largest Contentful Paint
-    const lcpObserver = new PerformanceObserver((entryList) => {
-      const entries = entryList.getEntries();
-      const lastEntry = entries[entries.length - 1];
-      if (lastEntry) {
-        const lcp = lastEntry.startTime;
-        setMetrics(prev => ({ ...prev, lcp }));
-      }
-    });
-    
-    lcpObserver.observe({ type: 'largest-contentful-paint', buffered: true });
+    let lcpObserver: PerformanceObserver;
+    try {
+      lcpObserver = new PerformanceObserver((entryList) => {
+        const entries = entryList.getEntries();
+        const lastEntry = entries[entries.length - 1];
+        if (lastEntry) {
+          const lcp = lastEntry.startTime;
+          setMetrics(prev => ({ ...prev, lcp }));
+        }
+      });
+      
+      lcpObserver.observe({ type: 'largest-contentful-paint', buffered: true });
+    } catch (e) {
+      console.error('Error observing LCP:', e);
+    }
 
     // First Input Delay
-    const fidObserver = new PerformanceObserver((entryList) => {
-      const entries = entryList.getEntries();
-      if (entries.length > 0) {
-        const firstInput = entries[0] as ExtendedPerformanceEntry;
-        if (firstInput.processingStart) {
-          const fid = firstInput.processingStart - firstInput.startTime;
-          setMetrics(prev => ({ ...prev, fid }));
+    let fidObserver: PerformanceObserver;
+    try {
+      fidObserver = new PerformanceObserver((entryList) => {
+        const entries = entryList.getEntries();
+        if (entries.length > 0) {
+          const firstInput = entries[0] as ExtendedPerformanceEntry;
+          if (firstInput.processingStart) {
+            const fid = firstInput.processingStart - firstInput.startTime;
+            setMetrics(prev => ({ ...prev, fid }));
+          }
         }
-      }
-    });
-    
-    fidObserver.observe({ type: 'first-input', buffered: true });
+      });
+      
+      fidObserver.observe({ type: 'first-input', buffered: true });
+    } catch (e) {
+      console.error('Error observing FID:', e);
+    }
 
     // Cumulative Layout Shift
-    const clsObserver = new PerformanceObserver((entryList) => {
-      let clsValue = 0;
-      for (const entry of entryList.getEntries()) {
-        const layoutShiftEntry = entry as ExtendedPerformanceEntry;
-        if (!layoutShiftEntry.hadRecentInput && layoutShiftEntry.value) {
-          clsValue += layoutShiftEntry.value;
+    let clsObserver: PerformanceObserver;
+    try {
+      clsObserver = new PerformanceObserver((entryList) => {
+        let clsValue = 0;
+        for (const entry of entryList.getEntries()) {
+          const layoutShiftEntry = entry as ExtendedPerformanceEntry;
+          if (!layoutShiftEntry.hadRecentInput && layoutShiftEntry.value) {
+            clsValue += layoutShiftEntry.value;
+          }
         }
-      }
-      setMetrics(prev => ({ ...prev, cls: clsValue }));
-    });
-    
-    clsObserver.observe({ type: 'layout-shift', buffered: true });
+        setMetrics(prev => ({ ...prev, cls: clsValue }));
+      });
+      
+      clsObserver.observe({ type: 'layout-shift', buffered: true });
+    } catch (e) {
+      console.error('Error observing CLS:', e);
+    }
 
     return () => {
-      fcpObserver.disconnect();
-      lcpObserver.disconnect();
-      fidObserver.disconnect();
-      clsObserver.disconnect();
+      if (fcpObserver) fcpObserver.disconnect();
+      if (lcpObserver) lcpObserver.disconnect();
+      if (fidObserver) fidObserver.disconnect();
+      if (clsObserver) clsObserver.disconnect();
     };
   }, []);
 

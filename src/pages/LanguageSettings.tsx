@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { Button } from '@/components/ui/button';
@@ -15,13 +16,13 @@ const LanguageSettings = () => {
   const { language, setLanguage } = useLanguage();
 
   const handleLanguageChange = (newLanguage: string) => {
-    setLanguage(newLanguage);
+    setLanguage(newLanguage as any); // Use type assertion to fix type error
   };
 
   return (
-    <div className="container mx-auto px-4 py-8">
+    <div className="container mx-auto px-4 py-8 overflow-y-auto">
       <SkipToContent contentId="main-content" />
-      <Card>
+      <Card id="main-content">
         <CardHeader>
           <CardTitle>Language Settings</CardTitle>
           <CardDescription>Choose your preferred language</CardDescription>

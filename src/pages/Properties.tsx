@@ -7,6 +7,7 @@ import { Link } from 'react-router-dom';
 import { useUserPreferences } from '@/contexts/UserPreferencesContext';
 import { useAccessibility } from '@/components/accessibility/A11yProvider';
 import { Search, Filter, SortAsc, SortDesc } from 'lucide-react';
+import MainLayout from '@/layouts/MainLayout';
 
 const Properties = () => {
   const [search, setSearch] = useState('');
@@ -21,6 +22,9 @@ const Properties = () => {
     { id: 2, name: 'Mountain View Villa', location: 'Munich, Germany', price: '€780,000', type: 'Villa' },
     { id: 3, name: 'City Center Penthouse', location: 'Frankfurt, Germany', price: '€1,200,000', type: 'Penthouse' },
     { id: 4, name: 'Suburban Family Home', location: 'Hamburg, Germany', price: '€450,000', type: 'House' },
+    { id: 5, name: 'Modern Office Space', location: 'Berlin, Germany', price: '€890,000', type: 'Commercial' },
+    { id: 6, name: 'Historic Townhouse', location: 'Dresden, Germany', price: '€520,000', type: 'House' },
+    { id: 7, name: 'Lakefront Property', location: 'Bavaria, Germany', price: '€1,500,000', type: 'Villa' }
   ];
   
   // Filter properties based on search
@@ -47,74 +51,76 @@ const Properties = () => {
   };
 
   return (
-    <div className="container mx-auto py-6">
-      <h1 className={`text-3xl font-bold mb-6 ${largeText ? 'text-4xl' : ''}`}>Properties</h1>
-      
-      <div className="flex flex-col sm:flex-row gap-4 mb-6">
-        <div className="relative flex-1">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground" />
-          <Input
-            type="text"
-            placeholder="Search properties..."
-            value={search}
-            onChange={handleSearch}
-            className="pl-10"
-            aria-label="Search properties"
-          />
-        </div>
-        <Button variant="outline" className="flex gap-2 items-center">
-          <Filter size={18} />
-          Filter
-        </Button>
-        <Button variant="outline" className="flex gap-2 items-center" onClick={handleSort}>
-          {sortDirection === 'asc' ? <SortAsc size={18} /> : <SortDesc size={18} />}
-          Sort
-        </Button>
-      </div>
-      
-      {isLoading ? (
-        <div className="flex justify-center items-center h-64">
-          <p>Loading properties...</p>
-        </div>
-      ) : filteredProperties.length > 0 ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {filteredProperties.map((property) => (
-            <Card 
-              key={property.id} 
-              className={`hover:shadow-lg transition-shadow ${highContrast ? 'border-2' : ''}`}
-            >
-              <CardHeader className="p-4 pb-2">
-                <CardTitle className={largeText ? 'text-2xl' : 'text-xl'}>{property.name}</CardTitle>
-              </CardHeader>
-              <CardContent className="p-4 pt-0">
-                <p className="text-muted-foreground mb-4">{property.location}</p>
-                <div className="flex justify-between items-center">
-                  <p className="font-bold">{property.price}</p>
-                  <Button 
-                    asChild
-                    className={`${highContrast ? 'border-2' : ''}`}
-                    onKeyDown={(e) => handleKeyDown(e, property.id)}
-                  >
-                    <Link to={`/property/${property.id}`}>View Details</Link>
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
-      ) : (
-        <div className="text-center py-10 border rounded-lg">
-          <p className="text-muted-foreground">No properties found matching your search.</p>
-          <Button 
-            variant="link" 
-            onClick={() => setSearch('')} 
-            className="mt-2"
-          >
-            Clear search
+    <MainLayout contentId="properties-content">
+      <div id="properties-content">
+        <h1 className={`text-3xl font-bold mb-6 ${largeText ? 'text-4xl' : ''}`}>Properties</h1>
+        
+        <div className="flex flex-col sm:flex-row gap-4 mb-6">
+          <div className="relative flex-1">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground" />
+            <Input
+              type="text"
+              placeholder="Search properties..."
+              value={search}
+              onChange={handleSearch}
+              className="pl-10"
+              aria-label="Search properties"
+            />
+          </div>
+          <Button variant="outline" className="flex gap-2 items-center">
+            <Filter size={18} />
+            Filter
+          </Button>
+          <Button variant="outline" className="flex gap-2 items-center" onClick={handleSort}>
+            {sortDirection === 'asc' ? <SortAsc size={18} /> : <SortDesc size={18} />}
+            Sort
           </Button>
         </div>
-      )}
-    </div>
+        
+        {isLoading ? (
+          <div className="flex justify-center items-center h-64">
+            <p>Loading properties...</p>
+          </div>
+        ) : filteredProperties.length > 0 ? (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 pb-8">
+            {filteredProperties.map((property) => (
+              <Card 
+                key={property.id} 
+                className={`hover:shadow-lg transition-shadow ${highContrast ? 'border-2' : ''}`}
+              >
+                <CardHeader className="p-4 pb-2">
+                  <CardTitle className={largeText ? 'text-2xl' : 'text-xl'}>{property.name}</CardTitle>
+                </CardHeader>
+                <CardContent className="p-4 pt-0">
+                  <p className="text-muted-foreground mb-4">{property.location}</p>
+                  <div className="flex justify-between items-center">
+                    <p className="font-bold">{property.price}</p>
+                    <Button 
+                      asChild
+                      className={`${highContrast ? 'border-2' : ''}`}
+                      onKeyDown={(e) => handleKeyDown(e, property.id)}
+                    >
+                      <Link to={`/property/${property.id}`}>View Details</Link>
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        ) : (
+          <div className="text-center py-10 border rounded-lg">
+            <p className="text-muted-foreground">No properties found matching your search.</p>
+            <Button 
+              variant="link" 
+              onClick={() => setSearch('')} 
+              className="mt-2"
+            >
+              Clear search
+            </Button>
+          </div>
+        )}
+      </div>
+    </MainLayout>
   );
 };
 

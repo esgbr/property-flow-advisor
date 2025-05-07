@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { 
@@ -28,11 +28,13 @@ import {
   CollapsibleContent,
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
+import { useMarketFilter } from '@/hooks/use-market-filter';
 
 interface NavigationItem {
   label: string;
   icon: React.ReactNode;
   path: string;
+  hidden?: boolean;
 }
 
 interface NavigationGroup {
@@ -40,6 +42,7 @@ interface NavigationGroup {
   icon: React.ReactNode;
   items: NavigationItem[];
   expanded?: boolean;
+  marketSpecific?: string | string[];
 }
 
 const StreamlinedSidebar: React.FC<{
@@ -50,6 +53,7 @@ const StreamlinedSidebar: React.FC<{
   const { t, language } = useLanguage();
   const navigate = useNavigate();
   const location = useLocation();
+  const { userMarket } = useMarketFilter();
   const [openGroups, setOpenGroups] = useState<Record<string, boolean>>({
     home: true,
     portfolio: true,
@@ -66,6 +70,8 @@ const StreamlinedSidebar: React.FC<{
     }));
   };
 
+  const isGermanMarket = userMarket === 'germany' || userMarket === 'austria';
+
   // Define navigation structure with German-specific tools
   const navigationGroups: NavigationGroup[] = [
     {
@@ -73,7 +79,8 @@ const StreamlinedSidebar: React.FC<{
       icon: <Home className="h-5 w-5" />,
       items: [
         { label: t('dashboard'), icon: <Home className="h-4 w-4" />, path: '/dashboard' },
-        { label: t('welcomePage'), icon: <Home className="h-4 w-4" />, path: '/' }
+        // WelcomePage hidden as requested
+        { label: t('welcomePage'), icon: <Home className="h-4 w-4" />, path: '/', hidden: true }
       ]
     },
     {
@@ -91,7 +98,9 @@ const StreamlinedSidebar: React.FC<{
       items: [
         { label: t('calculators'), icon: <Calculator className="h-4 w-4" />, path: '/calculators' },
         { label: t('decisionTools'), icon: <FileText className="h-4 w-4" />, path: '/decision' }
-      ]
+      ],
+      // Hide the general tools category for German market
+      marketSpecific: isGermanMarket ? [] : ['usa', 'uk', 'global']
     },
     {
       label: language === 'de' ? 'Deutsche Tools' : 'German Tools',
@@ -116,8 +125,15 @@ const StreamlinedSidebar: React.FC<{
         { label: language === 'de' ? 'Mietspiegel' : 'Rent Index', 
           icon: <Map className="h-4 w-4" />, 
           path: '/deutsche-immobilien-tools?tab=mietspiegel' 
-        }
-      ]
+        },
+        // Add standard tools for German market
+        ...(isGermanMarket ? [
+          { label: t('calculators'), icon: <Calculator className="h-4 w-4" />, path: '/calculators' },
+          { label: t('decisionTools'), icon: <FileText className="h-4 w-4" />, path: '/decision' }
+        ] : [])
+      ],
+      // Only show for German markets
+      marketSpecific: ['germany', 'austria']
     },
     {
       label: t('resources'),
@@ -131,13 +147,44 @@ const StreamlinedSidebar: React.FC<{
       icon: <Settings className="h-5 w-5" />,
       items: [
         { label: t('settings'), icon: <Settings className="h-4 w-4" />, path: '/settings' },
-        { label: t('userProfile'), icon: <Settings className="h-4 w-4" />, path: '/profile' }
+        { label: t('userProfile'), icon: <Settings className="h-4 w-4" />, path: '/profile' },
+        // Added redo intro option in settings
+        { label: language === 'de' ? 'Einführung wiederholen' : 'Redo Introduction', 
+          icon: <Home className="h-4 w-4" />, 
+          path: '/?intro=true' }
       ]
     }
   ];
 
-  // Show/hide German tools based on language
-  const filteredGroups = navigationGroups;
+  // Filter by market and hide specific items
+  const filterGroups = () => {
+    return navigationGroups
+      .filter(group => {
+        // Filter groups by market specificity
+        if (group.marketSpecific) {
+          const markets = Array.isArray(group.marketSpecific) ? 
+            group.marketSpecific : [group.marketSpecific];
+          
+          // Empty array means hide for these markets
+          if (markets.length === 0 && isGermanMarket) {
+            return false;
+          }
+          
+          // Non-empty array means only show for these markets
+          if (markets.length > 0 && !markets.includes(userMarket) && userMarket) {
+            return false;
+          }
+        }
+        return true;
+      })
+      .map(group => ({
+        ...group,
+        items: group.items.filter(item => !item.hidden)
+      }))
+      .filter(group => group.items.length > 0);
+  };
+
+  const filteredGroups = filterGroups();
 
   return (
     <aside className={cn(
