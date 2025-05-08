@@ -22,7 +22,7 @@ const config: CapacitorConfig = {
     contentInset: 'always',
     scheme: 'app.lovable.propertyflow',
     limitsNavigationsToAppBoundDomains: true,
-    backgroundColor: '#ffffff',
+    backgroundColor: "#ffffff",
   },
   // General app settings
   plugins: {
