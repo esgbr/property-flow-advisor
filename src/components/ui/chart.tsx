@@ -1,3 +1,4 @@
+
 import * as React from "react"
 import * as RechartsPrimitive from "recharts"
 
@@ -14,6 +15,16 @@ export type ChartConfig = {
     | { color?: string; theme?: never }
     | { color?: never; theme: Record<keyof typeof THEMES, string> }
   )
+}
+
+// Add a proper type definition for payload
+interface ExtendedPayload extends RechartsPrimitive.Payload {
+  dataKey?: string;
+  name?: string;
+  value?: any;
+  payload?: any;
+  color?: string;
+  fill?: string;
 }
 
 type ChartContextProps = {
@@ -324,20 +335,22 @@ function getPayloadConfigFromPayload(
     return undefined
   }
 
+  const typedPayload = payload as ExtendedPayload;
+  
   const payloadPayload =
-    "payload" in payload &&
-    typeof payload.payload === "object" &&
-    payload.payload !== null
-      ? payload.payload
+    "payload" in typedPayload &&
+    typeof typedPayload.payload === "object" &&
+    typedPayload.payload !== null
+      ? typedPayload.payload
       : undefined
 
   let configLabelKey: string = key
 
   if (
-    key in payload &&
-    typeof payload[key as keyof typeof payload] === "string"
+    key in typedPayload &&
+    typeof typedPayload[key as keyof typeof typedPayload] === "string"
   ) {
-    configLabelKey = payload[key as keyof typeof payload] as string
+    configLabelKey = typedPayload[key as keyof typeof typedPayload] as string
   } else if (
     payloadPayload &&
     key in payloadPayload &&

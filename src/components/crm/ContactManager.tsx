@@ -10,14 +10,6 @@ import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
-// Demo contact data - would be from database in production
-const demoContacts = [
-  { id: '1', name: 'Anna Weber', type: 'realtor', phone: '+49 151 1234567', favorite: true, lastContact: '2023-05-10', notes: 'Specializes in Berlin apartments' },
-  { id: '2', name: 'Michael Becker', type: 'handyman', phone: '+49 170 9876543', favorite: false, lastContact: '2023-04-22', notes: 'Plumbing and electrical work' },
-  { id: '3', name: 'Christina Müller', type: 'property_manager', phone: '+49 176 4567890', favorite: true, lastContact: '2023-05-01', notes: 'Manages buildings in Frankfurt' },
-  { id: '4', name: 'Thomas Schmidt', type: 'inspector', phone: '+49 152 3334444', favorite: false, lastContact: '2023-03-15', notes: 'Building inspector for Munich area' },
-];
-
 type ContactType = 'realtor' | 'handyman' | 'property_manager' | 'inspector' | 'tenant' | 'other';
 
 interface Contact {
@@ -29,6 +21,14 @@ interface Contact {
   lastContact?: string;
   notes?: string;
 }
+
+// Demo contact data - would be from database in production
+const demoContacts: Contact[] = [
+  { id: '1', name: 'Anna Weber', type: 'realtor', phone: '+49 151 1234567', favorite: true, lastContact: '2023-05-10', notes: 'Specializes in Berlin apartments' },
+  { id: '2', name: 'Michael Becker', type: 'handyman', phone: '+49 170 9876543', favorite: false, lastContact: '2023-04-22', notes: 'Plumbing and electrical work' },
+  { id: '3', name: 'Christina Müller', type: 'property_manager', phone: '+49 176 4567890', favorite: true, lastContact: '2023-05-01', notes: 'Manages buildings in Frankfurt' },
+  { id: '4', name: 'Thomas Schmidt', type: 'inspector', phone: '+49 152 3334444', favorite: false, lastContact: '2023-03-15', notes: 'Building inspector for Munich area' },
+];
 
 const ContactManager: React.FC = () => {
   const { language } = useLanguage();

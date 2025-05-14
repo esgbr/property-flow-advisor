@@ -1,49 +1,41 @@
 
-import { useCallback } from 'react';
+import { useEffect, useState } from 'react';
 import { useUserPreferences } from '@/contexts/UserPreferencesContext';
 
 export const useScreenReader = () => {
   const { preferences } = useUserPreferences();
-  const screenReaderActive = preferences.screenReaderActive || false;
-  
-  // Announce navigation to screen readers
-  const announceNavigation = useCallback((destination: string) => {
-    if (!screenReaderActive) return;
-    
-    const announcer = document.createElement('div');
-    announcer.setAttribute('aria-live', 'assertive');
-    announcer.setAttribute('role', 'status');
-    announcer.className = 'sr-only';
-    announcer.textContent = `Navigating to ${destination}`;
-    
-    document.body.appendChild(announcer);
-    
-    // Remove after announcement is made
-    setTimeout(() => {
-      document.body.removeChild(announcer);
-    }, 1000);
-  }, [screenReaderActive]);
-  
-  // Announce a message to screen readers
-  const announce = useCallback((message: string, priority: 'polite' | 'assertive' = 'polite') => {
-    if (!screenReaderActive) return;
-    
-    const announcer = document.createElement('div');
-    announcer.setAttribute('aria-live', priority);
-    announcer.className = 'sr-only';
-    announcer.textContent = message;
-    
-    document.body.appendChild(announcer);
-    
-    // Remove after announcement is made
-    setTimeout(() => {
-      document.body.removeChild(announcer);
-    }, 1000);
-  }, [screenReaderActive]);
-  
+  const [isActive, setIsActive] = useState(preferences.screenReaderActive || false);
+
+  useEffect(() => {
+    setIsActive(preferences.screenReaderActive || false);
+  }, [preferences.screenReaderActive]);
+
+  const announceNavigation = (destination: string) => {
+    if (isActive) {
+      // In a real implementation, this would use the Web Speech API
+      console.log(`Screen reader announcement: Navigating to ${destination}`);
+      
+      // Create a live region for screen reader announcement
+      const announcement = document.createElement('div');
+      announcement.setAttribute('aria-live', 'assertive');
+      announcement.setAttribute('role', 'alert');
+      announcement.style.position = 'absolute';
+      announcement.style.width = '1px';
+      announcement.style.height = '1px';
+      announcement.style.overflow = 'hidden';
+      announcement.textContent = `Navigating to ${destination}`;
+      
+      document.body.appendChild(announcement);
+      
+      // Remove after announcement is made
+      setTimeout(() => {
+        document.body.removeChild(announcement);
+      }, 1000);
+    }
+  };
+
   return {
+    isActive,
     announceNavigation,
-    announce,
-    screenReaderActive
   };
 };

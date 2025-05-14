@@ -72,7 +72,7 @@ const EnhancedWorkflowSuggestions: React.FC<EnhancedWorkflowSuggestionsProps> = 
         
         newSuggestions.push({
           type: 'next',
-          workflow: nextStep.workflow,
+          workflow: nextStep.workflow as WorkflowType,
           stepId: nextStep.step.id,
           path: nextStep.step.path,
           label: nextStep.step.label[labelKey],

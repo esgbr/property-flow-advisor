@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useContext, createContext } from 'react';
 
 export type ExperienceLevel = 'beginner' | 'intermediate' | 'advanced' | 'expert';
@@ -44,9 +45,12 @@ export interface UserPreferences {
   interests: string[];
   investmentGoals: string[];
   preferredPropertyTypes: string[];
-  // Added missing properties
+  // Add missing properties
   appLockEnabled?: boolean;
   appLockMethod?: AppLockMethod;
+  biometricsEnabled?: boolean;
+  twoFactorEnabled?: boolean;
+  screenReaderActive?: boolean;
   role?: string;
   emailVerified?: boolean;
   profileImage?: string;

@@ -6,6 +6,7 @@ import secureStorage from '@/utils/secureStorage';
 
 interface AppLockContextType {
   isLocked: boolean;
+  setIsLocked: React.Dispatch<React.SetStateAction<boolean>>;
   lockApp: () => void;
   unlockApp: (pin: string) => boolean;
   hasPIN: boolean;
@@ -20,6 +21,7 @@ interface AppLockContextType {
 
 const AppLockContext = createContext<AppLockContextType>({
   isLocked: false,
+  setIsLocked: () => {},
   lockApp: () => {},
   unlockApp: () => false,
   hasPIN: false,

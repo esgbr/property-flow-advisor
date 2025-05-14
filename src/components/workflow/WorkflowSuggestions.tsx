@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState } from 'react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { WorkflowType, useWorkflow } from '@/hooks/use-workflow';
@@ -12,7 +13,7 @@ import { useUserPreferences } from '@/contexts/UserPreferencesContext';
 import { useScreenReader } from '@/hooks/use-screen-reader';
 
 export interface WorkflowSuggestionsProps {
-  workflowType: WorkflowType | string;
+  workflowType: WorkflowType;
   maxSuggestions?: number;
   className?: string;
   currentTool?: string;
@@ -73,7 +74,7 @@ const WorkflowSuggestions: React.FC<WorkflowSuggestionsProps> = ({
         
         newSuggestions.push({
           type: 'next',
-          workflow: nextStep.workflow,
+          workflow: nextStep.workflow as WorkflowType,
           stepId: nextStep.step.id,
           path: nextStep.step.path,
           label: nextStep.step.label[labelKey],

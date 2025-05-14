@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useLanguage } from '@/contexts/LanguageContext';
@@ -26,8 +27,10 @@ const AppLockScreen: React.FC = () => {
 
   const handleUnlock = () => {
     if (pin === localStorage.getItem('appPin')) {
-      unlockApp();
-      navigate('/dashboard');
+      const success = unlockApp(pin);
+      if (success) {
+        navigate('/dashboard');
+      }
     } else {
       setError(t('incorrectPIN'));
       toast({
