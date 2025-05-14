@@ -1,21 +1,22 @@
+
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import React, { useState, Suspense, useEffect } from 'react';
 import MainLayout from './components/layout/MainLayout';
 import CRMPage from './pages/CRMPage';
-import { LanguageContext } from './contexts/LanguageContext';
-import { AccessibilityProvider } from './components/accessibility/A11yProvider';
-import { AuthGuard } from './components/auth/AuthGuard';
+import { LanguageProvider, useLanguage } from './contexts/LanguageContext';
+import { useAccessibility } from './components/accessibility/A11yProvider';
+import AuthGuard from './components/auth/AuthGuard';
 import LockedPage from './pages/LockedPage';
 import SettingsPage from './pages/SettingsPage';
-import EducationPage from './pages/EducationPage';
+import Education from './pages/Education';
 import InvestorDashboard from './pages/InvestorDashboard';
-import PropertiesPage from './pages/PropertiesPage';
+import Properties from './pages/Properties';
 import ToolsPage from './pages/ToolsPage';
-import CalculatorsPage from './pages/CalculatorsPage';
-import PortfolioOptimizationPage from './pages/PortfolioOptimizationPage';
+import Calculators from './pages/Calculators';
+import PortfolioOptimization from './pages/PortfolioOptimization';
 import MarketExplorerPage from './pages/MarketExplorerPage';
-import TaxPlanningPage from './pages/TaxPlanningPage';
-import RegionalAnalysisPage from './pages/RegionalAnalysisPage';
+import TaxPlanning from './pages/TaxPlanning';
+import RegionalAnalysis from './pages/RegionalAnalysis';
 import MarketComparisonPage from './pages/MarketComparisonPage';
 import DeutscheImmobilienTools from './pages/DeutscheImmobilienTools';
 
@@ -77,39 +78,37 @@ function App() {
   };
 
   return (
-    <LanguageContext.Provider value={{ language, setLanguage, t }}>
-      <AccessibilityProvider>
-        <Router>
-          <Routes>
-            {/* Redirect from dashboard to crm */}
-            <Route path="/" element={<Navigate to="/crm" replace />} />
-            <Route path="/dashboard" element={<Navigate to="/crm" replace />} />
-            
-            {/* Protected routes with main layout */}
-            <Route path="/" element={
-              <AuthGuard>
-                <MainLayout />
-              </AuthGuard>
-            }>
-              <Route path="/crm" element={<CRMPage />} />
-              <Route path="/locked" element={<LockedPage />} />
-              <Route path="/settings" element={<SettingsPage />} />
-              <Route path="/education" element={<EducationPage />} />
-              <Route path="/investor-dashboard" element={<InvestorDashboard />} />
-              <Route path="/properties" element={<PropertiesPage />} />
-              <Route path="/tools" element={<ToolsPage />} />
-              <Route path="/calculators" element={<CalculatorsPage />} />
-              <Route path="/portfolio-optimization" element={<PortfolioOptimizationPage />} />
-              <Route path="/market-explorer" element={<MarketExplorerPage />} />
-			  <Route path="/tax-planning" element={<TaxPlanningPage />} />
-              <Route path="/regional-analysis" element={<RegionalAnalysisPage />} />
-              <Route path="/market-comparison" element={<MarketComparisonPage />} />
-              <Route path="/deutsche-immobilien-tools" element={<DeutscheImmobilienTools />} />
-            </Route>
-          </Routes>
-        </Router>
-      </AccessibilityProvider>
-    </LanguageContext.Provider>
+    <LanguageProvider value={{ language, setLanguage, t }}>
+      <Router>
+        <Routes>
+          {/* Redirect from dashboard to crm */}
+          <Route path="/" element={<Navigate to="/crm" replace />} />
+          <Route path="/dashboard" element={<Navigate to="/crm" replace />} />
+          
+          {/* Protected routes with main layout */}
+          <Route path="/" element={
+            <AuthGuard>
+              <MainLayout />
+            </AuthGuard>
+          }>
+            <Route path="/crm" element={<CRMPage />} />
+            <Route path="/locked" element={<LockedPage />} />
+            <Route path="/settings" element={<SettingsPage />} />
+            <Route path="/education" element={<Education />} />
+            <Route path="/investor-dashboard" element={<InvestorDashboard />} />
+            <Route path="/properties" element={<Properties />} />
+            <Route path="/tools" element={<ToolsPage />} />
+            <Route path="/calculators" element={<Calculators />} />
+            <Route path="/portfolio-optimization" element={<PortfolioOptimization />} />
+            <Route path="/market-explorer" element={<MarketExplorerPage />} />
+			<Route path="/tax-planning" element={<TaxPlanning />} />
+            <Route path="/regional-analysis" element={<RegionalAnalysis />} />
+            <Route path="/market-comparison" element={<MarketComparisonPage />} />
+            <Route path="/deutsche-immobilien-tools" element={<DeutscheImmobilienTools />} />
+          </Route>
+        </Routes>
+      </Router>
+    </LanguageProvider>
   );
 }
 

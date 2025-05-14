@@ -1,5 +1,6 @@
+
 import * as React from "react";
-import { toast as sonnerToast, Toaster as SonnerToaster, type ToasterProps as SonnerToasterProps } from "sonner";
+import { toast as sonnerToast, Toaster as SonnerToaster } from "sonner";
 
 type SonnerToast = {
   id: string;
@@ -7,6 +8,7 @@ type SonnerToast = {
   description?: React.ReactNode;
   action?: React.ReactNode;
   variant?: "default" | "destructive" | "success";
+  duration?: number;
 };
 
 const TOAST_LIMIT = 5;
@@ -18,6 +20,9 @@ type ToasterToast = SonnerToast & {
   description?: React.ReactNode;
   action?: React.ReactNode;
   variant?: "default" | "destructive" | "success";
+  duration?: number;
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
 };
 
 const actionTypes = {
@@ -171,14 +176,17 @@ function toast({ ...props }: Toast) {
   if (variant === "destructive") {
     sonnerToast.error(props.title as string, {
       description: props.description as string,
+      duration: props.duration,
     });
   } else if (variant === "success") {
     sonnerToast.success(props.title as string, { 
       description: props.description as string,
+      duration: props.duration,
     });
   } else {
     sonnerToast(props.title as string, { 
       description: props.description as string,
+      duration: props.duration,
     });
   }
 

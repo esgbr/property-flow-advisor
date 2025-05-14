@@ -4,7 +4,7 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { TrendingUp, AlertCircle, Bell } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { useToast } from '@/components/ui/use-toast';
+import { useToast } from '@/hooks/use-toast';
 
 const LiquidityPlanning: React.FC = () => {
   const { t } = useLanguage();
@@ -18,7 +18,7 @@ const LiquidityPlanning: React.FC = () => {
     toast({
       title: t('notificationSaved'),
       description: t('liquidityPlanningNotifyConfirmation'),
-      duration: 3000,
+      variant: 'success',
     });
   };
   

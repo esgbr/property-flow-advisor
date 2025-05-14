@@ -60,7 +60,7 @@ const EnhancedNavigationKeyboardExtension: React.FC<EnhancedNavigationKeyboardEx
         toast({
           title: "Keyboard Navigation Available",
           description: "Press Ctrl+? to view all keyboard shortcuts",
-          duration: 5000,
+          variant: "default",
         });
       }, 2000);
       
