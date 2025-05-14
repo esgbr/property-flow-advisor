@@ -16,6 +16,7 @@ import {
   Euro,
   Globe,
   User,
+  Users,
   PieChart,
   LayoutDashboard,
   Search

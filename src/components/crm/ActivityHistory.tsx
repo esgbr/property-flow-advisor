@@ -211,7 +211,7 @@ const ActivityHistory: React.FC<ActivityHistoryProps> = ({ contactId, companyId,
               <div>
                 <Select 
                   value={newActivity.type} 
-                  onValueChange={(value) => setNewActivity({...newActivity, type: value as ActivityType})}
+                  onValueChange={(value: ActivityType) => setNewActivity({...newActivity, type: value})}
                 >
                   <SelectTrigger>
                     <SelectValue placeholder={language === 'de' ? 'Typ auswählen' : 'Select type'} />
@@ -254,7 +254,10 @@ const ActivityHistory: React.FC<ActivityHistoryProps> = ({ contactId, companyId,
 
         <div className="flex items-center mb-4">
           <div className="relative flex-grow">
-            <Select value={filterType} onValueChange={setFilterType}>
+            <Select 
+              value={filterType} 
+              onValueChange={(value: ActivityType | 'all') => setFilterType(value)}
+            >
               <SelectTrigger className="w-[180px]">
                 <div className="flex items-center">
                   <Filter className="h-4 w-4 mr-2" />
