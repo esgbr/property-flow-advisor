@@ -1,5 +1,13 @@
 import * as React from "react";
-import { toast as sonnerToast, Toaster as SonnerToaster, type ToasterProps as SonnerToasterProps, type Toast as SonnerToast } from "sonner";
+import { toast as sonnerToast, Toaster as SonnerToaster, type ToasterProps as SonnerToasterProps } from "sonner";
+
+type SonnerToast = {
+  id: string;
+  title?: React.ReactNode;
+  description?: React.ReactNode;
+  action?: React.ReactNode;
+  variant?: "default" | "destructive" | "success";
+};
 
 const TOAST_LIMIT = 5;
 const TOAST_REMOVE_DELAY = 1000000;

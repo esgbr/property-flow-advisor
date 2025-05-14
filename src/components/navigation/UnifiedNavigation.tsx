@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -20,7 +21,9 @@ import {
   LayoutDashboard,
   Search,
   Calendar,
-  Mail
+  Mail,
+  Phone,
+  Import
 } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { cn } from '@/lib/utils';
@@ -79,7 +82,7 @@ const UnifiedNavigation: React.FC<{
     }));
   };
 
-  // Simplified navigation structure with merged items
+  // Simplified navigation structure with CRM at the top
   const navigationGroups = [
     {
       label: t('main'),

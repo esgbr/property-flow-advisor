@@ -1,211 +1,116 @@
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import React, { useState, Suspense, useEffect } from 'react';
+import MainLayout from './components/layout/MainLayout';
+import CRMPage from './pages/CRMPage';
+import { LanguageContext } from './contexts/LanguageContext';
+import { AccessibilityProvider } from './components/accessibility/A11yProvider';
+import { AuthGuard } from './components/auth/AuthGuard';
+import LockedPage from './pages/LockedPage';
+import SettingsPage from './pages/SettingsPage';
+import EducationPage from './pages/EducationPage';
+import InvestorDashboard from './pages/InvestorDashboard';
+import PropertiesPage from './pages/PropertiesPage';
+import ToolsPage from './pages/ToolsPage';
+import CalculatorsPage from './pages/CalculatorsPage';
+import PortfolioOptimizationPage from './pages/PortfolioOptimizationPage';
+import MarketExplorerPage from './pages/MarketExplorerPage';
+import TaxPlanningPage from './pages/TaxPlanningPage';
+import RegionalAnalysisPage from './pages/RegionalAnalysisPage';
+import MarketComparisonPage from './pages/MarketComparisonPage';
+import DeutscheImmobilienTools from './pages/DeutscheImmobilienTools';
 
-import React, { useEffect, lazy, Suspense } from 'react';
-import './App.css';
-import './styles/ScrollStyles.css';
-import { createBrowserRouter, RouterProvider, Navigate } from 'react-router-dom';
-import MainLayout from '@/layouts/MainLayout';
-import ErrorBoundary from '@/components/ErrorBoundary';
-import PageLoader from '@/components/ui/page-loader';
-import AuthPage from '@/pages/AuthPage';
-import SettingsPage from '@/pages/SettingsPage';
-import AccessibilitySettings from '@/components/accessibility/AccessibilitySettings';
-import MarketExplorer from '@/pages/MarketExplorerPage';
-import CalculatorsPage from '@/pages/Calculators';
-import DocumentsPage from '@/pages/DocumentsPage';
-import InvestorDashboard from '@/pages/InvestorDashboard';
-import GermanRealEstateInvestor from '@/pages/GermanRealEstateInvestor';
-import { useUserPreferences } from '@/contexts/UserPreferencesContext';
-import OnboardingPage from '@/pages/OnboardingPage';
-import Index from '@/pages/Index';
-import SimplifiedDashboard from '@/pages/SimplifiedDashboard';
-import Dashboard from '@/pages/Dashboard';
-import MarketComparisonTool from '@/pages/MarketComparisonTool';
-import { RewardsProvider } from '@/contexts/RewardsContext';
-import Rewards from '@/pages/Rewards';
-import PropertyList from '@/pages/PropertyList';
-import Properties from '@/pages/Properties';
-import UserProfile from '@/pages/UserProfile';
-import Education from '@/pages/Education';
-import NotFound from '@/pages/NotFound';
-import PropertyDetail from '@/pages/PropertyDetail';
-import ToolsPage from '@/pages/ToolsPage';
-import RegionalAnalysis from '@/pages/RegionalAnalysis';
-import TaxPlanning from '@/pages/TaxPlanning';
-import LanguageSettings from '@/pages/LanguageSettings';
-import CRMPage from '@/pages/CRMPage';
-import LockedPage from '@/pages/LockedPage';
-import WorkflowsPage from '@/pages/WorkflowsPage';
-import EnhancedNavigationKeyboardExtension from '@/components/navigation/EnhancedNavigationKeyboardExtension';
-import { A11yProvider } from '@/components/accessibility/A11yProvider';
-import SkipLinks from '@/components/accessibility/SkipLinks';
-
-// Lazy load heavy components for better initial loading performance
-const AdvancedAnalytics = lazy(() => import('@/pages/AdvancedAnalyticsPage'));
-
-// Create routes outside of the component to avoid recreation on each render
-const routes = [
-  {
-    path: '/',
-    element: <MainLayout><Index /></MainLayout>,
-  },
-  {
-    path: '/onboarding',
-    element: <OnboardingPage />
-  },
-  {
-    path: '/dashboard',
-    element: <Navigate to="/crm" replace />
-  },
-  {
-    path: '/auth',
-    element: <MainLayout><AuthPage /></MainLayout>
-  },
-  {
-    path: '/settings',
-    element: <MainLayout><SettingsPage /></MainLayout>
-  },
-  {
-    path: '/accessibility',
-    element: <MainLayout><AccessibilitySettings /></MainLayout>
-  },
-  {
-    path: '/market-explorer',
-    element: <MainLayout><MarketExplorer /></MainLayout>
-  },
-  {
-    path: '/market-comparison',
-    element: <MainLayout><MarketComparisonTool /></MainLayout>
-  },
-  {
-    path: '/calculators',
-    element: <MainLayout><CalculatorsPage /></MainLayout>
-  },
-  {
-    path: '/documents',
-    element: <MainLayout><DocumentsPage /></MainLayout>
-  },
-  {
-    path: '/investor-dashboard',
-    element: <MainLayout><InvestorDashboard /></MainLayout>
-  },
-  {
-    path: '/deutsche-immobilien-tools',
-    element: <MainLayout><GermanRealEstateInvestor /></MainLayout>
-  },
-  {
-    path: '/rewards',
-    element: <MainLayout><Rewards /></MainLayout>
-  },
-  {
-    path: '/properties',
-    element: <MainLayout><Properties /></MainLayout>
-  },
-  {
-    path: '/property-list',
-    element: <MainLayout><PropertyList /></MainLayout>
-  },
-  {
-    path: '/property/:id',
-    element: <MainLayout><PropertyDetail /></MainLayout>
-  },
-  {
-    path: '/education',
-    element: <MainLayout><Education /></MainLayout>
-  },
-  {
-    path: '/profile',
-    element: <MainLayout><UserProfile /></MainLayout>
-  },
-  {
-    path: '/tools',
-    element: <MainLayout><ToolsPage /></MainLayout>
-  },
-  {
-    path: '/decision-tools',
-    element: <MainLayout><ToolsPage /></MainLayout>
-  },
-  {
-    path: '/immobilien-tools',
-    element: <MainLayout><GermanRealEstateInvestor /></MainLayout>
-  },
-  {
-    path: '/regional-analysis',
-    element: <MainLayout><RegionalAnalysis /></MainLayout>
-  },
-  {
-    path: '/tax-planning',
-    element: <MainLayout><TaxPlanning /></MainLayout>
-  },
-  {
-    path: '/crm',
-    element: <MainLayout><CRMPage /></MainLayout>
-  },
-  {
-    path: '/locked',
-    element: <LockedPage />
-  },
-  {
-    path: '/workflows',
-    element: <MainLayout><WorkflowsPage /></MainLayout>
-  },
-  {
-    path: '/advanced-analytics',
-    element: (
-      <MainLayout>
-        <ErrorBoundary>
-          <Suspense fallback={<PageLoader size="lg" />}>
-            <AdvancedAnalytics />
-          </Suspense>
-        </ErrorBoundary>
-      </MainLayout>
-    )
-  },
-  // Catch-all route for 404
-  {
-    path: '*',
-    element: <NotFound />
-  }
-];
-
-// Define shortcuts based on routes
-const navigationShortcuts = [
-  { id: 'home', label: 'Home', path: '/', key: 'h', alt: true },
-  { id: 'dashboard', label: 'Dashboard', path: '/crm', key: 'd', alt: true },
-  { id: 'properties', label: 'Properties', path: '/properties', key: 'p', alt: true },
-  { id: 'crm', label: 'CRM', path: '/crm', key: 'c', alt: true },
-  { id: 'tools', label: 'Tools', path: '/tools', key: 't', alt: true },
-  { id: 'settings', label: 'Settings', path: '/settings', key: 's', alt: true },
-  { id: 'accessibility', label: 'Accessibility', path: '/accessibility', key: 'a', alt: true },
-];
-
-const App: React.FC = () => {
-  const { preferences } = useUserPreferences();
+function App() {
+  const [language, setLanguage] = useState<'de' | 'en'>(
+    (localStorage.getItem('language') as 'de' | 'en') || 'de'
+  );
 
   useEffect(() => {
-    // Set initial theme based on user preferences
-    if (preferences.darkMode) {
-      document.documentElement.classList.add('dark');
-    } else {
-      document.documentElement.classList.remove('dark');
-    }
-  }, [preferences.darkMode]);
+    localStorage.setItem('language', language);
+  }, [language]);
 
-  // Create the router with our routes
-  const router = createBrowserRouter(routes);
+  const t = (key: string) => {
+    const translations = {
+      dashboard: { en: 'Dashboard', de: 'Übersicht' },
+      settings: { en: 'Settings', de: 'Einstellungen' },
+      education: { en: 'Education', de: 'Bildung' },
+      investorDashboard: { en: 'Investor Dashboard', de: 'Investoren-Dashboard' },
+      properties: { en: 'Properties', de: 'Immobilien' },
+      tools: { en: 'Tools', de: 'Werkzeuge' },
+      calculators: { en: 'Calculators', de: 'Rechner' },
+      portfolioOptimization: { en: 'Portfolio Optimization', de: 'Portfoliooptimierung' },
+      marketExplorer: { en: 'Market Explorer', de: 'Markterkundung' },
+	  taxPlanning: {en: 'Tax Planning', de: 'Steuerplanung'},
+      regionalAnalysis: {en: 'Regional Analysis', de: 'Regionale Analyse'},
+      marketComparison: {en: 'Market Comparison', de: 'Marktvergleich'},
+      main: {en: 'Main', de: 'Haupt'},
+      portfolio: {en: 'Portfolio', de: 'Portfolio'},
+      account: {en: 'Account', de: 'Konto'},
+      totalInvested: {en: 'Total Invested', de: 'Total investiert'},
+      annualReturn: {en: 'Annual Return', de: 'Jährliche Rendite'},
+      propertyCount: {en: 'Property Count', de: 'Anzahl Immobilien'},
+      fromLastYear: {en: 'from last year', de: 'vom letzten Jahr'},
+      portfolioPerformance: {en: 'Portfolio Performance', de: 'Portfolio Performance'},
+      last12Months: {en: 'Last 12 Months', de: 'Letzte 12 Monate'},
+      portfolioDistribution: {en: 'Portfolio Distribution', de: 'Portfolio Verteilung'},
+      overview: {en: 'Overview', de: 'Übersicht'},
+      analysis: {en: 'Analysis', de: 'Analyse'},
+      opportunities: {en: 'Opportunities', de: 'Chancen'},
+      optimization: {en: 'Optimization', de: 'Optimierung'},
+      keyMetrics: {en: 'Key Metrics', de: 'Kennzahlen'},
+      cashOnCashReturn: {en: 'Cash on Cash Return', de: 'Cash-on-Cash-Rendite'},
+      capRate: {en: 'Cap Rate', de: 'Kapitalisierungsrate'},
+      debtCoverageRatio: {en: 'Debt Coverage Ratio', de: 'Schulden-Deckungsgrad'},
+      grossRentalYield: {en: 'Gross Rental Yield', de: 'Bruttomietrendite'},
+      vacancyRate: {en: 'Vacancy Rate', de: 'Leerstandsquote'},
+      roi: {en: 'ROI', de: 'Kapitalrendite'},
+      exportData: {en: 'Export Data', de: 'Daten exportieren'},
+      detailedAnalysis: {en: 'Detailed Analysis', de: 'Detaillierte Analyse'},
+      marketInsights: {en: 'Market Insights', de: 'Markteinblicke'},
+      advancedAnalysis: {en: 'Advanced Analysis', de: 'Erweiterte Analyse'},
+      detailedMetricsForYourPortfolio: {en: 'Detailed Metrics for Your Portfolio', de: 'Detaillierte Metriken für Ihr Portfolio'},
+      collapseSidebar: { en: 'Collapse Sidebar', de: 'Sidebar einklappen' },
+      expandSidebar: { en: 'Expand Sidebar', de: 'Sidebar ausklappen' },
+    };
+
+    const translation = translations[key];
+    return translation ? translation[language] || translation.en || key : key;
+  };
 
   return (
-    <ErrorBoundary>
-      <A11yProvider>
-        <RewardsProvider>
-          <SkipLinks links={[
-            { id: 'main-content', label: 'Skip to content' },
-            { id: 'main-navigation', label: 'Skip to navigation' },
-          ]} />
-          <RouterProvider router={router} />
-        </RewardsProvider>
-      </A11yProvider>
-    </ErrorBoundary>
+    <LanguageContext.Provider value={{ language, setLanguage, t }}>
+      <AccessibilityProvider>
+        <Router>
+          <Routes>
+            {/* Redirect from dashboard to crm */}
+            <Route path="/" element={<Navigate to="/crm" replace />} />
+            <Route path="/dashboard" element={<Navigate to="/crm" replace />} />
+            
+            {/* Protected routes with main layout */}
+            <Route path="/" element={
+              <AuthGuard>
+                <MainLayout />
+              </AuthGuard>
+            }>
+              <Route path="/crm" element={<CRMPage />} />
+              <Route path="/locked" element={<LockedPage />} />
+              <Route path="/settings" element={<SettingsPage />} />
+              <Route path="/education" element={<EducationPage />} />
+              <Route path="/investor-dashboard" element={<InvestorDashboard />} />
+              <Route path="/properties" element={<PropertiesPage />} />
+              <Route path="/tools" element={<ToolsPage />} />
+              <Route path="/calculators" element={<CalculatorsPage />} />
+              <Route path="/portfolio-optimization" element={<PortfolioOptimizationPage />} />
+              <Route path="/market-explorer" element={<MarketExplorerPage />} />
+			  <Route path="/tax-planning" element={<TaxPlanningPage />} />
+              <Route path="/regional-analysis" element={<RegionalAnalysisPage />} />
+              <Route path="/market-comparison" element={<MarketComparisonPage />} />
+              <Route path="/deutsche-immobilien-tools" element={<DeutscheImmobilienTools />} />
+            </Route>
+          </Routes>
+        </Router>
+      </AccessibilityProvider>
+    </LanguageContext.Provider>
   );
-};
+}
 
 export default App;

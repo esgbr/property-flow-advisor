@@ -1,15 +1,18 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { PhoneCall, User, History, Building, MessageSquare, Calendar, FileText, BarChart } from 'lucide-react';
+import { 
+  PhoneCall, User, History, Building, MessageSquare, Calendar, 
+  FileText, BarChart, Search, Mail
+} from 'lucide-react';
 import ContactManager from '@/components/crm/ContactManager';
 import CallTracker from '@/components/crm/CallTracker';
 import CompanyManager from '@/components/crm/CompanyManager';
 import ActivityHistory from '@/components/crm/ActivityHistory';
 import { Card, CardContent } from '@/components/ui/card';
 import { useToast } from '@/components/ui/use-toast';
-import CRMSearch from '@/components/crm/CRMSearch';
+import UnifiedCRMSearch from '@/components/crm/UnifiedCRMSearch';
 import EmailTemplates from '@/components/crm/EmailTemplates';
 import MeetingScheduler from '@/components/crm/MeetingScheduler';
 import { Button } from '@/components/ui/button';
@@ -20,6 +23,28 @@ const CRMPage: React.FC = () => {
   const { toast } = useToast();
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState('contacts');
+  
+  // Set document title based on language
+  useEffect(() => {
+    document.title = language === 'de' ? 'PropertyFlow - CRM System' : 'PropertyFlow - CRM System';
+  }, [language]);
+
+  // Keyboard shortcut to toggle the command menu (⌘K)
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+        e.preventDefault();
+        // This would trigger the unified search
+        const searchButton = document.getElementById('unified-search-button');
+        if (searchButton) searchButton.click();
+      }
+    };
+
+    document.addEventListener('keydown', handleKeyDown);
+    return () => {
+      document.removeEventListener('keydown', handleKeyDown);
+    };
+  }, []);
   
   return (
     <div className="container mx-auto py-6">
@@ -35,11 +60,11 @@ const CRMPage: React.FC = () => {
       </div>
       
       <div className="mb-6">
-        <CRMSearch className="max-w-xl" />
+        <UnifiedCRMSearch className="max-w-xl" />
       </div>
       
       <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-        <TabsList className="grid w-full grid-cols-2 md:grid-cols-7 max-w-4xl overflow-x-auto">
+        <TabsList className="grid grid-cols-2 md:grid-cols-7 max-w-4xl overflow-x-auto">
           <TabsTrigger value="contacts">
             <User className="h-4 w-4 mr-2" />
             {language === 'de' ? 'Kontakte' : 'Contacts'}
@@ -61,7 +86,7 @@ const CRMPage: React.FC = () => {
             {language === 'de' ? 'Termine' : 'Meetings'}
           </TabsTrigger>
           <TabsTrigger value="emails">
-            <MessageSquare className="h-4 w-4 mr-2" />
+            <Mail className="h-4 w-4 mr-2" />
             {language === 'de' ? 'E-Mails' : 'Emails'}
           </TabsTrigger>
           <TabsTrigger value="reports">
