@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from 'react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { WorkflowType, useWorkflow } from '@/hooks/use-workflow';
@@ -72,14 +71,16 @@ const WorkflowSuggestions: React.FC<WorkflowSuggestionsProps> = ({
         const labelKey = language as keyof typeof nextStep.step.label;
         const descriptionKey = language as keyof typeof nextStep.step.description;
         
-        newSuggestions.push({
-          type: 'next',
-          workflow: nextStep.workflow as WorkflowType,
-          stepId: nextStep.step.id,
-          path: nextStep.step.path,
-          label: nextStep.step.label[labelKey],
-          description: nextStep.step.description ? nextStep.step.description[descriptionKey] : undefined
-        });
+        if (isValidWorkflowType(nextStep.workflow)) {
+          newSuggestions.push({
+            type: 'next',
+            workflow: nextStep.workflow as WorkflowType,
+            stepId: nextStep.step.id,
+            path: nextStep.step.path,
+            label: nextStep.step.label[labelKey],
+            description: nextStep.step.description ? nextStep.step.description[descriptionKey] : undefined
+          });
+        }
         
         if (newSuggestions.length >= maxSuggestions) return;
       });
@@ -92,8 +93,10 @@ const WorkflowSuggestions: React.FC<WorkflowSuggestionsProps> = ({
       // For each market-relevant workflow, suggest first uncompleted step
       marketWorkflows.forEach(workflow => {
         if (newSuggestions.length >= maxSuggestions) return;
+        
+        if (!isValidWorkflowType(workflow)) return;
 
-        const workflowHook = useWorkflow(workflow);
+        const workflowHook = useWorkflow(workflow as WorkflowType);
         const steps = workflowHook.getStepsWithStatus();
         const incompleteStep = steps.find(step => !step.isComplete);
         
@@ -105,7 +108,7 @@ const WorkflowSuggestions: React.FC<WorkflowSuggestionsProps> = ({
           if (!newSuggestions.some(s => s.workflow === workflow && s.stepId === incompleteStep.id)) {
             newSuggestions.push({
               type: 'related',
-              workflow,
+              workflow: workflow as WorkflowType,
               stepId: incompleteStep.id,
               path: incompleteStep.path,
               label: incompleteStep.label[labelKey],
@@ -123,6 +126,8 @@ const WorkflowSuggestions: React.FC<WorkflowSuggestionsProps> = ({
       incompleteWorkflowSteps.forEach(item => {
         if (newSuggestions.length >= maxSuggestions) return;
         
+        if (!isValidWorkflowType(item.workflow)) return;
+        
         const labelKey = language as keyof typeof item.step.label;
         const descriptionKey = language as keyof typeof item.step.description;
         
@@ -130,7 +135,7 @@ const WorkflowSuggestions: React.FC<WorkflowSuggestionsProps> = ({
         if (!newSuggestions.some(s => s.workflow === item.workflow && s.stepId === item.step.id)) {
           newSuggestions.push({
             type: 'incomplete',
-            workflow: item.workflow,
+            workflow: item.workflow as WorkflowType,
             stepId: item.step.id,
             path: item.step.path,
             label: item.step.label[labelKey],
@@ -142,6 +147,11 @@ const WorkflowSuggestions: React.FC<WorkflowSuggestionsProps> = ({
     
     setSuggestions(newSuggestions.slice(0, maxSuggestions));
   }, [currentTool, language, maxSuggestions, preferences.investmentMarket, workflows]);
+
+  // Helper function to validate workflow types
+  const isValidWorkflowType = (workflow: string): workflow is WorkflowType => {
+    return ['steuer', 'immobilien', 'finanzierung', 'analyse'].includes(workflow);
+  };
 
   // If no suggestions, don't render anything
   if (suggestions.length === 0) {

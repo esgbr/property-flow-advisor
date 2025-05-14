@@ -187,6 +187,7 @@ export const AppLockProvider: React.FC<{ children: React.ReactNode }> = ({ child
     <AppLockContext.Provider
       value={{
         isLocked,
+        setIsLocked,  // Added the missing setIsLocked property
         lockApp,
         unlockApp,
         hasPIN: !!pin,
