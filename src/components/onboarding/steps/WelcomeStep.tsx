@@ -27,8 +27,9 @@ const WelcomeStep: React.FC<OnboardingStepProps> = ({ data, updateData, onNext }
   return (
     <div className="space-y-4">
       <div className="space-y-2">
-        <Label htmlFor="name">
+        <Label htmlFor="name" className="flex items-center">
           {language === 'de' ? 'Wie dürfen wir Sie nennen?' : 'What may we call you?'}
+          <span className="text-red-500 ml-1">*</span>
         </Label>
         <Input
           id="name"
@@ -39,6 +40,8 @@ const WelcomeStep: React.FC<OnboardingStepProps> = ({ data, updateData, onNext }
             setError('');
           }}
           className={error ? 'border-red-500' : ''}
+          required
+          aria-required="true"
         />
         {error && <p className="text-sm text-red-500">{error}</p>}
       </div>

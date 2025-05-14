@@ -3,12 +3,13 @@ import React, { useState } from 'react';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Search, Plus, Building, Star, StarOff, Trash2, Filter, Users, PhoneCall } from 'lucide-react';
+import { Search, Plus, Building, Star, StarOff, Filter, Users, PhoneCall } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useToast } from '@/components/ui/use-toast';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import CompanyDetailView from './CompanyDetailView';
 
 type CompanyType = 'agency' | 'investment_firm' | 'property_manager' | 'construction' | 'other';
 
@@ -79,6 +80,10 @@ const CompanyManager: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [typeFilter, setTypeFilter] = useState<string>('all');
   const [showFavoritesOnly, setShowFavoritesOnly] = useState(false);
+  const [selectedCompanyId, setSelectedCompanyId] = useState<string | null>(null);
+  
+  // Get selected company
+  const selectedCompany = companies.find(c => c.id === selectedCompanyId);
   
   // Filter companies based on search term and filters
   const filteredCompanies = companies.filter(company => {
@@ -156,6 +161,11 @@ const CompanyManager: React.FC = () => {
     }
   };
 
+  // If a company is selected, show its detail view
+  if (selectedCompany) {
+    return <CompanyDetailView company={selectedCompany} onBack={() => setSelectedCompanyId(null)} />;
+  }
+
   return (
     <Card className="w-full">
       <CardHeader className="pb-2">
@@ -211,7 +221,11 @@ const CompanyManager: React.FC = () => {
           {filteredCompanies.length > 0 ? (
             <div className="divide-y">
               {filteredCompanies.map((company) => (
-                <div key={company.id} className="p-4 hover:bg-muted/50 transition-colors">
+                <div 
+                  key={company.id} 
+                  className="p-4 hover:bg-muted/50 transition-colors cursor-pointer"
+                  onClick={() => setSelectedCompanyId(company.id)}
+                >
                   <div className="flex items-center justify-between">
                     <div className="flex items-center space-x-3">
                       <Avatar>
@@ -235,6 +249,13 @@ const CompanyManager: React.FC = () => {
                         variant="outline" 
                         size="sm" 
                         className="flex items-center"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          toast({
+                            title: language === 'de' ? 'Kontakte anzeigen' : 'View Contacts',
+                            description: `${company.contactCount} ${language === 'de' ? 'Kontakte' : 'Contacts'}`
+                          });
+                        }}
                       >
                         <Users className="h-4 w-4 mr-1" />
                         {company.contactCount}
@@ -242,7 +263,10 @@ const CompanyManager: React.FC = () => {
                       <Button 
                         variant="ghost" 
                         size="icon"
-                        onClick={() => toggleFavorite(company.id)}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          toggleFavorite(company.id);
+                        }}
                         title={language === 'de' ? 'Favorit umschalten' : 'Toggle favorite'}
                       >
                         {company.favorite ? (
@@ -254,7 +278,10 @@ const CompanyManager: React.FC = () => {
                       <Button 
                         variant="ghost" 
                         size="icon" 
-                        onClick={() => initiateCall(company)}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          initiateCall(company);
+                        }}
                         title={language === 'de' ? 'Anrufen' : 'Call'}
                       >
                         <PhoneCall className="h-4 w-4 text-primary" />

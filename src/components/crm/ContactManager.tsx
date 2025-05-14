@@ -3,12 +3,13 @@ import React, { useState } from 'react';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Search, Plus, Phone, User, Star, StarOff, Trash2, Filter } from 'lucide-react';
+import { Search, Plus, Phone, User, Star, StarOff, Filter } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useToast } from '@/components/ui/use-toast';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import ContactDetailView from './ContactDetailView';
 
 type ContactType = 'realtor' | 'handyman' | 'property_manager' | 'inspector' | 'tenant' | 'other';
 
@@ -37,6 +38,10 @@ const ContactManager: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [typeFilter, setTypeFilter] = useState<string>('all');
   const [showFavoritesOnly, setShowFavoritesOnly] = useState(false);
+  const [selectedContactId, setSelectedContactId] = useState<string | null>(null);
+  
+  // Get selected contact
+  const selectedContact = contacts.find(c => c.id === selectedContactId);
   
   // Filter contacts based on search term and filters
   const filteredContacts = contacts.filter(contact => {
@@ -116,6 +121,20 @@ const ContactManager: React.FC = () => {
     }
   };
 
+  // If a contact is selected, show its detail view
+  if (selectedContact) {
+    return (
+      <ContactDetailView
+        contactId={selectedContact.id}
+        contactName={selectedContact.name}
+        contactType={getTypeLabel(selectedContact.type)}
+        contactPhone={selectedContact.phone}
+        contactNotes={selectedContact.notes}
+        onBack={() => setSelectedContactId(null)}
+      />
+    );
+  }
+
   return (
     <Card className="w-full">
       <CardHeader className="pb-2">
@@ -172,7 +191,11 @@ const ContactManager: React.FC = () => {
           {filteredContacts.length > 0 ? (
             <div className="divide-y">
               {filteredContacts.map((contact) => (
-                <div key={contact.id} className="p-4 hover:bg-muted/50 transition-colors">
+                <div 
+                  key={contact.id} 
+                  className="p-4 hover:bg-muted/50 transition-colors cursor-pointer"
+                  onClick={() => setSelectedContactId(contact.id)}
+                >
                   <div className="flex items-center justify-between">
                     <div className="flex items-center space-x-3">
                       <Avatar>
@@ -195,7 +218,10 @@ const ContactManager: React.FC = () => {
                       <Button 
                         variant="ghost" 
                         size="icon"
-                        onClick={() => toggleFavorite(contact.id)}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          toggleFavorite(contact.id);
+                        }}
                         title={language === 'de' ? 'Favorit umschalten' : 'Toggle favorite'}
                       >
                         {contact.favorite ? (
@@ -207,7 +233,10 @@ const ContactManager: React.FC = () => {
                       <Button 
                         variant="ghost" 
                         size="icon" 
-                        onClick={() => initiateCall(contact)}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          initiateCall(contact);
+                        }}
                         title={language === 'de' ? 'Anrufen' : 'Call'}
                       >
                         <Phone className="h-4 w-4 text-primary" />
