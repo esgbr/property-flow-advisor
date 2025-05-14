@@ -1,10 +1,10 @@
+
 import React, { useEffect, lazy, Suspense } from 'react';
 import { Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { SidebarProvider } from '@/components/ui/sidebar';
 import SidebarController from '@/components/layout/SidebarController';
 import Navbar from '@/layouts/Navbar';
 import { useAppLock } from '@/contexts/AppLockContext';
-import AppLockScreen from '@/components/AppLockScreen';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { useUserPreferences } from '@/contexts/UserPreferencesContext';
 import { useLanguage } from '@/contexts/LanguageContext';
@@ -91,7 +91,7 @@ const MainLayout = () => {
     const timer = setTimeout(() => {
       if (pin) {
         lockApp();
-        // Toast notification handled in the lockApp function
+        navigate('/locked');
       }
     }, 15 * 60 * 1000); // 15 minutes
     
@@ -113,12 +113,14 @@ const MainLayout = () => {
       if (inactivityTimer) clearTimeout(inactivityTimer);
       events.forEach(event => window.removeEventListener(event, resetTimer));
     };
-  }, [pin, isLocked, lockApp, inactivityTimer, t]);
+  }, [pin, isLocked, lockApp, inactivityTimer, navigate, t]);
 
-  // Show the lock screen if the app is locked and a PIN is set
-  if (isLocked && pin) {
-    return <AppLockScreen />;
-  }
+  // Redirect to lock screen if the app is locked and a PIN is set
+  useEffect(() => {
+    if (isLocked && pin) {
+      navigate('/locked');
+    }
+  }, [isLocked, pin, navigate]);
   
   // Show security alert if no pin is set for advanced/expert users
   useEffect(() => {
@@ -170,7 +172,7 @@ const MainLayout = () => {
                     <SecurityAlert onSetupPIN={setupPIN} onDismiss={dismissSecurityAlert} />
                   )}
                   
-                  {pin && (
+                  {pin && preferences.appLockEnabled && (
                     <SecurityConfirmation />
                   )}
                   

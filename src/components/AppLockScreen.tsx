@@ -1,140 +1,106 @@
-
-import React, { useState } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Lock, Fingerprint } from 'lucide-react';
-import { useAppLock } from '@/contexts/AppLockContext';
-import { useToast } from '@/components/ui/use-toast';
+import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useLanguage } from '@/contexts/LanguageContext';
-import BiometricAuth from '@/components/auth/BiometricAuth';
-import PinInput from '@/components/app-lock/PinInput';
-import BiometricButton from '@/components/app-lock/BiometricButton';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
+import { useAppLock } from '@/contexts/AppLockContext';
+import { useUserPreferences } from '@/contexts/UserPreferencesContext';
+import { toast } from '@/components/ui/use-toast';
+import { Lock, Unlock, AlertTriangle, Fingerprint } from 'lucide-react';
 
 const AppLockScreen: React.FC = () => {
-  const [pin, setPin] = useState('');
-  const [error, setError] = useState(false);
-  const { unlockApp, supportsFaceId, useFaceId } = useAppLock();
-  const navigate = useNavigate();
-  const location = useLocation();
-  const { toast } = useToast();
   const { t } = useLanguage();
-  const [isLoading, setIsLoading] = useState(false);
+  const navigate = useNavigate();
+  const { unlockApp, isLocked, setIsLocked } = useAppLock();
+  const [pin, setPin] = useState('');
+  const { preferences } = useUserPreferences();
+  const [error, setError] = useState('');
   
+  useEffect(() => {
+    // Redirect if not locked
+    if (!isLocked) {
+      navigate('/dashboard');
+    }
+  }, [isLocked, navigate]);
+
   const handleUnlock = () => {
-    if (pin.length < 4) {
-      setError(true);
-      return;
-    }
-    
-    if (unlockApp(pin)) {
-      const from = location.state?.from?.pathname || '/dashboard';
-      navigate(from);
-      toast({
-        title: t('appUnlocked'),
-        description: t('welcomeBack'),
-      });
+    if (pin === localStorage.getItem('appPin')) {
+      unlockApp();
+      navigate('/dashboard');
     } else {
+      setError(t('incorrectPIN'));
       toast({
-        title: t('error'),
-        description: t('invalidPIN'),
+        title: t('unlockFailed'),
+        description: t('incorrectPIN'),
         variant: 'destructive',
       });
-      setPin('');
-      setError(true);
     }
   };
-  
-  const handleFaceId = async () => {
-    setIsLoading(true);
-    try {
-      const success = await useFaceId();
-      if (success) {
-        const from = location.state?.from?.pathname || '/dashboard';
-        navigate(from);
-        toast({
-          title: t('appUnlocked'),
-          description: t('welcomeBack'),
-        });
-      }
-    } catch (error) {
-      toast({
-        title: t('error'),
-        description: t('faceIdFailed'),
-        variant: 'destructive',
-      });
-    } finally {
-      setIsLoading(false);
-    }
+
+  const handleForgotPassword = () => {
+    toast({
+      title: t('resetPIN'),
+      description: t('contactSupportToResetPIN'),
+      duration: 5000,
+    });
   };
-  
-  const handlePinChange = (value: string) => {
-    setPin(value);
-    setError(false);
-    
-    // Auto-submit when PIN is complete
-    if (value.length === 4) {
-      setTimeout(() => {
-        if (unlockApp(value)) {
-          const from = location.state?.from?.pathname || '/dashboard';
-          navigate(from);
-          toast({
-            title: t('appUnlocked'),
-            description: t('welcomeBack'),
-          });
-        } else {
-          toast({
-            title: t('error'),
-            description: t('invalidPIN'),
-            variant: 'destructive',
-          });
-          setPin('');
-          setError(true);
-        }
-      }, 300);
-    }
+
+  const handleBiometricUnlock = () => {
+    toast({
+      title: t('biometricUnlock'),
+      description: t('biometricUnlockNotImplemented'),
+      duration: 5000,
+    });
   };
-  
+
   return (
-    <div className="min-h-screen flex items-center justify-center p-4 bg-gradient-to-b from-background to-background/80">
-      <Card className="w-full max-w-md">
-        <CardHeader className="text-center">
-          <div className="mx-auto bg-primary/10 w-16 h-16 rounded-full flex items-center justify-center mb-4">
-            <Lock className="h-8 w-8 text-primary" />
-          </div>
-          <CardTitle className="text-2xl">{t('appLocked')}</CardTitle>
-          <CardDescription>{t('enterPINToUnlock')}</CardDescription>
+    <div className="flex items-center justify-center min-h-screen bg-gray-100 dark:bg-gray-900">
+      <Card className="w-full max-w-md p-6 space-y-4">
+        <CardHeader className="space-y-1">
+          <CardTitle className="text-2xl font-bold text-center">
+            {t('appLocked')}
+          </CardTitle>
+          <CardDescription className="text-center text-muted-foreground">
+            {t('enterYourPIN')}
+          </CardDescription>
         </CardHeader>
-        <CardContent className="space-y-6">
-          <PinInput
-            value={pin}
-            onChange={handlePinChange}
-            maxLength={4}
-            label={t('enterPIN')}
-            error={error}
-            errorMessage={t('invalidPIN')}
-          />
-          
-          {supportsFaceId && (
-            <div className="pt-4">
-              <BiometricButton
-                onClick={handleFaceId}
-                isLoading={isLoading}
-                type="faceId"
-                disabled={isLoading}
-              />
-            </div>
-          )}
-        </CardContent>
-        <CardFooter>
-          <Button 
-            className="w-full" 
-            onClick={handleUnlock}
-            disabled={!pin || isLoading}
-          >
+        <CardContent className="grid gap-4">
+          <div className="grid gap-2">
+            <Input
+              type="password"
+              placeholder="••••"
+              value={pin}
+              onChange={(e) => {
+                setPin(e.target.value);
+                setError('');
+              }}
+              className="text-center text-2xl font-mono tracking-widest"
+              maxLength={4}
+            />
+            {error && (
+              <p className="text-red-500 text-sm flex items-center gap-1">
+                <AlertTriangle className="h-4 w-4" />
+                {error}
+              </p>
+            )}
+          </div>
+          <Button onClick={handleUnlock} className="w-full">
+            <Unlock className="w-4 h-4 mr-2" />
             {t('unlock')}
           </Button>
-        </CardFooter>
+          {preferences.biometricsEnabled && (
+            <Button variant="outline" onClick={handleBiometricUnlock} className="w-full">
+              <Fingerprint className="w-4 h-4 mr-2" />
+              {t('unlockWithBiometrics')}
+            </Button>
+          )}
+        </CardContent>
+        <div className="text-center text-sm text-muted-foreground">
+          <button onClick={handleForgotPassword} className="hover:underline">
+            {t('forgotPIN')}
+          </button>
+        </div>
       </Card>
     </div>
   );

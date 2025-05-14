@@ -1,10 +1,22 @@
+
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Building, BarChart2, ChevronsRight, Bell, LineChart, BarChart, ChevronRight } from 'lucide-react';
+import { 
+  Building, 
+  BarChart2, 
+  ChevronsRight, 
+  Bell, 
+  LineChart, 
+  BarChart, 
+  ChevronRight,
+  Phone,
+  Calendar,
+  User
+} from 'lucide-react';
 import { useUserPreferences } from '@/contexts/UserPreferencesContext';
 import PropertySummary from '@/components/property/PropertySummary';
 import PropertyValueChart from '@/components/charts/PropertyValueChart';
@@ -50,8 +62,8 @@ const Dashboard: React.FC = () => {
             </div>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <Card>
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+            <Card className="md:col-span-1">
               <CardHeader className="pb-2">
                 <CardTitle>{t('portfolioValue')}</CardTitle>
               </CardHeader>
@@ -63,7 +75,7 @@ const Dashboard: React.FC = () => {
               </CardContent>
             </Card>
             
-            <Card>
+            <Card className="md:col-span-1">
               <CardHeader className="pb-2">
                 <CardTitle>{t('monthlyIncome')}</CardTitle>
               </CardHeader>
@@ -75,7 +87,7 @@ const Dashboard: React.FC = () => {
               </CardContent>
             </Card>
             
-            <Card>
+            <Card className="md:col-span-1">
               <CardHeader className="pb-2">
                 <CardTitle>{t('averageYield')}</CardTitle>
               </CardHeader>
@@ -83,6 +95,26 @@ const Dashboard: React.FC = () => {
                 <div className="text-3xl font-bold">4.7%</div>
                 <p className="text-sm text-muted-foreground">
                   {t('acrossAllProperties')}
+                </p>
+              </CardContent>
+            </Card>
+            
+            <Card className="md:col-span-1">
+              <CardHeader className="pb-2">
+                <CardTitle>
+                  {language === 'de' ? 'Kontakte' : 'Contacts'}
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="flex items-center justify-between">
+                  <div className="text-3xl font-bold">12</div>
+                  <Button size="sm" onClick={() => navigate('/crm')}>
+                    <Phone className="h-4 w-4 mr-1" />
+                    {language === 'de' ? 'CRM öffnen' : 'Open CRM'}
+                  </Button>
+                </div>
+                <p className="text-sm text-muted-foreground">
+                  {language === 'de' ? 'Immobilienkontakte verwalten' : 'Manage real estate contacts'}
                 </p>
               </CardContent>
             </Card>
@@ -109,6 +141,52 @@ const Dashboard: React.FC = () => {
               </div>
               
               <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <Card className="col-span-1 lg:col-span-1">
+                  <CardHeader className="pb-2">
+                    <CardTitle>
+                      {language === 'de' ? 'Bevorstehende Termine' : 'Upcoming Events'}
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="pb-2">
+                    <div className="space-y-4">
+                      <div className="flex items-start gap-3">
+                        <div className="min-w-10 text-center">
+                          <div className="font-medium">15</div>
+                          <div className="text-xs text-muted-foreground">MAY</div>
+                        </div>
+                        <div>
+                          <p className="font-medium">
+                            {language === 'de' ? 'Besichtigung' : 'Property Viewing'}
+                          </p>
+                          <p className="text-sm text-muted-foreground">
+                            {language === 'de' ? '14:30 - Berliner Str. 42' : '2:30 PM - Berliner Str. 42'}
+                          </p>
+                        </div>
+                      </div>
+                      <div className="flex items-start gap-3">
+                        <div className="min-w-10 text-center">
+                          <div className="font-medium">18</div>
+                          <div className="text-xs text-muted-foreground">MAY</div>
+                        </div>
+                        <div>
+                          <p className="font-medium">
+                            {language === 'de' ? 'Anruf mit Makler' : 'Call with Agent'}
+                          </p>
+                          <p className="text-sm text-muted-foreground">
+                            {language === 'de' ? '10:00 - Anna Weber' : '10:00 AM - Anna Weber'}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  </CardContent>
+                  <CardFooter>
+                    <Button variant="ghost" size="sm" className="w-full" onClick={() => navigate('/crm')}>
+                      <Calendar className="h-4 w-4 mr-2" />
+                      {language === 'de' ? 'Kalender öffnen' : 'Open Calendar'}
+                    </Button>
+                  </CardFooter>
+                </Card>
+                
                 <Card className="col-span-1 lg:col-span-2">
                   <CardHeader>
                     <CardTitle>{t('recentTransactions')}</CardTitle>
@@ -119,6 +197,58 @@ const Dashboard: React.FC = () => {
                   <CardFooter>
                     <Button variant="outline" size="sm" className="ml-auto">
                       {t('viewAll')} <ChevronRight className="h-4 w-4 ml-1" />
+                    </Button>
+                  </CardFooter>
+                </Card>
+              </div>
+              
+              <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <Card className="col-span-1 lg:col-span-2">
+                  <CardHeader>
+                    <CardTitle>{language === 'de' ? 'Kontaktnetzwerk' : 'Contact Network'}</CardTitle>
+                    <CardDescription>
+                      {language === 'de' 
+                        ? 'Verwalten Sie Ihre wichtigsten Immobilienkontakte' 
+                        : 'Manage your key real estate contacts'}
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-4">
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div className="flex items-center gap-3 p-3 border rounded-lg hover:bg-muted/50 transition-colors">
+                          <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center">
+                            <User className="h-5 w-5 text-primary" />
+                          </div>
+                          <div>
+                            <p className="font-medium">Anna Weber</p>
+                            <p className="text-sm text-muted-foreground">
+                              {language === 'de' ? 'Makler' : 'Realtor'}
+                            </p>
+                          </div>
+                          <Button variant="ghost" size="icon" className="ml-auto">
+                            <Phone className="h-4 w-4" />
+                          </Button>
+                        </div>
+                        <div className="flex items-center gap-3 p-3 border rounded-lg hover:bg-muted/50 transition-colors">
+                          <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center">
+                            <User className="h-5 w-5 text-primary" />
+                          </div>
+                          <div>
+                            <p className="font-medium">Michael Becker</p>
+                            <p className="text-sm text-muted-foreground">
+                              {language === 'de' ? 'Handwerker' : 'Handyman'}
+                            </p>
+                          </div>
+                          <Button variant="ghost" size="icon" className="ml-auto">
+                            <Phone className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      </div>
+                    </div>
+                  </CardContent>
+                  <CardFooter>
+                    <Button className="w-full" onClick={() => navigate('/crm')}>
+                      {language === 'de' ? 'Zum Kontaktmanagement' : 'Go to Contact Management'}
                     </Button>
                   </CardFooter>
                 </Card>

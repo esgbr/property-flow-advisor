@@ -1,100 +1,78 @@
 
 import React from 'react';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { cn } from '@/lib/utils';
-import { TrendingUp, TrendingDown, Minus } from 'lucide-react';
+import { Skeleton } from '@/components/ui/skeleton';
 
 interface StatCardProps {
   title: string;
   value: string | number;
-  description?: string;
-  icon?: React.ReactNode;
-  change?: number;
   prefix?: string;
   suffix?: string;
+  change?: number;
+  icon?: React.ReactNode;
+  description?: string;
+  loading?: boolean;
   className?: string;
-  variant?: 'default' | 'outline';
-  size?: 'sm' | 'md' | 'lg';
 }
 
-const StatCard: React.FC<StatCardProps> = ({
+const StatCard = ({
   title,
   value,
-  description,
-  icon,
+  prefix,
+  suffix,
   change,
-  prefix = '',
-  suffix = '',
+  icon,
+  description,
+  loading = false,
   className,
-  variant = 'default',
-  size = 'md',
-}) => {
-  const getTrendIcon = () => {
-    if (!change) return null;
-    
-    if (change > 0) {
-      return <TrendingUp className="h-4 w-4 text-green-500" />;
-    } else if (change < 0) {
-      return <TrendingDown className="h-4 w-4 text-red-500" />;
-    }
-    
-    return <Minus className="h-4 w-4 text-muted-foreground" />;
-  };
-  
-  const getTrendText = () => {
-    if (!change) return null;
-    
-    const formattedChange = Math.abs(change).toFixed(1);
-    const changeText = `${change > 0 ? '+' : ''}${formattedChange}%`;
-    
-    if (change > 0) {
-      return <span className="text-green-500">{changeText}</span>;
-    } else if (change < 0) {
-      return <span className="text-red-500">{changeText}</span>;
-    }
-    
-    return <span className="text-muted-foreground">0%</span>;
-  };
-  
-  const sizeClasses = {
-    sm: 'p-4',
-    md: 'p-5',
-    lg: 'p-6',
-  };
-  
-  const valueClasses = {
-    sm: 'text-2xl',
-    md: 'text-3xl',
-    lg: 'text-4xl',
-  };
+}: StatCardProps) => {
+  if (loading) {
+    return (
+      <Card className={cn("overflow-hidden", className)}>
+        <CardContent className="p-6">
+          <Skeleton className="h-5 w-1/3 mb-2" />
+          <Skeleton className="h-9 w-1/2 mb-1" />
+          <Skeleton className="h-4 w-2/3" />
+        </CardContent>
+      </Card>
+    );
+  }
   
   return (
-    <Card className={cn(
-      'overflow-hidden transition-all',
-      variant === 'outline' ? 'border shadow-sm' : 'border shadow',
-      className
-    )}>
-      <CardHeader className={cn('pb-2', sizeClasses[size])}>
-        <div className="flex justify-between items-center">
-          <CardTitle className="text-sm font-medium text-muted-foreground">{title}</CardTitle>
-          {icon && <div className="text-muted-foreground">{icon}</div>}
+    <Card className={cn("overflow-hidden", className)}>
+      <CardContent className="p-6">
+        <div className="flex items-center justify-between mb-2">
+          <p className="text-sm font-medium text-muted-foreground">
+            {title}
+          </p>
+          {icon && (
+            <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center">
+              {icon}
+            </div>
+          )}
         </div>
-      </CardHeader>
-      <CardContent className={cn('pt-0', sizeClasses[size])}>
-        <div className={cn('font-bold', valueClasses[size])}>
+        <div className="text-2xl font-bold">
           {prefix}{value}{suffix}
         </div>
-        
-        {(description || change !== undefined) && (
-          <div className="mt-1 flex items-center text-sm">
+        {(change !== undefined || description) && (
+          <div className="mt-1 flex items-center text-xs">
             {change !== undefined && (
-              <div className="flex items-center mr-2">
-                {getTrendIcon()}
-                <span className="ml-1">{getTrendText()}</span>
-              </div>
+              <span 
+                className={cn(
+                  "font-medium",
+                  change > 0 ? "text-green-600" : 
+                  change < 0 ? "text-red-600" : 
+                  "text-gray-500"
+                )}
+              >
+                {change > 0 ? '+' : ''}{change}%
+              </span>
             )}
             {description && (
-              <p className="text-muted-foreground">{description}</p>
+              <span className="text-muted-foreground ml-1">
+                {description}
+              </span>
             )}
           </div>
         )}

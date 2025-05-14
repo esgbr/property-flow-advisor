@@ -32,6 +32,9 @@ import ToolsPage from '@/pages/ToolsPage';
 import RegionalAnalysis from '@/pages/RegionalAnalysis';
 import TaxPlanning from '@/pages/TaxPlanning';
 import LanguageSettings from '@/pages/LanguageSettings';
+import CRMPage from '@/pages/CRMPage';
+import LockedPage from '@/pages/LockedPage';
+import WorkflowsPage from '@/pages/WorkflowsPage';
 
 // Lazy load heavy components for better initial loading performance
 const AdvancedAnalytics = lazy(() => import('@/pages/AdvancedAnalyticsPage'));
@@ -129,6 +132,18 @@ const routes = [
   {
     path: '/tax-planning',
     element: <MainLayout><TaxPlanning /></MainLayout>
+  },
+  {
+    path: '/crm',
+    element: <MainLayout><CRMPage /></MainLayout>
+  },
+  {
+    path: '/locked',
+    element: <LockedPage />
+  },
+  {
+    path: '/workflows',
+    element: <MainLayout><WorkflowsPage /></MainLayout>
   },
   {
     path: '/advanced-analytics',

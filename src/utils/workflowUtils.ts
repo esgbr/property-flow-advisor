@@ -1,208 +1,119 @@
 
-import { WorkflowType } from '@/data/workflow-definitions';
+import { WorkflowType } from '@/hooks/use-workflow';
 import { workflowDefinitions } from '@/data/workflow-definitions';
-import { InvestmentMarket } from '@/contexts/UserPreferencesContext';
 
 /**
- * Returns workflows that are relevant to the specified market
- * This enables market-specific workflow suggestions
+ * Finds all workflows that are related to a specific market
+ * @param market The market to find workflows for
+ * @returns Array of workflow types
  */
-export const getMarketRelevantWorkflows = (market: InvestmentMarket): WorkflowType[] => {
-  switch (market) {
+export const getMarketRelevantWorkflows = (market: string): WorkflowType[] => {
+  // Demo implementation - in real app, this would filter based on market-specific data
+  switch (market.toLowerCase()) {
     case 'germany':
-      return ['steuer', 'immobilien', 'finanzierung'];
-    case 'austria':
-    case 'switzerland':
-      return ['immobilien', 'finanzierung'];
+    case 'deutschland':
+    case 'german':
+      return ['steuer', 'immobilien'];
+    case 'us':
     case 'usa':
-    case 'canada':
-      return ['immobilien', 'analyse'];
-    case 'global':
+    case 'united states':
+      return ['finanzierung', 'analyse'];
     default:
-      return ['immobilien', 'analyse', 'finanzierung', 'steuer'];
+      return ['immobilien', 'finanzierung'];
   }
 };
 
 /**
- * Maps tools/steps to related workflows to provide cross-workflow suggestions
- * @param toolId The current tool/step ID
- * @returns An array of related workflow types
+ * Finds related workflows for a specific tool
+ * @param toolId The tool ID to find related workflows for
+ * @returns Array of workflow types
  */
 export const getRelatedWorkflowsForTool = (toolId: string): WorkflowType[] => {
-  const toolToWorkflowMap: Record<string, WorkflowType[]> = {
-    // Tax related tools
-    'grunderwerbsteuer': ['steuer', 'finanzierung'],
-    'planning': ['steuer', 'immobilien'],
+  // Demo implementation - in real app, this would be data-driven
+  const toolWorkflowMap: Record<string, WorkflowType[]> = {
+    'grunderwerbsteuer': ['steuer'],
+    'renditerechner': ['immobilien', 'analyse'],
     'afa': ['steuer', 'immobilien'],
-    
-    // Property related tools
-    'marktanalyse': ['immobilien', 'analyse'],
-    'rendite': ['immobilien', 'finanzierung'],
-    'portfolio': ['immobilien', 'analyse', 'steuer'],
-    
-    // Financing related tools
-    'calculator': ['finanzierung', 'steuer'],
-    'offers': ['finanzierung', 'immobilien'],
-    'tilgung': ['finanzierung', 'steuer'],
-    
-    // Analysis related tools
-    'market': ['analyse', 'immobilien'],
-    'duediligence': ['analyse', 'immobilien', 'finanzierung'],
+    'mietkauf': ['finanzierung', 'immobilien']
   };
   
-  return toolToWorkflowMap[toolId] || ['immobilien']; // Default to property workflow if no match
+  return toolWorkflowMap[toolId] || [];
 };
 
-/**
- * Gets steps that commonly follow after the specified tool/step across workflows
- * This enables intelligent suggestions based on user behavior patterns
- */
-export const getCommonNextSteps = (
-  currentTool: string,
-  excludeWorkflows: WorkflowType[] = []
-): { step: any; workflow: WorkflowType }[] => {
-  const results: { step: any; workflow: WorkflowType }[] = [];
-  
-  // Define common paths users take across different workflows
-  const commonPaths: Record<string, { workflow: WorkflowType; step: string }[]> = {
-    'grunderwerbsteuer': [
-      { workflow: 'finanzierung', step: 'calculator' },
-      { workflow: 'immobilien', step: 'rendite' }
-    ],
-    'rendite': [
-      { workflow: 'steuer', step: 'grunderwerbsteuer' },
-      { workflow: 'immobilien', step: 'portfolio' }
-    ],
-    'calculator': [
-      { workflow: 'finanzierung', step: 'offers' },
-      { workflow: 'steuer', step: 'grunderwerbsteuer' }
-    ]
-    // Add more common paths as needed
-  };
-  
-  const paths = commonPaths[currentTool] || [];
-  
-  paths.forEach(path => {
-    // Skip excluded workflows
-    if (excludeWorkflows.includes(path.workflow)) return;
-    
-    // Find the step in the workflow
-    const workflow = workflowDefinitions[path.workflow];
-    const step = workflow.steps.find(s => s.id === path.step);
-    
-    if (step) {
-      results.push({ step, workflow: path.workflow });
-    }
-  });
-  
-  return results;
-};
+interface CommonNextStep {
+  workflow: WorkflowType;
+  step: {
+    id: string;
+    path: string;
+    label: Record<string, string>;
+    description?: Record<string, string>;
+  }
+}
 
 /**
- * Finds workflows that need attention based on user progress
- * This helps users complete workflows they've started but not finished
+ * Finds common next steps across workflows
+ * @param currentTool The current tool being used
+ * @param completedSteps Array of completed step IDs
+ * @returns Array of common next steps
  */
-export const findIncompleteWorkflows = (
-  workflowProgress: Record<string, { completedSteps: string[]; currentStep: string }>,
-  excludeWorkflows: WorkflowType[] = []
-): { workflow: WorkflowType; step: any }[] => {
-  const results: { workflow: WorkflowType; step: any }[] = [];
-  
-  Object.keys(workflowDefinitions).forEach(wfType => {
-    const workflowType = wfType as WorkflowType;
-    
-    // Skip excluded workflows
-    if (excludeWorkflows.includes(workflowType)) return;
-    
-    const workflowKey = `workflow_${workflowType}`;
-    const progress = workflowProgress[workflowKey];
-    
-    if (progress) {
-      const completedCount = progress.completedSteps.length;
-      const totalSteps = workflowDefinitions[workflowType].steps.length;
-      
-      // If workflow is started but not completed (at least one step but not all)
-      if (completedCount > 0 && completedCount < totalSteps) {
-        // Find the next uncompleted step
-        const nextStep = workflowDefinitions[workflowType].steps.find(
-          step => !progress.completedSteps.includes(step.id)
-        );
-        
-        if (nextStep) {
-          results.push({ workflow: workflowType, step: nextStep });
+export const getCommonNextSteps = (currentTool: string, completedSteps: string[]): CommonNextStep[] => {
+  // Demo implementation - in real app, this would be data-driven
+  return [
+    {
+      workflow: 'immobilien',
+      step: {
+        id: 'property-analysis',
+        path: '/tools/property-analysis',
+        label: {
+          en: 'Property Analysis',
+          de: 'Immobilienanalyse'
+        },
+        description: {
+          en: 'Analyze property details and potential',
+          de: 'Immobiliendetails und Potenzial analysieren'
+        }
+      }
+    },
+    {
+      workflow: 'finanzierung',
+      step: {
+        id: 'financing-options',
+        path: '/tools/financing',
+        label: {
+          en: 'Financing Options',
+          de: 'Finanzierungsmöglichkeiten'
+        },
+        description: {
+          en: 'Explore financing options for properties',
+          de: 'Finanzierungsmöglichkeiten für Immobilien erkunden'
         }
       }
     }
-  });
-  
-  return results;
+  ];
 };
 
 /**
- * Creates a recommended workflow path based on user preferences and progress
+ * Find incomplete workflows based on state
+ * @param workflows Current workflow state
+ * @returns Array of steps in incomplete workflows
  */
-export const createRecommendedWorkflowPath = (
-  workflowType: WorkflowType,
-  userPreferences: any
-): string[] => {
-  // Base workflow path
-  const basePath = workflowDefinitions[workflowType].steps.map(step => step.id);
-  
-  // Customize path based on user preferences
-  if (userPreferences.experience === 'beginner') {
-    // For beginners, include more educational steps
-    return basePath;
-  } else if (userPreferences.experience === 'advanced') {
-    // For advanced users, provide a more streamlined path
-    return basePath.filter(step => 
-      !step.includes('intro') && !step.includes('basic')
-    );
-  }
-  
-  return basePath;
-};
-
-/**
- * Calculates the estimated time to complete a workflow
- */
-export const calculateWorkflowEstimatedTime = (
-  workflowType: WorkflowType,
-  completedSteps: string[]
-): number => {
-  // Average time in minutes for each step
-  const stepTimes: Record<string, number> = {
-    'calculator': 5,
-    'rendite': 8,
-    'grunderwerbsteuer': 4,
-    'planning': 10,
-    'afa': 7,
-    'offers': 6,
-    'tilgung': 5,
-    'marktanalyse': 12,
-    'portfolio': 15,
-    'default': 5 // Default time if not specified
-  };
-  
-  let totalTime = 0;
-  
-  // Get all remaining steps
-  const remainingSteps = workflowDefinitions[workflowType].steps
-    .filter(step => !completedSteps.includes(step.id))
-    .map(step => step.id);
-  
-  // Sum up time estimates for remaining steps
-  remainingSteps.forEach(stepId => {
-    totalTime += stepTimes[stepId] || stepTimes.default;
-  });
-  
-  return totalTime;
-};
-
-export default {
-  getRelatedWorkflowsForTool,
-  getMarketRelevantWorkflows,
-  getCommonNextSteps,
-  findIncompleteWorkflows,
-  createRecommendedWorkflowPath,
-  calculateWorkflowEstimatedTime
+export const findIncompleteWorkflows = (workflows: any) => {
+  // This would be implemented based on actual workflow state structure
+  return [
+    {
+      workflow: 'steuer',
+      step: {
+        id: 'tax-calculation',
+        path: '/tools/tax-calculator',
+        label: {
+          en: 'Tax Calculation',
+          de: 'Steuerberechnung'
+        },
+        description: {
+          en: 'Calculate property-related taxes',
+          de: 'Immobilienbezogene Steuern berechnen'
+        }
+      }
+    }
+  ];
 };
