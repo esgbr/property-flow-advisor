@@ -30,7 +30,7 @@ export function Toaster() {
         if (message) {
           // Convert any non-string message to string before announcing
           const isDestructive = latestToast.variant === 'destructive';
-          announce(String(message), isDestructive);
+          announce(String(message), isDestructive ? 'assertive' : 'polite');
         }
       }
     }

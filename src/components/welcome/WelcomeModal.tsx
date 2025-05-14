@@ -22,7 +22,7 @@ const WelcomeModal = () => {
       // Wait a moment before showing the modal for better UX
       const timer = setTimeout(() => {
         setIsOpen(true);
-        announce(t('welcomeToPropertyFlowAdvisor'), true);
+        announce(t('welcomeToPropertyFlowAdvisor'), 'assertive');
       }, 800);
       
       return () => clearTimeout(timer);
