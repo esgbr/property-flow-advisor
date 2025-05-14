@@ -1,72 +1,39 @@
 
-/**
- * Enhanced screen reader announcement utility
- * Provides a more robust way to make announcements to screen readers
- */
+// Create a proper utility for screen reader announcements
 
-// Maintain a singleton instance of the announcer element
-let announcer: HTMLElement | null = null;
-
-// Create a singleton announcer element
-const getAnnouncer = (assertive = false): HTMLElement => {
+// Function to create or get the screen reader announcer element
+const getAnnouncer = (): HTMLElement => {
+  let announcer = document.getElementById('sr-announcer');
   if (!announcer) {
     announcer = document.createElement('div');
-    announcer.id = 'screen-reader-announcer';
-    announcer.setAttribute('aria-live', assertive ? 'assertive' : 'polite');
-    announcer.setAttribute('aria-atomic', 'true');
+    announcer.id = 'sr-announcer';
     announcer.className = 'sr-only';
-    announcer.style.position = 'absolute';
-    announcer.style.width = '1px';
-    announcer.style.height = '1px';
-    announcer.style.padding = '0';
-    announcer.style.margin = '-1px';
-    announcer.style.overflow = 'hidden';
-    announcer.style.clip = 'rect(0, 0, 0, 0)';
-    announcer.style.whiteSpace = 'nowrap';
-    announcer.style.border = '0';
+    announcer.setAttribute('aria-live', 'polite');
+    announcer.setAttribute('aria-atomic', 'true');
     document.body.appendChild(announcer);
   }
-  
-  // Update the politeness setting if needed
-  announcer.setAttribute('aria-live', assertive ? 'assertive' : 'polite');
-  
   return announcer;
 };
 
-// Clear the announcer after a delay to prevent multiple rapid announcements
-const clearAnnouncer = (delay = 3000): void => {
-  if (!announcer) return;
-  
-  setTimeout(() => {
-    if (announcer) {
-      announcer.textContent = '';
-    }
-  }, delay);
-};
-
-/**
- * Announce a message to screen readers
- * @param message - The message to be announced
- * @param assertive - Whether to use assertive (true) or polite (false) priority
- * @param delay - How long to wait before clearing the announcement
- */
-export const announce = (
-  message: string,
-  assertive: boolean = false,
-  delay = 3000
-): void => {
+// Function to announce a message to screen readers with configurable politeness
+export const announce = (message: string, assertive: boolean = false): void => {
   if (!message) return;
   
-  // Get or create the announcer element
-  const element = getAnnouncer(assertive);
+  const announcer = getAnnouncer();
   
-  // Set message text
-  element.textContent = message;
+  // Set the appropriate aria-live attribute
+  announcer.setAttribute('aria-live', assertive ? 'assertive' : 'polite');
   
-  // Clear after delay
-  clearAnnouncer(delay);
+  // Clear current content first to ensure re-announcement even if text is the same
+  announcer.textContent = '';
+  
+  // Use setTimeout to ensure the DOM update happens
+  setTimeout(() => {
+    announcer.textContent = message;
+  }, 50);
 };
 
+// Announcement hook for reusability in components
 export const useAnnouncement = () => {
   return { announce };
 };
