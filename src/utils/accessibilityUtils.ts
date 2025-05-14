@@ -1,39 +1,40 @@
 
-// Create a proper utility for screen reader announcements
-
-// Function to create or get the screen reader announcer element
-const getAnnouncer = (): HTMLElement => {
-  let announcer = document.getElementById('sr-announcer');
+// Function to announce messages to screen readers
+export const announce = (message: string, politeness: 'polite' | 'assertive' = 'polite'): void => {
+  // Find or create the announcer element
+  let announcer = document.getElementById('a11y-announcer');
+  
   if (!announcer) {
     announcer = document.createElement('div');
-    announcer.id = 'sr-announcer';
+    announcer.id = 'a11y-announcer';
     announcer.className = 'sr-only';
-    announcer.setAttribute('aria-live', 'polite');
+    announcer.setAttribute('aria-live', politeness);
     announcer.setAttribute('aria-atomic', 'true');
     document.body.appendChild(announcer);
+  } else {
+    // Update the politeness setting
+    announcer.setAttribute('aria-live', politeness);
   }
-  return announcer;
-};
-
-// Function to announce a message to screen readers with configurable politeness
-export const announce = (message: string, politeness: 'polite' | 'assertive' = 'polite'): void => {
-  if (!message) return;
   
-  const announcer = getAnnouncer();
-  
-  // Set the appropriate aria-live attribute
-  announcer.setAttribute('aria-live', politeness);
-  
-  // Clear current content first to ensure re-announcement even if text is the same
+  // Clear and set the content
   announcer.textContent = '';
   
-  // Use setTimeout to ensure the DOM update happens
+  // Use setTimeout to ensure the change is registered by screen readers
   setTimeout(() => {
-    announcer.textContent = message;
+    if (announcer) {
+      announcer.textContent = message;
+    }
   }, 50);
 };
 
-// Announcement hook for reusability in components
-export const useAnnouncement = () => {
-  return { announce };
-};
+// Make the announce function available globally
+declare global {
+  interface Window {
+    announce: (message: string, politeness?: 'polite' | 'assertive') => void;
+  }
+}
+
+// Add to window object
+if (typeof window !== 'undefined') {
+  window.announce = announce;
+}
