@@ -78,7 +78,7 @@ function App() {
   };
 
   return (
-    <LanguageProvider value={{ language, setLanguage, t }}>
+    <LanguageProvider defaultLanguage={language}>
       <Router>
         <Routes>
           {/* Redirect from dashboard to crm */}
