@@ -99,7 +99,7 @@ export const GrunderwerbsteuerCalculator: React.FC<GrunderwerbsteuerCalculatorPr
   const handleCalculate = () => {
     if (propertyValue <= 0) {
       setErrorMessage(t('propertyValueRequired'));
-      announce(t('propertyValueRequired'), 'assertive');
+      announce(t('propertyValueRequired'));
       return;
     }
 
@@ -120,8 +120,7 @@ export const GrunderwerbsteuerCalculator: React.FC<GrunderwerbsteuerCalculatorPr
     // Announce for screen readers
     announce(language === 'de'
       ? `Berechnete Grunderwerbsteuer: ${formatNumber(taxAmount, language)} Euro`
-      : `Calculated transfer tax: ${formatNumber(taxAmount, language)} Euros`, 
-      'polite'
+      : `Calculated transfer tax: ${formatNumber(taxAmount, language)} Euros` 
     );
     
     if (onCalculationComplete) {
@@ -155,8 +154,7 @@ export const GrunderwerbsteuerCalculator: React.FC<GrunderwerbsteuerCalculatorPr
     // Announce for screen readers
     announce(language === 'de' 
       ? 'Die Berechnung wurde gespeichert' 
-      : 'Calculation saved',
-      'polite'
+      : 'Calculation saved'
     );
   };
 
@@ -174,7 +172,7 @@ export const GrunderwerbsteuerCalculator: React.FC<GrunderwerbsteuerCalculatorPr
   // Print calculation
   const handlePrint = () => {
     window.print();
-    announce(language === 'de' ? 'Druckdialog geöffnet' : 'Print dialog opened', 'polite');
+    announce(language === 'de' ? 'Druckdialog geöffnet' : 'Print dialog opened');
   };
 
   return (

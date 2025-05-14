@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Switch } from '@/components/ui/switch';
@@ -32,7 +31,7 @@ const AccessibilitySection: React.FC<AccessibilitySectionProps> = ({ className }
     if (screenReader) toggleScreenReader();
     
     toast.success('Accessibility settings reset to defaults');
-    announce('Accessibility settings reset to defaults', 'assertive');
+    announce('Accessibility settings reset to defaults');
   };
   
   const handleApplySystemSettings = () => {
@@ -44,7 +43,7 @@ const AccessibilitySection: React.FC<AccessibilitySectionProps> = ({ className }
     if (prefersHighContrast !== highContrast) toggleHighContrast();
     
     toast.success('Applied system accessibility settings');
-    announce('Applied system accessibility settings', 'assertive');
+    announce('Applied system accessibility settings');
   };
   
   return (
