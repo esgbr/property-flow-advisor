@@ -78,6 +78,13 @@ const navigationItems: NavItem[] = [
     ]
   },
   {
+    id: 'crm',
+    label: 'CRM',
+    path: '/crm',
+    icon: <Users className="h-5 w-5" />,
+    description: 'Contact & relationship management',
+  },
+  {
     id: 'analysis',
     label: 'Analysis',
     path: '/market-analysis',

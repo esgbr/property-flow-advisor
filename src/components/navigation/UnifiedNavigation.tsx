@@ -97,6 +97,18 @@ const UnifiedNavigation: React.FC<{
       expanded: true
     },
     {
+      label: language === 'de' ? 'CRM' : 'CRM',
+      icon: <Users className="h-5 w-5" />,
+      items: [
+        { label: language === 'de' ? 'Kontaktverwaltung' : 'Contact Management', 
+          icon: <Users className="h-4 w-4" />, 
+          path: '/crm', 
+          highlight: true
+        }
+      ],
+      expanded: true
+    },
+    {
       label: t('tools'),
       icon: <Calculator className="h-5 w-5" />,
       items: [

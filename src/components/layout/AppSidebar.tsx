@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { Sidebar, SidebarContent } from '@/components/ui/sidebar';
@@ -55,6 +54,12 @@ const AppSidebar = () => {
           name: t('properties'),
           href: '/properties',
           icon: <Building className="h-5 w-5" />,
+        },
+        {
+          name: language === 'de' ? 'CRM' : 'CRM',
+          href: '/crm',
+          icon: <Users className="h-5 w-5" />,
+          new: true,
         }
       ]
     },

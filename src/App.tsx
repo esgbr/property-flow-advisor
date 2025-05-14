@@ -1,3 +1,4 @@
+
 import React, { useEffect, lazy, Suspense } from 'react';
 import './App.css';
 import './styles/ScrollStyles.css';
@@ -171,6 +172,7 @@ const navigationShortcuts = [
   { id: 'home', label: 'Home', path: '/', key: 'h', alt: true },
   { id: 'dashboard', label: 'Dashboard', path: '/dashboard', key: 'd', alt: true },
   { id: 'properties', label: 'Properties', path: '/properties', key: 'p', alt: true },
+  { id: 'crm', label: 'CRM', path: '/crm', key: 'c', alt: true },
   { id: 'tools', label: 'Tools', path: '/tools', key: 't', alt: true },
   { id: 'settings', label: 'Settings', path: '/settings', key: 's', alt: true },
   { id: 'accessibility', label: 'Accessibility', path: '/accessibility', key: 'a', alt: true },
