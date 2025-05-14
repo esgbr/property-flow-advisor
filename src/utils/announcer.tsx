@@ -1,6 +1,7 @@
 
 import { useCallback } from 'react';
 import { useAccessibility } from '@/hooks/use-accessibility';
+import { useAnnouncement as useAccessibilityAnnouncement } from './accessibilityUtils';
 
 /**
  * A custom hook for managing screen reader announcements.

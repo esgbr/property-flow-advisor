@@ -9,7 +9,7 @@ import {
   ToastViewport,
 } from "@/components/ui/toast";
 import { useAccessibility } from "@/components/accessibility/A11yProvider";
-import { useAnnouncement } from "@/utils/accessibilityUtils";
+import { useAnnouncement } from "@/utils/announcer";
 import { useEffect } from "react";
 
 export function Toaster() {

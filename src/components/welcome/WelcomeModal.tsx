@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState, lazy, Suspense } from 'react';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
 import OnboardingFlow from '@/components/onboarding/OnboardingFlow';
@@ -7,7 +6,7 @@ import { toast } from 'sonner';
 import { useNavigate } from 'react-router-dom';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { Loader } from 'lucide-react';
-import { useAnnouncement } from '@/utils/accessibilityUtils';
+import { useAnnouncement } from '@/utils/announcer';
 
 const WelcomeModal = () => {
   const { isFirstVisit, setIsFirstVisit, saveOnboardingData, preferences, updatePreferences } = useUserPreferences();

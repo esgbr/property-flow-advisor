@@ -27,6 +27,11 @@ export const announce = (message: string, politeness: 'polite' | 'assertive' = '
   }, 50);
 };
 
+// Hook to use the announce function
+export const useAnnouncement = () => {
+  return { announce };
+};
+
 // Make the announce function available globally
 declare global {
   interface Window {

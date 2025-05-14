@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Settings, Eye } from 'lucide-react';
@@ -11,7 +10,7 @@ import {
   TooltipTrigger,
 } from '@/components/ui/tooltip';
 import { useLanguage } from '@/contexts/LanguageContext';
-import { useAnnouncement } from '@/utils/accessibilityUtils';
+import { useAnnouncement } from '@/utils/announcer';
 
 interface AccessibilitySettingsButtonProps {
   variant?: 'default' | 'outline' | 'ghost' | 'link' | 'secondary' | 'destructive';

@@ -1,6 +1,6 @@
 
 // Import our centralized announce function
-import { announce as accessibilityAnnounce } from './accessibilityUtils';
+import { announce as accessibilityAnnounce, useAnnouncement as useAccessibilityAnnouncement } from './accessibilityUtils';
 
 /**
  * Custom hook for announcing messages to screen readers
@@ -13,6 +13,8 @@ export function announce(message: string, politeness: 'polite' | 'assertive' = '
 }
 
 // Custom hook to use the announcer
-export default function useAnnouncement() {
-  return { announce };
+export function useAnnouncement() {
+  return useAccessibilityAnnouncement();
 }
+
+export default useAnnouncement;
