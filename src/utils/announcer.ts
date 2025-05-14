@@ -1,57 +1,48 @@
 
 /**
- * Screen reader announcement utility
+ * Custom hook for announcing messages to screen readers
+ * This is used to provide important updates via screen readers
  */
 
-// Create a singleton announcer element
-const getAnnouncer = (assertive = false): HTMLElement => {
-  let announcer = document.getElementById('a11y-announcer');
-  
+let announcer: HTMLElement | null = null;
+
+// Function to create or get the announcer element
+function getAnnouncer(): HTMLElement {
   if (!announcer) {
-    announcer = document.createElement('div');
-    announcer.id = 'a11y-announcer';
-    announcer.setAttribute('aria-live', assertive ? 'assertive' : 'polite');
-    announcer.setAttribute('aria-atomic', 'true');
-    announcer.className = 'sr-only';
-    announcer.style.position = 'absolute';
-    announcer.style.width = '1px';
-    announcer.style.height = '1px';
-    announcer.style.padding = '0';
-    announcer.style.margin = '-1px';
-    announcer.style.overflow = 'hidden';
-    announcer.style.clip = 'rect(0, 0, 0, 0)';
-    announcer.style.whiteSpace = 'nowrap';
-    announcer.style.border = '0';
-    document.body.appendChild(announcer);
-  } else {
-    announcer.setAttribute('aria-live', assertive ? 'assertive' : 'polite');
+    announcer = document.getElementById('screen-reader-announcer');
+
+    if (!announcer) {
+      announcer = document.createElement('div');
+      announcer.id = 'screen-reader-announcer';
+      announcer.className = 'sr-only';
+      announcer.setAttribute('aria-live', 'polite');
+      announcer.setAttribute('aria-atomic', 'true');
+      document.body.appendChild(announcer);
+    }
   }
   
   return announcer;
-};
+}
 
-/**
- * Announce a message to screen readers
- * @param message - The message to be announced
- * @param politeness - Whether to use assertive (interrupt) or polite priority
- */
-export const announce = (
-  message: string,
-  politeness: 'polite' | 'assertive' = 'polite'
-): void => {
-  const element = getAnnouncer(politeness === 'assertive');
+// Function to announce a message with configurable politeness
+export function announce(message: string, assertive: boolean = false): void {
+  if (!message) return;
   
-  // Clear previous content to ensure announcement
-  element.textContent = '';
+  const announcer = getAnnouncer();
   
-  // Add new content after a brief delay
+  // Set the appropriate aria-live attribute
+  announcer.setAttribute('aria-live', assertive ? 'assertive' : 'polite');
+  
+  // Clear current content first to ensure re-announcement even if text is the same
+  announcer.textContent = '';
+  
+  // Schedule announcement for the next tick to ensure it's announced
   setTimeout(() => {
-    if (element) element.textContent = message;
+    announcer.textContent = message;
   }, 50);
-};
+}
 
-export const useAnnouncement = () => {
+// Custom hook to use the announcer
+export default function useAnnouncement() {
   return { announce };
-};
-
-export default useAnnouncement;
+}

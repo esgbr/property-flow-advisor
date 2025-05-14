@@ -35,6 +35,9 @@ import LanguageSettings from '@/pages/LanguageSettings';
 import CRMPage from '@/pages/CRMPage';
 import LockedPage from '@/pages/LockedPage';
 import WorkflowsPage from '@/pages/WorkflowsPage';
+import EnhancedNavigationKeyboardExtension from '@/components/navigation/EnhancedNavigationKeyboardExtension';
+import { A11yProvider } from '@/components/accessibility/A11yProvider';
+import SkipLinks from '@/components/accessibility/SkipLinks';
 
 // Lazy load heavy components for better initial loading performance
 const AdvancedAnalytics = lazy(() => import('@/pages/AdvancedAnalyticsPage'));
@@ -164,6 +167,16 @@ const routes = [
   }
 ];
 
+// Define shortcuts based on routes
+const navigationShortcuts = [
+  { id: 'home', label: 'Home', path: '/', key: 'h', alt: true },
+  { id: 'dashboard', label: 'Dashboard', path: '/dashboard', key: 'd', alt: true },
+  { id: 'properties', label: 'Properties', path: '/properties', key: 'p', alt: true },
+  { id: 'tools', label: 'Tools', path: '/tools', key: 't', alt: true },
+  { id: 'settings', label: 'Settings', path: '/settings', key: 's', alt: true },
+  { id: 'accessibility', label: 'Accessibility', path: '/accessibility', key: 'a', alt: true },
+];
+
 const App: React.FC = () => {
   const { preferences } = useUserPreferences();
 
@@ -181,9 +194,19 @@ const App: React.FC = () => {
 
   return (
     <ErrorBoundary>
-      <RewardsProvider>
-        <RouterProvider router={router} />
-      </RewardsProvider>
+      <A11yProvider>
+        <RewardsProvider>
+          <SkipLinks links={[
+            { id: 'main-content', label: 'Skip to content' },
+            { id: 'main-navigation', label: 'Skip to navigation' },
+          ]} />
+          <EnhancedNavigationKeyboardExtension 
+            navigationItems={navigationShortcuts}
+            showShortcutHints={preferences.showKeyboardShortcuts !== false}
+          />
+          <RouterProvider router={router} />
+        </RewardsProvider>
+      </A11yProvider>
     </ErrorBoundary>
   );
 };

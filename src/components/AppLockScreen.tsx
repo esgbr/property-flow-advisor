@@ -1,109 +1,166 @@
 
-import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { useLanguage } from '@/contexts/LanguageContext';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
-import { Button } from '@/components/ui/button';
-import { useAppLock } from '@/contexts/AppLockContext';
-import { useUserPreferences } from '@/contexts/UserPreferencesContext';
-import { toast } from '@/components/ui/use-toast';
-import { Lock, Unlock, AlertTriangle, Fingerprint } from 'lucide-react';
+import React, { useState, useRef, useEffect } from 'react';
+import { Button } from './ui/button';
+import { Input } from './ui/input';
+import { Card, CardContent, CardFooter, CardHeader, CardTitle } from './ui/card';
+import { useAppLock } from '../contexts/AppLockContext';
+import { useUserPreferences } from '../contexts/UserPreferencesContext';
+import { Fingerprint, Lock, Eye, EyeOff } from 'lucide-react';
+import { toast } from '@/hooks/use-toast';
 
 const AppLockScreen: React.FC = () => {
-  const { t } = useLanguage();
-  const navigate = useNavigate();
-  const { unlockApp, isLocked, setIsLocked } = useAppLock();
-  const [pin, setPin] = useState('');
+  const { unlockApp, useFaceId, isBiometricEnabled } = useAppLock();
   const { preferences } = useUserPreferences();
+  const [pin, setPin] = useState('');
+  const [showPin, setShowPin] = useState(false);
   const [error, setError] = useState('');
-  
+  const [attemptsLeft, setAttemptsLeft] = useState(5);
+  const pinInputRef = useRef<HTMLInputElement>(null);
+  const biometricsEnabled = preferences.biometricsEnabled || false;
+
   useEffect(() => {
-    // Redirect if not locked
-    if (!isLocked) {
-      navigate('/dashboard');
-    }
-  }, [isLocked, navigate]);
+    // Auto-focus the PIN input for better keyboard accessibility
+    pinInputRef.current?.focus();
+  }, []);
+
+  const handlePinChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    // Only allow numeric input
+    const newValue = e.target.value.replace(/[^0-9]/g, '');
+    setPin(newValue);
+    
+    if (error) setError('');
+  };
 
   const handleUnlock = () => {
-    if (pin === localStorage.getItem('appPin')) {
-      const success = unlockApp(pin);
-      if (success) {
-        navigate('/dashboard');
-      }
-    } else {
-      setError(t('incorrectPIN'));
+    if (pin.length === 0) {
+      setError('Please enter your PIN');
+      return;
+    }
+
+    const success = unlockApp(pin);
+    
+    if (success) {
       toast({
-        title: t('unlockFailed'),
-        description: t('incorrectPIN'),
-        variant: 'destructive',
+        title: "Unlocked",
+        description: "App successfully unlocked",
+      });
+    } else {
+      const newAttemptsLeft = attemptsLeft - 1;
+      setAttemptsLeft(newAttemptsLeft);
+      setError(`Incorrect PIN. ${newAttemptsLeft} attempts left.`);
+      setPin('');
+
+      if (newAttemptsLeft <= 0) {
+        // In a real app, you would implement a timeout or additional security measures
+        toast({
+          title: "Too many attempts",
+          description: "Please try again later",
+          variant: "destructive",
+        });
+      }
+    }
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter') {
+      handleUnlock();
+    }
+  };
+
+  const handleBiometricAuth = async () => {
+    try {
+      const success = await useFaceId();
+      
+      if (success) {
+        toast({
+          title: "Biometric Authentication",
+          description: "Successfully authenticated",
+        });
+      } else {
+        toast({
+          title: "Authentication Failed",
+          description: "Biometric authentication unsuccessful",
+          variant: "destructive",
+        });
+      }
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Biometric authentication unavailable",
+        variant: "destructive",
       });
     }
   };
 
-  const handleForgotPassword = () => {
-    toast({
-      title: t('resetPIN'),
-      description: t('contactSupportToResetPIN'),
-      duration: 5000,
-    });
-  };
-
-  const handleBiometricUnlock = () => {
-    toast({
-      title: t('biometricUnlock'),
-      description: t('biometricUnlockNotImplemented'),
-      duration: 5000,
-    });
-  };
-
   return (
-    <div className="flex items-center justify-center min-h-screen bg-gray-100 dark:bg-gray-900">
-      <Card className="w-full max-w-md p-6 space-y-4">
-        <CardHeader className="space-y-1">
-          <CardTitle className="text-2xl font-bold text-center">
-            {t('appLocked')}
+    <div 
+      className="flex items-center justify-center min-h-screen bg-background p-4"
+      data-testid="app-lock-screen"
+    >
+      <Card className="w-full max-w-md shadow-lg">
+        <CardHeader className="space-y-1 text-center">
+          <CardTitle className="text-2xl font-bold flex items-center justify-center gap-2">
+            <Lock className="h-6 w-6" aria-hidden="true" />
+            App Locked
           </CardTitle>
-          <CardDescription className="text-center text-muted-foreground">
-            {t('enterYourPIN')}
-          </CardDescription>
         </CardHeader>
-        <CardContent className="grid gap-4">
-          <div className="grid gap-2">
-            <Input
-              type="password"
-              placeholder="••••"
-              value={pin}
-              onChange={(e) => {
-                setPin(e.target.value);
-                setError('');
-              }}
-              className="text-center text-2xl font-mono tracking-widest"
-              maxLength={4}
-            />
+        <CardContent className="space-y-4">
+          <div className="space-y-2">
+            <div className="relative">
+              <Input
+                ref={pinInputRef}
+                type={showPin ? "text" : "password"}
+                placeholder="Enter PIN"
+                value={pin}
+                onChange={handlePinChange}
+                onKeyDown={handleKeyDown}
+                inputMode="numeric"
+                pattern="[0-9]*"
+                aria-label="Enter PIN to unlock"
+                aria-invalid={!!error}
+                aria-describedby={error ? "pin-error" : undefined}
+                className="pr-10"
+                maxLength={6}
+                autoComplete="off"
+              />
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                className="absolute right-0 top-0 h-full"
+                onClick={() => setShowPin(!showPin)}
+                aria-label={showPin ? "Hide PIN" : "Show PIN"}
+              >
+                {showPin ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+              </Button>
+            </div>
             {error && (
-              <p className="text-red-500 text-sm flex items-center gap-1">
-                <AlertTriangle className="h-4 w-4" />
+              <p id="pin-error" className="text-sm font-medium text-destructive">
                 {error}
               </p>
             )}
           </div>
-          <Button onClick={handleUnlock} className="w-full">
-            <Unlock className="w-4 h-4 mr-2" />
-            {t('unlock')}
+        </CardContent>
+        <CardFooter className="flex flex-col gap-4">
+          <Button 
+            className="w-full" 
+            onClick={handleUnlock}
+            disabled={attemptsLeft <= 0}
+          >
+            Unlock
           </Button>
-          {preferences.biometricsEnabled && (
-            <Button variant="outline" onClick={handleBiometricUnlock} className="w-full">
-              <Fingerprint className="w-4 h-4 mr-2" />
-              {t('unlockWithBiometrics')}
+          
+          {isBiometricEnabled && biometricsEnabled && (
+            <Button 
+              variant="outline" 
+              className="w-full flex items-center gap-2" 
+              onClick={handleBiometricAuth}
+            >
+              <Fingerprint className="h-5 w-5" aria-hidden="true" />
+              Use Biometrics
             </Button>
           )}
-        </CardContent>
-        <div className="text-center text-sm text-muted-foreground">
-          <button onClick={handleForgotPassword} className="hover:underline">
-            {t('forgotPIN')}
-          </button>
-        </div>
+        </CardFooter>
       </Card>
     </div>
   );
