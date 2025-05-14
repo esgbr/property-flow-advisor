@@ -1,4 +1,3 @@
-
 import * as React from "react";
 import { toast as sonnerToast, Toaster as SonnerToaster, type ToasterProps as SonnerToasterProps, type Toast as SonnerToast } from "sonner";
 
@@ -196,6 +195,7 @@ function useToast() {
   }, [state]);
 
   return {
+    toasts: state.toasts,
     toast,
     dismiss: (toastId?: string) => dispatch({ type: actionTypes.DISMISS_TOAST, toastId }),
   };

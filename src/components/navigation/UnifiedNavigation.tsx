@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -19,7 +18,9 @@ import {
   Users,
   PieChart,
   LayoutDashboard,
-  Search
+  Search,
+  Calendar,
+  Mail
 } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { cn } from '@/lib/utils';
@@ -79,12 +80,13 @@ const UnifiedNavigation: React.FC<{
   };
 
   // Simplified navigation structure with merged items
-  const navigationGroups: NavigationGroup[] = [
+  const navigationGroups = [
     {
       label: t('main'),
       icon: <LayoutDashboard className="h-5 w-5" />,
       items: [
-        { label: t('dashboard'), icon: <Home className="h-4 w-4" />, path: '/dashboard', highlight: true }
+        { label: language === 'de' ? 'CRM' : 'CRM', icon: <Users className="h-4 w-4" />, path: '/crm', highlight: true },
+        { label: t('dashboard'), icon: <Home className="h-4 w-4" />, path: '/dashboard' }
       ],
       expanded: true
     },
@@ -94,18 +96,6 @@ const UnifiedNavigation: React.FC<{
       items: [
         { label: t('investorDashboard'), icon: <BarChart3 className="h-4 w-4" />, path: '/investor-dashboard' },
         { label: t('properties'), icon: <Building className="h-4 w-4" />, path: '/properties' }
-      ],
-      expanded: true
-    },
-    {
-      label: language === 'de' ? 'CRM' : 'CRM',
-      icon: <Users className="h-5 w-5" />,
-      items: [
-        { label: language === 'de' ? 'Kontaktverwaltung' : 'Contact Management', 
-          icon: <Users className="h-4 w-4" />, 
-          path: '/crm', 
-          highlight: true
-        }
       ],
       expanded: true
     },

@@ -2,17 +2,24 @@
 import React, { useState } from 'react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { PhoneCall, User, History, Building, MessageSquare, Calendar, FileText } from 'lucide-react';
+import { PhoneCall, User, History, Building, MessageSquare, Calendar, FileText, BarChart } from 'lucide-react';
 import ContactManager from '@/components/crm/ContactManager';
 import CallTracker from '@/components/crm/CallTracker';
 import CompanyManager from '@/components/crm/CompanyManager';
 import ActivityHistory from '@/components/crm/ActivityHistory';
 import { Card, CardContent } from '@/components/ui/card';
 import { useToast } from '@/components/ui/use-toast';
+import CRMSearch from '@/components/crm/CRMSearch';
+import EmailTemplates from '@/components/crm/EmailTemplates';
+import MeetingScheduler from '@/components/crm/MeetingScheduler';
+import { Button } from '@/components/ui/button';
+import { useNavigate } from 'react-router-dom';
 
 const CRMPage: React.FC = () => {
   const { language } = useLanguage();
   const { toast } = useToast();
+  const navigate = useNavigate();
+  const [activeTab, setActiveTab] = useState('contacts');
   
   return (
     <div className="container mx-auto py-6">
@@ -27,8 +34,12 @@ const CRMPage: React.FC = () => {
         </p>
       </div>
       
-      <Tabs defaultValue="contacts" className="space-y-6">
-        <TabsList className="grid w-full grid-cols-6 max-w-4xl">
+      <div className="mb-6">
+        <CRMSearch className="max-w-xl" />
+      </div>
+      
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
+        <TabsList className="grid w-full grid-cols-2 md:grid-cols-7 max-w-4xl overflow-x-auto">
           <TabsTrigger value="contacts">
             <User className="h-4 w-4 mr-2" />
             {language === 'de' ? 'Kontakte' : 'Contacts'}
@@ -45,19 +56,17 @@ const CRMPage: React.FC = () => {
             <PhoneCall className="h-4 w-4 mr-2" />
             {language === 'de' ? 'Anrufe' : 'Calls'}
           </TabsTrigger>
-          <TabsTrigger value="calendar" onClick={() => toast({
-            title: language === 'de' ? 'Kommt bald' : 'Coming soon',
-            description: language === 'de' ? 'Diese Funktion wird in Kürze verfügbar sein' : 'This feature will be available soon'
-          })}>
+          <TabsTrigger value="meetings">
             <Calendar className="h-4 w-4 mr-2" />
-            {language === 'de' ? 'Kalender' : 'Calendar'}
+            {language === 'de' ? 'Termine' : 'Meetings'}
           </TabsTrigger>
-          <TabsTrigger value="messaging" onClick={() => toast({
-            title: language === 'de' ? 'Kommt bald' : 'Coming soon',
-            description: language === 'de' ? 'Diese Funktion wird in Kürze verfügbar sein' : 'This feature will be available soon'
-          })}>
+          <TabsTrigger value="emails">
             <MessageSquare className="h-4 w-4 mr-2" />
-            {language === 'de' ? 'Nachrichten' : 'Messaging'}
+            {language === 'de' ? 'E-Mails' : 'Emails'}
+          </TabsTrigger>
+          <TabsTrigger value="reports">
+            <BarChart className="h-4 w-4 mr-2" />
+            {language === 'de' ? 'Berichte' : 'Reports'}
           </TabsTrigger>
         </TabsList>
         
@@ -77,34 +86,50 @@ const CRMPage: React.FC = () => {
           <CallTracker />
         </TabsContent>
         
-        <TabsContent value="calendar">
-          <Card>
-            <CardContent className="flex flex-col items-center justify-center h-64 p-6">
-              <Calendar className="h-12 w-12 text-muted-foreground mb-3" />
-              <h2 className="text-lg font-medium">
-                {language === 'de' ? 'CRM-Kalender' : 'CRM Calendar'}
-              </h2>
-              <p className="text-sm text-muted-foreground mt-2 text-center">
-                {language === 'de' 
-                  ? 'Der Kalender wird in Kürze verfügbar sein. Er wird die Terminplanung, Benachrichtigungen und die Synchronisierung mit gängigen Kalendern umfassen.' 
-                  : 'The calendar will be available soon. It will include appointment scheduling, notifications, and synchronization with common calendars.'}
-              </p>
-            </CardContent>
-          </Card>
+        <TabsContent value="meetings">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <MeetingScheduler />
+            <Card>
+              <CardContent className="flex flex-col items-center justify-center h-full p-6">
+                <Calendar className="h-12 w-12 text-muted-foreground mb-4" />
+                <h2 className="text-lg font-medium">
+                  {language === 'de' ? 'Kalender-Integration' : 'Calendar Integration'}
+                </h2>
+                <p className="text-sm text-muted-foreground mt-2 text-center mb-4">
+                  {language === 'de' 
+                    ? 'Synchronisieren Sie Ihre Termine mit Google Calendar, Outlook oder Apple Calendar.' 
+                    : 'Sync your meetings with Google Calendar, Outlook, or Apple Calendar.'}
+                </p>
+                <Button variant="outline">
+                  {language === 'de' ? 'Kalender verbinden' : 'Connect Calendar'}
+                </Button>
+              </CardContent>
+            </Card>
+          </div>
         </TabsContent>
         
-        <TabsContent value="messaging">
+        <TabsContent value="emails">
+          <EmailTemplates />
+        </TabsContent>
+        
+        <TabsContent value="reports">
           <Card>
             <CardContent className="flex flex-col items-center justify-center h-64 p-6">
-              <MessageSquare className="h-12 w-12 text-muted-foreground mb-3" />
+              <BarChart className="h-12 w-12 text-muted-foreground mb-3" />
               <h2 className="text-lg font-medium">
-                {language === 'de' ? 'Nachrichtensystem' : 'Messaging System'}
+                {language === 'de' ? 'CRM-Berichte' : 'CRM Reports'}
               </h2>
               <p className="text-sm text-muted-foreground mt-2 text-center">
                 {language === 'de' 
-                  ? 'Das Nachrichtensystem wird in Kürze verfügbar sein. Es wird E-Mail-Integration, Vorlagen und automatisierte Nachrichtenplanung umfassen.' 
-                  : 'The messaging system will be available soon. It will include email integration, templates, and automated message scheduling.'}
+                  ? 'Die Berichtsfunktion wird in Kürze verfügbar sein. Sie wird Leistungskennzahlen, Aktivitätstrends und Kontaktanalysen umfassen.' 
+                  : 'The reporting feature will be available soon. It will include performance metrics, activity trends, and contact analytics.'}
               </p>
+              <Button variant="outline" className="mt-4" onClick={() => toast({
+                title: language === 'de' ? 'Kommt bald' : 'Coming soon',
+                description: language === 'de' ? 'Diese Funktion wird in Kürze verfügbar sein' : 'This feature will be available soon'
+              })}>
+                {language === 'de' ? 'Benachrichtigen, wenn verfügbar' : 'Notify when available'}
+              </Button>
             </CardContent>
           </Card>
         </TabsContent>

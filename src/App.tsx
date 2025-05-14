@@ -2,7 +2,7 @@
 import React, { useEffect, lazy, Suspense } from 'react';
 import './App.css';
 import './styles/ScrollStyles.css';
-import { createBrowserRouter, RouterProvider } from 'react-router-dom';
+import { createBrowserRouter, RouterProvider, Navigate } from 'react-router-dom';
 import MainLayout from '@/layouts/MainLayout';
 import ErrorBoundary from '@/components/ErrorBoundary';
 import PageLoader from '@/components/ui/page-loader';
@@ -54,7 +54,7 @@ const routes = [
   },
   {
     path: '/dashboard',
-    element: <MainLayout><SimplifiedDashboard /></MainLayout>
+    element: <Navigate to="/crm" replace />
   },
   {
     path: '/auth',
@@ -170,7 +170,7 @@ const routes = [
 // Define shortcuts based on routes
 const navigationShortcuts = [
   { id: 'home', label: 'Home', path: '/', key: 'h', alt: true },
-  { id: 'dashboard', label: 'Dashboard', path: '/dashboard', key: 'd', alt: true },
+  { id: 'dashboard', label: 'Dashboard', path: '/crm', key: 'd', alt: true },
   { id: 'properties', label: 'Properties', path: '/properties', key: 'p', alt: true },
   { id: 'crm', label: 'CRM', path: '/crm', key: 'c', alt: true },
   { id: 'tools', label: 'Tools', path: '/tools', key: 't', alt: true },
