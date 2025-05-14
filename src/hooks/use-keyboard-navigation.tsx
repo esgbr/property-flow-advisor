@@ -1,8 +1,7 @@
-
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from '@/hooks/use-toast';
-import useScreenReader from './use-screen-reader';
+import { useScreenReader } from './use-screen-reader';
 
 type KeyboardShortcut = {
   key: string;
@@ -131,10 +130,6 @@ export const useKeyboardNavigation = (customShortcuts: KeyboardShortcut[] = []) 
   
   // Function to display all available shortcuts
   const showAllShortcuts = () => {
-    const shortcutList = shortcuts.map(
-      s => `${getShortcutDisplayText(s)}: ${s.description}`
-    ).join('\n');
-    
     toast({
       title: 'Available Keyboard Shortcuts',
       description: (

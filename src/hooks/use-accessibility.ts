@@ -258,7 +258,7 @@ export const useAccessibility = () => {
   const focusElement = (element: HTMLElement) => {
     if (element) {
       element.focus();
-      announce(`Focused ${element.getAttribute('aria-label') || 'element'}`);
+      announce(`Focused ${element.getAttribute('aria-label') || 'element'}`, 'polite');
     }
   };
 

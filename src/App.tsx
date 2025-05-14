@@ -1,4 +1,3 @@
-
 import React, { useEffect, lazy, Suspense } from 'react';
 import './App.css';
 import './styles/ScrollStyles.css';
@@ -202,7 +201,7 @@ const App: React.FC = () => {
           ]} />
           <EnhancedNavigationKeyboardExtension 
             navigationItems={navigationShortcuts}
-            showShortcutHints={preferences.showKeyboardShortcuts !== false}
+            showShortcutHints={preferences.accessibility?.screenReader !== false}
           />
           <RouterProvider router={router} />
         </RewardsProvider>

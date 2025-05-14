@@ -1,4 +1,3 @@
-
 /**
  * Keyboard focus management utilities
  * These functions help manage focus transitions, traps, and navigation
@@ -14,7 +13,7 @@ export function getFocusableElements(container: HTMLElement | null): HTMLElement
     container.querySelectorAll<HTMLElement>(
       'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"]), [role="button"], [role="link"], [role="checkbox"], [role="radio"], [role="switch"], [role="combobox"], [role="menuitem"], [contenteditable="true"]'
     )
-  ).filter(el => !el.hasAttribute('disabled') && !el.getAttribute('aria-hidden') === 'true');
+  ).filter(el => !el.hasAttribute('disabled') && el.getAttribute('aria-hidden') !== 'true');
 }
 
 /**

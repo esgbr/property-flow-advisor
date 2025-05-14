@@ -43,7 +43,9 @@ const EnhancedNavigationKeyboardExtension: React.FC<EnhancedNavigationKeyboardEx
   // Add help shortcut
   customShortcuts.push({
     key: '?',
-    ctrl: true, 
+    ctrl: true,
+    alt: false,
+    shift: false,
     description: 'Show keyboard shortcuts',
     action: () => showAllShortcuts()
   });
