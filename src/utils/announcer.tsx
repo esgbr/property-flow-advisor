@@ -1,5 +1,5 @@
 
-import { useCallback, useEffect } from 'react';
+import { useCallback } from 'react';
 import { useAccessibility } from '@/hooks/use-accessibility';
 
 /**
@@ -8,32 +8,7 @@ import { useAccessibility } from '@/hooks/use-accessibility';
  * announcements to screen readers.
  */
 export const useAnnouncement = () => {
-  const { screenReader } = useAccessibility();
-  
-  // Set up the announcer element on mount
-  useEffect(() => {
-    if (!screenReader) return;
-    
-    // Check if announcer already exists
-    let announcer = document.getElementById('a11y-announcer');
-    
-    if (!announcer) {
-      // Create an announcer element
-      announcer = document.createElement('div');
-      announcer.id = 'a11y-announcer';
-      announcer.className = 'sr-only'; // Screen reader only
-      announcer.setAttribute('aria-live', 'polite');
-      announcer.setAttribute('aria-atomic', 'true');
-      document.body.appendChild(announcer);
-    }
-    
-    // Clean up on unmount
-    return () => {
-      if (announcer && !document.getElementById('keep-announcer')) {
-        document.body.removeChild(announcer);
-      }
-    };
-  }, [screenReader]);
+  const { announce: accessibilityAnnounce } = useAccessibility();
   
   /**
    * Makes an announcement to screen readers
@@ -41,20 +16,8 @@ export const useAnnouncement = () => {
    * @param assertive Whether the announcement should be assertive (interrupt the user)
    */
   const announce = useCallback((message: string, assertive = false) => {
-    if (!screenReader) return;
-    
-    const announcer = document.getElementById('a11y-announcer');
-    if (!announcer) return;
-    
-    // Set the appropriate aria-live setting
-    announcer.setAttribute('aria-live', assertive ? 'assertive' : 'polite');
-    
-    // Clear and set content with a brief delay to ensure it's announced
-    announcer.textContent = '';
-    setTimeout(() => {
-      if (announcer) announcer.textContent = message;
-    }, 50);
-  }, [screenReader]);
+    accessibilityAnnounce(message, assertive ? 'assertive' : 'polite');
+  }, [accessibilityAnnounce]);
   
   return { announce };
 };

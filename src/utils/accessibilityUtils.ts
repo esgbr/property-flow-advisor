@@ -16,13 +16,14 @@ const getAnnouncer = (): HTMLElement => {
 };
 
 // Function to announce a message to screen readers with configurable politeness
-export const announce = (message: string, assertive: boolean = false): void => {
+// Modifying to support the API used by various components (message and politeness level)
+export const announce = (message: string, politeness: 'polite' | 'assertive' = 'polite'): void => {
   if (!message) return;
   
   const announcer = getAnnouncer();
   
   // Set the appropriate aria-live attribute
-  announcer.setAttribute('aria-live', assertive ? 'assertive' : 'polite');
+  announcer.setAttribute('aria-live', politeness);
   
   // Clear current content first to ensure re-announcement even if text is the same
   announcer.textContent = '';
