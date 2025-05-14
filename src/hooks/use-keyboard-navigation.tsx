@@ -1,3 +1,4 @@
+
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from '@/hooks/use-toast';
@@ -96,7 +97,7 @@ export const useKeyboardNavigation = (customShortcuts: KeyboardShortcut[] = []) 
         
         // Announce the action for screen reader users
         if (announceKeyEvent) {
-          announceKeyEvent(matchingShortcut.key, 'navigation');
+          announceKeyEvent(matchingShortcut.key, matchingShortcut.description);
         }
         
         // Show a toast notification for the shortcut that was used

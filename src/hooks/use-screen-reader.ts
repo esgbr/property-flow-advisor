@@ -1,6 +1,7 @@
 
 import { useEffect, useState } from 'react';
 import { useUserPreferences } from '@/contexts/UserPreferencesContext';
+import { announce } from '@/utils/accessibilityUtils';
 
 export const useScreenReader = () => {
   const { preferences } = useUserPreferences();
@@ -33,9 +34,20 @@ export const useScreenReader = () => {
       }, 1000);
     }
   };
+  
+  // Add the announceKeyEvent function
+  const announceKeyEvent = (key: string, action: string) => {
+    if (isActive) {
+      // Use the standard announce utility
+      announce(`Shortcut ${key} activated: ${action}`, true);
+    }
+  };
 
   return {
     isActive,
     announceNavigation,
+    announceKeyEvent
   };
 };
+
+export default useScreenReader;

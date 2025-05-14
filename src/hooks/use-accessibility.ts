@@ -117,8 +117,7 @@ export const useAccessibility = () => {
     announce(
       language === 'de'
         ? `Hoher Kontrast ${newValue ? 'aktiviert' : 'deaktiviert'}`
-        : `High contrast ${newValue ? 'enabled' : 'disabled'}`,
-      'polite'
+        : `High contrast ${newValue ? 'enabled' : 'disabled'}`
     );
     
     toast({
@@ -140,8 +139,7 @@ export const useAccessibility = () => {
     announce(
       language === 'de'
         ? `Große Schrift ${newValue ? 'aktiviert' : 'deaktiviert'}`
-        : `Large text ${newValue ? 'enabled' : 'disabled'}`,
-      'polite'
+        : `Large text ${newValue ? 'enabled' : 'disabled'}`
     );
     
     toast({
@@ -167,8 +165,7 @@ export const useAccessibility = () => {
     announce(
       language === 'de'
         ? `Reduzierte Bewegung ${newValue ? 'aktiviert' : 'deaktiviert'}`
-        : `Reduced motion ${newValue ? 'enabled' : 'disabled'}`,
-      'polite'
+        : `Reduced motion ${newValue ? 'enabled' : 'disabled'}`
     );
     
     toast({
@@ -190,8 +187,7 @@ export const useAccessibility = () => {
     announce(
       language === 'de'
         ? `Legasthenie-freundlicher Modus ${newValue ? 'aktiviert' : 'deaktiviert'}`
-        : `Dyslexia friendly mode ${newValue ? 'enabled' : 'disabled'}`,
-      'polite'
+        : `Dyslexia friendly mode ${newValue ? 'enabled' : 'disabled'}`
     );
     
     toast({
@@ -213,8 +209,7 @@ export const useAccessibility = () => {
     announce(
       language === 'de'
         ? `Bildschirmleser-Optimierungen ${newValue ? 'aktiviert' : 'deaktiviert'}`
-        : `Screen reader optimizations ${newValue ? 'enabled' : 'disabled'}`,
-      'assertive'
+        : `Screen reader optimizations ${newValue ? 'enabled' : 'disabled'}`
     );
     
     toast({
@@ -225,8 +220,8 @@ export const useAccessibility = () => {
   };
 
   // Helper function to announce messages to screen readers
-  const announceSRMessage = (message: string, politeness: 'polite' | 'assertive' = 'polite') => {
-    announce(message, politeness);
+  const announceSRMessage = (message: string) => {
+    announce(message);
   };
 
   // For compatibility with components expecting setX instead of toggleX functions
@@ -258,7 +253,7 @@ export const useAccessibility = () => {
   const focusElement = (element: HTMLElement) => {
     if (element) {
       element.focus();
-      announce(`Focused ${element.getAttribute('aria-label') || 'element'}`, 'polite');
+      announce(`Focused ${element.getAttribute('aria-label') || 'element'}`);
     }
   };
 

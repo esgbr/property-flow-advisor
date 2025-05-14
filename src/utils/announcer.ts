@@ -24,14 +24,16 @@ function getAnnouncer(): HTMLElement {
   return announcer;
 }
 
-// Function to announce a message with configurable politeness
-export function announce(message: string, assertive: boolean = false): void {
+// Function to announce a message with configurable politeness (optional parameter)
+export function announce(message: string, assertive?: boolean): void {
   if (!message) return;
   
   const announcer = getAnnouncer();
   
-  // Set the appropriate aria-live attribute
-  announcer.setAttribute('aria-live', assertive ? 'assertive' : 'polite');
+  // Set the appropriate aria-live attribute if assertive parameter is provided
+  if (assertive !== undefined) {
+    announcer.setAttribute('aria-live', assertive ? 'assertive' : 'polite');
+  }
   
   // Clear current content first to ensure re-announcement even if text is the same
   announcer.textContent = '';
