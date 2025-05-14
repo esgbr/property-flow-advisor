@@ -8,9 +8,7 @@ import { announce as accessibilityAnnounce } from './accessibilityUtils';
  */
 
 // Function to announce a message with configurable politeness
-export function announce(message: string, assertive?: boolean): void {
-  // Convert boolean assertive parameter to 'polite'/'assertive' string
-  const politeness = assertive ? 'assertive' : 'polite';
+export function announce(message: string, politeness: 'polite' | 'assertive' = 'polite'): void {
   accessibilityAnnounce(message, politeness);
 }
 

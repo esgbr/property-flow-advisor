@@ -199,10 +199,6 @@ const App: React.FC = () => {
             { id: 'main-content', label: 'Skip to content' },
             { id: 'main-navigation', label: 'Skip to navigation' },
           ]} />
-          <EnhancedNavigationKeyboardExtension 
-            navigationItems={navigationShortcuts}
-            showShortcutHints={preferences.accessibility?.screenReader !== false}
-          />
           <RouterProvider router={router} />
         </RewardsProvider>
       </A11yProvider>

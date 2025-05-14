@@ -16,7 +16,6 @@ const getAnnouncer = (): HTMLElement => {
 };
 
 // Function to announce a message to screen readers with configurable politeness
-// Modifying to support the API used by various components (message and politeness level)
 export const announce = (message: string, politeness: 'polite' | 'assertive' = 'polite'): void => {
   if (!message) return;
   

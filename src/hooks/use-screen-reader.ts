@@ -39,7 +39,7 @@ export const useScreenReader = () => {
   const announceKeyEvent = (key: string, action: string) => {
     if (isActive) {
       // Use the standard announce utility
-      announce(`Shortcut ${key} activated: ${action}`, true);
+      announce(`Shortcut ${key} activated: ${action}`, 'assertive');
     }
   };
 

@@ -13,10 +13,10 @@ export const useAnnouncement = () => {
   /**
    * Makes an announcement to screen readers
    * @param message The message to announce
-   * @param assertive Whether the announcement should be assertive (interrupt the user)
+   * @param politeness Whether the announcement should be assertive or polite
    */
-  const announce = useCallback((message: string, assertive = false) => {
-    accessibilityAnnounce(message, assertive ? 'assertive' : 'polite');
+  const announce = useCallback((message: string, politeness: 'polite' | 'assertive' = 'polite') => {
+    accessibilityAnnounce(message, politeness);
   }, [accessibilityAnnounce]);
   
   return { announce };
