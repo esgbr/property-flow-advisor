@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -9,6 +10,7 @@ import DashboardContactNetwork from '@/components/dashboard/DashboardContactNetw
 import DashboardUpcomingEvents from '@/components/dashboard/DashboardUpcomingEvents';
 import { useUserPreferences } from '@/contexts/UserPreferencesContext';
 import DashboardHeader from "@/components/dashboard/DashboardHeader";
+import SectionTitle from "@/components/dashboard/SectionTitle"; // NEW
 
 const Dashboard: React.FC = () => {
   const { t } = useLanguage();
@@ -20,27 +22,33 @@ const Dashboard: React.FC = () => {
         <div className="container mx-auto p-4 md:p-6 space-y-8 pb-20 animate-fade-in">
           {/* Header with Welcome and Quick Actions */}
           <DashboardHeader />
-          
+
           {/* Key Portfolio Stats */}
-          <div className="animate-fade-in">
+          <section aria-labelledby="portfolio-stats" id="main-content" tabIndex={-1}>
+            <SectionTitle id="portfolio-stats">{t('keyPortfolioStats') || "Key Portfolio Stats"}</SectionTitle>
             <DashboardPortfolioStats />
-          </div>
+          </section>
 
           {/* Properties / Workflow */}
-          <div className="animate-fade-in">
+          <section aria-labelledby="properties-workflow">
+            <SectionTitle id="properties-workflow">{t('yourProperties') || "Your Properties"}</SectionTitle>
             <DashboardPropertiesGrid />
-          </div>
+          </section>
 
           {/* Events + Contacts */}
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 animate-fade-in">
-            <DashboardUpcomingEvents />
-            <DashboardContactNetwork />
-          </div>
+          <section aria-labelledby="upcoming-events-contacts">
+            <SectionTitle id="upcoming-events-contacts">{t('eventsAndContacts') || "Events & Contacts"}</SectionTitle>
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 animate-fade-in">
+              <DashboardUpcomingEvents />
+              <DashboardContactNetwork />
+            </div>
+          </section>
 
           {/* Market Summary Block */}
-          <div className="animate-fade-in">
+          <section aria-labelledby="market-summary">
+            <SectionTitle id="market-summary">{t('marketSummary') || "Market Summary"}</SectionTitle>
             <DashboardMarketSummary />
-          </div>
+          </section>
         </div>
       </ScrollArea>
     </div>
