@@ -76,39 +76,45 @@ const CRMPage: React.FC = () => {
             : "Manage your real estate contacts, calls, tasks, and companies"}
         </p>
       </div>
-      
-      {/* Custom call field for any phone number */}
-      <div className="mb-4 flex gap-2 items-end">
-        <div>
-          <label className="block text-sm font-medium" htmlFor="custom-phone">
-            {language === 'de' ? 'Direktwahl' : 'Custom Dial'}
-          </label>
-          <input
-            id="custom-phone"
-            className="input border px-3 py-3 rounded-md text-lg text-black bg-white dark:bg-zinc-900 dark:text-white caret-primary font-mono tracking-widest placeholder:text-gray-400 focus:outline-none focus:ring focus:border-primary"
-            type="tel"
-            inputMode="tel"
-            placeholder={language === 'de' ? 'Telefonnummer eingeben' : 'Enter phone number'}
-            value={customPhone}
-            onChange={e => setCustomPhone(e.target.value)}
-            style={{
-              minWidth: 220,
-              letterSpacing: "0.09em",
-              fontWeight: 500,
-              boxShadow: "0 0 0 1.5px rgba(0,0,0,0.07)"
-            }}
-            autoComplete="off"
-          />
+
+      {/* Improved, integrated custom call field */}
+      <div className="mb-6 max-w-xl">
+        <div className="rounded-xl bg-background border shadow-sm px-5 py-4 flex flex-col sm:flex-row gap-3 sm:items-end glass card-gradient">
+          <div className="flex-1">
+            <label htmlFor="custom-phone" className="block text-sm font-semibold mb-1 text-primary">
+              <span className="inline-flex items-center">
+                <PhoneCall className="h-5 w-5 mr-1 text-primary" />
+                {language === 'de' ? 'Manuelle Telefonnummer wählen' : 'Manual Dial'}
+              </span>
+            </label>
+            <input
+              id="custom-phone"
+              className="w-full px-4 py-3 rounded-lg border border-primary/30 bg-white dark:bg-zinc-900 dark:text-white caret-primary font-mono text-2xl font-bold tracking-widest shadow-inner outline-none focus:ring-2 focus:ring-primary transition duration-150 placeholder:text-gray-400"
+              type="tel"
+              inputMode="tel"
+              placeholder={language === 'de' ? 'Telefonnummer eingeben' : 'Enter phone number'}
+              value={customPhone}
+              onChange={e => setCustomPhone(e.target.value)}
+              style={{
+                minWidth: 220,
+                letterSpacing: "0.09em",
+                fontWeight: 700,
+                background: "rgba(255,255,255,0.95)",
+                color: "#1A1F2C",
+              }}
+              autoComplete="off"
+            />
+          </div>
+          <Button
+            type="button"
+            onClick={handleInitiateCustomCall}
+            disabled={!customPhone}
+            className="h-12 min-w-[110px] text-lg font-semibold bg-primary text-white shadow active:scale-95 transition"
+          >
+            <PhoneCall className="h-5 w-5 mr-2" />
+            {language === 'de' ? 'Anrufen' : 'Call'}
+          </Button>
         </div>
-        <Button
-          type="button"
-          onClick={handleInitiateCustomCall}
-          disabled={!customPhone}
-          className="h-[38px]"
-        >
-          <PhoneCall className="h-4 w-4 mr-2" />
-          {language === 'de' ? 'Anrufen' : 'Call'}
-        </Button>
       </div>
 
       <Tabs defaultValue="contacts" className="space-y-6">

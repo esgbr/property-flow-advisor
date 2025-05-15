@@ -1,6 +1,9 @@
+
+// Ensure valid TwiML response & correct headers for all requests,
+// so Twilio never falls back to demo music/message.
+
 import { serve } from "https://deno.land/std@0.192.0/http/server.ts";
 
-// CORS headers for browser/API access
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
@@ -13,12 +16,10 @@ serve(async (req: Request) => {
   let goalPhone: string | null = null;
 
   if (req.method === "POST") {
-    // Try as form field (from Twilio or CRM)
     try {
       const formData = await req.formData();
       goalPhone = formData.get("goal_phone") as string | null;
     } catch (_) {}
-    // If not present, try JSON body (if CRM sends it this way)
     if (!goalPhone) {
       try {
         const body = await req.json();
@@ -33,16 +34,14 @@ serve(async (req: Request) => {
   const GOAL_PHONE_FALLBACK = Deno.env.get("GOAL_PHONE");
   const GOAL_PHONE = goalPhone || GOAL_PHONE_FALLBACK;
 
-  // Always respond with valid XML and correct headers!
+  // Always respond with TwiML (xml) and proper headers, even for errors
   if (!MY_PHONE || !GOAL_PHONE) {
-    // Return valid, but safe TwiML so Twilio doesn’t fallback to music/demo!
     const errorTwiml = `
 <Response>
   <Say voice="alice">Es ist ein Fehler aufgetreten. Bitte versuchen Sie es später erneut.</Say>
   <Hangup/>
 </Response>
     `.trim();
-
     return new Response(errorTwiml, {
       status: 200,
       headers: {
@@ -52,10 +51,10 @@ serve(async (req: Request) => {
     });
   }
 
-  // Success: normal TwiML dial, as before
+  // Valid request: bridge call and record
   const twiml = `
 <Response>
-  <Dial record="record-from-answer-dual" answerOnBridge="true">
+  <Dial record="record-from-answer-dual" answerOnBridge="true" timeout="30">
     <Number>${MY_PHONE}</Number>
     <Number>${GOAL_PHONE}</Number>
   </Dial>
@@ -70,3 +69,4 @@ serve(async (req: Request) => {
     },
   });
 });
+
