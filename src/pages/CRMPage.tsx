@@ -1,7 +1,7 @@
 import React from 'react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { PhoneCall, User, History, Settings, FileText, Briefcase, List } from 'lucide-react';
+import { PhoneCall, User, History, Settings, FileText, Briefcase, List, Phone } from 'lucide-react';
 import ContactManager from '@/components/crm/ContactManager';
 import CallTracker from '@/components/crm/CallTracker';
 import CallModal from "@/components/crm/CallModal";
@@ -13,6 +13,7 @@ import CallHistoryList from '@/components/crm/CallHistoryList';
 import ActiveCallPanel from '@/components/crm/ActiveCallPanel';
 import CallAnalyticsPanel from '@/components/crm/CallAnalyticsPanel';
 import { formatDate, formatDuration, getInitials } from '@/components/crm/callUtils';
+import { toast } from "@/hooks/use-toast";
 
 const CRMPage: React.FC = () => {
   const { language } = useLanguage();
@@ -214,16 +215,6 @@ const CRMPage: React.FC = () => {
         onConfirm={handleConfirmCall}
         loading={callInProgress}
         error={callError}
-        afterCallActions={[
-          {
-            label: language === "de" ? "Follow-up Task hinzufügen" : "Add Follow-up Task",
-            onClick: () => handleAfterCallAction("task", selectedContact)
-          },
-          {
-            label: language === "de" ? "Notiz hinzufügen" : "Add Note",
-            onClick: () => handleAfterCallAction("note", selectedContact)
-          }
-        ]}
       />
     </div>
   );
