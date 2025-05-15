@@ -1,3 +1,4 @@
+
 import { useState, useCallback, useEffect } from 'react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useToast } from '@/hooks/use-toast';
@@ -11,7 +12,7 @@ export interface WorkflowStep {
   description?: { de: string; en: string };
   icon?: React.ReactNode;
   isComplete?: boolean;
-  requiredSteps?: string[]; // Added line for error fix
+  requiredSteps?: string[]; // <-- ADDED (fixes error)
   progress?: number;
   estimatedTime?: number; // in minutes
 }
