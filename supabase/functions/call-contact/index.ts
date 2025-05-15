@@ -1,4 +1,3 @@
-
 import { serve } from "https://deno.land/std@0.192.0/http/server.ts";
 
 const corsHeaders = {
@@ -31,9 +30,12 @@ serve(async (req: Request) => {
     const basicAuth = "Basic " + btoa(`${accountSid}:${authToken}`);
     const twilioUrl = `https://api.twilio.com/2010-04-01/Accounts/${accountSid}/Calls.json`;
 
-    // For demo, connect to a fixed number and play a message.
-    // In real app, you'd set 'url' to point to your own webhook for call flows.
-    const twimlUrl = "http://demo.twilio.com/docs/voice.xml";
+    // Build URL to your own voice-handler edge function for TwiML
+    const projectRef = Deno.env.get("SUPABASE_PROJECT_REF"); // Ensure this env variable is set
+    const protocol = "https";
+    let baseUrl = `${protocol}://${projectRef}.functions.supabase.co/voice-handler`;
+    // Put goal_phone as param, Twilio fetches this URL at call start
+    const twimlUrl = `${baseUrl}?goal_phone=${encodeURIComponent(toPhone)}`;
 
     const form = new URLSearchParams({
       To: toPhone,
