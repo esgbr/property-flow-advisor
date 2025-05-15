@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useLanguage } from '@/contexts/LanguageContext';
@@ -44,14 +43,10 @@ const UnifiedWorkflowPage: React.FC = () => {
     return item.description ? item.description[language] || '' : '';
   };
 
-  // Get workflow metadata from the first step
-  const workflowTitle = steps.length > 0 && steps[0].title ? 
-    steps[0].title[language] || workflowType : 
-    workflowType;
+  // Get workflow metadata 
+  const workflowTitle = workflowType.charAt(0).toUpperCase() + workflowType.slice(1);
   
-  const workflowDescription = steps.length > 0 && steps[0].description ? 
-    steps[0].description[language] || '' : 
-    '';
+  const workflowDescription = '';
   
   // Handle step selection
   const handleSelectStep = (stepId: string) => {
