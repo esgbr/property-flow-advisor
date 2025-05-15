@@ -1,4 +1,3 @@
-
 import * as React from "react"
 import * as RechartsPrimitive from "recharts"
 
@@ -15,17 +14,6 @@ export type ChartConfig = {
     | { color?: string; theme?: never }
     | { color?: never; theme: Record<keyof typeof THEMES, string> }
   )
-}
-
-// Define a custom payload interface since Recharts doesn't export Payload type
-// with the necessary properties
-interface ExtendedPayload {
-  dataKey?: string;
-  name?: string;
-  value?: any;
-  payload?: any;
-  color?: string;
-  fill?: string;
 }
 
 type ChartContextProps = {
@@ -148,7 +136,7 @@ const ChartTooltipContent = React.forwardRef<
         return null
       }
 
-      const [item] = payload as ExtendedPayload[]
+      const [item] = payload
       const key = `${labelKey || item.dataKey || item.name || "value"}`
       const itemConfig = getPayloadConfigFromPayload(config, item, key)
       const value =
@@ -195,14 +183,14 @@ const ChartTooltipContent = React.forwardRef<
       >
         {!nestLabel ? tooltipLabel : null}
         <div className="grid gap-1.5">
-          {(payload as ExtendedPayload[]).map((item, index) => {
+          {payload.map((item, index) => {
             const key = `${nameKey || item.name || item.dataKey || "value"}`
             const itemConfig = getPayloadConfigFromPayload(config, item, key)
-            const indicatorColor = color || item.payload?.fill || item.color
+            const indicatorColor = color || item.payload.fill || item.color
 
             return (
               <div
-                key={index}
+                key={item.dataKey}
                 className={cn(
                   "flex w-full flex-wrap items-stretch gap-2 [&>svg]:h-2.5 [&>svg]:w-2.5 [&>svg]:text-muted-foreground",
                   indicator === "dot" && "items-center"
@@ -295,7 +283,7 @@ const ChartLegendContent = React.forwardRef<
           className
         )}
       >
-        {(payload as ExtendedPayload[]).map((item) => {
+        {payload.map((item) => {
           const key = `${nameKey || item.dataKey || "value"}`
           const itemConfig = getPayloadConfigFromPayload(config, item, key)
 
@@ -336,22 +324,20 @@ function getPayloadConfigFromPayload(
     return undefined
   }
 
-  const typedPayload = payload as ExtendedPayload;
-  
   const payloadPayload =
-    "payload" in typedPayload &&
-    typeof typedPayload.payload === "object" &&
-    typedPayload.payload !== null
-      ? typedPayload.payload
+    "payload" in payload &&
+    typeof payload.payload === "object" &&
+    payload.payload !== null
+      ? payload.payload
       : undefined
 
   let configLabelKey: string = key
 
   if (
-    key in typedPayload &&
-    typeof typedPayload[key as keyof typeof typedPayload] === "string"
+    key in payload &&
+    typeof payload[key as keyof typeof payload] === "string"
   ) {
-    configLabelKey = typedPayload[key as keyof typeof typedPayload] as string
+    configLabelKey = payload[key as keyof typeof payload] as string
   } else if (
     payloadPayload &&
     key in payloadPayload &&

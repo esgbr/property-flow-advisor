@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Switch } from '@/components/ui/switch';
@@ -34,7 +35,8 @@ const EnhancedAccessibilityPanel: React.FC<EnhancedAccessibilityPanelProps> = ({
     announce(
       language === 'de' 
         ? 'Barrierefreiheitseinstellungen zurückgesetzt' 
-        : 'Accessibility settings reset'
+        : 'Accessibility settings reset', 
+      'polite'
     );
   };
 

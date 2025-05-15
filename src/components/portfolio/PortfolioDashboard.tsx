@@ -6,12 +6,11 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import { BarChart3, Building, Calculator, Lightbulb, PieChart, TrendingUp, Info, DollarSign } from 'lucide-react';
 import { useUserPreferences } from '@/contexts/UserPreferencesContext';
 import { Button } from '@/components/ui/button';
-import { toastService } from '@/lib/toast-service';
+import { useToast } from '@/components/ui/use-toast';
 import PortfolioAnalytics from '@/components/analytics/PortfolioAnalytics';
 import PortfolioSummaryCards from './PortfolioSummaryCards';
 import PortfolioGoals from './PortfolioGoals';
 import PortfolioAlerts from './PortfolioAlerts';
-import ConnectFeaturesCard from '../workflow/ConnectFeaturesCard';
 
 // Enhanced dummy data for visualizations with additional investor metrics
 const portfolioSummary = {
@@ -31,8 +30,9 @@ const portfolioSummary = {
 };
 
 const PortfolioDashboard: React.FC = () => {
-  const { t, language } = useLanguage();
+  const { t } = useLanguage();
   const { preferences } = useUserPreferences();
+  const { toast } = useToast();
 
   // Calculate key investor metrics
   const investorMetrics = useMemo(() => {
@@ -49,42 +49,11 @@ const PortfolioDashboard: React.FC = () => {
   }, []);
 
   const handleActionClick = (action: string) => {
-    toastService.info(t('featureNotification'), `${action} ${t('featureComingSoon')}`);
+    toast({
+      title: t('featureNotification'),
+      description: `${action} ${t('featureComingSoon')}`,
+    });
   };
-
-  // Connected features for better workflow integration
-  const connectedFeatures = [
-    {
-      id: 'properties',
-      title: { en: 'Property Management', de: 'Immobilienverwaltung' },
-      description: { 
-        en: 'View and manage your investment properties', 
-        de: 'Ihre Anlageobjekte anzeigen und verwalten' 
-      },
-      path: '/properties',
-      icon: <Building className="h-5 w-5" />
-    },
-    {
-      id: 'calculators',
-      title: { en: 'Financial Calculators', de: 'Finanzrechner' },
-      description: { 
-        en: 'ROI, mortgage, and cash flow calculators', 
-        de: 'ROI-, Hypotheken- und Cashflow-Rechner' 
-      },
-      path: '/calculators',
-      icon: <Calculator className="h-5 w-5" />
-    },
-    {
-      id: 'market',
-      title: { en: 'Market Analysis', de: 'Marktanalyse' },
-      description: { 
-        en: 'Explore market trends and opportunities', 
-        de: 'Markttrends und -chancen erkunden' 
-      },
-      path: '/market-explorer',
-      icon: <TrendingUp className="h-5 w-5" />
-    }
-  ];
 
   return (
     <div className="space-y-6 animate-fade-in">
@@ -217,16 +186,6 @@ const PortfolioDashboard: React.FC = () => {
           <PortfolioAlerts onActionClick={handleActionClick} />
         </div>
       </div>
-
-      <ConnectFeaturesCard
-        title={{ en: 'Related Tools', de: 'Verwandte Tools' }}
-        description={{ 
-          en: 'Enhance your portfolio management with these tools',
-          de: 'Verbessern Sie Ihr Portfolio-Management mit diesen Tools'
-        }}
-        features={connectedFeatures}
-        className="mt-6"
-      />
     </div>
   );
 };

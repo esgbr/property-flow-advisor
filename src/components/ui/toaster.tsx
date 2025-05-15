@@ -9,7 +9,7 @@ import {
   ToastViewport,
 } from "@/components/ui/toast";
 import { useAccessibility } from "@/components/accessibility/A11yProvider";
-import { useAnnouncement } from "@/utils/announcer";
+import { useAnnouncement } from "@/utils/accessibilityUtils";
 import { useEffect } from "react";
 
 export function Toaster() {
@@ -30,7 +30,7 @@ export function Toaster() {
         if (message) {
           // Convert any non-string message to string before announcing
           const isDestructive = latestToast.variant === 'destructive';
-          announce(String(message), isDestructive ? 'assertive' : 'polite');
+          announce(String(message), isDestructive);
         }
       }
     }

@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Settings, Eye } from 'lucide-react';
@@ -10,7 +11,7 @@ import {
   TooltipTrigger,
 } from '@/components/ui/tooltip';
 import { useLanguage } from '@/contexts/LanguageContext';
-import { useAnnouncement } from '@/utils/announcer';
+import { useAnnouncement } from '@/utils/accessibilityUtils';
 
 interface AccessibilitySettingsButtonProps {
   variant?: 'default' | 'outline' | 'ghost' | 'link' | 'secondary' | 'destructive';
@@ -35,14 +36,14 @@ const AccessibilitySettingsButton: React.FC<AccessibilitySettingsButtonProps> = 
     if (e.key === 'Enter' || e.key === ' ') {
       e.preventDefault();
       navigate('/accessibility');
-      announce('Navigating to accessibility settings', 'assertive');
+      announce('Navigating to accessibility settings', true);
     }
   };
   
   // Handle button activation
   const handleClick = () => {
     navigate('/accessibility');
-    announce('Navigating to accessibility settings', 'assertive');
+    announce('Navigating to accessibility settings', true);
   };
 
   // Get descriptive text for active settings

@@ -1,3 +1,4 @@
+
 import React, { useEffect, lazy, Suspense } from 'react';
 import { Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { SidebarProvider } from '@/components/ui/sidebar';
@@ -76,13 +77,6 @@ const MainLayout = () => {
   const [inactivityTimer, setInactivityTimer] = React.useState<NodeJS.Timeout | null>(null);
   const [showSecurityAlert, setShowSecurityAlert] = React.useState(false);
   
-  // Redirect to lock screen if the app is locked and a PIN is set
-  useEffect(() => {
-    if (isLocked && pin) {
-      navigate('/locked', { replace: true });
-    }
-  }, [isLocked, pin, navigate]);
-  
   // Enhanced security - auto-lock on inactivity
   useEffect(() => {
     // Skip if no pin is set or already locked
@@ -97,7 +91,7 @@ const MainLayout = () => {
     const timer = setTimeout(() => {
       if (pin) {
         lockApp();
-        navigate('/locked', { replace: true });
+        navigate('/locked');
       }
     }, 15 * 60 * 1000); // 15 minutes
     
@@ -119,7 +113,14 @@ const MainLayout = () => {
       if (inactivityTimer) clearTimeout(inactivityTimer);
       events.forEach(event => window.removeEventListener(event, resetTimer));
     };
-  }, [pin, isLocked, lockApp, inactivityTimer, navigate]);
+  }, [pin, isLocked, lockApp, inactivityTimer, navigate, t]);
+
+  // Redirect to lock screen if the app is locked and a PIN is set
+  useEffect(() => {
+    if (isLocked && pin) {
+      navigate('/locked');
+    }
+  }, [isLocked, pin, navigate]);
   
   // Show security alert if no pin is set for advanced/expert users
   useEffect(() => {

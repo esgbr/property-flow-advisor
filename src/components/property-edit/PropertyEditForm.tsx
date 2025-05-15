@@ -1,3 +1,4 @@
+
 import React, { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
@@ -173,7 +174,7 @@ const PropertyEditForm = ({ property, onSave }: PropertyEditFormProps) => {
             toast({
               title: t('addressVerified'),
               description: t('addressVerifiedDescription'),
-              variant: 'success',
+              duration: 3000,
             });
             
             // Save latitude and longitude coordinates if available

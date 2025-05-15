@@ -16,14 +16,9 @@ import {
   Euro,
   Globe,
   User,
-  Users,
   PieChart,
   LayoutDashboard,
-  Search,
-  Calendar,
-  Mail,
-  Phone,
-  Import
+  Search
 } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { cn } from '@/lib/utils';
@@ -44,7 +39,6 @@ interface NavigationItem {
   highlight?: boolean;
   badge?: string;
   marketSpecific?: string | string[];
-  priority?: number;
 }
 
 interface NavigationGroup {
@@ -83,14 +77,13 @@ const UnifiedNavigation: React.FC<{
     }));
   };
 
-  // Simplified navigation structure with CRM at the top
+  // Simplified navigation structure with merged items
   const navigationGroups: NavigationGroup[] = [
     {
       label: t('main'),
       icon: <LayoutDashboard className="h-5 w-5" />,
       items: [
-        { label: language === 'de' ? 'CRM' : 'CRM', icon: <Users className="h-4 w-4" />, path: '/crm', highlight: true, priority: 10 },
-        { label: t('dashboard'), icon: <Home className="h-4 w-4" />, path: '/dashboard', priority: 20 }
+        { label: t('dashboard'), icon: <Home className="h-4 w-4" />, path: '/dashboard', highlight: true }
       ],
       expanded: true
     },
@@ -163,34 +156,20 @@ const UnifiedNavigation: React.FC<{
     }
   ];
 
-  // Sort main navigation items based on priority
-  const sortNavItems = (items: NavigationItem[]) => {
-    return [...items].sort((a, b) => {
-      const priorityA = a.priority || 100;
-      const priorityB = b.priority || 100;
-      return priorityA - priorityB;
-    });
-  };
-
   // Filter out items that aren't relevant to the current market
   const filterNavigationItems = () => {
-    return navigationGroups.map(group => {
-      // Sort items if it's the main navigation group
-      const sortedItems = group.label === t('main') ? sortNavItems(group.items) : group.items;
-      
-      return {
-        ...group,
-        items: sortedItems.filter(item => {
-          if (!item.marketSpecific) return true;
+    return navigationGroups.map(group => ({
+      ...group,
+      items: group.items.filter(item => {
+        if (!item.marketSpecific) return true;
+        
+        const marketSpecificArray = Array.isArray(item.marketSpecific) 
+          ? item.marketSpecific 
+          : [item.marketSpecific];
           
-          const marketSpecificArray = Array.isArray(item.marketSpecific) 
-            ? item.marketSpecific 
-            : [item.marketSpecific];
-            
-          return !userMarket || marketSpecificArray.includes(userMarket);
-        })
-      };
-    }).filter(group => group.items.length > 0);
+        return !userMarket || marketSpecificArray.includes(userMarket);
+      })
+    })).filter(group => group.items.length > 0);
   };
   
   const filteredNavigationGroups = filterNavigationItems();

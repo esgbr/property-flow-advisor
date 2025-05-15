@@ -1,181 +1,236 @@
 
-import { createContext, useContext, useState, useEffect } from 'react';
-import { announce } from '@/utils/accessibilityUtils';
+import { useEffect, useState } from 'react';
+import { useUserPreferences } from '@/contexts/UserPreferencesContext';
+import { useLanguage } from '@/contexts/LanguageContext';
+import { useToast } from '@/components/ui/use-toast';
+import useAnnouncement from '@/utils/announcer';
 
-interface AccessibilityContextProps {
-  highContrast: boolean;
-  largeText: boolean;
-  reduceMotion: boolean;
-  screenReader: boolean;
-  dyslexiaFriendly: boolean;
-  toggleHighContrast: () => void;
-  toggleLargeText: () => void;
-  toggleReduceMotion: () => void;
-  toggleScreenReader: () => void;
-  toggleDyslexiaFriendly: () => void;
-  announce: (message: string, politeness?: 'polite' | 'assertive') => void;
-}
+/**
+ * Custom hook for managing accessibility features
+ * Provides functionality for various accessibility settings
+ */
+export const useAccessibility = () => {
+  const { preferences, updatePreferences } = useUserPreferences();
+  const { language } = useLanguage();
+  const { toast } = useToast();
+  const { announce } = useAnnouncement();
 
-const AccessibilityContext = createContext<AccessibilityContextProps>({
-  highContrast: false,
-  largeText: false,
-  reduceMotion: false,
-  screenReader: false,
-  dyslexiaFriendly: false,
-  toggleHighContrast: () => {},
-  toggleLargeText: () => {},
-  toggleReduceMotion: () => {},
-  toggleScreenReader: () => {},
-  toggleDyslexiaFriendly: () => {},
-  announce: () => {},
-});
+  // Extract accessibility preferences
+  const {
+    highContrast = false,
+    largeText = false,
+    reduceMotion = false,
+    dyslexiaFriendly = false,
+  } = preferences.accessibility || {};
 
-export const AccessibilityProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [highContrast, setHighContrast] = useState(false);
-  const [largeText, setLargeText] = useState(false);
-  const [reduceMotion, setReduceMotion] = useState(false);
-  const [screenReader, setScreenReader] = useState(false);
-  const [dyslexiaFriendly, setDyslexiaFriendly] = useState(false);
-
-  // Load saved preferences on component mount
+  // Setup media queries for user preferences
   useEffect(() => {
-    try {
-      const savedSettings = localStorage.getItem('accessibility-settings');
-      if (savedSettings) {
-        const parsedSettings = JSON.parse(savedSettings);
-        setHighContrast(parsedSettings.highContrast || false);
-        setLargeText(parsedSettings.largeText || false);
-        setReduceMotion(parsedSettings.reduceMotion || false);
-        setScreenReader(parsedSettings.screenReader || false);
-        setDyslexiaFriendly(parsedSettings.dyslexiaFriendly || false);
-      } else {
-        // Check system preferences as default
-        checkSystemPreferences();
-      }
-    } catch (error) {
-      console.error('Error loading accessibility settings', error);
-    }
-  }, []);
+    const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
+    const prefersHighContrast = window.matchMedia('(prefers-contrast: more)');
 
-  // Check system preferences
-  const checkSystemPreferences = () => {
-    // Reduced motion preference
-    const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    if (prefersReducedMotion) {
-      setReduceMotion(true);
-    }
-    
-    // Check for high contrast mode
-    const prefersHighContrast = window.matchMedia('(prefers-contrast: more)').matches;
-    if (prefersHighContrast) {
-      setHighContrast(true);
-    }
-  };
+    // If user has system preferences, use those as defaults
+    const updateFromMediaQueries = () => {
+      const accessibilitySettings = {
+        ...preferences.accessibility,
+        reduceMotion: preferences.accessibility?.reducedMotionOverride
+          ? preferences.accessibility.reduceMotion
+          : prefersReducedMotion.matches,
+        highContrast: preferences.accessibility?.highContrastOverride
+          ? preferences.accessibility.highContrast
+          : prefersHighContrast.matches
+      };
 
-  // Save settings when they change
+      updatePreferences({ accessibility: accessibilitySettings });
+    };
+
+    // Apply once on mount
+    updateFromMediaQueries();
+
+    // Listen for changes in system preferences
+    prefersReducedMotion.addEventListener('change', updateFromMediaQueries);
+    prefersHighContrast.addEventListener('change', updateFromMediaQueries);
+
+    return () => {
+      prefersReducedMotion.removeEventListener('change', updateFromMediaQueries);
+      prefersHighContrast.removeEventListener('change', updateFromMediaQueries);
+    };
+  }, [preferences.accessibility, updatePreferences]);
+
+  // Apply accessibility classes to body
   useEffect(() => {
-    try {
-      localStorage.setItem('accessibility-settings', JSON.stringify({
-        highContrast,
-        largeText,
-        reduceMotion,
-        screenReader,
-        dyslexiaFriendly,
-      }));
-      
-      // Apply settings to document
-      const rootElement = document.documentElement;
-      
-      if (highContrast) {
-        rootElement.classList.add('high-contrast');
-      } else {
-        rootElement.classList.remove('high-contrast');
+    // Apply high contrast mode
+    if (highContrast) {
+      document.body.classList.add('high-contrast');
+      if (document.documentElement.classList.contains('dark')) {
+        document.body.classList.add('dark');
       }
-      
-      if (largeText) {
-        rootElement.classList.add('large-text');
-      } else {
-        rootElement.classList.remove('large-text');
-      }
-      
-      if (reduceMotion) {
-        rootElement.classList.add('reduce-motion');
-      } else {
-        rootElement.classList.remove('reduce-motion');
-      }
-
-      if (dyslexiaFriendly) {
-        rootElement.classList.add('dyslexia-friendly');
-      } else {
-        rootElement.classList.remove('dyslexia-friendly');
-      }
-      
-    } catch (error) {
-      console.error('Error saving accessibility settings', error);
+    } else {
+      document.body.classList.remove('high-contrast');
+      document.body.classList.remove('dark');
     }
-  }, [highContrast, largeText, reduceMotion, screenReader, dyslexiaFriendly]);
 
+    // Apply large text mode
+    if (largeText) {
+      document.body.classList.add('large-text');
+    } else {
+      document.body.classList.remove('large-text');
+    }
+
+    // Apply dyslexia friendly mode
+    if (dyslexiaFriendly) {
+      document.body.classList.add('dyslexia-friendly');
+    } else {
+      document.body.classList.remove('dyslexia-friendly');
+    }
+
+    // Apply reduced motion mode
+    if (reduceMotion) {
+      document.body.classList.add('reduce-motion');
+    } else {
+      document.body.classList.remove('reduce-motion');
+    }
+  }, [highContrast, largeText, reduceMotion, dyslexiaFriendly]);
+
+  /**
+   * Toggle high contrast mode
+   */
   const toggleHighContrast = () => {
-    setHighContrast(prev => !prev);
+    const newValue = !highContrast;
+    updatePreferences({
+      accessibility: {
+        ...preferences.accessibility,
+        highContrast: newValue,
+        highContrastOverride: true
+      }
+    });
+
     announce(
-      `High contrast mode ${!highContrast ? 'enabled' : 'disabled'}`,
+      language === 'de'
+        ? `Hoher Kontrast ${newValue ? 'aktiviert' : 'deaktiviert'}`
+        : `High contrast ${newValue ? 'enabled' : 'disabled'}`,
       'polite'
     );
   };
 
+  /**
+   * Toggle large text mode
+   */
   const toggleLargeText = () => {
-    setLargeText(prev => !prev);
+    const newValue = !largeText;
+    updatePreferences({
+      accessibility: { ...preferences.accessibility, largeText: newValue }
+    });
+
     announce(
-      `Large text mode ${!largeText ? 'enabled' : 'disabled'}`,
+      language === 'de'
+        ? `Große Schrift ${newValue ? 'aktiviert' : 'deaktiviert'}`
+        : `Large text ${newValue ? 'enabled' : 'disabled'}`,
       'polite'
     );
   };
 
+  /**
+   * Toggle reduced motion mode
+   */
   const toggleReduceMotion = () => {
-    setReduceMotion(prev => !prev);
+    const newValue = !reduceMotion;
+    updatePreferences({
+      accessibility: {
+        ...preferences.accessibility,
+        reduceMotion: newValue,
+        reducedMotionOverride: true
+      }
+    });
+
     announce(
-      `Reduced motion mode ${!reduceMotion ? 'enabled' : 'disabled'}`,
+      language === 'de'
+        ? `Reduzierte Bewegung ${newValue ? 'aktiviert' : 'deaktiviert'}`
+        : `Reduced motion ${newValue ? 'enabled' : 'disabled'}`,
       'polite'
     );
+  };
+
+  /**
+   * Toggle dyslexia friendly mode
+   */
+  const toggleDyslexiaFriendly = () => {
+    const newValue = !dyslexiaFriendly;
+    updatePreferences({
+      accessibility: { ...preferences.accessibility, dyslexiaFriendly: newValue }
+    });
+
+    announce(
+      language === 'de'
+        ? `Legasthenie-freundlicher Modus ${newValue ? 'aktiviert' : 'deaktiviert'}`
+        : `Dyslexia friendly mode ${newValue ? 'enabled' : 'disabled'}`,
+      'polite'
+    );
+  };
+
+  // For compatibility with components expecting setX instead of toggleX functions
+  const setHighContrast = (value: boolean) => {
+    if (value !== highContrast) {
+      toggleHighContrast();
+    }
+  };
+
+  const setLargeText = (value: boolean) => {
+    if (value !== largeText) {
+      toggleLargeText();
+    }
+  };
+
+  const setReduceMotion = (value: boolean) => {
+    if (value !== reduceMotion) {
+      toggleReduceMotion();
+    }
+  };
+
+  const setScreenReader = (value: boolean) => {
+    if (value !== preferences.accessibility?.screenReader) {
+      updatePreferences({
+        accessibility: { ...preferences.accessibility, screenReader: value }
+      });
+      announce(
+        language === 'de'
+          ? `Screenreader ${value ? 'aktiviert' : 'deaktiviert'}`
+          : `Screen reader ${value ? 'enabled' : 'disabled'}`,
+        'polite'
+      );
+    }
   };
 
   const toggleScreenReader = () => {
-    setScreenReader(prev => !prev);
-    announce(
-      `Screen reader optimizations ${!screenReader ? 'enabled' : 'disabled'}`,
-      'polite'
-    );
+    const newValue = !preferences.accessibility?.screenReader;
+    setScreenReader(newValue);
+  };
+  
+  // Add a placeholder focusElement function to satisfy components
+  const focusElement = (element: HTMLElement) => {
+    if (element) {
+      element.focus();
+      announce(`Focused ${element.getAttribute('aria-label') || 'element'}`);
+    }
   };
 
-  const toggleDyslexiaFriendly = () => {
-    setDyslexiaFriendly(prev => !prev);
-    announce(
-      `Dyslexia friendly mode ${!dyslexiaFriendly ? 'enabled' : 'disabled'}`,
-      'polite'
-    );
+  return {
+    highContrast,
+    largeText,
+    reduceMotion,
+    dyslexiaFriendly,
+    toggleHighContrast,
+    toggleLargeText,
+    toggleReduceMotion,
+    toggleDyslexiaFriendly,
+    toggleScreenReader,
+    announce,
+    // Add these methods for compatibility
+    setHighContrast,
+    setLargeText,
+    setReduceMotion,
+    setScreenReader,
+    focusElement
   };
-
-  return (
-    <AccessibilityContext.Provider
-      value={{
-        highContrast,
-        largeText,
-        reduceMotion,
-        screenReader,
-        dyslexiaFriendly,
-        toggleHighContrast,
-        toggleLargeText,
-        toggleReduceMotion,
-        toggleScreenReader,
-        toggleDyslexiaFriendly,
-        announce,
-      }}
-    >
-      {children}
-    </AccessibilityContext.Provider>
-  );
 };
-
-export const useAccessibility = () => useContext(AccessibilityContext);
 
 export default useAccessibility;

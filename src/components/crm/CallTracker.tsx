@@ -25,28 +25,8 @@ import { Progress } from '@/components/ui/progress';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 
-type CallType = 'incoming' | 'outgoing' | 'missed';
-type CallStatus = 'in-progress' | 'completed' | 'missed' | 'scheduled';
-type ContactType = 'realtor' | 'handyman' | 'property_manager' | 'inspector' | 'tenant' | 'other';
-type AiSentiment = 'positive' | 'neutral' | 'negative';
-
-interface CallRecord {
-  id: string;
-  contactName: string;
-  contactType: ContactType;
-  type: CallType;
-  status: CallStatus;
-  duration: number;
-  timestamp: string;
-  notes?: string;
-  recordingUrl?: string;
-  transcription?: string;
-  aiSummary?: string;
-  aiSentiment?: AiSentiment;
-}
-
 // Demo call history data
-const demoCallHistory: CallRecord[] = [
+const demoCallHistory = [
   { 
     id: '1', 
     contactName: 'Anna Weber', 
@@ -101,6 +81,26 @@ const demoCallHistory: CallRecord[] = [
     aiSentiment: 'positive',
   },
 ];
+
+type CallType = 'incoming' | 'outgoing' | 'missed';
+type CallStatus = 'in-progress' | 'completed' | 'missed' | 'scheduled';
+type ContactType = 'realtor' | 'handyman' | 'property_manager' | 'inspector' | 'tenant' | 'other';
+type AiSentiment = 'positive' | 'neutral' | 'negative';
+
+interface CallRecord {
+  id: string;
+  contactName: string;
+  contactType: ContactType;
+  type: CallType;
+  status: CallStatus;
+  duration: number;
+  timestamp: string;
+  notes?: string;
+  recordingUrl?: string;
+  transcription?: string;
+  aiSummary?: string;
+  aiSentiment?: AiSentiment;
+}
 
 const CallTracker: React.FC = () => {
   const { language } = useLanguage();

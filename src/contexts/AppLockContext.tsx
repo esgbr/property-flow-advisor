@@ -1,11 +1,11 @@
+
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { useUserPreferences } from '@/contexts/UserPreferencesContext';
-import { toast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 import secureStorage from '@/utils/secureStorage';
 
 interface AppLockContextType {
   isLocked: boolean;
-  setIsLocked: React.Dispatch<React.SetStateAction<boolean>>;
   lockApp: () => void;
   unlockApp: (pin: string) => boolean;
   hasPIN: boolean;
@@ -20,7 +20,6 @@ interface AppLockContextType {
 
 const AppLockContext = createContext<AppLockContextType>({
   isLocked: false,
-  setIsLocked: () => {},
   lockApp: () => {},
   unlockApp: () => false,
   hasPIN: false,
@@ -73,11 +72,6 @@ export const AppLockProvider: React.FC<{ children: React.ReactNode }> = ({ child
       updatePreferences({ appLockMethod: 'biometric' });
     } else if (savedPin) {
       updatePreferences({ appLockMethod: 'pin' });
-    }
-
-    // Check if app was locked before refresh
-    if (localStorage.getItem('appLocked') === 'true' && savedPin) {
-      setIsLocked(true);
     }
   }, [updatePreferences]);
   
@@ -174,20 +168,23 @@ export const AppLockProvider: React.FC<{ children: React.ReactNode }> = ({ child
     
     if (enabled) {
       updatePreferences({ appLockMethod: 'biometric' });
-      toast({
-        title: 'Biometrics Enabled',
-        description: 'Biometric authentication has been activated'
-      });
+      toast.success('Biometrische Authentifizierung aktiviert');
     } else if (pin) {
       updatePreferences({ appLockMethod: 'pin' });
     }
   };
   
+  // Check if app was locked before refresh
+  useEffect(() => {
+    if (localStorage.getItem('appLocked') === 'true' && pin) {
+      setIsLocked(true);
+    }
+  }, [pin]);
+  
   return (
     <AppLockContext.Provider
       value={{
         isLocked,
-        setIsLocked,
         lockApp,
         unlockApp,
         hasPIN: !!pin,

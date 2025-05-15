@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
@@ -60,20 +61,21 @@ const SecurityDashboard: React.FC = () => {
     announce(
       language === 'de'
         ? `Benachrichtigungen für ${type} ${checked ? 'aktiviert' : 'deaktiviert'}`
-        : `Notifications for ${type} ${checked ? 'enabled' : 'disabled'}`
+        : `Notifications for ${type} ${checked ? 'enabled' : 'disabled'}`,
+      'polite'
     );
   };
   
   const handleChangePassword = () => {
     if (!currentPassword || !newPassword || !confirmPassword) {
       setPasswordError(t('allFieldsRequired'));
-      announce(t('allFieldsRequired'));
+      announce(t('allFieldsRequired'), 'assertive');
       return;
     }
     
     if (newPassword !== confirmPassword) {
       setPasswordError(t('passwordsDoNotMatch'));
-      announce(t('passwordsDoNotMatch'));
+      announce(t('passwordsDoNotMatch'), 'assertive');
       return;
     }
     
@@ -93,14 +95,14 @@ const SecurityDashboard: React.FC = () => {
         title: t('passwordChanged'),
         description: t('passwordChangedSuccessfully'),
       });
-      announce(t('passwordChangedSuccessfully'));
+      announce(t('passwordChangedSuccessfully'), 'polite');
     }, 1500);
   };
   
   const handleVerifyEmail = () => {
     if (!verificationCode) {
       setVerificationError(t('verificationCodeRequired'));
-      announce(t('verificationCodeRequired'));
+      announce(t('verificationCodeRequired'), 'assertive');
       return;
     }
     
@@ -114,7 +116,7 @@ const SecurityDashboard: React.FC = () => {
         title: t('emailVerified'),
         description: t('emailVerifiedSuccessfully'),
       });
-      announce(t('emailVerifiedSuccessfully'));
+      announce(t('emailVerifiedSuccessfully'), 'polite');
     }, 1500);
   };
   

@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState, lazy, Suspense } from 'react';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
 import OnboardingFlow from '@/components/onboarding/OnboardingFlow';
@@ -6,7 +7,7 @@ import { toast } from 'sonner';
 import { useNavigate } from 'react-router-dom';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { Loader } from 'lucide-react';
-import { useAnnouncement } from '@/utils/announcer';
+import { useAnnouncement } from '@/utils/accessibilityUtils';
 
 const WelcomeModal = () => {
   const { isFirstVisit, setIsFirstVisit, saveOnboardingData, preferences, updatePreferences } = useUserPreferences();
@@ -21,7 +22,7 @@ const WelcomeModal = () => {
       // Wait a moment before showing the modal for better UX
       const timer = setTimeout(() => {
         setIsOpen(true);
-        announce(t('welcomeToPropertyFlowAdvisor'), 'assertive');
+        announce(t('welcomeToPropertyFlowAdvisor'), true);
       }, 800);
       
       return () => clearTimeout(timer);

@@ -1,70 +1,57 @@
-// Import our centralized announce function
-import { announce as accessibilityAnnounce, useAnnouncement as useAccessibilityAnnouncement } from './accessibilityUtils';
 
 /**
- * Utility for making screen reader announcements
+ * Screen reader announcement utility
  */
 
-// Create and get the announcement element
-const getAnnouncerElement = () => {
-  let announcer = document.getElementById('sr-announcer');
+// Create a singleton announcer element
+const getAnnouncer = (assertive = false): HTMLElement => {
+  let announcer = document.getElementById('a11y-announcer');
   
   if (!announcer) {
     announcer = document.createElement('div');
-    announcer.id = 'sr-announcer';
-    announcer.setAttribute('aria-live', 'polite');
+    announcer.id = 'a11y-announcer';
+    announcer.setAttribute('aria-live', assertive ? 'assertive' : 'polite');
     announcer.setAttribute('aria-atomic', 'true');
     announcer.className = 'sr-only';
-    
-    // Add styles that hide it visually but keep it available to screen readers
-    Object.assign(announcer.style, {
-      position: 'absolute',
-      width: '1px',
-      height: '1px',
-      padding: '0',
-      overflow: 'hidden',
-      clip: 'rect(0, 0, 0, 0)',
-      whiteSpace: 'nowrap',
-      border: '0'
-    });
-    
+    announcer.style.position = 'absolute';
+    announcer.style.width = '1px';
+    announcer.style.height = '1px';
+    announcer.style.padding = '0';
+    announcer.style.margin = '-1px';
+    announcer.style.overflow = 'hidden';
+    announcer.style.clip = 'rect(0, 0, 0, 0)';
+    announcer.style.whiteSpace = 'nowrap';
+    announcer.style.border = '0';
     document.body.appendChild(announcer);
+  } else {
+    announcer.setAttribute('aria-live', assertive ? 'assertive' : 'polite');
   }
   
   return announcer;
 };
 
 /**
- * Announces a message to screen readers
- * @param message The message to announce
- * @param priority The priority of the announcement ('polite' or 'assertive')
+ * Announce a message to screen readers
+ * @param message - The message to be announced
+ * @param politeness - Whether to use assertive (interrupt) or polite priority
  */
-export const announce = (message: string, priority: 'polite' | 'assertive' = 'polite') => {
-  const announcer = getAnnouncerElement();
+export const announce = (
+  message: string,
+  politeness: 'polite' | 'assertive' = 'polite'
+): void => {
+  const element = getAnnouncer(politeness === 'assertive');
   
-  // Set the appropriate aria-live attribute
-  announcer.setAttribute('aria-live', priority);
+  // Clear previous content to ensure announcement
+  element.textContent = '';
   
-  // Clear the announcer first to ensure the message is read again
-  // even if it's the same as the previous one
-  announcer.textContent = '';
-  
-  // Use a small timeout to ensure the clearing takes effect
+  // Add new content after a brief delay
   setTimeout(() => {
-    announcer.textContent = message;
+    if (element) element.textContent = message;
   }, 50);
 };
 
-/**
- * Hook for making screen reader announcements
- */
-export function useAnnouncement() {
-  return {
-    announce,
-    announceKeyEvent: (key: string, action: string) => {
-      announce(`Key ${key} pressed: ${action}`, 'polite');
-    }
-  };
-}
+export const useAnnouncement = () => {
+  return { announce };
+};
 
 export default useAnnouncement;

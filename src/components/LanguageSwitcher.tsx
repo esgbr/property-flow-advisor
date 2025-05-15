@@ -10,7 +10,7 @@ import {
 import { Languages } from 'lucide-react';
 import { useLanguage, SupportedLanguage } from '@/contexts/LanguageContext';
 import { cn } from '@/lib/utils';
-import { useToast } from '@/hooks/use-toast';
+import { useToast } from './ui/use-toast';
 
 interface LanguageSwitcherProps {
   variant?: 'default' | 'outline' | 'small';
@@ -30,6 +30,7 @@ const LanguageSwitcher: React.FC<LanguageSwitcherProps> = ({
       toast({
         title: t('languageChanged'),
         description: t('displayLanguageChanged'),
+        duration: 3000,
       });
     }
   };

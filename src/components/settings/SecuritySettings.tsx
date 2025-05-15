@@ -68,7 +68,6 @@ const SecuritySettings = () => {
     }
   };
   
-  // Updated to use correct property name
   const securityLevel = pin ? 
     (preferences.twoFactorEnabled ? 'high' : 'medium') : 
     'low';

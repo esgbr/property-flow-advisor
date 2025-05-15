@@ -44,12 +44,9 @@ export interface UserPreferences {
   interests: string[];
   investmentGoals: string[];
   preferredPropertyTypes: string[];
-  // Add missing properties
+  // Added missing properties
   appLockEnabled?: boolean;
   appLockMethod?: AppLockMethod;
-  biometricsEnabled?: boolean;
-  twoFactorEnabled?: boolean;
-  screenReaderActive?: boolean;
   role?: string;
   emailVerified?: boolean;
   profileImage?: string;

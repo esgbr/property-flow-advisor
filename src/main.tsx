@@ -1,12 +1,7 @@
-
 import { createRoot } from 'react-dom/client';
 import App from './App.tsx';
 import './index.css';
 import './utils/accessibilityStyles.css';
-import { detectKeyboardUser } from './lib/utils';
-
-// Initialize keyboard user detection for better focus styles
-detectKeyboardUser();
 
 // Initialize the application
 const rootElement = document.getElementById("root");
@@ -122,7 +117,7 @@ window.addEventListener('error', (event) => {
   }
 });
 
-// Enhanced keyboard navigation
+// Enhance keyboard navigation
 window.addEventListener('keydown', (event) => {
   // Add global keyboard shortcuts here
   if (event.key === '?' && (event.ctrlKey || event.metaKey)) {
@@ -179,10 +174,7 @@ window.addEventListener('keydown', (event) => {
       { key: '/ or Ctrl + F', description: 'Focus search field' },
       { key: 'Alt + A', description: 'Open accessibility settings' },
       { key: 'Alt + H', description: 'Go to home page' },
-      { key: 'Alt + D', description: 'Go to dashboard' },
-      { key: 'Alt + P', description: 'Go to properties' },
-      { key: 'Alt + T', description: 'Go to tools' },
-      { key: 'Alt + S', description: 'Go to settings' }
+      { key: 'Alt + D', description: 'Go to dashboard' }
     ];
     
     shortcuts.forEach(shortcut => {
@@ -238,18 +230,32 @@ window.addEventListener('keydown', (event) => {
     closeButton.focus();
   }
   
-  // Toggle focus order visualization with Alt+F2
-  if (event.altKey && event.key === 'F2') {
+  // Add quick search focus
+  if ((event.key === '/' || (event.ctrlKey && event.key === 'f')) && !isInputActive()) {
     event.preventDefault();
-    document.body.classList.toggle('show-focus-order');
-    console.info('Focus order visualization toggled');
+    const searchInput = document.querySelector('input[type="search"], input[placeholder*="Search"]');
+    if (searchInput instanceof HTMLElement) {
+      searchInput.focus();
+    }
+  }
+  
+  // Accessibility settings shortcut
+  if (event.altKey && event.key === 'a') {
+    event.preventDefault();
+    const accessibilityButton = document.querySelector('[data-testid="accessibility-settings-button"]');
+    if (accessibilityButton instanceof HTMLElement) {
+      accessibilityButton.click();
+    }
   }
 });
 
-// Flag once the dom is fully loaded to prevent issues in iOS Safari
-document.addEventListener('DOMContentLoaded', () => {
-  document.body.setAttribute('data-loaded', 'true');
-});
+// Helper to check if user is in an input field
+function isInputActive() {
+  const activeElement = document.activeElement;
+  return activeElement instanceof HTMLInputElement || 
+         activeElement instanceof HTMLTextAreaElement ||
+         activeElement?.getAttribute('contenteditable') === 'true';
+}
 
 createRoot(rootElement).render(
   <App />

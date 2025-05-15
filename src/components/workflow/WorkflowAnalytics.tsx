@@ -21,13 +21,12 @@ const WorkflowAnalytics: React.FC<WorkflowAnalyticsProps> = ({
   className
 }) => {
   const { language } = useLanguage();
-  const { getOverallStatistics, getDailyProgress, getWorkflowStatistics, workflowStats } = useWorkflowAnalytics(workflowTypes);
+  const { getOverallStatistics, getDailyProgress, getWorkflowStatistics } = useWorkflowAnalytics(workflowTypes);
   
   const overallStats = getOverallStatistics();
-  const dailyData = getDailyProgress(14);
-
-  // Build array from workflowStats
-  const workflowStatsArr = workflowTypes.map(type => workflowStats[type]);  
+  const dailyData = getDailyProgress(14); // Last 14 days
+  const workflowStats = getWorkflowStatistics();
+  
   return (
     <div className={className}>
       <div className="grid gap-4 md:grid-cols-3">
@@ -151,13 +150,13 @@ const WorkflowAnalytics: React.FC<WorkflowAnalyticsProps> = ({
         </Card>
         
         {/* Individual workflow stats */}
-        {workflowStatsArr.map((stat) => (
-          <Card key={stat.workflowType}>
+        {workflowStats.map((stat) => (
+          <Card key={stat.type}>
             <CardHeader className="pb-2">
               <CardTitle className="text-sm font-medium">
                 {language === 'de' 
-                  ? `${stat.workflowType.charAt(0).toUpperCase()}${stat.workflowType.slice(1)} Workflow`
-                  : `${stat.workflowType.charAt(0).toUpperCase()}${stat.workflowType.slice(1)} Workflow`}
+                  ? `${stat.type.charAt(0).toUpperCase()}${stat.type.slice(1)} Workflow`
+                  : `${stat.type.charAt(0).toUpperCase()}${stat.type.slice(1)} Workflow`}
               </CardTitle>
               <CardDescription>
                 {language === 'de' 

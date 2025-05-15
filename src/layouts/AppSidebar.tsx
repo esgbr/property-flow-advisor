@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { NavLink } from 'react-router-dom';
 import { 
@@ -22,8 +23,7 @@ import {
   Shield,
   PieChart,
   ChevronRight,
-  ChevronDown,
-  Users
+  ChevronDown
 } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { Button } from '@/components/ui/button';
@@ -49,7 +49,6 @@ const AppSidebar = () => {
     { title: t('dashboard'), icon: Home, url: '/dashboard' },
     { title: t('properties'), icon: Building, url: '/properties' },
     { title: t('investorDashboard'), icon: BarChart, url: '/investor-dashboard' },
-    { title: 'CRM', icon: Users, url: '/crm' },
   ];
 
   // Tools items (previously scattered across multiple categories)

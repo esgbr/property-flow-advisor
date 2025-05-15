@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -13,7 +14,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { ScrollArea } from '@/components/ui/scroll-area';
-// REMOVE: import { getRelatedWorkflowsForTool } from '@/utils/workflowUtils';
+import { getRelatedWorkflowsForTool } from '@/utils/workflowUtils';
 
 interface DynamicWorkflowEditorProps {
   workflowType: WorkflowType;
@@ -41,8 +42,8 @@ const DynamicWorkflowEditor: React.FC<DynamicWorkflowEditorProps> = ({ workflowT
     const currentWorkflowStep = getCurrentStep();
     if (currentWorkflowStep) {
       setCurrentStepId(currentWorkflowStep.id);
-      // REMOVE: setRelatedWorkflows(getRelatedWorkflowsForTool(currentWorkflowStep.id));
-      setRelatedWorkflows([]); // Set to empty or handle as needed
+      // Set related workflows based on the current step
+      setRelatedWorkflows(getRelatedWorkflowsForTool(currentWorkflowStep.id));
     } else if (getStepsWithStatus().length > 0) {
       setCurrentStepId(getStepsWithStatus()[0].id);
     }
