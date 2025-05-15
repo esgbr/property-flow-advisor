@@ -438,7 +438,8 @@ const DynamicWorkflowEditor: React.FC<DynamicWorkflowEditorProps> = ({ workflowT
                   ? "Fortschritt dieses Workflows" 
                   : "Progress of this workflow"}
               </TooltipContent>
-            </TooltipProvider>
+            </Tooltip>
+          </TooltipProvider>
         </div>
         <CardDescription>
           {language === 'de'
