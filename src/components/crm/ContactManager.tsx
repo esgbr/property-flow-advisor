@@ -111,15 +111,42 @@ const ContactManager: React.FC<ContactManagerProps> = ({ onInitiateCall }) => {
     }
   };
 
+  // NEW: function to open "quick add" workflow (uses CRM's global event)
+  const handleQuickAdd = (prefill: Partial<Contact>) => {
+    window.dispatchEvent(
+      new CustomEvent("crmQuickAdd", {
+        detail: {
+          type: "quickadd",
+          entity: "contact",
+          prefill,
+        }
+      })
+    );
+  };
+
   return (
     <Card className="w-full">
-      <CardHeader className="pb-2">
-        <CardTitle className="text-2xl">
-          {language === 'de' ? 'Kontaktverzeichnis' : 'Contact Directory'}
-        </CardTitle>
-        <CardDescription>
-          {language === 'de' ? 'Verwalten Sie Ihre Immobilienkontakte' : 'Manage your real estate contacts'}
-        </CardDescription>
+      <CardHeader className="pb-2 flex flex-row items-center justify-between">
+        <div>
+          <CardTitle className="text-2xl">
+            {language === 'de' ? 'Kontaktverzeichnis' : 'Contact Directory'}
+          </CardTitle>
+          <CardDescription>
+            {language === 'de' ? 'Verwalten Sie Ihre Immobilienkontakte' : 'Manage your real estate contacts'}
+          </CardDescription>
+        </div>
+        {/* Add Button: Enhanced usability with tooltip */}
+        <Button
+          variant="default"
+          size="sm"
+          className="ml-auto"
+          onClick={() => handleQuickAdd({})}
+          title={language === 'de' ? 'Neuen Kontakt anlegen' : 'Add new contact'}
+          data-testid="add-contact-btn"
+        >
+          <Plus className="h-4 w-4 mr-2" />
+          <span className="hidden md:inline">{language === 'de' ? 'Kontakt' : 'Contact'}</span>
+        </Button>
       </CardHeader>
       <CardContent className="space-y-4">
         <div className="flex flex-col md:flex-row gap-2 md:items-center">
@@ -167,7 +194,7 @@ const ContactManager: React.FC<ContactManagerProps> = ({ onInitiateCall }) => {
           {filteredContacts.length > 0 ? (
             <div className="divide-y">
               {filteredContacts.map((contact) => (
-                <div key={contact.id} className="p-4 hover:bg-muted/50 transition-colors">
+                <div key={contact.id} className="p-4 hover:bg-muted/50 transition-colors flex flex-col gap-1">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center space-x-3">
                       <Avatar>
@@ -199,10 +226,13 @@ const ContactManager: React.FC<ContactManagerProps> = ({ onInitiateCall }) => {
                           <StarOff className="h-4 w-4 text-muted-foreground" />
                         )}
                       </Button>
+                      {/* Direct call: tel: link always, with tooltip */}
                       <a
                         href={`tel:${contact.phone}`}
                         className="inline-block"
-                        title={language === 'de' ? 'Anrufen' : 'Call'}
+                        title={language === 'de' ? 'Direkt anrufen' : 'Call directly'}
+                        tabIndex={-1}
+                        data-testid="call-contact-link"
                       >
                         <Button variant="ghost" size="icon" type="button">
                           <Phone className="h-4 w-4 text-primary" />
@@ -219,6 +249,7 @@ const ContactManager: React.FC<ContactManagerProps> = ({ onInitiateCall }) => {
               ))}
             </div>
           ) : (
+            // Add “Quick Add” button as fallback
             <div className="p-8 text-center">
               <User className="h-12 w-12 mx-auto text-muted-foreground opacity-30" />
               <h3 className="mt-2 text-lg font-medium">
@@ -229,10 +260,19 @@ const ContactManager: React.FC<ContactManagerProps> = ({ onInitiateCall }) => {
                   ? 'Versuchen Sie, Ihre Filterkriterien anzupassen' 
                   : 'Try adjusting your search filters'}
               </p>
+              <Button 
+                className="mt-4"
+                onClick={() => handleQuickAdd({})}
+                data-testid="add-contact-empty"
+              >
+                <Plus className="h-4 w-4 mr-2" />
+                {language === 'de' ? 'Kontakt anlegen' : 'Add Contact'}
+              </Button>
             </div>
           )}
         </div>
       </CardContent>
+      {/* Remove legacy “Coming Soon” logic, unify add button */}
       <CardFooter>
         <Button className="ml-auto" onClick={() => toast({
           title: language === 'de' ? 'Kommt bald' : 'Coming soon',

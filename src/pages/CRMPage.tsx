@@ -18,11 +18,8 @@ const CRMPage: React.FC = () => {
   const { language } = useLanguage()
   const [callHistory, setCallHistory] = React.useState<{ name: string, phone: string, timestamp: string }[]>([])
   const [customPhone, setCustomPhone] = React.useState<string>('')
-
-  // QuickAdd dialog state for after-call or missed call creation
   const [quickAdd, setQuickAdd] = React.useState<{ open: boolean; type: "contact" | "company" | "task"; prefill?: any } | null>(null);
 
-  // Add logic to trigger QuickAdd after missed call. Example below is for after call modal close, can be reused elsewhere (e.g., missed call row or action):
   const handleMissedCall = (contactName: string, contactPhone: string) => {
     toast({
       title: language === "de" ? "Anruf verpasst" : "Missed call",
@@ -33,7 +30,6 @@ const CRMPage: React.FC = () => {
     setQuickAdd({ open: true, type: "contact", prefill: { name: contactName, phone: contactPhone } });
   };
 
-  // Listen for a custom event from CallHistoryList's "add" button
   React.useEffect(() => {
     const handler = (e: Event) => {
       if ((e as CustomEvent).detail?.type && (e as CustomEvent).detail.type === "quickadd") {
@@ -59,20 +55,20 @@ const CRMPage: React.FC = () => {
             ? "Verwalten Sie Ihre Immobilienkontakte und verfolgen Sie Anrufe, Aufgaben und Firmen"
             : "Manage your real estate contacts, calls, tasks, and companies"}
         </p>
-        {/* Ergänzung: Hinweis auf direkte Handy-Telefonie */}
+        {/* Hinweise für Nutzer zur Anrufintegration */}
         <div className="text-sm mt-2 text-blue-600 font-medium flex items-center gap-2">
           <Phone className="h-4 w-4" />
           {language === "de"
-            ? "Anrufe gehen direkt über Ihre eigene Handy-Telefonie, ohne Zusatzkosten."
-            : "Calls are started directly using your mobile phone without extra fees."}
+            ? "Anrufe werden ohne Zusatzkosten direkt über Ihre Handy-Telefonie geführt."
+            : "Calls are made at no extra cost via your phone’s normal dialer."}
         </div>
       </div>
-      {/* DialPadInput mit angepasster onCall */}
+      {/* Manual DialPadInput: disables onCall, uses only tel: */}
       <div className="mb-6 max-w-xl">
         <DialPadInput
           phone={customPhone}
           setPhone={setCustomPhone}
-          onCall={() => {}} // kein Backend-Call mehr nötig
+          onCall={() => {}} // Not needed; button opens phone dialer via tel:
           disabled={false}
           label={
             <span>
