@@ -19,21 +19,22 @@ const WorkflowProgressVisualization: React.FC<WorkflowProgressVisualizationProps
   className
 }) => {
   const { language } = useLanguage();
-  const { getOverallStatistics, getDailyProgress, getWorkflowStatistics } = useWorkflowAnalytics(workflowTypes);
+  const { getOverallStatistics, getDailyProgress, getWorkflowStatistics } = useWorkflowAnalytics();
 
-  const [stats, setStats] = useState(getOverallStatistics(workflowTypes));
-  const [progressData, setProgressData] = useState(getDailyProgress(workflowTypes, 14)); // Last 14 days
+  // Call these with no arguments (or as originally expected)
+  const [stats, setStats] = useState(getOverallStatistics());
+  const [progressData, setProgressData] = useState(getDailyProgress(14)); // Last 14 days
 
   const [workflowStats, setWorkflowStats] = useState(
-    Array.isArray(getWorkflowStatistics(workflowTypes)) ? getWorkflowStatistics(workflowTypes) : []
+    Array.isArray(getWorkflowStatistics()) ? getWorkflowStatistics() : []
   );
   const [activeView, setActiveView] = useState<'overview' | 'daily' | 'workflows'>('overview');
   
   useEffect(() => {
     const updateStats = () => {
-      setStats(getOverallStatistics(workflowTypes));
-      setProgressData(getDailyProgress(workflowTypes, 14));
-      setWorkflowStats(getWorkflowStatistics(workflowTypes));
+      setStats(getOverallStatistics());
+      setProgressData(getDailyProgress(14));
+      setWorkflowStats(getWorkflowStatistics());
     };
     
     updateStats();

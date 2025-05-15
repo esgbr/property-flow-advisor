@@ -18,7 +18,7 @@ export interface WorkflowStep {
   description?: { de: string; en: string };
   icon?: React.ReactNode;
   isComplete?: boolean;
-  requiredSteps?: string[]; // HOTFIX: ergänzt
+  requiredSteps?: string[]; // <-- ADDED to fix TS error!
   progress?: number;
   estimatedTime?: number; // in minutes
 }
