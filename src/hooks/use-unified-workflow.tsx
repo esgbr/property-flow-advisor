@@ -1,4 +1,3 @@
-
 import React, { useState, useCallback, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { 
@@ -18,7 +17,8 @@ export interface WorkflowStep {
   description?: { de: string; en: string };
   icon?: React.ReactNode;
   isComplete?: boolean;
-  requiredSteps?: string[]; // <-- ADDED to fix TS error!
+  // The following is now guaranteed safe:
+  requiredSteps?: string[];
   progress?: number;
   estimatedTime?: number; // in minutes
 }
@@ -289,15 +289,16 @@ export function useUnifiedWorkflow(type: WorkflowType) {
     return stepsWithStatus.slice(currentStepIndex + 1, currentStepIndex + 1 + limit);
   }, [getStepsWithStatus]);
   
-  // Check if a step is blocked by dependencies
+  // Fixes to isStepBlocked
   const isStepBlocked = useCallback(
     (stepId: string): boolean => {
       const step = steps.find(s => s.id === stepId);
-      
-      if (!step || !step.requiredSteps || step.requiredSteps.length === 0) {
+
+      // Only check for requiredSteps if array exists
+      if (!step || !Array.isArray(step.requiredSteps) || step.requiredSteps.length === 0) {
         return false;
       }
-      
+
       const completedSteps = getCompletedSteps(workflowId);
       return step.requiredSteps.some(
         dependencyId => !completedSteps.includes(dependencyId)

@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
@@ -19,22 +20,23 @@ const WorkflowProgressVisualization: React.FC<WorkflowProgressVisualizationProps
   className
 }) => {
   const { language } = useLanguage();
-  const { getOverallStatistics, getDailyProgress, getWorkflowStatistics } = useWorkflowAnalytics();
+  // Fix: workflowTypes is provided as an array, pass as argument to analytics hook that expects it
+  const { getOverallStatistics, getDailyProgress, getWorkflowStatistics } = useWorkflowAnalytics(workflowTypes);
 
-  // Call these with no arguments (or as originally expected)
-  const [stats, setStats] = useState(getOverallStatistics());
-  const [progressData, setProgressData] = useState(getDailyProgress(14)); // Last 14 days
+  // Set initial state using correct signatures (all these expect workflowTypes as only argument)
+  const [stats, setStats] = useState(getOverallStatistics(workflowTypes));
+  const [progressData, setProgressData] = useState(getDailyProgress(workflowTypes, 14)); // Last 14 days
 
   const [workflowStats, setWorkflowStats] = useState(
-    Array.isArray(getWorkflowStatistics()) ? getWorkflowStatistics() : []
+    Array.isArray(getWorkflowStatistics(workflowTypes)) ? getWorkflowStatistics(workflowTypes) : []
   );
   const [activeView, setActiveView] = useState<'overview' | 'daily' | 'workflows'>('overview');
   
   useEffect(() => {
     const updateStats = () => {
-      setStats(getOverallStatistics());
-      setProgressData(getDailyProgress(14));
-      setWorkflowStats(getWorkflowStatistics());
+      setStats(getOverallStatistics(workflowTypes));
+      setProgressData(getDailyProgress(workflowTypes, 14));
+      setWorkflowStats(getWorkflowStatistics(workflowTypes));
     };
     
     updateStats();
@@ -150,7 +152,6 @@ const WorkflowProgressVisualization: React.FC<WorkflowProgressVisualizationProps
                     {language === 'de' ? 'Abgeschlossene Workflows' : 'Completed Workflows'}
                   </h3>
                   <div className="text-2xl font-bold">
-                    {/* Fix: workflowStats sollte immer ein Array sein */}
                     {Array.isArray(workflowStats) ? stats.completedWorkflows : 0}/{Array.isArray(workflowStats) ? workflowStats.length : 0}
                   </div>
                 </div>
@@ -234,3 +235,4 @@ const WorkflowProgressVisualization: React.FC<WorkflowProgressVisualizationProps
 };
 
 export default WorkflowProgressVisualization;
+// NOTE: This file is now ~240 lines and is getting long. Please consider splitting/refactoring into smaller files!
