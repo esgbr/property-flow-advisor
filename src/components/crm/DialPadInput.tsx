@@ -25,6 +25,11 @@ const DialPadInput: React.FC<DialPadInputProps> = ({
   className,
   placeholder = "Enter phone number",
 }) => {
+  function handleDirectDial() {
+    if (phone && phone.length >= 6 && !loading && !disabled) {
+      window.location.href = `tel:${phone}`;
+    }
+  }
   return (
     <div
       className={`rounded-xl bg-background border shadow-sm px-4 py-3 flex flex-col sm:flex-row gap-3 sm:items-end transition-all ${className || ""}`}
@@ -60,13 +65,17 @@ const DialPadInput: React.FC<DialPadInputProps> = ({
       </div>
       <Button
         type="button"
-        onClick={onCall}
+        // Ersetzt das bisherige onCall!
+        onClick={handleDirectDial}
         disabled={!phone || disabled || loading}
         className="h-12 min-w-[96px] text-lg font-semibold bg-primary text-white shadow active:scale-95 transition"
         aria-label={loading ? "Calling..." : "Dial number"}
       >
         <PhoneCall className="h-5 w-5 mr-2" aria-hidden />
-        {loading ? "Calling..." : (typeof label === "string" ? label : "Call")}
+        {/* Kleiner Hinweis, dass das Handy benutzt wird */}
+        {loading
+          ? "Anrufen ..."
+          : (typeof label === "string" ? "Anrufen" : "Call")}
       </Button>
     </div>
   )

@@ -10,118 +10,17 @@ import DialPadInput from "@/components/crm/DialPadInput"
 import CallHistoryList from '@/components/crm/CallHistoryList'
 import ActiveCallPanel from '@/components/crm/ActiveCallPanel'
 import CallAnalyticsPanel from '@/components/crm/CallAnalyticsPanel'
-import CallModal from '@/components/crm/CallModal'
 import { formatDate } from '@/components/crm/callUtils'
 import { toast } from "@/hooks/use-toast"
 import { QuickAddDialog } from "@/components/crm/QuickAddDialog";
 
 const CRMPage: React.FC = () => {
   const { language } = useLanguage()
-  const [callModalOpen, setCallModalOpen] = React.useState(false)
-  const [selectedContact, setSelectedContact] = React.useState<{ name: string, phone: string } | null>(null)
   const [callHistory, setCallHistory] = React.useState<{ name: string, phone: string, timestamp: string }[]>([])
-  const [callInProgress, setCallInProgress] = React.useState(false)
-  const [callError, setCallError] = React.useState<string | undefined>()
   const [customPhone, setCustomPhone] = React.useState<string>('')
-
-  // New: After-call actions
-  const [showAfterCallModal, setShowAfterCallModal] = React.useState(false)
-  const [lastCallContact, setLastCallContact] = React.useState<{ name: string, phone: string } | null>(null)
 
   // QuickAdd dialog state for after-call or missed call creation
   const [quickAdd, setQuickAdd] = React.useState<{ open: boolean; type: "contact" | "company" | "task"; prefill?: any } | null>(null);
-
-  // Handler: open modal from ContactManager
-  const handleInitiateCall = (name: string, phone: string) => {
-    setSelectedContact({ name, phone })
-    setCallError(undefined)
-    setCallModalOpen(true)
-  }
-
-  // Handler: manual/custom call (with feedback/error)
-  const handleInitiateCustomCall = () => {
-    if (!customPhone) {
-      toast({
-        variant: "destructive",
-        title: language === "de" ? "Fehler" : "Error",
-        description: language === "de" ? "Bitte Telefonnummer eingeben." : "Please enter a phone number."
-      })
-      return
-    }
-    setSelectedContact({ name: 'Custom', phone: customPhone })
-    setCallError(undefined)
-    setCallModalOpen(true)
-  }
-
-  // Handler: actually perform the call
-  const handleConfirmCall = async () => {
-    if (!selectedContact) return;
-    setCallInProgress(true)
-    setCallError(undefined)
-    try {
-      const res = await fetch(
-        "https://vibylylkqsdouaeebpye.functions.supabase.co/call-contact",
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ toPhone: selectedContact.phone }),
-        }
-      )
-      const data = await res.json()
-      // Log for debugging edge function
-      // eslint-disable-next-line no-console
-      console.log("Call function response:", data)
-
-      if (!res.ok) {
-        setCallError(data.error || "Unknown error")
-        toast({
-          variant: "destructive",
-          title: language === "de" ? "Anruffehler" : "Call error",
-          description: data.error || (language === "de" ? "Unbekannter Fehler" : "Unknown error")
-        })
-      } else {
-        // Show after-call workflow with action options
-        setCallModalOpen(false)
-        setShowAfterCallModal(true)
-        setLastCallContact(selectedContact)
-        setCallHistory([
-          { name: selectedContact.name, phone: selectedContact.phone, timestamp: new Date().toISOString() },
-          ...callHistory
-        ])
-        toast({
-          title: language === "de" ? "Anruf gestartet" : "Call started",
-          description: `${selectedContact.name} (${selectedContact.phone})`
-        })
-      }
-    } catch (err: any) {
-      setCallError("Call failed: " + (err?.message || "Unknown error"))
-      toast({
-        variant: "destructive",
-        title: language === "de" ? "Netzwerkfehler" : "Network error",
-        description: err?.message || "Call failed. Please try again."
-      })
-    } finally {
-      setCallInProgress(false)
-      setCustomPhone('') // Clear after attempt for usability
-    }
-  }
-
-  // After-call workflow: moving to task or note manager
-  const handleAfterCallAction = (action: "task" | "note", contact?: { name: string, phone: string }) => {
-    toast({
-      title: action === "task"
-        ? language === "de" ? "Task erstellen" : "Create follow-up task"
-        : language === "de" ? "Notiz erstellen" : "Create note",
-      description: contact?.name
-        ? (language === "de"
-          ? `Für ${contact.name}`
-          : `For ${contact.name}`)
-        : ""
-    })
-    // Simple routing simulation: scroll to Tasks tab and prefill is out-of-scope for now
-    setShowAfterCallModal(false)
-    // (Could deep-link or set state to prefill contact info in TaskManager/NoteManager)
-  }
 
   // Add logic to trigger QuickAdd after missed call. Example below is for after call modal close, can be reused elsewhere (e.g., missed call row or action):
   const handleMissedCall = (contactName: string, contactPhone: string) => {
@@ -160,14 +59,21 @@ const CRMPage: React.FC = () => {
             ? "Verwalten Sie Ihre Immobilienkontakte und verfolgen Sie Anrufe, Aufgaben und Firmen"
             : "Manage your real estate contacts, calls, tasks, and companies"}
         </p>
+        {/* Ergänzung: Hinweis auf direkte Handy-Telefonie */}
+        <div className="text-sm mt-2 text-blue-600 font-medium flex items-center gap-2">
+          <Phone className="h-4 w-4" />
+          {language === "de"
+            ? "Anrufe gehen direkt über Ihre eigene Handy-Telefonie, ohne Zusatzkosten."
+            : "Calls are started directly using your mobile phone without extra fees."}
+        </div>
       </div>
-      {/* DialPadInput with contextual help and better accessibility */}
+      {/* DialPadInput mit angepasster onCall */}
       <div className="mb-6 max-w-xl">
         <DialPadInput
           phone={customPhone}
           setPhone={setCustomPhone}
-          onCall={handleInitiateCustomCall}
-          disabled={callInProgress}
+          onCall={() => {}} // kein Backend-Call mehr nötig
+          disabled={false}
           label={
             <span>
               {language === "de" ? "Manuelle Telefonnummer wählen" : "Manual Dial"}
@@ -187,6 +93,7 @@ const CRMPage: React.FC = () => {
           placeholder={language === "de" ? "Telefonnummer eingeben" : "Enter phone number"}
         />
       </div>
+      {/* Tabs und übriger Content wie gehabt */}
       <Tabs defaultValue="contacts" className="space-y-6">
         <TabsList className="grid w-full grid-cols-6 max-w-2xl">
           <TabsTrigger value="contacts">
@@ -217,7 +124,7 @@ const CRMPage: React.FC = () => {
         
         <TabsContent value="contacts">
           <ContactManager
-            onInitiateCall={handleInitiateCall}
+            onInitiateCall={() => {}}
           />
         </TabsContent>
         <TabsContent value="companies">
@@ -292,56 +199,7 @@ const CRMPage: React.FC = () => {
         </TabsContent>
       </Tabs>
       {/* Call pop-up/modal */}
-      <CallModal
-        open={callModalOpen}
-        onOpenChange={setCallModalOpen}
-        contactName={selectedContact?.name || ""}
-        contactPhone={selectedContact?.phone || ""}
-        onConfirm={handleConfirmCall}
-        loading={callInProgress}
-        error={callError}
-      />
       {/* After call workflow modal */}
-      {/* Could be refactored to a separate component for maintainability */}
-      {showAfterCallModal && lastCallContact && (
-        <div
-          className="fixed inset-0 z-40 flex items-center justify-center bg-black/40"
-          role="dialog"
-          aria-modal="true"
-        >
-          <div className="bg-background p-6 rounded-lg shadow-lg max-w-xs w-full flex flex-col gap-4">
-            <div className="flex flex-col gap-1">
-              <div className="text-xl font-bold">
-                {language === "de" ? "Nächste Schritte" : "Next Steps"}
-              </div>
-              <div className="text-muted-foreground text-sm">
-                {language === "de"
-                  ? "Was möchten Sie als nächstes tun?"
-                  : "What would you like to do next?"}
-              </div>
-              <div className="font-semibold mt-1">{lastCallContact.name}</div>
-            </div>
-            <Button
-              variant="outline"
-              onClick={() => handleAfterCallAction("task", lastCallContact)}
-            >
-              + {language === "de" ? "Task erstellen" : "Add Follow-up Task"}
-            </Button>
-            <Button
-              variant="outline"
-              onClick={() => handleAfterCallAction("note", lastCallContact)}
-            >
-              + {language === "de" ? "Notiz erstellen" : "Add Note"}
-            </Button>
-            <Button
-              variant="secondary"
-              onClick={() => setShowAfterCallModal(false)}
-            >
-              {language === "de" ? "Schließen" : "Close"}
-            </Button>
-          </div>
-        </div>
-      )}
       {/* Place QuickAddDialog at root so it overlays page as needed */}
       {quickAdd && (
         <QuickAddDialog
@@ -363,5 +221,4 @@ const CRMPage: React.FC = () => {
     </div>
   )
 }
-
-export default CRMPage
+export default CRMPage;

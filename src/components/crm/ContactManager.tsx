@@ -199,14 +199,15 @@ const ContactManager: React.FC<ContactManagerProps> = ({ onInitiateCall }) => {
                           <StarOff className="h-4 w-4 text-muted-foreground" />
                         )}
                       </Button>
-                      <Button 
-                        variant="ghost" 
-                        size="icon" 
-                        onClick={() => onInitiateCall(contact.name, contact.phone)}
+                      <a
+                        href={`tel:${contact.phone}`}
+                        className="inline-block"
                         title={language === 'de' ? 'Anrufen' : 'Call'}
                       >
-                        <Phone className="h-4 w-4 text-primary" />
-                      </Button>
+                        <Button variant="ghost" size="icon" type="button">
+                          <Phone className="h-4 w-4 text-primary" />
+                        </Button>
+                      </a>
                     </div>
                   </div>
                   {contact.notes && (
