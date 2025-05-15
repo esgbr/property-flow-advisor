@@ -1,7 +1,14 @@
 
 import React, { useState } from 'react';
 import { useLanguage } from '@/contexts/LanguageContext';
-import { Calendar as CalendarIcon, Clock, Users, MapPin, Calendar, User } from 'lucide-react';
+import { 
+  Calendar as CalendarIcon, 
+  Clock, 
+  Users, 
+  MapPin, 
+  User,
+  CalendarDays
+} from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -160,6 +167,7 @@ const MeetingScheduler: React.FC = () => {
                   selected={date}
                   onSelect={setDate}
                   initialFocus
+                  className="pointer-events-auto"
                 />
               </PopoverContent>
             </Popover>
@@ -210,7 +218,7 @@ const MeetingScheduler: React.FC = () => {
               </div>
             ) : (
               <div className="text-center py-8">
-                <Calendar className="h-12 w-12 text-muted-foreground opacity-30 mx-auto" />
+                <CalendarDays className="h-12 w-12 text-muted-foreground opacity-30 mx-auto" />
                 <h3 className="mt-2 font-medium">
                   {language === 'de' ? 'Keine Termine für diesen Tag' : 'No meetings for this day'}
                 </h3>
@@ -260,8 +268,10 @@ const MeetingScheduler: React.FC = () => {
                   <Calendar
                     mode="single"
                     selected={newMeeting.date}
-                    onSelect={(date) => setNewMeeting({...newMeeting, date})}
+                    onSelect={(date: Date | undefined) => 
+                      setNewMeeting({...newMeeting, date: date || new Date()})}
                     initialFocus
+                    className="pointer-events-auto"
                   />
                 </PopoverContent>
               </Popover>
