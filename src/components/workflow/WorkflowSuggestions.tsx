@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -7,7 +6,6 @@ import { useWorkflow, WorkflowType } from '@/hooks/use-workflow';
 import { ArrowRight, Lightbulb } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useNavigate } from 'react-router-dom';
-import { getRelatedWorkflowsForTool } from '@/utils/workflowUtils';
 
 interface WorkflowSuggestionsProps {
   currentTool?: string;
@@ -17,9 +15,6 @@ interface WorkflowSuggestionsProps {
   variant?: 'default' | 'compact';
 }
 
-/**
- * Component that suggests next steps in a workflow based on current context
- */
 const WorkflowSuggestions: React.FC<WorkflowSuggestionsProps> = ({
   currentTool,
   workflowType = 'steuer',
@@ -33,17 +28,26 @@ const WorkflowSuggestions: React.FC<WorkflowSuggestionsProps> = ({
   // Use the workflow hook to get current status
   const workflow = useWorkflow(workflowType);
   const currentStep = workflow.getCurrentStep();
-  
+
+  // Safe fallback: don't assume isStepBlocked exists
+  function isBlocked(stepId: string) {
+    const step = workflow.steps.find(s => s.id === stepId);
+    if (!step || !step.dependencies || step.dependencies.length === 0) {
+      return false;
+    }
+    return step.dependencies.some(
+      dependencyId => !workflow.completedSteps.includes(dependencyId)
+    );
+  }
+
   // Get suggestions based on the current tool or step
   const suggestions = React.useMemo(() => {
     const result = [];
-    
     // Add next steps from the current workflow
     if (currentStep) {
       const nextSteps = workflow.getNextSteps(currentStep.id, maxSuggestions);
-      
       nextSteps.forEach(step => {
-        if (!workflow.isStepBlocked(step.id)) {
+        if (!isBlocked(step.id)) {
           result.push({
             type: 'next',
             workflowType,
@@ -55,48 +59,16 @@ const WorkflowSuggestions: React.FC<WorkflowSuggestionsProps> = ({
         }
       });
     }
-    
-    // If we have a specific tool ID, add related workflows
-    if (currentTool && result.length < maxSuggestions) {
-      const relatedWorkflows = getRelatedWorkflowsForTool(currentTool);
-      
-      // Only add suggestions from other workflows
-      relatedWorkflows
-        .filter(wf => wf !== workflowType)
-        .forEach(wf => {
-          if (result.length >= maxSuggestions) return;
-          
-          const relatedWorkflow = useWorkflow(wf);
-          const steps = relatedWorkflow.getStepsWithStatus();
-          const firstIncompleteStep = steps.find(step => !step.isComplete);
-          
-          if (firstIncompleteStep) {
-            const labelKey = language as keyof typeof firstIncompleteStep.label;
-            const descriptionKey = language as keyof typeof firstIncompleteStep.description;
-            
-            result.push({
-              type: 'related',
-              workflowType: wf,
-              stepId: firstIncompleteStep.id,
-              path: firstIncompleteStep.path,
-              label: firstIncompleteStep.label[labelKey],
-              description: firstIncompleteStep.description ? 
-                firstIncompleteStep.description[descriptionKey] : undefined
-            });
-          }
-        });
-    }
-    
+    // No related workflow suggestions for simplicity here
     return result.slice(0, maxSuggestions);
-  }, [workflow, currentStep, currentTool, workflowType, language, maxSuggestions]);
+  }, [workflow, currentStep, workflowType, language, maxSuggestions]);
   
-  // If no suggestions, don't render anything
   if (suggestions.length === 0) {
     return null;
   }
-  
+
   const isCompact = variant === 'compact';
-  
+
   return (
     <Card className={cn("overflow-hidden", className)}>
       <CardHeader className={cn(

@@ -3,6 +3,17 @@ import { useMemo } from 'react';
 import { useWorkflowState } from '@/contexts/WorkflowStateContext';
 import { workflowDefinitions, WorkflowType } from '@/data/workflow-definitions';
 
+// Helper: return an array of datestrings for the last N days
+function getLastNDates(n: number): string[] {
+  let d = new Date();
+  return Array.from({ length: n }, (_, i) => {
+    const date = new Date();
+    date.setDate(d.getDate() - (n - 1 - i));
+    // Format: YYYY-MM-DD
+    return date.toISOString().slice(0, 10);
+  });
+}
+
 /**
  * Hook for analyzing workflow usage and statistics
  */
@@ -63,36 +74,62 @@ export function useWorkflowAnalytics(workflowTypes: WorkflowType[] = ['steuer', 
       overallProgress: totalSteps ? Math.round((totalCompleted / totalSteps) * 100) : 0,
       startedWorkflows,
       completedWorkflows,
-      incompleteWorkflows
+      incompleteWorkflows,
+      // Add for forward compatibility:
+      completedSteps: totalCompleted
     };
   };
-  
+
+  // Compute daily progress for charting (returns array in shape [{date, completedSteps}])
+  const getDailyProgress = (days: number = 14) => {
+    const dates = getLastNDates(days);
+    // Build up activity per day by checking lastInteractionAt on progress changes
+    let activity: Record<string, number> = {};
+    workflowTypes.forEach(type => {
+      const workflowId = `workflow_${type}`;
+      const workflow = workflows[workflowId];
+      if (!workflow) return;
+
+      // If workflow has completed steps, correlate date fields
+      if(Array.isArray(workflow.completedSteps) && workflow.completedSteps.length > 0) {
+        // For this demo: assign all completions to their lastInteractionAt date (limited granularity)
+        const dateStr = (workflow.lastInteractionAt || '').slice(0, 10);
+        if (dateStr) {
+          activity[dateStr] = (activity[dateStr] || 0) + workflow.completedSteps.length;
+        }
+      }
+    });
+    // Output as array per day with 0-filling
+    return dates.map(date => ({
+      date,
+      completedSteps: activity[date] || 0
+    }));
+  };
+
   // Get recommended next workflows based on current progress
   const getRecommendedWorkflows = () => {
     const stats = workflowTypes.map(getWorkflowStatistics);
-    
     // Find workflows with some progress but not completed
     const inProgress = stats.filter(s => s.isStarted && !s.isCompleted)
-      .sort((a, b) => b.progress - a.progress); // Sort by progress (highest first)
-    
+      .sort((a, b) => b.progress - a.progress);
     // Find workflows not started yet
     const notStarted = stats.filter(s => !s.isStarted);
-    
     return {
-      continueWorkflows: inProgress.slice(0, 2), // Top 2 in-progress workflows
-      startWorkflows: notStarted.slice(0, 2)     // Suggest 2 new workflows
+      continueWorkflows: inProgress.slice(0, 2),
+      startWorkflows: notStarted.slice(0, 2)
     };
   };
-  
+
   return {
     getWorkflowStatistics,
     getOverallStatistics,
+    getDailyProgress,
     getRecommendedWorkflows,
     // Individual statistics for easy access
-    workflowStats: useMemo(() => 
+    workflowStats: useMemo(() =>
       Object.fromEntries(
         workflowTypes.map(type => [type, getWorkflowStatistics(type)])
-      ), 
+      ),
     [workflows, workflowTypes])
   };
 }
