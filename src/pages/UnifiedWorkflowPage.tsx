@@ -36,21 +36,21 @@ const UnifiedWorkflowPage: React.FC = () => {
   
   // Helper to get label based on language
   const getLabel = (item: { label: Record<string, string> }) => {
-    return item.label[language as keyof typeof item.label] || '';
+    return item.label[language] || '';
   };
 
   // Helper to get description based on language
   const getDescription = (item: { description?: Record<string, string> }) => {
-    return item.description ? item.description[language as keyof typeof item.description] || '' : '';
+    return item.description ? item.description[language] || '' : '';
   };
 
   // Get workflow metadata from the first step
   const workflowTitle = steps.length > 0 && steps[0].title ? 
-    steps[0].title[language as keyof typeof steps[0].title] : 
+    steps[0].title[language] || workflowType : 
     workflowType;
   
   const workflowDescription = steps.length > 0 && steps[0].description ? 
-    steps[0].description[language as keyof typeof steps[0].description] : 
+    steps[0].description[language] || '' : 
     '';
   
   // Handle step selection
