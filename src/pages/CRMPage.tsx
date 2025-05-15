@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -8,6 +7,7 @@ import CallTracker from '@/components/crm/CallTracker';
 import CallModal from "@/components/crm/CallModal";
 import CompanyManager from "@/components/crm/CompanyManager";
 import TaskManager from "@/components/crm/TaskManager";
+import { Button } from '@/components/ui/button';
 
 const CRMPage: React.FC = () => {
   const { language } = useLanguage();
