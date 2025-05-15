@@ -1,7 +1,7 @@
 
 import React from 'react';
-import { Card, CardContent, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { ChevronsRight, Plus } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
@@ -9,7 +9,7 @@ import PropertySummary from '@/components/property/PropertySummary';
 import { usePortfolioData } from '@/hooks/usePortfolioData';
 
 /**
- * Centralizes property data usage and adds an "Add Property" workflow button.
+ * Property grid with streamlined add/view navigation.
  */
 const DashboardPropertiesGrid: React.FC = () => {
   const { t } = useLanguage();
@@ -22,7 +22,7 @@ const DashboardPropertiesGrid: React.FC = () => {
         <h3 className="text-lg font-semibold">{t('yourProperties')}</h3>
         <div className="flex gap-2">
           <Button variant="outline" size="sm" onClick={() => navigate('/properties/new')}>
-            <Plus className="h-4 w-4 mr-1" /> {t('addProperty') || "Add Property"}
+            <Plus className="h-4 w-4 mr-1" /> {t('addProperty')}
           </Button>
           <Button variant="ghost" size="sm" onClick={() => navigate('/properties')}>
             {t('viewAll')} <ChevronsRight className="h-4 w-4 ml-1" />

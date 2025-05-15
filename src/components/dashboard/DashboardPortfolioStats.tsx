@@ -5,7 +5,7 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import { usePortfolioData } from '@/hooks/usePortfolioData';
 
 /**
- * Now consumes centralized portfolio stats.
+ * Portfolio stats using shared property data logic.
  */
 const DashboardPortfolioStats: React.FC = () => {
   const { t } = useLanguage();

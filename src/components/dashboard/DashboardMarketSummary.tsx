@@ -5,6 +5,9 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import PortfolioAllocationChart from '@/components/charts/PortfolioAllocationChart';
 import MarketTrendsChart from '@/components/charts/MarketTrendsChart';
 
+/**
+ * Market summary — Unified design, visual polish, responsive layout.
+ */
 const DashboardMarketSummary: React.FC = () => {
   const { t } = useLanguage();
   return (
