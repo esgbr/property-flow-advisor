@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
@@ -118,7 +117,7 @@ const WorkflowProgressVisualization: React.FC<WorkflowProgressVisualizationProps
   className
 }) => {
   const { language } = useLanguage();
-  // Use the hook with the array of workflowTypes (so all calculations are for these types)
+  // Use the hook with workflowTypes to get analytics instance
   const analytics = useWorkflowAnalytics(workflowTypes);
 
   // Set initial state
@@ -130,16 +129,11 @@ const WorkflowProgressVisualization: React.FC<WorkflowProgressVisualizationProps
   useEffect(() => {
     setStats(analytics.getOverallStatistics());
     setProgressData(analytics.getDailyProgress());
-    setWorkflowStats(
-      // getWorkflowStatistics returns an array of all workflows in the workflowTypes array
-      workflowTypes.map((type) => analytics.getWorkflowStatistics(type))
-    );
+    setWorkflowStats(workflowTypes.map(type => analytics.getWorkflowStatistics(type)));
     const interval = setInterval(() => {
       setStats(analytics.getOverallStatistics());
       setProgressData(analytics.getDailyProgress());
-      setWorkflowStats(
-        workflowTypes.map((type) => analytics.getWorkflowStatistics(type))
-      );
+      setWorkflowStats(workflowTypes.map(type => analytics.getWorkflowStatistics(type)));
     }, 10000);
     return () => clearInterval(interval);
   }, [analytics, workflowTypes]);
@@ -241,4 +235,3 @@ const WorkflowProgressVisualization: React.FC<WorkflowProgressVisualizationProps
 export default WorkflowProgressVisualization;
 
 // NOTE: This file is now getting long and should be further refactored into its own folder of subcomponents & hooks!
-
