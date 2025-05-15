@@ -9,6 +9,10 @@ import CompanyManager from "@/components/crm/CompanyManager";
 import TaskManager from "@/components/crm/TaskManager";
 import { Button } from '@/components/ui/button';
 import DialPadInput from "@/components/crm/DialPadInput";
+import CallHistoryList from '@/components/crm/CallHistoryList';
+import ActiveCallPanel from '@/components/crm/ActiveCallPanel';
+import CallAnalyticsPanel from '@/components/crm/CallAnalyticsPanel';
+import { formatDate, formatDuration, getInitials } from '@/components/crm/callUtils';
 
 const CRMPage: React.FC = () => {
   const { language } = useLanguage();
@@ -63,6 +67,20 @@ const CRMPage: React.FC = () => {
     } finally {
       setCallInProgress(false);
     }
+  };
+
+  // Handler for after-call workflow
+  const handleAfterCallAction = (action: "task" | "note", call?: any) => {
+    // Basic stub, show toast for now, later open Task or Note dialog pre-filled with contact/call info
+    toast({
+      title: action === "task"
+        ? language === "de" ? "Neuer Task wird erstellt" : "Creating follow-up task"
+        : language === "de" ? "Neue Notiz wird erstellt" : "Creating note",
+      description: call?.name
+        ? (language === "de" ? `Für ${call.name}` : `For ${call.name}`)
+        : "",
+    });
+    // TODO: navigate to TaskManager, open dialog, or pre-fill note/task
   };
 
   return (
@@ -128,7 +146,37 @@ const CRMPage: React.FC = () => {
           <TaskManager />
         </TabsContent>
         <TabsContent value="calls">
-          <CallTracker callHistory={callHistory} />
+          {/* Enhanced call tracker: use CallHistoryList */}
+          <div className="mb-3">
+            <h4 className="font-medium mb-1">Recent Calls (Realtime)</h4>
+            {callHistory.length > 0 ? (
+              <ul className="pl-2 space-y-1">
+                {callHistory.map((entry, idx) => (
+                  <li key={idx} className="flex items-center space-x-2 text-sm">
+                    <Phone className="h-3 w-3 text-primary" />
+                    <span>{entry.name} ({entry.phone})</span>
+                    <span className="ml-2 text-muted-foreground text-xs">
+                      {formatDate(entry.timestamp, language)}
+                    </span>
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <span className="text-muted-foreground text-xs">No recent calls</span>
+            )}
+          </div>
+          <CallHistoryList
+            calls={callHistory.map((c, i) => ({
+              ...c,
+              id: `history-${i}`,
+              contactName: c.name,
+              type: "outgoing",
+              status: "completed",
+              duration: 0,
+              timestamp: c.timestamp,
+            }))}
+            language={language}
+          />
         </TabsContent>
         <TabsContent value="history">
           <div className="flex flex-col items-center justify-center h-64 border rounded-lg bg-muted/30">
@@ -166,6 +214,16 @@ const CRMPage: React.FC = () => {
         onConfirm={handleConfirmCall}
         loading={callInProgress}
         error={callError}
+        afterCallActions={[
+          {
+            label: language === "de" ? "Follow-up Task hinzufügen" : "Add Follow-up Task",
+            onClick: () => handleAfterCallAction("task", selectedContact)
+          },
+          {
+            label: language === "de" ? "Notiz hinzufügen" : "Add Note",
+            onClick: () => handleAfterCallAction("note", selectedContact)
+          }
+        ]}
       />
     </div>
   );

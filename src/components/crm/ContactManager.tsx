@@ -8,6 +8,7 @@ import { useToast } from '@/components/ui/use-toast';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { getInitials } from "./callUtils";
 
 // Use ContactType type for demoContacts type
 const demoContacts: Contact[] = [
@@ -73,15 +74,6 @@ const ContactManager: React.FC<ContactManagerProps> = ({ onInitiateCall }) => {
         description: contact.name,
       });
     }
-  };
-
-  const getInitials = (name: string) => {
-    return name
-      .split(' ')
-      .map(part => part[0])
-      .join('')
-      .toUpperCase()
-      .substring(0, 2);
   };
 
   const getTypeLabel = (type: ContactType): string => {

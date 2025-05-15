@@ -1,4 +1,3 @@
-
 import React from "react";
 import { PhoneCall } from "lucide-react";
 import { Input } from "@/components/ui/input";
@@ -26,8 +25,8 @@ const DialPadInput: React.FC<DialPadInputProps> = ({
   placeholder = "Enter phone number",
 }) => {
   return (
-    <div className={`rounded-xl bg-background border shadow-sm px-4 py-3 flex flex-col sm:flex-row gap-3 sm:items-end transition-all ${className}`}>
-      <div className="flex-1">
+    <div className={`rounded-xl bg-background border shadow-sm px-4 py-3 flex flex-col sm:flex-row gap-3 sm:items-end transition-all ${className || ""}`}>
+      <div className="flex-1 min-w-0">
         <label htmlFor="manual-dial-input" className="block text-base font-semibold mb-1 text-primary">
           <span className="inline-flex items-center">
             <PhoneCall className="h-5 w-5 mr-1 text-primary" />
