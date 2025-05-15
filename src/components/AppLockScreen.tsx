@@ -1,3 +1,4 @@
+
 import React, { useState, useRef, useEffect } from 'react';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
@@ -7,6 +8,7 @@ import { useUserPreferences } from '../contexts/UserPreferencesContext';
 import { Fingerprint, Lock, Eye, EyeOff } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 import { useNavigate } from 'react-router-dom';
+import BiometricButton from './app-lock/BiometricButton';
 
 const AppLockScreen: React.FC = () => {
   const { unlockApp, useFaceId, isBiometricEnabled, pin } = useAppLock();
@@ -15,6 +17,7 @@ const AppLockScreen: React.FC = () => {
   const [showPin, setShowPin] = useState(false);
   const [error, setError] = useState('');
   const [attemptsLeft, setAttemptsLeft] = useState(5);
+  const [isAuthenticating, setIsAuthenticating] = useState(false);
   const pinInputRef = useRef<HTMLInputElement>(null);
   const navigate = useNavigate();
   const biometricsEnabled = preferences.biometricsEnabled || false;
@@ -25,7 +28,7 @@ const AppLockScreen: React.FC = () => {
     
     // Redirect if no PIN is set
     if (!pin) {
-      navigate('/dashboard');
+      navigate('/crm');
     }
   }, [navigate, pin]);
 
@@ -50,7 +53,7 @@ const AppLockScreen: React.FC = () => {
         title: "Unlocked",
         description: "App successfully unlocked",
       });
-      navigate('/dashboard');
+      navigate('/crm');
     } else {
       const newAttemptsLeft = attemptsLeft - 1;
       setAttemptsLeft(newAttemptsLeft);
@@ -76,14 +79,16 @@ const AppLockScreen: React.FC = () => {
 
   const handleBiometricAuth = async () => {
     try {
+      setIsAuthenticating(true);
       const success = await useFaceId();
+      setIsAuthenticating(false);
       
       if (success) {
         toast({
           title: "Biometric Authentication",
           description: "Successfully authenticated",
         });
-        navigate('/dashboard');
+        navigate('/crm');
       } else {
         toast({
           title: "Authentication Failed",
@@ -92,6 +97,7 @@ const AppLockScreen: React.FC = () => {
         });
       }
     } catch (error) {
+      setIsAuthenticating(false);
       toast({
         title: "Error",
         description: "Biometric authentication unavailable",
@@ -100,7 +106,6 @@ const AppLockScreen: React.FC = () => {
     }
   };
 
-  
   return (
     <div 
       className="flex items-center justify-center min-h-screen bg-background p-4"
@@ -160,14 +165,11 @@ const AppLockScreen: React.FC = () => {
           </Button>
           
           {isBiometricEnabled && biometricsEnabled && (
-            <Button 
-              variant="outline" 
-              className="w-full flex items-center gap-2" 
+            <BiometricButton 
               onClick={handleBiometricAuth}
-            >
-              <Fingerprint className="h-5 w-5" aria-hidden="true" />
-              Use Biometrics
-            </Button>
+              isLoading={isAuthenticating}
+              type="fingerprint"
+            />
           )}
         </CardFooter>
       </Card>

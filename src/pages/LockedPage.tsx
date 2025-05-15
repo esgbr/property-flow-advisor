@@ -11,7 +11,7 @@ const LockedPage: React.FC = () => {
   // Redirect to dashboard if not locked or no PIN is set
   useEffect(() => {
     if (!isLocked || !pin) {
-      navigate('/dashboard');
+      navigate('/crm');
     }
   }, [isLocked, pin, navigate]);
   
