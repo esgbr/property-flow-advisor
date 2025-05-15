@@ -1,0 +1,55 @@
+[global]
+  check_schema = true
+  linked = true
+
+[api]
+  debug = false
+  netinfo = true
+  port = 54321
+  schema = "public"
+
+[database]
+  db_dump_path = ""
+  idle_timeout = 180
+  prepared_statements = true
+  reconnect = 2
+  ssl = "disable"
+  statement_timeout = 60
+  template = "template1"
+
+[storage]
+  file_size_limit = 52428800
+  search_algorithm = "prefix"
+
+[realtime]
+  websockets_enabled = true
+
+[auth]
+  additional_jwt_claims = []
+  admin_roles = []
+  anonymous_signup_enabled = true
+  jwt_secret = "super-secret-jwt-token-with-at-least-32-characters"
+  sms_provider = "twilio"
+
+[auth.email]
+  double_confirm_changes = false
+  enable_smtp_testing = true
+  mailer_url = "smtp://project-auth-mailer:3000"
+  template_bucket = "auth-templates"
+
+[auth.external]
+  providers = []
+
+[auth.phone]
+  code_length = 6
+  max_attempts = 3
+
+[functions]
+  max_concurrency = 10
+  max_size = 10485760
+  reserve = true
+  slug_length = 32
+  timeout = 60
+
+[functions.call-contact]
+verify_jwt = false

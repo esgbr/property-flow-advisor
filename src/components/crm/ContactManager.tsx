@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -116,6 +115,43 @@ const ContactManager: React.FC = () => {
     }
   };
 
+  // Helper for calling the contact using Edge Function
+  const callContactViaTwilio = async (contact: Contact) => {
+    toast({
+      title: language === "de" ? "Anruf wird gestartet..." : "Initiating call...",
+      description: `${contact.name}: ${contact.phone}`,
+    });
+    try {
+      const res = await fetch(
+        `https://vibylylkqsdouaeebpye.functions.supabase.co/call-contact`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ toPhone: contact.phone }),
+        }
+      );
+      const data = await res.json();
+      if (res.ok) {
+        toast({
+          title: language === "de" ? "Anruf erfolgreich gestartet" : "Call started successfully",
+          description: `${contact.name} (${contact.phone})`,
+        });
+      } else {
+        toast({
+          title: language === "de" ? "Fehler beim Anruf" : "Call failed",
+          description: data.error || "Unknown error",
+          variant: "destructive",
+        });
+      }
+    } catch (err: any) {
+      toast({
+        title: language === "de" ? "Fehler beim Anruf" : "Call failed",
+        description: err?.message || "Unknown error",
+        variant: "destructive",
+      });
+    }
+  };
+
   return (
     <Card className="w-full">
       <CardHeader className="pb-2">
@@ -207,7 +243,7 @@ const ContactManager: React.FC = () => {
                       <Button 
                         variant="ghost" 
                         size="icon" 
-                        onClick={() => initiateCall(contact)}
+                        onClick={() => callContactViaTwilio(contact)}
                         title={language === 'de' ? 'Anrufen' : 'Call'}
                       >
                         <Phone className="h-4 w-4 text-primary" />
