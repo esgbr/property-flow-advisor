@@ -1,15 +1,18 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, Building, MapPin, Phone, Mail, Star, StarOff, Calendar, Edit } from 'lucide-react';
+import { ArrowLeft, Building, MapPin, Phone, Mail, Star, StarOff, Calendar, Edit, File } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useToast } from '@/hooks/use-toast';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import ActivityHistory from './ActivityHistory';
 import TaskManager from './TaskManager';
+import DocumentList from './documents/DocumentList';
+import DocumentUploader from './documents/DocumentUploader';
 import { Company, CompanyType, useCompanies } from '@/hooks/use-crm-data';
+import { getCompanyTypeLabel, getCompanyBadgeColor, formatDate } from '@/utils/crmUtils';
 
 interface CompanyDetailViewProps {
   company: Company;
@@ -20,6 +23,7 @@ const CompanyDetailView: React.FC<CompanyDetailViewProps> = ({ company, onBack }
   const { language } = useLanguage();
   const { toast } = useToast();
   const { updateCompany } = useCompanies();
+  const [activeTab, setActiveTab] = useState('activities');
 
   const toggleFavorite = async () => {
     const result = await updateCompany(company.id, { favorite: !company.favorite });
@@ -34,47 +38,15 @@ const CompanyDetailView: React.FC<CompanyDetailViewProps> = ({ company, onBack }
     }
   };
 
-  const getTypeLabel = (type: CompanyType): string => {
-    if (language === 'de') {
-      const germanLabels: Record<CompanyType, string> = {
-        agency: 'Immobilienagentur',
-        investment_firm: 'Investmentfirma',
-        property_manager: 'Hausverwaltung',
-        construction: 'Bauunternehmen',
-        other: 'Sonstige'
-      };
-      return germanLabels[type];
-    } else {
-      const englishLabels: Record<CompanyType, string> = {
-        agency: 'Real Estate Agency',
-        investment_firm: 'Investment Firm',
-        property_manager: 'Property Manager',
-        construction: 'Construction',
-        other: 'Other'
-      };
-      return englishLabels[type];
-    }
-  };
-
-  const getBadgeColor = (type: CompanyType): string => {
-    switch (type) {
-      case 'agency': return 'bg-blue-500';
-      case 'investment_firm': return 'bg-purple-500';
-      case 'property_manager': return 'bg-green-500';
-      case 'construction': return 'bg-amber-500';
-      default: return 'bg-gray-500';
-    }
-  };
-
   return (
-    <Card className="w-full">
+    <Card className="w-full animate-fade-in">
       <CardHeader className="pb-2">
         <div className="flex items-center justify-between">
           <Button 
             variant="ghost" 
             size="sm"
             onClick={onBack}
-            className="mb-2"
+            className="mb-2 transition-transform hover:scale-105"
           >
             <ArrowLeft className="h-4 w-4 mr-2" />
             {language === 'de' ? 'Zurück' : 'Back'}
@@ -85,6 +57,7 @@ const CompanyDetailView: React.FC<CompanyDetailViewProps> = ({ company, onBack }
               variant="ghost" 
               size="icon"
               onClick={toggleFavorite}
+              className="transition-transform hover:scale-110"
             >
               {company.favorite ? (
                 <Star className="h-4 w-4 text-amber-500 fill-amber-500" />
@@ -100,6 +73,7 @@ const CompanyDetailView: React.FC<CompanyDetailViewProps> = ({ company, onBack }
                 title: language === 'de' ? 'Kommt bald' : 'Coming soon',
                 description: language === 'de' ? 'Bearbeitungsfunktion wird bald verfügbar sein' : 'Edit functionality will be available soon'
               })}
+              className="transition-transform hover:scale-110"
             >
               <Edit className="h-4 w-4" />
             </Button>
@@ -114,9 +88,9 @@ const CompanyDetailView: React.FC<CompanyDetailViewProps> = ({ company, onBack }
         <div className="flex flex-wrap gap-2 mt-1">
           <Badge 
             variant="outline" 
-            className={`${getBadgeColor(company.type)} text-white`}
+            className={getCompanyBadgeColor(company.type as CompanyType)}
           >
-            {getTypeLabel(company.type)}
+            {getCompanyTypeLabel(company.type as CompanyType, language)}
           </Badge>
         </div>
       </CardHeader>
@@ -141,7 +115,7 @@ const CompanyDetailView: React.FC<CompanyDetailViewProps> = ({ company, onBack }
             <Calendar className="h-4 w-4 text-muted-foreground" />
             <span>
               {language === 'de' ? 'Erstellt am: ' : 'Created: '}
-              {new Date(company.created_at || Date.now()).toLocaleDateString()}
+              {formatDate(company.created_at || new Date().toISOString(), language)}
             </span>
           </div>
         </div>
@@ -155,13 +129,16 @@ const CompanyDetailView: React.FC<CompanyDetailViewProps> = ({ company, onBack }
           </div>
         )}
         
-        <Tabs defaultValue="activities" className="mt-6">
-          <TabsList className="grid grid-cols-2">
+        <Tabs defaultValue={activeTab} onValueChange={setActiveTab} className="mt-6">
+          <TabsList className="grid grid-cols-3">
             <TabsTrigger value="activities">
               {language === 'de' ? 'Aktivitäten' : 'Activities'}
             </TabsTrigger>
             <TabsTrigger value="tasks">
               {language === 'de' ? 'Aufgaben' : 'Tasks'}
+            </TabsTrigger>
+            <TabsTrigger value="documents">
+              {language === 'de' ? 'Dokumente' : 'Documents'}
             </TabsTrigger>
           </TabsList>
           
@@ -169,6 +146,8 @@ const CompanyDetailView: React.FC<CompanyDetailViewProps> = ({ company, onBack }
             <ActivityHistory 
               companyId={company.id}
               contactId={undefined}
+              companyName={company.name}
+              contactName={undefined}
             />
           </TabsContent>
           
@@ -176,7 +155,25 @@ const CompanyDetailView: React.FC<CompanyDetailViewProps> = ({ company, onBack }
             <TaskManager 
               companyId={company.id}
               contactId={undefined}
+              companyName={company.name}
+              contactName={undefined}
             />
+          </TabsContent>
+          
+          <TabsContent value="documents" className="mt-4 space-y-4">
+            <DocumentUploader 
+              entityId={company.id}
+              entityType="company"
+            />
+            <div className="mt-4">
+              <h3 className="text-lg font-medium mb-3">
+                {language === 'de' ? 'Vorhandene Dokumente' : 'Existing Documents'}
+              </h3>
+              <DocumentList
+                entityId={company.id}
+                entityType="company"
+              />
+            </div>
           </TabsContent>
         </Tabs>
       </CardContent>
