@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { cn } from '@/lib/utils';
@@ -9,6 +8,7 @@ import LanguageSwitcher from '@/components/LanguageSwitcher';
 import { useLanguage } from '@/contexts/LanguageContext';
 import UserMenu from '@/components/auth/UserMenu';
 import { useUserPreferences } from '@/contexts/UserPreferencesContext';
+import CRMMenuButton from '@/components/navigation/CRMMenuButton';
 
 interface NavbarProps {
   className?: string;
@@ -35,10 +35,6 @@ const Navbar: React.FC<NavbarProps> = ({ className, showMobileMenu = true }) => 
   const { t } = useLanguage();
   const { isAuthenticated } = useUserPreferences();
   const location = useLocation();
-  const crmActive = location.pathname.startsWith("/crm");
-
-  // CRM menu label from translations or fallback to CRM
-  const crmLabel = t('crm') || 'CRM';
 
   return (
     <header className={cn('border-b flex items-center justify-between px-4 h-14', className)} role="banner">
@@ -65,8 +61,8 @@ const Navbar: React.FC<NavbarProps> = ({ className, showMobileMenu = true }) => 
           <Building className="h-6 w-6 text-primary mr-2" />
           <span className="font-bold hidden md:block">PropertyFlow</span>
         </Link>
-        {/* CRM tab always visible in the menu */}
-        <CRMNavButton active={crmActive} label={crmLabel} />
+        {/* Always show CRM menu button and keep styling consistent */}
+        <CRMMenuButton />
       </div>
 
       <div className="flex items-center space-x-2">
@@ -79,4 +75,3 @@ const Navbar: React.FC<NavbarProps> = ({ className, showMobileMenu = true }) => 
 };
 
 export default Navbar;
-

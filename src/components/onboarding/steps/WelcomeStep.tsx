@@ -15,9 +15,8 @@ const WelcomeStep: React.FC<OnboardingStepProps> = ({ data, updateData, onNext }
       setError(language === 'de' ? 'Bitte geben Sie Ihren Namen ein' : 'Please enter your name');
       return;
     }
-    
     updateData('name', name);
-    
+
     if (onNext) {
       onNext();
     }

@@ -11,6 +11,7 @@ import {
 import { cn } from '@/lib/utils';
 import { useUserPreferences } from '@/contexts/UserPreferencesContext';
 import { useMarketFilter } from '@/hooks/use-market-filter';
+import CRMMenuButton from '@/components/navigation/CRMMenuButton';
 
 // Define navigation item type for better type safety
 interface NavItem {
@@ -226,7 +227,8 @@ const AppSidebar = () => {
             <Building className="h-8 w-8 text-primary" />
             <span className="text-xl font-bold ml-2">PropertyFlow</span>
           </Link>
-          
+          {/* Add CRM menu on top for fast sidebar access as well */}
+          <CRMMenuButton isSidebar className="mb-2" />
           {navigationCategories.map(renderCategory)}
         </div>
         <div className="mt-auto px-3">
