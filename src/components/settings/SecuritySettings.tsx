@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Switch } from '@/components/ui/switch';
@@ -69,9 +68,9 @@ const SecuritySettings = () => {
   };
   
   const securityLevel = pin ? 
-    (preferences.twoFactorEnabled ? 'high' : 'medium') : 
+    ('medium') : 
     'low';
-  
+
   return (
     <Card>
       <CardHeader>
@@ -86,15 +85,13 @@ const SecuritySettings = () => {
           <div className="flex items-center gap-3 mb-3">
             {securityLevel === 'low' && <ShieldAlert className="h-5 w-5 text-red-500" />}
             {securityLevel === 'medium' && <ShieldCheck className="h-5 w-5 text-amber-500" />}
-            {securityLevel === 'high' && <ShieldCheck className="h-5 w-5 text-green-500" />}
             
             <div>
               <h3 className="font-medium">
                 {t('securityLevel')}: {' '}
                 <span className={
                   securityLevel === 'low' ? 'text-red-500' : 
-                  securityLevel === 'medium' ? 'text-amber-500' : 
-                  'text-green-500'
+                  'text-amber-500'
                 }>
                   {t(securityLevel)}
                 </span>
@@ -102,7 +99,6 @@ const SecuritySettings = () => {
               <p className="text-sm text-muted-foreground">
                 {securityLevel === 'low' && t('lowSecurityDescription')}
                 {securityLevel === 'medium' && t('mediumSecurityDescription')}
-                {securityLevel === 'high' && t('highSecurityDescription')}
               </p>
             </div>
           </div>
@@ -144,8 +140,8 @@ const SecuritySettings = () => {
           </div>
           <Switch
             id="biometrics"
-            checked={preferences.biometricsEnabled || false}
-            onCheckedChange={(checked) => updatePreferences({ biometricsEnabled: checked })}
+            checked={preferences.appLockMethod === 'biometric'}
+            onCheckedChange={(checked) => updatePreferences({ appLockMethod: checked ? 'biometric' : 'pin' })}
             disabled={!preferences.appLockEnabled}
           />
         </div>

@@ -4,7 +4,8 @@ import { useUserPreferences } from '@/contexts/UserPreferencesContext';
 
 export const useScreenReader = () => {
   const { preferences } = useUserPreferences();
-  const screenReaderActive = preferences.screenReaderActive || false;
+  // Use correct property: accessibility.screenReader instead of preferences.screenReaderActive
+  const screenReaderActive = preferences.accessibility?.screenReader || false;
   
   // Announce navigation to screen readers
   const announceNavigation = useCallback((destination: string) => {

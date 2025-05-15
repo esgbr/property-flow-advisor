@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useLanguage } from '@/contexts/LanguageContext';
@@ -12,11 +13,11 @@ import { Lock, Unlock, AlertTriangle, Fingerprint } from 'lucide-react';
 const AppLockScreen: React.FC = () => {
   const { t } = useLanguage();
   const navigate = useNavigate();
-  const { unlockApp, isLocked, setIsLocked } = useAppLock();
+  const { unlockApp, isLocked } = useAppLock();
   const [pin, setPin] = useState('');
   const { preferences } = useUserPreferences();
   const [error, setError] = useState('');
-  
+
   useEffect(() => {
     // Redirect if not locked
     if (!isLocked) {
@@ -25,8 +26,9 @@ const AppLockScreen: React.FC = () => {
   }, [isLocked, navigate]);
 
   const handleUnlock = () => {
-    if (pin === localStorage.getItem('appPin')) {
-      unlockApp();
+    // unlockApp now expects a pin argument
+    const unlocked = unlockApp(pin);
+    if (unlocked) {
       navigate('/dashboard');
     } else {
       setError(t('incorrectPIN'));
@@ -53,6 +55,9 @@ const AppLockScreen: React.FC = () => {
       duration: 5000,
     });
   };
+
+  // Use preferences.appLockMethod for biometric enabled status
+  const biometricsEnabled = preferences.appLockMethod === 'biometric';
 
   return (
     <div className="flex items-center justify-center min-h-screen bg-gray-100 dark:bg-gray-900">
@@ -89,7 +94,7 @@ const AppLockScreen: React.FC = () => {
             <Unlock className="w-4 h-4 mr-2" />
             {t('unlock')}
           </Button>
-          {preferences.biometricsEnabled && (
+          {biometricsEnabled && (
             <Button variant="outline" onClick={handleBiometricUnlock} className="w-full">
               <Fingerprint className="w-4 h-4 mr-2" />
               {t('unlockWithBiometrics')}
