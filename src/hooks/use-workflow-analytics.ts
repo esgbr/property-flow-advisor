@@ -1,93 +1,100 @@
 
-import { useCallback, useMemo } from 'react';
-import { useWorkflow, WorkflowType } from '@/hooks/use-workflow';
+import { useMemo } from 'react';
+import { useWorkflowState } from '@/contexts/WorkflowStateContext';
+import { workflowDefinitions, WorkflowType } from '@/data/workflow-definitions';
 
 /**
- * Hook to analyze workflow data and generate statistics
+ * Hook for analyzing workflow usage and statistics
  */
-export const useWorkflowAnalytics = (workflowTypes: WorkflowType[]) => {
-  // Initialize workflow hooks for each workflow type
-  const workflows = useMemo(() => {
-    return workflowTypes.map(type => ({
-      type,
-      hook: useWorkflow(type)
-    }));
-  }, [workflowTypes]);
+export function useWorkflowAnalytics(workflowTypes: WorkflowType[] = ['steuer', 'immobilien', 'finanzierung', 'analyse']) {
+  const { workflows } = useWorkflowState();
   
-  // Get overall statistics across all workflows
-  const getOverallStatistics = useCallback(() => {
-    const stats = {
-      totalSteps: 0,
-      completedSteps: 0,
-      overallProgress: 0,
-      completedWorkflows: 0,
-      incompleteWorkflows: 0
-    };
+  // Calculate statistics for individual workflows
+  const getWorkflowStatistics = (workflowType: WorkflowType) => {
+    const workflowId = `workflow_${workflowType}`;
+    const workflow = workflows[workflowId];
+    const { steps } = workflowDefinitions[workflowType];
     
-    workflows.forEach(({ hook }) => {
-      const steps = hook.getStepsWithStatus();
-      const completed = steps.filter(step => step.isComplete).length;
-      
-      stats.totalSteps += steps.length;
-      stats.completedSteps += completed;
-      
-      // Check if workflow is complete
-      if (completed === steps.length && steps.length > 0) {
-        stats.completedWorkflows += 1;
-      } else if (completed > 0) {
-        stats.incompleteWorkflows += 1;
-      }
-    });
-    
-    // Calculate overall progress
-    stats.overallProgress = stats.totalSteps > 0 
-      ? Math.round((stats.completedSteps / stats.totalSteps) * 100) 
-      : 0;
-    
-    return stats;
-  }, [workflows]);
-  
-  // Get daily progress statistics for a date range
-  const getDailyProgress = useCallback((days: number = 30) => {
-    // This would typically query from a workflow history database
-    // For now, we'll return mock data
-    const today = new Date();
-    const dailyData: { date: string; completedSteps: number }[] = [];
-    
-    for (let i = days - 1; i >= 0; i--) {
-      const date = new Date(today);
-      date.setDate(date.getDate() - i);
-      
-      dailyData.push({
-        date: date.toISOString().split('T')[0],
-        completedSteps: Math.floor(Math.random() * 3) // Mock data
-      });
+    // Default values if workflow doesn't exist
+    if (!workflow || !workflow.completedSteps) {
+      return {
+        workflowType,
+        totalSteps: steps.length,
+        completedSteps: 0,
+        progress: 0,
+        isStarted: false,
+        isCompleted: false,
+        startedAt: null,
+        lastInteractionAt: null,
+        currentStepId: null
+      };
     }
     
-    return dailyData;
-  }, []);
+    const completedCount = workflow.completedSteps.length;
+    const progress = Math.round((completedCount / steps.length) * 100);
+    const isCompleted = completedCount === steps.length;
+    
+    return {
+      workflowType,
+      totalSteps: steps.length,
+      completedSteps: completedCount,
+      progress,
+      isStarted: completedCount > 0,
+      isCompleted,
+      startedAt: workflow.startedAt,
+      lastInteractionAt: workflow.lastInteractionAt,
+      currentStepId: workflow.currentStep
+    };
+  };
   
-  // Get workflow-specific statistics
-  const getWorkflowStatistics = useCallback(() => {
-    return workflows.map(({ type, hook }) => {
-      const steps = hook.getStepsWithStatus();
-      const completed = steps.filter(step => step.isComplete).length;
-      
-      return {
-        type,
-        totalSteps: steps.length,
-        completedSteps: completed,
-        progress: hook.getWorkflowProgress(),
-        isComplete: completed === steps.length && steps.length > 0
-      };
-    });
-  }, [workflows]);
+  // Calculate overall statistics for all workflows
+  const getOverallStatistics = () => {
+    const stats = workflowTypes.map(getWorkflowStatistics);
+    
+    const totalSteps = stats.reduce((acc, curr) => acc + curr.totalSteps, 0);
+    const totalCompleted = stats.reduce((acc, curr) => acc + curr.completedSteps, 0);
+    const startedWorkflows = stats.filter(s => s.isStarted).length;
+    const completedWorkflows = stats.filter(s => s.isCompleted).length;
+    const incompleteWorkflows = stats.filter(s => s.isStarted && !s.isCompleted).length;
+    
+    return {
+      totalSteps,
+      totalCompleted,
+      overallProgress: totalSteps ? Math.round((totalCompleted / totalSteps) * 100) : 0,
+      startedWorkflows,
+      completedWorkflows,
+      incompleteWorkflows
+    };
+  };
+  
+  // Get recommended next workflows based on current progress
+  const getRecommendedWorkflows = () => {
+    const stats = workflowTypes.map(getWorkflowStatistics);
+    
+    // Find workflows with some progress but not completed
+    const inProgress = stats.filter(s => s.isStarted && !s.isCompleted)
+      .sort((a, b) => b.progress - a.progress); // Sort by progress (highest first)
+    
+    // Find workflows not started yet
+    const notStarted = stats.filter(s => !s.isStarted);
+    
+    return {
+      continueWorkflows: inProgress.slice(0, 2), // Top 2 in-progress workflows
+      startWorkflows: notStarted.slice(0, 2)     // Suggest 2 new workflows
+    };
+  };
   
   return {
+    getWorkflowStatistics,
     getOverallStatistics,
-    getDailyProgress,
-    getWorkflowStatistics
+    getRecommendedWorkflows,
+    // Individual statistics for easy access
+    workflowStats: useMemo(() => 
+      Object.fromEntries(
+        workflowTypes.map(type => [type, getWorkflowStatistics(type)])
+      ), 
+    [workflows, workflowTypes])
   };
-};
+}
 
 export default useWorkflowAnalytics;

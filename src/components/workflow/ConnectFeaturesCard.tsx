@@ -1,71 +1,95 @@
 
 import React from 'react';
-import { useNavigate } from 'react-router-dom';
-import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { useLanguage } from '@/contexts/LanguageContext';
-import { ArrowRight } from 'lucide-react';
+import { cn } from '@/lib/utils';
+import { useNavigate } from 'react-router-dom';
+import { useScreenReader } from '@/hooks/use-screen-reader';
 
-export interface ConnectedFeature {
+interface Feature {
   id: string;
-  title: Record<string, string>;
-  description: Record<string, string>;
+  title: { en: string; de: string };
+  description: { en: string; de: string };
   path: string;
   icon?: React.ReactNode;
 }
 
 interface ConnectFeaturesCardProps {
-  title: Record<string, string>;
-  description?: Record<string, string>;
-  features: ConnectedFeature[];
+  title: { en: string; de: string };
+  description: { en: string; de: string };
+  features: Feature[];
   className?: string;
+  variant?: 'default' | 'compact';
 }
 
+/**
+ * A card component that connects related features across the application
+ * Provides a consistent way to navigate between related tools
+ */
 const ConnectFeaturesCard: React.FC<ConnectFeaturesCardProps> = ({
   title,
   description,
   features,
   className,
+  variant = 'default'
 }) => {
   const { language } = useLanguage();
   const navigate = useNavigate();
-
+  const { announceNavigation } = useScreenReader();
+  
+  const handleNavigate = (path: string, featureTitle: string) => {
+    announceNavigation(featureTitle);
+    navigate(path);
+  };
+  
+  const isCompact = variant === 'compact';
+  
   return (
-    <Card className={className}>
-      <CardHeader>
-        <CardTitle>{title[language] || title.en}</CardTitle>
-        {description && (
-          <p className="text-muted-foreground">{description[language] || description.en}</p>
-        )}
+    <Card className={cn(className)}>
+      <CardHeader className={cn(isCompact ? "py-3 px-4" : "")}>
+        <CardTitle className={cn(isCompact ? "text-base" : "")}>
+          {title[language as keyof typeof title]}
+        </CardTitle>
+        <CardDescription>
+          {description[language as keyof typeof description]}
+        </CardDescription>
       </CardHeader>
-      <CardContent>
-        <div className="space-y-4">
+      <CardContent className={cn(isCompact ? "px-4 py-2" : "")}>
+        <div className={cn(
+          "grid gap-4",
+          isCompact ? "grid-cols-1 sm:grid-cols-2" : "grid-cols-1 sm:grid-cols-2 lg:grid-cols-3"
+        )}>
           {features.map((feature) => (
             <div 
               key={feature.id}
-              className="p-4 border rounded-lg hover:bg-muted/50 transition-colors cursor-pointer"
-              onClick={() => navigate(feature.path)}
+              className="bg-card border rounded-md p-3 flex flex-col h-full shadow-sm hover:shadow-md transition-shadow"
             >
-              <div className="flex items-start gap-3">
+              <div className="flex items-start mb-2">
                 {feature.icon && (
-                  <div className="mt-0.5 text-primary">{feature.icon}</div>
+                  <div className="mr-3 text-primary">{feature.icon}</div>
                 )}
-                <div>
-                  <h4 className="font-medium">{feature.title[language] || feature.title.en}</h4>
-                  <p className="text-sm text-muted-foreground">
-                    {feature.description[language] || feature.description.en}
-                  </p>
+                <div className="flex-1">
+                  <h3 className="font-medium text-sm sm:text-base">
+                    {feature.title[language as keyof typeof feature.title]}
+                  </h3>
                 </div>
               </div>
+              <p className="text-xs sm:text-sm text-muted-foreground flex-1 mb-3">
+                {feature.description[language as keyof typeof feature.description]}
+              </p>
+              <Button 
+                variant="outline" 
+                size="sm"
+                className="self-start mt-auto" 
+                onClick={() => handleNavigate(feature.path, feature.title[language as keyof typeof feature.title])}
+              >
+                {language === 'de' ? 'Öffnen' : 'Open'}
+              </Button>
             </div>
           ))}
         </div>
       </CardContent>
-      <CardFooter>
-        <Button variant="ghost" size="sm" className="ml-auto" onClick={() => window.history.back()}>
-          {language === 'de' ? 'Zurück' : 'Back'}
-        </Button>
-      </CardFooter>
     </Card>
   );
 };

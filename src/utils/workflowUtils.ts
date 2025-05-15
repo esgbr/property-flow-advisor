@@ -1,119 +1,163 @@
 
-import { WorkflowType } from '@/hooks/use-workflow';
-import { workflowDefinitions } from '@/data/workflow-definitions';
+import { workflowDefinitions, WorkflowType } from '@/data/workflow-definitions';
+import { WorkflowStep } from '@/hooks/use-unified-workflow';
+import { WorkflowsState } from '@/contexts/WorkflowStateContext';
 
 /**
- * Finds all workflows that are related to a specific market
- * @param market The market to find workflows for
- * @returns Array of workflow types
+ * Get related workflows for a specific tool
+ * @param toolId - The ID of the current tool
+ * @returns Array of related workflow types
  */
-export const getMarketRelevantWorkflows = (market: string): WorkflowType[] => {
-  // Demo implementation - in real app, this would filter based on market-specific data
-  switch (market.toLowerCase()) {
-    case 'germany':
-    case 'deutschland':
-    case 'german':
-      return ['steuer', 'immobilien'];
-    case 'us':
-    case 'usa':
-    case 'united states':
-      return ['finanzierung', 'analyse'];
-    default:
-      return ['immobilien', 'finanzierung'];
-  }
-};
-
-/**
- * Finds related workflows for a specific tool
- * @param toolId The tool ID to find related workflows for
- * @returns Array of workflow types
- */
-export const getRelatedWorkflowsForTool = (toolId: string): WorkflowType[] => {
-  // Demo implementation - in real app, this would be data-driven
-  const toolWorkflowMap: Record<string, WorkflowType[]> = {
-    'grunderwerbsteuer': ['steuer'],
-    'renditerechner': ['immobilien', 'analyse'],
+export function getRelatedWorkflowsForTool(toolId: string): WorkflowType[] {
+  const relationships: Record<string, WorkflowType[]> = {
+    // Tax-related tools
+    'grunderwerbsteuer': ['steuer', 'finanzierung'],
     'afa': ['steuer', 'immobilien'],
-    'mietkauf': ['finanzierung', 'immobilien']
+    'spekulationssteuer': ['steuer', 'analyse'],
+    
+    // Property-related tools
+    'objekterfassung': ['immobilien', 'analyse'],
+    'mietverwaltung': ['immobilien', 'finanzierung'],
+    'nebenkosten': ['immobilien', 'steuer'],
+    
+    // Financing-related tools
+    'calculator': ['finanzierung', 'immobilien'],
+    'offers': ['finanzierung', 'analyse'],
+    'tilgung': ['finanzierung', 'steuer'],
+    
+    // Analysis-related tools
+    'rendite': ['analyse', 'finanzierung'],
+    'marktanalyse': ['analyse', 'immobilien'],
+    'portfolio': ['analyse', 'immobilien'],
+    'investment-report': ['analyse', 'steuer']
   };
   
-  return toolWorkflowMap[toolId] || [];
-};
+  return relationships[toolId] || [];
+}
 
-interface CommonNextStep {
-  workflow: WorkflowType;
-  step: {
-    id: string;
-    path: string;
-    label: Record<string, string>;
-    description?: Record<string, string>;
+/**
+ * Find common next steps across workflows
+ * @param currentToolId - The ID of the current tool
+ * @param excludeWorkflows - Workflow types to exclude
+ * @returns Array of common next steps
+ */
+export function getCommonNextSteps(
+  currentToolId: string,
+  excludeWorkflows: WorkflowType[] = []
+): Array<{ workflow: string; step: WorkflowStep }> {
+  const relatedWorkflows = getRelatedWorkflowsForTool(currentToolId)
+    .filter(wf => !excludeWorkflows.includes(wf));
+  
+  const result: Array<{ workflow: string; step: WorkflowStep }> = [];
+  
+  relatedWorkflows.forEach(workflow => {
+    const { steps } = workflowDefinitions[workflow];
+    
+    // Find the current tool in this workflow
+    const currentStepIndex = steps.findIndex(step => step.id === currentToolId);
+    
+    if (currentStepIndex !== -1 && currentStepIndex < steps.length - 1) {
+      // Get the next step in this workflow
+      const nextStep = steps[currentStepIndex + 1];
+      result.push({ workflow, step: nextStep });
+    }
+  });
+  
+  return result;
+}
+
+/**
+ * Get market relevant workflows based on user's market
+ * @param market - The user's selected market
+ * @returns Array of relevant workflow types
+ */
+export function getMarketRelevantWorkflows(market: string): string[] {
+  switch (market.toLowerCase()) {
+    case 'germany':
+      return ['steuer', 'immobilien', 'finanzierung'];
+    case 'us':
+      return ['analyse', 'finanzierung', 'immobilien'];
+    case 'uk':
+      return ['immobilien', 'analyse', 'finanzierung'];
+    default:
+      return ['analyse', 'immobilien'];
   }
 }
 
 /**
- * Finds common next steps across workflows
- * @param currentTool The current tool being used
- * @param completedSteps Array of completed step IDs
- * @returns Array of common next steps
+ * Find incomplete workflow steps to suggest to the user
+ * @param workflows - The current state of all workflows
+ * @returns Array of incomplete workflow steps
  */
-export const getCommonNextSteps = (currentTool: string, completedSteps: string[]): CommonNextStep[] => {
-  // Demo implementation - in real app, this would be data-driven
-  return [
-    {
-      workflow: 'immobilien',
-      step: {
-        id: 'property-analysis',
-        path: '/tools/property-analysis',
-        label: {
-          en: 'Property Analysis',
-          de: 'Immobilienanalyse'
-        },
-        description: {
-          en: 'Analyze property details and potential',
-          de: 'Immobiliendetails und Potenzial analysieren'
+export function findIncompleteWorkflows(
+  workflows: WorkflowsState
+): Array<{ workflow: string; step: WorkflowStep }> {
+  const result: Array<{ workflow: string; step: WorkflowStep }> = [];
+  
+  // Loop through all workflow types
+  Object.keys(workflowDefinitions).forEach(workflowType => {
+    const workflowId = `workflow_${workflowType}`;
+    const workflow = workflows[workflowId];
+    
+    // Skip if workflow doesn't exist in state or has no steps
+    if (!workflow || !workflow.completedSteps) return;
+    
+    const { steps } = workflowDefinitions[workflowType as WorkflowType];
+    
+    // Find incomplete steps
+    steps.forEach(step => {
+      if (!workflow.completedSteps.includes(step.id)) {
+        // Check if this is the first incomplete step or if its dependencies are met
+        const isDependenciesMet = step.requiredSteps ? 
+          step.requiredSteps.every(reqId => workflow.completedSteps.includes(reqId)) :
+          true;
+        
+        if (isDependenciesMet) {
+          result.push({ workflow: workflowType, step });
+          return; // Only add the first incomplete step per workflow
         }
       }
-    },
-    {
-      workflow: 'finanzierung',
-      step: {
-        id: 'financing-options',
-        path: '/tools/financing',
-        label: {
-          en: 'Financing Options',
-          de: 'Finanzierungsmöglichkeiten'
-        },
-        description: {
-          en: 'Explore financing options for properties',
-          de: 'Finanzierungsmöglichkeiten für Immobilien erkunden'
-        }
-      }
-    }
-  ];
-};
+    });
+  });
+  
+  return result;
+}
 
 /**
- * Find incomplete workflows based on state
- * @param workflows Current workflow state
- * @returns Array of steps in incomplete workflows
+ * Create a unified connector between tools and workflows
+ * @param sourceToolId - The ID of the source tool
+ * @param targetToolId - The ID of the target tool
+ * @returns Connection information with suggested path
  */
-export const findIncompleteWorkflows = (workflows: any) => {
-  // This would be implemented based on actual workflow state structure
-  return [
-    {
-      workflow: 'steuer',
-      step: {
-        id: 'tax-calculation',
-        path: '/tools/tax-calculator',
-        label: {
-          en: 'Tax Calculation',
-          de: 'Steuerberechnung'
-        },
-        description: {
-          en: 'Calculate property-related taxes',
-          de: 'Immobilienbezogene Steuern berechnen'
+export function createWorkflowConnection(
+  sourceToolId: string,
+  targetToolId: string
+): { exists: boolean; path?: string; requiredSteps: string[] } {
+  let exists = false;
+  let path: string | undefined;
+  const requiredSteps: string[] = [];
+  
+  // Search all workflows for a direct connection
+  Object.values(workflowDefinitions).forEach(definition => {
+    const sourceIndex = definition.steps.findIndex(step => step.id === sourceToolId);
+    const targetIndex = definition.steps.findIndex(step => step.id === targetToolId);
+    
+    // If both tools exist in the same workflow
+    if (sourceIndex !== -1 && targetIndex !== -1) {
+      exists = true;
+      
+      // Get the target step path
+      path = definition.steps[targetIndex].path;
+      
+      // Find required steps between source and target
+      if (targetIndex > sourceIndex) {
+        // Target is after source, collect all steps in between
+        for (let i = sourceIndex + 1; i < targetIndex; i++) {
+          requiredSteps.push(definition.steps[i].id);
         }
       }
     }
-  ];
-};
+  });
+  
+  return { exists, path, requiredSteps };
+}
