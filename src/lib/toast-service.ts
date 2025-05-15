@@ -1,100 +1,96 @@
 
+import { toast as showToast } from "@/components/ui/use-toast";
 
-import { toast } from '@/hooks/use-toast';
-import type { ToastProps } from '@/components/ui/toast';
+export type ToastType = 'default' | 'success' | 'warning' | 'error' | 'info';
 
 /**
- * Centralized toast service for consistent toast usage across the app
+ * Centralized toast service to ensure consistent toast notifications
+ * throughout the application.
  */
 export const toastService = {
+  /**
+   * Show a default toast
+   */
+  default: (title: string, description?: string) => {
+    return showToast({
+      title,
+      description,
+    });
+  },
+
   /**
    * Show a success toast
    */
   success: (title: string, description?: string) => {
-    return toast({
+    return showToast({
       title,
       description,
       variant: 'default',
+      className: 'bg-green-500 border-green-600 text-white',
     });
   },
-  
-  /**
-   * Show an informational toast
-   */
-  info: (title: string, description?: string) => {
-    return toast({
-      title,
-      description,
-      variant: 'default',
-    });
-  },
-  
+
   /**
    * Show a warning toast
    */
   warning: (title: string, description?: string) => {
-    return toast({
+    return showToast({
       title,
       description,
       variant: 'default',
-      className: 'bg-yellow-50 border-yellow-300 text-yellow-800',
+      className: 'bg-yellow-500 border-yellow-600 text-white',
     });
   },
-  
+
   /**
    * Show an error toast
    */
   error: (title: string, description?: string) => {
-    return toast({
+    return showToast({
       title,
       description,
       variant: 'destructive',
     });
   },
-  
+
   /**
-   * Show a loading toast that can be updated
+   * Show an info toast
    */
-  loading: (title: string, description?: string) => {
-    return toast({
+  info: (title: string, description?: string) => {
+    return showToast({
       title,
       description,
-      duration: Infinity,
-      className: 'bg-muted/50',
+      variant: 'default',
+      className: 'bg-blue-500 border-blue-600 text-white',
     });
   },
-  
+
   /**
-   * Update a toast by ID
+   * Update an existing toast
    */
-  update: (id: string, options: { title?: string, description?: string, variant?: ToastProps['variant'] }) => {
-    const { update } = toast({ title: "Updating..." });
-    return update({
-      ...options,
-      id,
+  update: (id: string, props: { title?: string; description?: string }) => {
+    const { update } = showToast({
+      title: "Updating toast...",
+    });
+    
+    update({
+      id: id,
+      ...props,
     });
   },
-  
+
   /**
    * Dismiss a toast by ID
    */
   dismiss: (id: string) => {
-    // Create a toast with the id we want to dismiss
-    const { dismiss } = toast({
+    // Create a toast with an internal ID
+    const { dismiss } = showToast({
       title: "Dismissing...",
-      // We can't pass id directly, but we can pass it to the toast function
-      // which returns a dismiss function that knows which toast to dismiss
     });
-    
-    // Store the ID to be dismissed for debugging/logging
-    const toastIdToDismiss = id;
     
     // Call dismiss without arguments as expected by the TypeScript definition
     dismiss();
     
-    return { id: toastIdToDismiss };
+    return id;
   },
 };
-
-export default toastService;
-
