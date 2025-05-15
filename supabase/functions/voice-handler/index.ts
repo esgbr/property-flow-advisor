@@ -1,4 +1,3 @@
-
 import { serve } from "https://deno.land/std@0.192.0/http/server.ts";
 
 // CORS headers for browser/API access
@@ -10,8 +9,7 @@ const corsHeaders = {
 serve(async (req: Request) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
-  const MY_PHONE = Deno.env.get("MY_PHONE");   // your phone must stay a secret
-
+  const MY_PHONE = Deno.env.get("MY_PHONE");
   let goalPhone: string | null = null;
 
   if (req.method === "POST") {
@@ -19,33 +17,42 @@ serve(async (req: Request) => {
     try {
       const formData = await req.formData();
       goalPhone = formData.get("goal_phone") as string | null;
-    } catch (e) {
-      // fallback to nothing
-    }
+    } catch (_) {}
     // If not present, try JSON body (if CRM sends it this way)
     if (!goalPhone) {
       try {
         const body = await req.json();
         goalPhone = body.goal_phone ?? null;
-      } catch (e) {
-        // fallback to nothing
-      }
+      } catch (_) {}
     }
   } else {
-    // Allow ?goal_phone=... on GET requests (not typical for Twilio, but for custom clients)
     const url = new URL(req.url);
     goalPhone = url.searchParams.get("goal_phone");
   }
 
-  // Fallback to secret if no variable provided
   const GOAL_PHONE_FALLBACK = Deno.env.get("GOAL_PHONE");
   const GOAL_PHONE = goalPhone || GOAL_PHONE_FALLBACK;
 
+  // Always respond with valid XML and correct headers!
   if (!MY_PHONE || !GOAL_PHONE) {
-    return new Response("Missing phone configuration", { status: 400, headers: corsHeaders });
+    // Return valid, but safe TwiML so Twilio doesn’t fallback to music/demo!
+    const errorTwiml = `
+<Response>
+  <Say voice="alice">Es ist ein Fehler aufgetreten. Bitte versuchen Sie es später erneut.</Say>
+  <Hangup/>
+</Response>
+    `.trim();
+
+    return new Response(errorTwiml, {
+      status: 200,
+      headers: {
+        ...corsHeaders,
+        "Content-Type": "text/xml",
+      },
+    });
   }
 
-  // Respond with TwiML to dial your phone, then the target number, recording the call
+  // Success: normal TwiML dial, as before
   const twiml = `
 <Response>
   <Dial record="record-from-answer-dual" answerOnBridge="true">

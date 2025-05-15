@@ -85,12 +85,19 @@ const CRMPage: React.FC = () => {
           </label>
           <input
             id="custom-phone"
-            className="input border px-3 py-2 rounded-md"
+            className="input border px-3 py-3 rounded-md text-lg text-black bg-white dark:bg-zinc-900 dark:text-white caret-primary font-mono tracking-widest placeholder:text-gray-400 focus:outline-none focus:ring focus:border-primary"
             type="tel"
             inputMode="tel"
             placeholder={language === 'de' ? 'Telefonnummer eingeben' : 'Enter phone number'}
             value={customPhone}
             onChange={e => setCustomPhone(e.target.value)}
+            style={{
+              minWidth: 220,
+              letterSpacing: "0.09em",
+              fontWeight: 500,
+              boxShadow: "0 0 0 1.5px rgba(0,0,0,0.07)"
+            }}
+            autoComplete="off"
           />
         </div>
         <Button
