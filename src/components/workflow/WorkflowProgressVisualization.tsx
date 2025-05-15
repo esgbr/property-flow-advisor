@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
@@ -118,12 +117,8 @@ const WorkflowProgressVisualization: React.FC<WorkflowProgressVisualizationProps
   className
 }) => {
   const { language } = useLanguage();
-  // --- FIX: Always use analytics hooks with NO argument and provide workflowTypes as needed below ---
-  const { 
-    getOverallStatistics, 
-    getDailyProgress, 
-    getWorkflowStatistics 
-  } = useWorkflowAnalytics();
+  // --- FIX: useWorkflowAnalytics() expects no arguments, analytics methods do! ---
+  const analytics = useWorkflowAnalytics();
 
   // Set initial state
   const [stats, setStats] = useState<any>(undefined); // State can be undefined initially
@@ -131,17 +126,18 @@ const WorkflowProgressVisualization: React.FC<WorkflowProgressVisualizationProps
   const [workflowStats, setWorkflowStats] = useState<any[]>([]);
   const [activeView, setActiveView] = useState<'overview' | 'daily' | 'workflows'>('overview');
 
-  // --- FIX: Correct function usage and state update ---
+  // --- FIX: call analytics methods with workflowTypes instead of passing workflowTypes to the hook ---
   useEffect(() => {
-    const updateStats = () => {
-      setStats(getOverallStatistics(workflowTypes));
-      setProgressData(getDailyProgress(workflowTypes, 14));
-      setWorkflowStats(getWorkflowStatistics(workflowTypes));
-    };
-    updateStats();
-    const interval = setInterval(updateStats, 10000);
+    setStats(analytics.getOverallStatistics(workflowTypes));
+    setProgressData(analytics.getDailyProgress(workflowTypes, 14));
+    setWorkflowStats(analytics.getWorkflowStatistics(workflowTypes));
+    const interval = setInterval(() => {
+      setStats(analytics.getOverallStatistics(workflowTypes));
+      setProgressData(analytics.getDailyProgress(workflowTypes, 14));
+      setWorkflowStats(analytics.getWorkflowStatistics(workflowTypes));
+    }, 10000);
     return () => clearInterval(interval);
-  }, [getOverallStatistics, getDailyProgress, getWorkflowStatistics, workflowTypes]);
+  }, [analytics, workflowTypes]);
 
   function getWorkflowName(type: WorkflowType): string {
     const workflowNames: Record<string, Record<string, string>> = {

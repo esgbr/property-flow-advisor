@@ -1,4 +1,3 @@
-
 import { useState, useCallback, useEffect } from 'react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useToast } from '@/hooks/use-toast';
@@ -12,7 +11,7 @@ export interface WorkflowStep {
   description?: { de: string; en: string };
   icon?: React.ReactNode;
   isComplete?: boolean;
-  requiredSteps?: string[]; // <-- ADDED (fixes error)
+  dependencies?: string[];
   progress?: number;
   estimatedTime?: number; // in minutes
 }
@@ -67,12 +66,9 @@ export function useUnifiedWorkflow(workflowType: WorkflowType) {
     (stepId: string) => {
       const step = steps.find(s => s.id === stepId);
       if (!step) return false;
-      
-      // Check if required steps are completed
-      if (step.requiredSteps?.length) {
-        return step.requiredSteps.every(reqId => completedSteps[reqId]);
+      if (step.dependencies?.length) {
+        return step.dependencies.every(reqId => completedSteps[reqId]);
       }
-      
       return true;
     },
     [steps, completedSteps]
