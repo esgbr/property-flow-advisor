@@ -83,7 +83,7 @@ const UnifiedNavigation: React.FC<{
   };
 
   // Simplified navigation structure with CRM at the top
-  const navigationGroups = [
+  const navigationGroups: NavigationGroup[] = [
     {
       label: t('main'),
       icon: <LayoutDashboard className="h-5 w-5" />,

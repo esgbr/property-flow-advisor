@@ -4,7 +4,7 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { 
   PhoneCall, User, History, Building, MessageSquare, Calendar, 
-  FileText, BarChart, Search, Mail
+  FileText, BarChart, Search, Mail, ListTodo
 } from 'lucide-react';
 import ContactManager from '@/components/crm/ContactManager';
 import CallTracker from '@/components/crm/CallTracker';
@@ -15,8 +15,10 @@ import { useToast } from '@/components/ui/use-toast';
 import UnifiedCRMSearch from '@/components/crm/UnifiedCRMSearch';
 import EmailTemplates from '@/components/crm/EmailTemplates';
 import MeetingScheduler from '@/components/crm/MeetingScheduler';
+import TaskManager from '@/components/crm/TaskManager';
 import { Button } from '@/components/ui/button';
 import { useNavigate } from 'react-router-dom';
+import ComponentLoader from '@/components/ui/component-loader';
 
 const CRMPage: React.FC = () => {
   const { language } = useLanguage();
@@ -64,7 +66,7 @@ const CRMPage: React.FC = () => {
       </div>
       
       <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-        <TabsList className="grid grid-cols-2 md:grid-cols-7 max-w-4xl overflow-x-auto">
+        <TabsList className="grid grid-cols-2 md:grid-cols-8 overflow-x-auto">
           <TabsTrigger value="contacts">
             <User className="h-4 w-4 mr-2" />
             {language === 'de' ? 'Kontakte' : 'Contacts'}
@@ -76,6 +78,10 @@ const CRMPage: React.FC = () => {
           <TabsTrigger value="activities">
             <History className="h-4 w-4 mr-2" />
             {language === 'de' ? 'Aktivitäten' : 'Activities'}
+          </TabsTrigger>
+          <TabsTrigger value="tasks">
+            <ListTodo className="h-4 w-4 mr-2" />
+            {language === 'de' ? 'Aufgaben' : 'Tasks'}
           </TabsTrigger>
           <TabsTrigger value="calls">
             <PhoneCall className="h-4 w-4 mr-2" />
@@ -96,24 +102,40 @@ const CRMPage: React.FC = () => {
         </TabsList>
         
         <TabsContent value="contacts">
-          <ContactManager />
+          <ComponentLoader>
+            <ContactManager />
+          </ComponentLoader>
         </TabsContent>
         
         <TabsContent value="companies">
-          <CompanyManager />
+          <ComponentLoader>
+            <CompanyManager />
+          </ComponentLoader>
         </TabsContent>
 
         <TabsContent value="activities">
-          <ActivityHistory />
+          <ComponentLoader>
+            <ActivityHistory />
+          </ComponentLoader>
+        </TabsContent>
+        
+        <TabsContent value="tasks">
+          <ComponentLoader>
+            <TaskManager />
+          </ComponentLoader>
         </TabsContent>
         
         <TabsContent value="calls">
-          <CallTracker />
+          <ComponentLoader>
+            <CallTracker />
+          </ComponentLoader>
         </TabsContent>
         
         <TabsContent value="meetings">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <MeetingScheduler />
+            <ComponentLoader>
+              <MeetingScheduler />
+            </ComponentLoader>
             <Card>
               <CardContent className="flex flex-col items-center justify-center h-full p-6">
                 <Calendar className="h-12 w-12 text-muted-foreground mb-4" />
@@ -134,7 +156,9 @@ const CRMPage: React.FC = () => {
         </TabsContent>
         
         <TabsContent value="emails">
-          <EmailTemplates />
+          <ComponentLoader>
+            <EmailTemplates />
+          </ComponentLoader>
         </TabsContent>
         
         <TabsContent value="reports">

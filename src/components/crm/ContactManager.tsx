@@ -12,10 +12,11 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import ContactDetailView from './ContactDetailView';
 import ImportContactsModal from './ImportContactsModal';
 import { TabsList, TabsTrigger, Tabs, TabsContent } from '@/components/ui/tabs';
+import { ImportedContact } from '@/utils/contactImport';
 
-type ContactType = 'realtor' | 'handyman' | 'property_manager' | 'inspector' | 'tenant' | 'other';
+export type ContactType = 'realtor' | 'handyman' | 'property_manager' | 'inspector' | 'tenant' | 'other';
 
-interface Contact {
+export interface Contact {
   id: string;
   name: string;
   type: ContactType;
@@ -86,7 +87,7 @@ const ContactManager: React.FC = () => {
       title: language === 'de' ? 'Anruf wird gestartet' : 'Initiating call',
       description: `${contact.name}: ${contact.phone}`,
     });
-    // In a real implementation, this would integrate with Twilio or another call API
+    // In a real implementation, this would integrate with a call API
   };
 
   const initiateEmail = (contact: Contact) => {
@@ -114,21 +115,31 @@ const ContactManager: React.FC = () => {
     // This would navigate to the meeting scheduler with the contact pre-selected
   };
 
-  const handleImportedContacts = (importedContacts: any[]) => {
+  const handleImportedContacts = (importedContacts: ImportedContact[]) => {
     // Transform imported contacts to match our Contact interface
     const newContacts = importedContacts.map((contact, index) => ({
-      id: `imported-${Date.now()}-${index}`,
+      id: contact.id || `imported-${Date.now()}-${index}`,
       name: contact.name,
       type: 'other' as ContactType,
       phone: contact.phone || '',
-      email: contact.email || '',
+      email: contact.email,
       favorite: false,
       lastContact: new Date().toISOString().split('T')[0],
-      notes: language === 'de' ? 'Von iPhone importiert' : 'Imported from iPhone'
+      notes: contact.notes || (language === 'de' 
+        ? `Importiert von ${contact.source === 'iphone' ? 'iPhone' : 'CSV-Datei'}`
+        : `Imported from ${contact.source === 'iphone' ? 'iPhone' : 'CSV file'}`)
     }));
     
     // Add imported contacts to the existing contacts
     setContacts([...contacts, ...newContacts]);
+
+    // Show success toast with count
+    toast({
+      title: language === 'de' ? 'Kontakte importiert' : 'Contacts imported',
+      description: language === 'de'
+        ? `${newContacts.length} neue Kontakte wurden importiert`
+        : `${newContacts.length} new contacts have been imported`
+    });
   };
 
   const getInitials = (name: string) => {
@@ -385,6 +396,7 @@ const ContactManager: React.FC = () => {
         open={importModalOpen}
         onOpenChange={setImportModalOpen}
         onContactsImported={handleImportedContacts}
+        existingContacts={contacts}
       />
     </Card>
   );
