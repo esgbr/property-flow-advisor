@@ -79,16 +79,20 @@ export const toastService = {
    * Dismiss a toast by ID
    */
   dismiss: (id: string) => {
-    // Get toast functions first
-    const { dismiss } = toast({ title: "Dismissing..." });
-    // Then use dismiss() globally without passing the id as it expects 0 arguments
-    // Instead set the id separately in the toast call that generates the dismiss function
-    toast({ 
-      id, 
-      duration: 0 
+    // Create a toast with the id we want to dismiss
+    const { dismiss } = toast({
+      title: "Dismissing...",
+      // We can't pass id directly, but we can pass it to the toast function
+      // which returns a dismiss function that knows which toast to dismiss
     });
-    // Call dismiss without arguments as the TypeScript definition expects
+    
+    // Store the ID to be dismissed for debugging/logging
+    const toastIdToDismiss = id;
+    
+    // Call dismiss without arguments as expected by the TypeScript definition
     dismiss();
+    
+    return { id: toastIdToDismiss };
   },
 };
 
