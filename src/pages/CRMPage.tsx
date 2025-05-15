@@ -4,7 +4,7 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { 
   PhoneCall, User, History, Building, MessageSquare, Calendar, 
-  FileText, BarChart, Search, Mail, ListTodo
+  FileText, BarChart, Search, Mail, ListTodo, Import
 } from 'lucide-react';
 import ContactManager from '@/components/crm/ContactManager';
 import CallTracker from '@/components/crm/CallTracker';
@@ -28,7 +28,7 @@ const CRMPage: React.FC = () => {
   
   // Set document title based on language
   useEffect(() => {
-    document.title = language === 'de' ? 'PropertyFlow - CRM System' : 'PropertyFlow - CRM System';
+    document.title = 'PropertyFlow - CRM';
   }, [language]);
 
   // Keyboard shortcut to toggle the command menu (⌘K)
