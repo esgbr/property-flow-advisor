@@ -44,6 +44,10 @@ const WorkflowSuggestions: React.FC<WorkflowSuggestionsProps> = ({
   }>>([]);
   const { announceNavigation } = useScreenReader();
 
+  // Helper to ensure workflow is valid WorkflowType
+  const isWorkflowType = (w: any): w is WorkflowType =>
+    ['steuer', 'immobilien', 'finanzierung', 'analyse'].includes(w);
+
   // Generate suggestions based on current context
   useEffect(() => {
     const newSuggestions: Array<{
@@ -71,14 +75,16 @@ const WorkflowSuggestions: React.FC<WorkflowSuggestionsProps> = ({
         const labelKey = language as keyof typeof nextStep.step.label;
         const descriptionKey = language as keyof typeof nextStep.step.description;
         
-        newSuggestions.push({
-          type: 'next',
-          workflow: nextStep.workflow,
-          stepId: nextStep.step.id,
-          path: nextStep.step.path,
-          label: nextStep.step.label[labelKey],
-          description: nextStep.step.description ? nextStep.step.description[descriptionKey] : undefined
-        });
+        if (isWorkflowType(nextStep.workflow)) {
+          newSuggestions.push({
+            type: 'next',
+            workflow: nextStep.workflow,
+            stepId: nextStep.step.id,
+            path: nextStep.step.path,
+            label: nextStep.step.label[labelKey],
+            description: nextStep.step.description ? nextStep.step.description[descriptionKey] : undefined
+          });
+        }
         
         if (newSuggestions.length >= maxSuggestions) return;
       });
@@ -86,7 +92,8 @@ const WorkflowSuggestions: React.FC<WorkflowSuggestionsProps> = ({
     
     // 2. Get market-specific workflow suggestions
     if (newSuggestions.length < maxSuggestions) {
-      const marketWorkflows = getMarketRelevantWorkflows(userMarket);
+      const marketWorkflows = getMarketRelevantWorkflows(userMarket)
+        .filter(isWorkflowType);
       
       // For each market-relevant workflow, suggest first uncompleted step
       marketWorkflows.forEach(workflow => {
@@ -125,8 +132,10 @@ const WorkflowSuggestions: React.FC<WorkflowSuggestionsProps> = ({
         const labelKey = language as keyof typeof item.step.label;
         const descriptionKey = language as keyof typeof item.step.description;
         
-        // Check if this suggestion is not already in the list
-        if (!newSuggestions.some(s => s.workflow === item.workflow && s.stepId === item.step.id)) {
+        if (
+          isWorkflowType(item.workflow) &&
+          !newSuggestions.some(s => s.workflow === item.workflow && s.stepId === item.step.id)
+        ) {
           newSuggestions.push({
             type: 'incomplete',
             workflow: item.workflow,
