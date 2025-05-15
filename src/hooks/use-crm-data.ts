@@ -21,6 +21,7 @@ export interface Contact {
   favorite: boolean;
   created_at?: string | null;
   updated_at?: string | null;
+  user_id?: string | null;
 }
 
 export interface Company {
@@ -33,6 +34,8 @@ export interface Company {
   favorite: boolean;
   created_at?: string | null;
   updated_at?: string | null;
+  user_id?: string | null;
+  contactCount?: number;
 }
 
 export interface Activity {
@@ -44,6 +47,7 @@ export interface Activity {
   contact_id?: string | null;
   company_id?: string | null;
   created_at?: string | null;
+  user_id?: string | null;
 }
 
 export interface Task {
@@ -57,6 +61,7 @@ export interface Task {
   company_id?: string | null;
   created_at?: string | null;
   updated_at?: string | null;
+  user_id?: string | null;
 }
 
 // Hook for contacts
@@ -75,7 +80,14 @@ export const useContacts = () => {
         throw error;
       }
       
-      setContacts(data || []);
+      // Type cast the data to ensure it matches the Contact type
+      const typedContacts = (data || []).map(contact => ({
+        ...contact,
+        type: contact.type as ContactType,
+        favorite: contact.favorite === null ? false : contact.favorite
+      })) as Contact[];
+      
+      setContacts(typedContacts);
     } catch (error) {
       console.error('Error fetching contacts:', error);
       toast({
@@ -97,8 +109,15 @@ export const useContacts = () => {
       }
       
       if (data && data.length > 0) {
-        setContacts(prevContacts => [...prevContacts, data[0]]);
-        return data[0];
+        // Type cast the returned contact
+        const newContact = {
+          ...data[0],
+          type: data[0].type as ContactType,
+          favorite: data[0].favorite === null ? false : data[0].favorite
+        } as Contact;
+        
+        setContacts(prevContacts => [...prevContacts, newContact]);
+        return newContact;
       }
     } catch (error) {
       console.error('Error adding contact:', error);
@@ -124,12 +143,19 @@ export const useContacts = () => {
       }
       
       if (data && data.length > 0) {
+        // Type cast the returned updated contact
+        const updatedContact = {
+          ...data[0],
+          type: data[0].type as ContactType,
+          favorite: data[0].favorite === null ? false : data[0].favorite
+        } as Contact;
+        
         setContacts(prevContacts => 
           prevContacts.map(contact => 
-            contact.id === id ? { ...contact, ...data[0] } : contact
+            contact.id === id ? updatedContact : contact
           )
         );
-        return data[0];
+        return updatedContact;
       }
     } catch (error) {
       console.error('Error updating contact:', error);
@@ -212,7 +238,14 @@ export const useCompanies = () => {
         throw error;
       }
       
-      setCompanies(data || []);
+      // Type cast the data to ensure it matches the Company type
+      const typedCompanies = (data || []).map(company => ({
+        ...company,
+        type: company.type as CompanyType,
+        favorite: company.favorite === null ? false : company.favorite
+      })) as Company[];
+      
+      setCompanies(typedCompanies);
     } catch (error) {
       console.error('Error fetching companies:', error);
       toast({
@@ -234,8 +267,15 @@ export const useCompanies = () => {
       }
       
       if (data && data.length > 0) {
-        setCompanies(prevCompanies => [...prevCompanies, data[0]]);
-        return data[0];
+        // Type cast the returned company
+        const newCompany = {
+          ...data[0],
+          type: data[0].type as CompanyType,
+          favorite: data[0].favorite === null ? false : data[0].favorite
+        } as Company;
+        
+        setCompanies(prevCompanies => [...prevCompanies, newCompany]);
+        return newCompany;
       }
     } catch (error) {
       console.error('Error adding company:', error);
@@ -261,12 +301,19 @@ export const useCompanies = () => {
       }
       
       if (data && data.length > 0) {
+        // Type cast the returned updated company
+        const updatedCompany = {
+          ...data[0],
+          type: data[0].type as CompanyType,
+          favorite: data[0].favorite === null ? false : data[0].favorite
+        } as Company;
+        
         setCompanies(prevCompanies => 
           prevCompanies.map(company => 
-            company.id === id ? { ...company, ...data[0] } : company
+            company.id === id ? updatedCompany : company
           )
         );
-        return data[0];
+        return updatedCompany;
       }
     } catch (error) {
       console.error('Error updating company:', error);
@@ -349,7 +396,14 @@ export const useTasks = () => {
         throw error;
       }
       
-      setTasks(data || []);
+      // Type cast the data to ensure it matches the Task type
+      const typedTasks = (data || []).map(task => ({
+        ...task,
+        priority: task.priority as TaskPriority,
+        status: task.status as TaskStatus
+      })) as Task[];
+      
+      setTasks(typedTasks);
     } catch (error) {
       console.error('Error fetching tasks:', error);
       toast({
@@ -371,8 +425,15 @@ export const useTasks = () => {
       }
       
       if (data && data.length > 0) {
-        setTasks(prevTasks => [...prevTasks, data[0]]);
-        return data[0];
+        // Type cast the returned task
+        const newTask = {
+          ...data[0],
+          priority: data[0].priority as TaskPriority,
+          status: data[0].status as TaskStatus
+        } as Task;
+        
+        setTasks(prevTasks => [...prevTasks, newTask]);
+        return newTask;
       }
     } catch (error) {
       console.error('Error adding task:', error);
@@ -398,12 +459,19 @@ export const useTasks = () => {
       }
       
       if (data && data.length > 0) {
+        // Type cast the returned updated task
+        const updatedTask = {
+          ...data[0],
+          priority: data[0].priority as TaskPriority,
+          status: data[0].status as TaskStatus
+        } as Task;
+        
         setTasks(prevTasks => 
           prevTasks.map(task => 
-            task.id === id ? { ...task, ...data[0] } : task
+            task.id === id ? updatedTask : task
           )
         );
-        return data[0];
+        return updatedTask;
       }
     } catch (error) {
       console.error('Error updating task:', error);
@@ -486,7 +554,13 @@ export const useActivities = () => {
         throw error;
       }
       
-      setActivities(data || []);
+      // Type cast the data to ensure it matches the Activity type
+      const typedActivities = (data || []).map(activity => ({
+        ...activity,
+        type: activity.type as ActivityType
+      })) as Activity[];
+      
+      setActivities(typedActivities);
     } catch (error) {
       console.error('Error fetching activities:', error);
       toast({
@@ -508,8 +582,14 @@ export const useActivities = () => {
       }
       
       if (data && data.length > 0) {
-        setActivities(prevActivities => [...prevActivities, data[0]]);
-        return data[0];
+        // Type cast the returned activity
+        const newActivity = {
+          ...data[0],
+          type: data[0].type as ActivityType
+        } as Activity;
+        
+        setActivities(prevActivities => [...prevActivities, newActivity]);
+        return newActivity;
       }
     } catch (error) {
       console.error('Error adding activity:', error);
