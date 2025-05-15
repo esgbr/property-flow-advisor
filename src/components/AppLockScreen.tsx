@@ -7,48 +7,56 @@ import { useAppLock } from '../contexts/AppLockContext';
 import { useUserPreferences } from '../contexts/UserPreferencesContext';
 import { Fingerprint, Lock, Eye, EyeOff } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
+import { useNavigate } from 'react-router-dom';
 
 const AppLockScreen: React.FC = () => {
-  const { unlockApp, useFaceId, isBiometricEnabled } = useAppLock();
+  const { unlockApp, useFaceId, isBiometricEnabled, pin } = useAppLock();
   const { preferences } = useUserPreferences();
-  const [pin, setPin] = useState('');
+  const [pinInput, setPinInput] = useState('');
   const [showPin, setShowPin] = useState(false);
   const [error, setError] = useState('');
   const [attemptsLeft, setAttemptsLeft] = useState(5);
   const pinInputRef = useRef<HTMLInputElement>(null);
+  const navigate = useNavigate();
   const biometricsEnabled = preferences.biometricsEnabled || false;
 
   useEffect(() => {
     // Auto-focus the PIN input for better keyboard accessibility
     pinInputRef.current?.focus();
-  }, []);
+    
+    // Redirect if no PIN is set
+    if (!pin) {
+      navigate('/dashboard');
+    }
+  }, [navigate, pin]);
 
   const handlePinChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     // Only allow numeric input
     const newValue = e.target.value.replace(/[^0-9]/g, '');
-    setPin(newValue);
+    setPinInput(newValue);
     
     if (error) setError('');
   };
 
   const handleUnlock = () => {
-    if (pin.length === 0) {
+    if (pinInput.length === 0) {
       setError('Please enter your PIN');
       return;
     }
 
-    const success = unlockApp(pin);
+    const success = unlockApp(pinInput);
     
     if (success) {
       toast({
         title: "Unlocked",
         description: "App successfully unlocked",
       });
+      navigate('/dashboard');
     } else {
       const newAttemptsLeft = attemptsLeft - 1;
       setAttemptsLeft(newAttemptsLeft);
       setError(`Incorrect PIN. ${newAttemptsLeft} attempts left.`);
-      setPin('');
+      setPinInput('');
 
       if (newAttemptsLeft <= 0) {
         // In a real app, you would implement a timeout or additional security measures
@@ -76,6 +84,7 @@ const AppLockScreen: React.FC = () => {
           title: "Biometric Authentication",
           description: "Successfully authenticated",
         });
+        navigate('/dashboard');
       } else {
         toast({
           title: "Authentication Failed",
@@ -111,7 +120,7 @@ const AppLockScreen: React.FC = () => {
                 ref={pinInputRef}
                 type={showPin ? "text" : "password"}
                 placeholder="Enter PIN"
-                value={pin}
+                value={pinInput}
                 onChange={handlePinChange}
                 onKeyDown={handleKeyDown}
                 inputMode="numeric"

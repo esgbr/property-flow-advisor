@@ -1,7 +1,7 @@
 
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { useUserPreferences } from '@/contexts/UserPreferencesContext';
-import { toast } from 'sonner';
+import { toast } from '@/hooks/use-toast';
 import secureStorage from '@/utils/secureStorage';
 
 interface AppLockContextType {
@@ -170,7 +170,10 @@ export const AppLockProvider: React.FC<{ children: React.ReactNode }> = ({ child
     
     if (enabled) {
       updatePreferences({ appLockMethod: 'biometric' });
-      toast.success('Biometrische Authentifizierung aktiviert');
+      toast({
+        title: 'Biometrics Enabled',
+        description: 'Biometric authentication has been activated'
+      });
     } else if (pin) {
       updatePreferences({ appLockMethod: 'pin' });
     }
@@ -187,7 +190,7 @@ export const AppLockProvider: React.FC<{ children: React.ReactNode }> = ({ child
     <AppLockContext.Provider
       value={{
         isLocked,
-        setIsLocked,  // Added the missing setIsLocked property
+        setIsLocked,
         lockApp,
         unlockApp,
         hasPIN: !!pin,

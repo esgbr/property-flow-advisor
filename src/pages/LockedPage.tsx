@@ -1,7 +1,6 @@
 
-import React from 'react';
+import React, { useEffect } from 'react';
 import AppLockScreen from '@/components/AppLockScreen';
-import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAppLock } from '@/contexts/AppLockContext';
 
