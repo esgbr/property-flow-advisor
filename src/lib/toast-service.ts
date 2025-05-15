@@ -1,4 +1,5 @@
 
+
 import { toast } from '@/hooks/use-toast';
 import type { ToastProps } from '@/components/ui/toast';
 
@@ -67,7 +68,7 @@ export const toastService = {
    * Update a toast by ID
    */
   update: (id: string, options: { title?: string, description?: string, variant?: ToastProps['variant'] }) => {
-    const { dismiss, update } = toast({ title: "Updating..." });
+    const { update } = toast({ title: "Updating..." });
     return update({
       ...options,
       id,
@@ -80,9 +81,16 @@ export const toastService = {
   dismiss: (id: string) => {
     // Get toast functions first
     const { dismiss } = toast({ title: "Dismissing..." });
-    // Then call the dismiss function with the id
-    dismiss(id);
+    // Then use dismiss() globally without passing the id as it expects 0 arguments
+    // Instead set the id separately in the toast call that generates the dismiss function
+    toast({ 
+      id, 
+      duration: 0 
+    });
+    // Call dismiss without arguments as the TypeScript definition expects
+    dismiss();
   },
 };
 
 export default toastService;
+
