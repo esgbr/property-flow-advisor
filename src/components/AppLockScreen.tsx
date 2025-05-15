@@ -1,4 +1,3 @@
-
 import React, { useState, useRef, useEffect } from 'react';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
@@ -101,6 +100,7 @@ const AppLockScreen: React.FC = () => {
     }
   };
 
+  
   return (
     <div 
       className="flex items-center justify-center min-h-screen bg-background p-4"

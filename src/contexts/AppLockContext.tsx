@@ -1,4 +1,3 @@
-
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { useUserPreferences } from '@/contexts/UserPreferencesContext';
 import { toast } from '@/hooks/use-toast';
@@ -74,6 +73,11 @@ export const AppLockProvider: React.FC<{ children: React.ReactNode }> = ({ child
       updatePreferences({ appLockMethod: 'biometric' });
     } else if (savedPin) {
       updatePreferences({ appLockMethod: 'pin' });
+    }
+
+    // Check if app was locked before refresh
+    if (localStorage.getItem('appLocked') === 'true' && savedPin) {
+      setIsLocked(true);
     }
   }, [updatePreferences]);
   
@@ -178,13 +182,6 @@ export const AppLockProvider: React.FC<{ children: React.ReactNode }> = ({ child
       updatePreferences({ appLockMethod: 'pin' });
     }
   };
-  
-  // Check if app was locked before refresh
-  useEffect(() => {
-    if (localStorage.getItem('appLocked') === 'true' && pin) {
-      setIsLocked(true);
-    }
-  }, [pin]);
   
   return (
     <AppLockContext.Provider
