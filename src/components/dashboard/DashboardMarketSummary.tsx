@@ -4,16 +4,11 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { useLanguage } from '@/contexts/LanguageContext';
 import PortfolioAllocationChart from '@/components/charts/PortfolioAllocationChart';
 import MarketTrendsChart from '@/components/charts/MarketTrendsChart';
-import { Button } from '@/components/ui/button';
-import { ChevronRight, BarChart } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
 
 const DashboardMarketSummary: React.FC = () => {
   const { t } = useLanguage();
-  const navigate = useNavigate();
-
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 animate-fade-in">
       <Card className="col-span-1 lg:col-span-2">
         <CardHeader>
           <CardTitle>{t('marketTrends')}</CardTitle>
@@ -34,5 +29,4 @@ const DashboardMarketSummary: React.FC = () => {
     </div>
   );
 };
-
 export default DashboardMarketSummary;
