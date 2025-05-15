@@ -1,8 +1,7 @@
-
 import React, { useState } from "react";
 import { Card, CardHeader, CardTitle, CardContent, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { list as listIcon } from "lucide-react";
+import { List } from 'lucide-react';
 
 // Demo data
 type Task = {
@@ -58,7 +57,7 @@ const TaskManager: React.FC = () => {
           {selected && (
             <div className="mt-6 p-4 bg-muted rounded">
               <h4 className="font-semibold mb-2 flex gap-2 items-center">
-                <listIcon className="h-4 w-4" /> Task Details
+                <List className="h-4 w-4" /> Task Details
               </h4>
               <div>Title: <b>{selected.title}</b></div>
               <div>Status: {selected.status}</div>

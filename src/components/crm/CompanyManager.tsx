@@ -1,8 +1,7 @@
-
 import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardHeader, CardTitle, CardContent, CardDescription } from "@/components/ui/card";
-import { users as companyIcon } from "lucide-react";
+import { Users } from 'lucide-react';
 
 type Company = {
   id: string;
@@ -52,7 +51,7 @@ const CompanyManager: React.FC = () => {
           {selected && (
             <div className="mt-6 p-4 bg-muted rounded">
               <h4 className="font-semibold mb-2 flex gap-2 items-center">
-                <companyIcon className="h-4 w-4" /> Company Details
+                <Users className="h-4 w-4" /> Company Details
               </h4>
               <div>Name: <b>{selected.name}</b></div>
               <div>Type: {selected.type}</div>

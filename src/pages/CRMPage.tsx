@@ -16,10 +16,19 @@ const CRMPage: React.FC = () => {
   const [callHistory, setCallHistory] = React.useState<{ name: string; phone: string; timestamp: string }[]>([]);
   const [callInProgress, setCallInProgress] = React.useState(false);
   const [callError, setCallError] = React.useState<string | undefined>();
+  const [customPhone, setCustomPhone] = React.useState<string>('');
 
   // Handler: open modal from ContactManager
   const handleInitiateCall = (name: string, phone: string) => {
     setSelectedContact({ name, phone });
+    setCallError(undefined);
+    setCallModalOpen(true);
+  };
+
+  // Handler: manual/custom call
+  const handleInitiateCustomCall = () => {
+    if (!customPhone) return;
+    setSelectedContact({ name: 'Custom', phone: customPhone });
     setCallError(undefined);
     setCallModalOpen(true);
   };
@@ -68,6 +77,33 @@ const CRMPage: React.FC = () => {
         </p>
       </div>
       
+      {/* Custom call field for any phone number */}
+      <div className="mb-4 flex gap-2 items-end">
+        <div>
+          <label className="block text-sm font-medium" htmlFor="custom-phone">
+            {language === 'de' ? 'Direktwahl' : 'Custom Dial'}
+          </label>
+          <input
+            id="custom-phone"
+            className="input border px-3 py-2 rounded-md"
+            type="tel"
+            inputMode="tel"
+            placeholder={language === 'de' ? 'Telefonnummer eingeben' : 'Enter phone number'}
+            value={customPhone}
+            onChange={e => setCustomPhone(e.target.value)}
+          />
+        </div>
+        <Button
+          type="button"
+          onClick={handleInitiateCustomCall}
+          disabled={!customPhone}
+          className="h-[38px]"
+        >
+          <PhoneCall className="h-4 w-4 mr-2" />
+          {language === 'de' ? 'Anrufen' : 'Call'}
+        </Button>
+      </div>
+
       <Tabs defaultValue="contacts" className="space-y-6">
         <TabsList className="grid w-full grid-cols-6 max-w-2xl">
           <TabsTrigger value="contacts">
@@ -99,7 +135,6 @@ const CRMPage: React.FC = () => {
         <TabsContent value="contacts">
           <ContactManager
             onInitiateCall={handleInitiateCall}
-            // spread additional props later for deep linking, detail panels, etc
           />
         </TabsContent>
         <TabsContent value="companies">

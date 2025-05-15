@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { cn } from '@/lib/utils';
@@ -22,7 +21,6 @@ const Navbar: React.FC<NavbarProps> = ({ className, showMobileMenu = true }) => 
 
   // Create a toggleSidebar function
   const toggleSidebar = () => {
-    // This will be implemented when we have the sidebar component
     const sidebar = document.querySelector('[data-sidebar]');
     if (sidebar) {
       sidebar.classList.toggle('sidebar-open');
