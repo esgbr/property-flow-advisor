@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { Sidebar, SidebarContent } from '@/components/ui/sidebar';
@@ -7,7 +6,7 @@ import {
   BarChart3, Building, Calculator, Calendar, Settings2, Star, 
   School, Building2, Banknote, RefreshCw, Users, Euro, 
   PieChart, BarChart, Globe, LayoutDashboard, Home,
-  LineChart, Shield, FileText, ArrowLeftRight, Map, User
+  LineChart, Shield, FileText, ArrowLeftRight, Map, User, PhoneCall
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useUserPreferences } from '@/contexts/UserPreferencesContext';
@@ -36,7 +35,7 @@ const AppSidebar = () => {
   
   const isGermanMarket = userMarket === 'germany' || userMarket === 'austria';
 
-  // Organize navigation items by category for better structure
+  // Insert CRM Tab into main navigation if not present
   const navigationCategories: NavCategory[] = [
     {
       title: t('mainNavigation'),
@@ -45,6 +44,11 @@ const AppSidebar = () => {
           name: t('dashboard'),
           href: '/dashboard',
           icon: <LayoutDashboard className="h-5 w-5" />,
+        },
+        {
+          name: t('crm') || 'CRM',
+          href: '/crm',
+          icon: <PhoneCall className="h-5 w-5" />,
         },
         {
           name: t('investorDashboard'),

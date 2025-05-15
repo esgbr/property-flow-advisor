@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -39,11 +38,12 @@ const WelcomeStep: React.FC<OnboardingStepProps> = ({ data, updateData, onNext }
             setError('');
           }}
           className={error ? 'border-red-500' : ''}
+          required
         />
         {error && <p className="text-sm text-red-500">{error}</p>}
       </div>
 
-      <Button onClick={handleContinue} className="w-full">
+      <Button onClick={handleContinue} className="w-full" disabled={!name.trim()}>
         {language === 'de' ? 'Fortfahren' : 'Continue'}
       </Button>
     </div>
