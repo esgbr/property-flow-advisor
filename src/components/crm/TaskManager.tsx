@@ -4,29 +4,16 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
-import { useToast } from '@/components/ui/use-toast';
+import { useToast } from '@/hooks/use-toast';
 import { useLanguage } from '@/contexts/LanguageContext';
-import { Check, CheckCircle2, Clock, Plus, CalendarClock, User, Building } from 'lucide-react';
+import { Check, CheckCircle2, Clock, Plus, CalendarClock, User, Building, Loader2 } from 'lucide-react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { format } from 'date-fns';
 import { de } from 'date-fns/locale';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-
-export interface Task {
-  id: string;
-  title: string;
-  description?: string;
-  dueDate?: string;
-  priority: 'low' | 'medium' | 'high';
-  status: 'pending' | 'in-progress' | 'completed';
-  relatedTo?: {
-    type: 'contact' | 'company';
-    id: string;
-    name: string;
-  };
-  createdAt: string;
-}
+import { useTasks, Task, TaskPriority, TaskStatus } from '@/hooks/use-crm-data';
+import { Skeleton } from '@/components/ui/skeleton';
 
 interface TaskManagerProps {
   contactId?: string;
@@ -43,55 +30,21 @@ const TaskManager: React.FC<TaskManagerProps> = ({
 }) => {
   const { language } = useLanguage();
   const { toast } = useToast();
+  const { tasks, loading, addTask, updateTask } = useTasks();
   const [showAddTask, setShowAddTask] = useState(false);
   const [activeTab, setActiveTab] = useState<string>('all');
-
-  // Mock data - in a real app, this would come from a database
-  const [tasks, setTasks] = useState<Task[]>([
-    {
-      id: '1',
-      title: 'Follow up on property viewing',
-      description: 'Call to discuss impressions after viewing the apartment on Friedrichstraße',
-      dueDate: '2025-05-20',
-      priority: 'high',
-      status: 'pending',
-      relatedTo: contactId && contactName ? {
-        type: 'contact',
-        id: contactId,
-        name: contactName,
-      } : undefined,
-      createdAt: '2025-05-14',
-    },
-    {
-      id: '2',
-      title: 'Send investment proposal',
-      description: 'Prepare and send the investment proposal for the Munich property',
-      dueDate: '2025-05-25',
-      priority: 'medium',
-      status: 'in-progress',
-      relatedTo: companyId && companyName ? {
-        type: 'company',
-        id: companyId,
-        name: companyName,
-      } : undefined,
-      createdAt: '2025-05-10',
-    },
-  ]);
 
   const [newTask, setNewTask] = useState<Partial<Task>>({
     title: '',
     description: '',
-    priority: 'medium',
-    status: 'pending',
-    dueDate: format(new Date(), 'yyyy-MM-dd'),
-    relatedTo: contactId && contactName 
-      ? { type: 'contact', id: contactId, name: contactName }
-      : companyId && companyName
-      ? { type: 'company', id: companyId, name: companyName }
-      : undefined
+    priority: 'medium' as TaskPriority,
+    status: 'pending' as TaskStatus,
+    due_date: format(new Date(), 'yyyy-MM-dd'),
+    contact_id: contactId,
+    company_id: companyId
   });
 
-  const addTask = () => {
+  const handleAddTask = async () => {
     if (!newTask.title) {
       toast({
         variant: 'destructive',
@@ -103,64 +56,62 @@ const TaskManager: React.FC<TaskManagerProps> = ({
       return;
     }
 
-    const task: Task = {
-      id: Date.now().toString(),
-      title: newTask.title,
-      description: newTask.description,
-      dueDate: newTask.dueDate,
-      priority: newTask.priority as 'low' | 'medium' | 'high',
-      status: newTask.status as 'pending' | 'in-progress' | 'completed',
-      relatedTo: newTask.relatedTo,
-      createdAt: new Date().toISOString(),
-    };
+    const result = await addTask(newTask as Omit<Task, 'id'>);
+    
+    if (result) {
+      setNewTask({
+        title: '',
+        description: '',
+        priority: 'medium' as TaskPriority,
+        status: 'pending' as TaskStatus,
+        due_date: format(new Date(), 'yyyy-MM-dd'),
+        contact_id: contactId,
+        company_id: companyId
+      });
+      setShowAddTask(false);
 
-    setTasks([...tasks, task]);
-    setNewTask({
-      title: '',
-      description: '',
-      priority: 'medium',
-      status: 'pending',
-      dueDate: format(new Date(), 'yyyy-MM-dd'),
-      relatedTo: task.relatedTo
-    });
-    setShowAddTask(false);
-
-    toast({
-      title: language === 'de' ? 'Aufgabe erstellt' : 'Task created',
-      description: language === 'de'
-        ? 'Die Aufgabe wurde erfolgreich erstellt'
-        : 'The task has been successfully created'
-    });
-  };
-
-  const updateTaskStatus = (taskId: string, status: 'pending' | 'in-progress' | 'completed') => {
-    setTasks(tasks.map(task => 
-      task.id === taskId
-        ? { ...task, status }
-        : task
-    ));
-
-    toast({
-      title: language === 'de' ? 'Status aktualisiert' : 'Status updated',
-      description: language === 'de'
-        ? 'Der Status der Aufgabe wurde aktualisiert'
-        : 'The task status has been updated'
-    });
-  };
-
-  const getFilteredTasks = () => {
-    if (activeTab === 'all') {
-      return tasks;
-    } else if (activeTab === 'completed') {
-      return tasks.filter(task => task.status === 'completed');
-    } else if (activeTab === 'pending') {
-      return tasks.filter(task => task.status === 'pending');
-    } else {
-      return tasks.filter(task => task.status === 'in-progress');
+      toast({
+        title: language === 'de' ? 'Aufgabe erstellt' : 'Task created',
+        description: language === 'de'
+          ? 'Die Aufgabe wurde erfolgreich erstellt'
+          : 'The task has been successfully created'
+      });
     }
   };
 
-  const formatDate = (dateString?: string) => {
+  const handleUpdateTaskStatus = async (taskId: string, status: TaskStatus) => {
+    const result = await updateTask(taskId, { status });
+    
+    if (result) {
+      toast({
+        title: language === 'de' ? 'Status aktualisiert' : 'Status updated',
+        description: language === 'de'
+          ? 'Der Status der Aufgabe wurde aktualisiert'
+          : 'The task status has been updated'
+      });
+    }
+  };
+
+  const getFilteredTasks = () => {
+    const filteredByRelation = tasks.filter(task => {
+      // Filter by contact_id or company_id if provided
+      if (contactId && task.contact_id !== contactId) return false;
+      if (companyId && task.company_id !== companyId) return false;
+      return true;
+    });
+    
+    if (activeTab === 'all') {
+      return filteredByRelation;
+    } else if (activeTab === 'completed') {
+      return filteredByRelation.filter(task => task.status === 'completed');
+    } else if (activeTab === 'pending') {
+      return filteredByRelation.filter(task => task.status === 'pending');
+    } else {
+      return filteredByRelation.filter(task => task.status === 'in-progress');
+    }
+  };
+
+  const formatDate = (dateString?: string | null) => {
     if (!dateString) return '';
     
     const date = new Date(dateString);
@@ -169,7 +120,7 @@ const TaskManager: React.FC<TaskManagerProps> = ({
       : format(date, 'PPP');
   };
 
-  const getPriorityBadge = (priority: 'low' | 'medium' | 'high') => {
+  const getPriorityBadge = (priority: TaskPriority) => {
     switch (priority) {
       case 'high':
         return <Badge className="bg-red-500">{language === 'de' ? 'Hoch' : 'High'}</Badge>;
@@ -180,7 +131,7 @@ const TaskManager: React.FC<TaskManagerProps> = ({
     }
   };
 
-  const getStatusBadge = (status: 'pending' | 'in-progress' | 'completed') => {
+  const getStatusBadge = (status: TaskStatus) => {
     switch (status) {
       case 'completed':
         return <Badge className="bg-green-500">{language === 'de' ? 'Abgeschlossen' : 'Completed'}</Badge>;
@@ -248,8 +199,8 @@ const TaskManager: React.FC<TaskManagerProps> = ({
                       </p>
                       <Input
                         type="date"
-                        value={newTask.dueDate}
-                        onChange={(e) => setNewTask({...newTask, dueDate: e.target.value})}
+                        value={newTask.due_date as string}
+                        onChange={(e) => setNewTask({...newTask, due_date: e.target.value})}
                       />
                     </div>
                     
@@ -259,7 +210,7 @@ const TaskManager: React.FC<TaskManagerProps> = ({
                       </p>
                       <Select
                         value={newTask.priority}
-                        onValueChange={(value) => setNewTask({...newTask, priority: value as 'low' | 'medium' | 'high'})}
+                        onValueChange={(value) => setNewTask({...newTask, priority: value as TaskPriority})}
                       >
                         <SelectTrigger>
                           <SelectValue placeholder={language === 'de' ? 'Priorität wählen' : 'Select priority'} />
@@ -278,7 +229,7 @@ const TaskManager: React.FC<TaskManagerProps> = ({
                   <Button variant="outline" onClick={() => setShowAddTask(false)}>
                     {language === 'de' ? 'Abbrechen' : 'Cancel'}
                   </Button>
-                  <Button onClick={addTask}>
+                  <Button onClick={handleAddTask}>
                     {language === 'de' ? 'Aufgabe speichern' : 'Save Task'}
                   </Button>
                 </div>
@@ -293,76 +244,93 @@ const TaskManager: React.FC<TaskManagerProps> = ({
               </Button>
             )}
             
-            <div className="space-y-3">
-              {getFilteredTasks().length > 0 ? (
-                getFilteredTasks().map((task) => (
-                  <div 
-                    key={task.id} 
-                    className={`border p-4 rounded-md ${task.status === 'completed' ? 'bg-muted/30' : 'hover:bg-muted/20'}`}
-                  >
-                    <div className="flex justify-between items-start">
-                      <div>
-                        <h3 className={`font-medium ${task.status === 'completed' ? 'line-through text-muted-foreground' : ''}`}>
-                          {task.title}
-                        </h3>
-                        {task.description && (
-                          <p className="text-sm text-muted-foreground mt-1">
-                            {task.description}
-                          </p>
-                        )}
-                      </div>
-                      <div className="flex space-x-1">
-                        {task.status !== 'completed' && (
-                          <Button 
-                            size="sm" 
-                            variant="outline" 
-                            onClick={() => updateTaskStatus(task.id, 'completed')}
-                            title={language === 'de' ? 'Als erledigt markieren' : 'Mark as completed'}
-                          >
-                            <Check className="h-4 w-4" />
-                          </Button>
-                        )}
+            {loading ? (
+              <div className="space-y-3">
+                {Array.from({length: 3}).map((_, i) => (
+                  <Card key={i} className="p-4">
+                    <div className="space-y-2">
+                      <Skeleton className="h-4 w-1/2" />
+                      <Skeleton className="h-3 w-full" />
+                      <div className="flex items-center gap-2 pt-2">
+                        <Skeleton className="h-5 w-16" />
+                        <Skeleton className="h-5 w-24" />
                       </div>
                     </div>
-                    
-                    <div className="flex flex-wrap gap-2 mt-3">
-                      {getPriorityBadge(task.priority)}
-                      {getStatusBadge(task.status)}
-                      
-                      {task.dueDate && (
-                        <Badge variant="outline">
-                          <CalendarClock className="h-3 w-3 mr-1" />
-                          {formatDate(task.dueDate)}
-                        </Badge>
-                      )}
-                      
-                      {task.relatedTo && (
-                        <Badge variant="outline">
-                          {task.relatedTo.type === 'contact' ? (
-                            <User className="h-3 w-3 mr-1" />
-                          ) : (
-                            <Building className="h-3 w-3 mr-1" />
+                  </Card>
+                ))}
+              </div>
+            ) : (
+              <div className="space-y-3">
+                {getFilteredTasks().length > 0 ? (
+                  getFilteredTasks().map((task) => (
+                    <div 
+                      key={task.id} 
+                      className={`border p-4 rounded-md ${task.status === 'completed' ? 'bg-muted/30' : 'hover:bg-muted/20'}`}
+                    >
+                      <div className="flex justify-between items-start">
+                        <div>
+                          <h3 className={`font-medium ${task.status === 'completed' ? 'line-through text-muted-foreground' : ''}`}>
+                            {task.title}
+                          </h3>
+                          {task.description && (
+                            <p className="text-sm text-muted-foreground mt-1">
+                              {task.description}
+                            </p>
                           )}
-                          {task.relatedTo.name}
-                        </Badge>
-                      )}
+                        </div>
+                        <div className="flex space-x-1">
+                          {task.status !== 'completed' && (
+                            <Button 
+                              size="sm" 
+                              variant="outline" 
+                              onClick={() => handleUpdateTaskStatus(task.id, 'completed')}
+                              title={language === 'de' ? 'Als erledigt markieren' : 'Mark as completed'}
+                            >
+                              <Check className="h-4 w-4" />
+                            </Button>
+                          )}
+                        </div>
+                      </div>
+                      
+                      <div className="flex flex-wrap gap-2 mt-3">
+                        {getPriorityBadge(task.priority as TaskPriority)}
+                        {getStatusBadge(task.status as TaskStatus)}
+                        
+                        {task.due_date && (
+                          <Badge variant="outline">
+                            <CalendarClock className="h-3 w-3 mr-1" />
+                            {formatDate(task.due_date)}
+                          </Badge>
+                        )}
+                        
+                        {(task.contact_id || task.company_id) && (
+                          <Badge variant="outline">
+                            {task.contact_id ? (
+                              <User className="h-3 w-3 mr-1" />
+                            ) : (
+                              <Building className="h-3 w-3 mr-1" />
+                            )}
+                            {contactName || companyName || "Related entity"}
+                          </Badge>
+                        )}
+                      </div>
                     </div>
+                  ))
+                ) : (
+                  <div className="flex flex-col items-center justify-center p-8 text-center border rounded-md">
+                    <Clock className="h-12 w-12 text-muted-foreground opacity-50 mb-3" />
+                    <h3 className="font-medium text-lg">
+                      {language === 'de' ? 'Keine Aufgaben gefunden' : 'No tasks found'}
+                    </h3>
+                    <p className="text-sm text-muted-foreground mt-1 max-w-xs">
+                      {language === 'de' 
+                        ? 'Es sind keine Aufgaben in dieser Kategorie vorhanden. Erstellen Sie eine neue Aufgabe, um zu beginnen.' 
+                        : 'There are no tasks in this category. Create a new task to get started.'}
+                    </p>
                   </div>
-                ))
-              ) : (
-                <div className="flex flex-col items-center justify-center p-8 text-center border rounded-md">
-                  <Clock className="h-12 w-12 text-muted-foreground opacity-50 mb-3" />
-                  <h3 className="font-medium text-lg">
-                    {language === 'de' ? 'Keine Aufgaben gefunden' : 'No tasks found'}
-                  </h3>
-                  <p className="text-sm text-muted-foreground mt-1 max-w-xs">
-                    {language === 'de' 
-                      ? 'Es sind keine Aufgaben in dieser Kategorie vorhanden. Erstellen Sie eine neue Aufgabe, um zu beginnen.' 
-                      : 'There are no tasks in this category. Create a new task to get started.'}
-                  </p>
-                </div>
-              )}
-            </div>
+                )}
+              </div>
+            )}
           </TabsContent>
         </Tabs>
       </CardContent>

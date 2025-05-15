@@ -3,80 +3,20 @@ import React, { useState } from 'react';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Search, Plus, Building, Star, StarOff, Filter, Users, PhoneCall } from 'lucide-react';
+import { Search, Plus, Building, Star, StarOff, Filter, Users, PhoneCall, Loader2 } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
-import { useToast } from '@/components/ui/use-toast';
+import { useToast } from '@/hooks/use-toast';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import CompanyDetailView from './CompanyDetailView';
-
-type CompanyType = 'agency' | 'investment_firm' | 'property_manager' | 'construction' | 'other';
-
-export interface Company {
-  id: string;
-  name: string;
-  type: CompanyType;
-  phone: string;
-  favorite: boolean;
-  address?: string;
-  contactCount: number;
-  lastContact?: string;
-  notes?: string;
-}
-
-// Demo company data
-const demoCompanies: Company[] = [
-  { 
-    id: 'c1', 
-    name: 'Berlin Property Group', 
-    type: 'agency', 
-    phone: '+49 30 1234567', 
-    favorite: true, 
-    address: 'Alexanderplatz 1, 10178 Berlin',
-    contactCount: 3,
-    lastContact: '2025-05-01', 
-    notes: 'Major real estate agency in Berlin' 
-  },
-  { 
-    id: 'c2', 
-    name: 'Frankfurt Asset Management', 
-    type: 'investment_firm', 
-    phone: '+49 69 9876543', 
-    favorite: false, 
-    address: 'Mainzer Landstraße 50, 60325 Frankfurt',
-    contactCount: 2,
-    lastContact: '2025-04-15', 
-    notes: 'Investment firm specializing in commercial properties' 
-  },
-  { 
-    id: 'c3', 
-    name: 'Munich Building Services', 
-    type: 'construction', 
-    phone: '+49 89 2468101', 
-    favorite: true, 
-    address: 'Leopoldstraße 100, 80802 München',
-    contactCount: 5,
-    lastContact: '2025-05-10', 
-    notes: 'Construction and renovation specialists' 
-  },
-  { 
-    id: 'c4', 
-    name: 'Hamburg Property Management', 
-    type: 'property_manager', 
-    phone: '+49 40 3691215', 
-    favorite: false, 
-    address: 'Reeperbahn 100, 20359 Hamburg',
-    contactCount: 1,
-    lastContact: '2025-03-27', 
-    notes: 'Property management company for residential buildings' 
-  },
-];
+import { useCompanies, Company, CompanyType } from '@/hooks/use-crm-data';
+import { Skeleton } from '@/components/ui/skeleton';
 
 const CompanyManager: React.FC = () => {
   const { language } = useLanguage();
   const { toast } = useToast();
-  const [companies, setCompanies] = useState<Company[]>(demoCompanies);
+  const { companies, loading, updateCompany } = useCompanies();
   const [searchTerm, setSearchTerm] = useState('');
   const [typeFilter, setTypeFilter] = useState<string>('all');
   const [showFavoritesOnly, setShowFavoritesOnly] = useState(false);
@@ -88,7 +28,7 @@ const CompanyManager: React.FC = () => {
   // Filter companies based on search term and filters
   const filteredCompanies = companies.filter(company => {
     const matchesSearch = company.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
-                        company.phone.includes(searchTerm) ||
+                        (company.phone && company.phone.includes(searchTerm)) ||
                         (company.address && company.address.toLowerCase().includes(searchTerm.toLowerCase()));
     const matchesType = typeFilter === 'all' || company.type === typeFilter;
     const matchesFavorite = !showFavoritesOnly || company.favorite;
@@ -96,26 +36,26 @@ const CompanyManager: React.FC = () => {
     return matchesSearch && matchesType && matchesFavorite;
   });
 
-  const toggleFavorite = (id: string) => {
-    setCompanies(companies.map(company => 
-      company.id === id ? { ...company, favorite: !company.favorite } : company
-    ));
-    
+  const toggleFavorite = async (id: string) => {
     const company = companies.find(c => c.id === id);
     if (company) {
-      toast({
-        title: company.favorite ? 
-          (language === 'de' ? 'Von Favoriten entfernt' : 'Removed from favorites') : 
-          (language === 'de' ? 'Zu Favoriten hinzugefügt' : 'Added to favorites'),
-        description: company.name,
-      });
+      const result = await updateCompany(id, { favorite: !company.favorite });
+      
+      if (result) {
+        toast({
+          title: company.favorite ? 
+            (language === 'de' ? 'Von Favoriten entfernt' : 'Removed from favorites') : 
+            (language === 'de' ? 'Zu Favoriten hinzugefügt' : 'Added to favorites'),
+          description: company.name,
+        });
+      }
     }
   };
 
   const initiateCall = (company: Company) => {
     toast({
       title: language === 'de' ? 'Anruf wird gestartet' : 'Initiating call',
-      description: `${company.name}: ${company.phone}`,
+      description: `${company.name}: ${company.phone || ''}`,
     });
     // In a real implementation, this would integrate with a call API
   };
@@ -218,7 +158,27 @@ const CompanyManager: React.FC = () => {
         </div>
 
         <div className="border rounded-md overflow-hidden">
-          {filteredCompanies.length > 0 ? (
+          {loading ? (
+            <div className="p-4 space-y-4">
+              {Array.from({length: 3}).map((_, i) => (
+                <div key={i} className="flex items-center justify-between">
+                  <div className="flex items-center space-x-3">
+                    <Skeleton className="h-10 w-10 rounded-full" />
+                    <div>
+                      <Skeleton className="h-5 w-32 mb-1" />
+                      <Skeleton className="h-4 w-24" />
+                    </div>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <Skeleton className="h-8 w-24" />
+                    <Skeleton className="h-8 w-8 rounded-md" />
+                    <Skeleton className="h-8 w-8 rounded-md" />
+                    <Skeleton className="h-8 w-8 rounded-md" />
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : filteredCompanies.length > 0 ? (
             <div className="divide-y">
               {filteredCompanies.map((company) => (
                 <div 
@@ -235,31 +195,16 @@ const CompanyManager: React.FC = () => {
                       </Avatar>
                       <div>
                         <div className="font-medium">{company.name}</div>
-                        <div className="text-sm text-muted-foreground">{company.phone}</div>
+                        <div className="text-sm text-muted-foreground">{company.phone || ''}</div>
                       </div>
                     </div>
                     <div className="flex items-center space-x-2">
                       <Badge 
                         variant="outline" 
-                        className={`${getBadgeColor(company.type)} text-white`}
+                        className={`${getBadgeColor(company.type as CompanyType)} text-white`}
                       >
-                        {getTypeLabel(company.type)}
+                        {getTypeLabel(company.type as CompanyType)}
                       </Badge>
-                      <Button 
-                        variant="outline" 
-                        size="sm" 
-                        className="flex items-center"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          toast({
-                            title: language === 'de' ? 'Kontakte anzeigen' : 'View Contacts',
-                            description: `${company.contactCount} ${language === 'de' ? 'Kontakte' : 'Contacts'}`
-                          });
-                        }}
-                      >
-                        <Users className="h-4 w-4 mr-1" />
-                        {company.contactCount}
-                      </Button>
                       <Button 
                         variant="ghost" 
                         size="icon"
@@ -282,6 +227,7 @@ const CompanyManager: React.FC = () => {
                           e.stopPropagation();
                           initiateCall(company);
                         }}
+                        disabled={!company.phone}
                         title={language === 'de' ? 'Anrufen' : 'Call'}
                       >
                         <PhoneCall className="h-4 w-4 text-primary" />

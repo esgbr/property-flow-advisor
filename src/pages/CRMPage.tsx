@@ -11,7 +11,7 @@ import CallTracker from '@/components/crm/CallTracker';
 import CompanyManager from '@/components/crm/CompanyManager';
 import ActivityHistory from '@/components/crm/ActivityHistory';
 import { Card, CardContent } from '@/components/ui/card';
-import { useToast } from '@/components/ui/use-toast';
+import { useToast } from '@/hooks/use-toast';
 import UnifiedCRMSearch from '@/components/crm/UnifiedCRMSearch';
 import EmailTemplates from '@/components/crm/EmailTemplates';
 import MeetingScheduler from '@/components/crm/MeetingScheduler';

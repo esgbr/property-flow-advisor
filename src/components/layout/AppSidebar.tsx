@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { Sidebar, SidebarContent } from '@/components/ui/sidebar';
@@ -20,6 +21,7 @@ interface NavItem {
   new?: boolean;
   hide?: boolean;
   marketSpecific?: string | string[];
+  priority?: number;
 }
 
 interface NavCategory {
@@ -41,25 +43,28 @@ const AppSidebar = () => {
       title: t('mainNavigation'),
       items: [
         {
+          name: language === 'de' ? 'CRM' : 'CRM',
+          href: '/crm',
+          icon: <Users className="h-5 w-5" />,
+          priority: 10
+        },
+        {
           name: t('dashboard'),
           href: '/dashboard',
           icon: <LayoutDashboard className="h-5 w-5" />,
+          priority: 20
         },
         {
           name: t('investorDashboard'),
           href: '/investor-dashboard',
           icon: <Building2 className="h-5 w-5" />,
+          priority: 30
         },
         {
           name: t('properties'),
           href: '/properties',
           icon: <Building className="h-5 w-5" />,
-        },
-        {
-          name: language === 'de' ? 'CRM' : 'CRM',
-          href: '/crm',
-          icon: <Users className="h-5 w-5" />,
-          new: true,
+          priority: 40
         }
       ]
     },
@@ -200,10 +205,22 @@ const AppSidebar = () => {
     );
   };
 
+  // Sort main navigation items based on priority
+  const sortNavItems = (items: NavItem[]) => {
+    return [...items].sort((a, b) => {
+      const priorityA = a.priority || 100;
+      const priorityB = b.priority || 100;
+      return priorityA - priorityB;
+    });
+  };
+
   // Render a category with its items
   const renderCategory = (category: NavCategory, idx: number) => {
+    // Sort items if it's the main navigation category
+    const categoryItems = idx === 0 ? sortNavItems(category.items) : category.items;
+    
     // Filter items based on market specificity
-    const visibleItems = category.items.filter(item => !item.hide);
+    const visibleItems = categoryItems.filter(item => !item.hide);
     
     if (visibleItems.length === 0) return null;
     
