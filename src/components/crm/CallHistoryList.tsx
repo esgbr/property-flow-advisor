@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
@@ -96,6 +95,26 @@ const CallHistoryList: React.FC<CallHistoryListProps> = ({ calls, language, onAn
                 {language === 'de' ? 'KI-Zusammenfassung' : 'AI Summary'}
               </div>
               <p className="text-sm">{call.aiSummary}</p>
+            </div>
+          )}
+          {call.status === 'missed' && (
+            <div className="ml-12 mt-2">
+              <Button
+                size="sm"
+                variant="outline"
+                aria-label={language === "de" ? "Kontakt aus verpasstem Anruf anlegen" : "Add contact from missed call"}
+                onClick={() => {
+                  window.dispatchEvent(new CustomEvent("crmQuickAdd", {
+                    detail: {
+                      type: "quickadd",
+                      entity: "contact",
+                      prefill: { name: call.contactName }
+                    }
+                  }));
+                }}
+              >
+                {language === 'de' ? 'Kontakt anlegen' : 'Add Contact'}
+              </Button>
             </div>
           )}
         </div>

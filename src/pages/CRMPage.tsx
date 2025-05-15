@@ -1,4 +1,3 @@
-
 import React from 'react'
 import { useLanguage } from '@/contexts/LanguageContext'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
@@ -14,6 +13,7 @@ import CallAnalyticsPanel from '@/components/crm/CallAnalyticsPanel'
 import CallModal from '@/components/crm/CallModal'
 import { formatDate } from '@/components/crm/callUtils'
 import { toast } from "@/hooks/use-toast"
+import { QuickAddDialog } from "@/components/crm/QuickAddDialog";
 
 const CRMPage: React.FC = () => {
   const { language } = useLanguage()
@@ -27,6 +27,9 @@ const CRMPage: React.FC = () => {
   // New: After-call actions
   const [showAfterCallModal, setShowAfterCallModal] = React.useState(false)
   const [lastCallContact, setLastCallContact] = React.useState<{ name: string, phone: string } | null>(null)
+
+  // QuickAdd dialog state for after-call or missed call creation
+  const [quickAdd, setQuickAdd] = React.useState<{ open: boolean; type: "contact" | "company" | "task"; prefill?: any } | null>(null);
 
   // Handler: open modal from ContactManager
   const handleInitiateCall = (name: string, phone: string) => {
@@ -119,6 +122,32 @@ const CRMPage: React.FC = () => {
     setShowAfterCallModal(false)
     // (Could deep-link or set state to prefill contact info in TaskManager/NoteManager)
   }
+
+  // Add logic to trigger QuickAdd after missed call. Example below is for after call modal close, can be reused elsewhere (e.g., missed call row or action):
+  const handleMissedCall = (contactName: string, contactPhone: string) => {
+    toast({
+      title: language === "de" ? "Anruf verpasst" : "Missed call",
+      description: language === "de"
+        ? "Neuen Kontakt, Firma oder Task anlegen?"
+        : "Add a contact, company, or task?",
+    });
+    setQuickAdd({ open: true, type: "contact", prefill: { name: contactName, phone: contactPhone } });
+  };
+
+  // Listen for a custom event from CallHistoryList's "add" button
+  React.useEffect(() => {
+    const handler = (e: Event) => {
+      if ((e as CustomEvent).detail?.type && (e as CustomEvent).detail.type === "quickadd") {
+        setQuickAdd({
+          open: true,
+          type: (e as CustomEvent).detail.entity,
+          prefill: (e as CustomEvent).detail.prefill,
+        });
+      }
+    };
+    window.addEventListener("crmQuickAdd", handler);
+    return () => window.removeEventListener("crmQuickAdd", handler);
+  }, []);
 
   return (
     <div className="container mx-auto py-6 max-w-5xl">
@@ -313,9 +342,26 @@ const CRMPage: React.FC = () => {
           </div>
         </div>
       )}
+      {/* Place QuickAddDialog at root so it overlays page as needed */}
+      {quickAdd && (
+        <QuickAddDialog
+          open={quickAdd.open}
+          onOpenChange={(v) => setQuickAdd(q => q ? { ...q, open: v } : null)}
+          type={quickAdd.type}
+          prefill={quickAdd.prefill}
+          onCreated={() => {
+            toast({
+              title: language === "de" ? "Gespeichert" : "Saved",
+              description: language === "de"
+                ? "Neuer Eintrag wurde erstellt"
+                : "New record created",
+            });
+            setQuickAdd(null);
+          }}
+        />
+      )}
     </div>
   )
 }
 
 export default CRMPage
-

@@ -1,4 +1,3 @@
-
 // Utility functions shared between CallTracker, ContactManager, etc
 
 // Format call duration from seconds to MM:SS
@@ -49,4 +48,21 @@ export function getInitials(name: string) {
     .join('')
     .toUpperCase()
     .substring(0, 2);
+}
+
+export function showErrorToast({ toast, language, err, description }: {
+  toast: any,
+  language: string,
+  err?: any,
+  description?: string
+}) {
+  toast({
+    variant: "destructive",
+    title: language === "de" ? "Fehler" : "Error",
+    description: description || err?.message || (language === "de" ? "Unbekannter Fehler" : "Unknown error"),
+  });
+  if (err) {
+    // eslint-disable-next-line no-console
+    console.error(err);
+  }
 }
