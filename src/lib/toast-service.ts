@@ -67,7 +67,8 @@ export const toastService = {
    * Update a toast by ID
    */
   update: (id: string, options: { title?: string, description?: string, variant?: ToastProps['variant'] }) => {
-    return toast({
+    const { dismiss, update } = toast({ title: "Updating..." });
+    return update({
       ...options,
       id,
     });
@@ -77,10 +78,10 @@ export const toastService = {
    * Dismiss a toast by ID
    */
   dismiss: (id: string) => {
-    toast({
-      id,
-      duration: 0,
-    });
+    // Get toast functions first
+    const { dismiss } = toast({ title: "Dismissing..." });
+    // Then call the dismiss function with the id
+    dismiss(id);
   },
 };
 
