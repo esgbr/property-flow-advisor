@@ -6,13 +6,14 @@ import { workflowDefinitions, WorkflowType } from '@/data/workflow-definitions';
 
 export interface WorkflowStep {
   id: string;
-  path?: string;
-  label: Record<string, string>;
-  title?: Record<string, string>;
-  description?: Record<string, string>;
+  path: string;
+  label: { de: string; en: string };
+  description?: { de: string; en: string };
   icon?: React.ReactNode;
-  estimatedTime?: number;
-  requiredSteps?: string[]; // HOTFIX: fehlendes Property ergänzt
+  isComplete?: boolean;
+  requiredSteps?: string[]; // Added line for error fix
+  progress?: number;
+  estimatedTime?: number; // in minutes
 }
 
 export function useUnifiedWorkflow(workflowType: WorkflowType) {

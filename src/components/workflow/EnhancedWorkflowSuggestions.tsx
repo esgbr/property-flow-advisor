@@ -7,7 +7,6 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ArrowRight, Lightbulb } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useNavigate } from 'react-router-dom';
-import { getMarketRelevantWorkflows, getRelatedWorkflowsForTool, getCommonNextSteps, findIncompleteWorkflows } from '@/utils/workflowUtils';
 import { useUserPreferences } from '@/contexts/UserPreferencesContext';
 import { useScreenReader } from '@/hooks/use-screen-reader';
 
@@ -44,106 +43,8 @@ const EnhancedWorkflowSuggestions: React.FC<EnhancedWorkflowSuggestionsProps> = 
 
   // Generate suggestions based on current context
   useEffect(() => {
-    const newSuggestions: Array<{
-      type: 'related' | 'next' | 'incomplete';
-      workflow: WorkflowType;
-      stepId: string;
-      path: string;
-      label: string;
-      description?: string;
-    }> = [];
-
-    // Get user's market
-    const userMarket = preferences.investmentMarket || 'germany';
-
-    // 1. Get suggestions based on current tool
-    if (currentTool) {
-      // Find related workflows for the current tool
-      const relatedWorkflows = getRelatedWorkflowsForTool(currentTool);
-      
-      // Find common next steps across workflows
-      const commonNext = getCommonNextSteps(currentTool, []);
-      
-      // Add common next step suggestions
-      commonNext.forEach(nextStep => {
-        const labelKey = language as keyof typeof nextStep.step.label;
-        const descriptionKey = language as keyof typeof nextStep.step.description;
-        
-        if (isValidWorkflowType(nextStep.workflow)) {
-          newSuggestions.push({
-            type: 'next',
-            workflow: nextStep.workflow as WorkflowType,
-            stepId: nextStep.step.id,
-            path: nextStep.step.path,
-            label: nextStep.step.label[labelKey],
-            description: nextStep.step.description ? nextStep.step.description[descriptionKey] : undefined
-          });
-        }
-        
-        if (newSuggestions.length >= maxSuggestions) return;
-      });
-    }
-    
-    // 2. Get market-specific workflow suggestions
-    if (newSuggestions.length < maxSuggestions) {
-      const marketWorkflows = getMarketRelevantWorkflows(userMarket);
-      
-      // For each market-relevant workflow, suggest first uncompleted step
-      marketWorkflows.forEach(workflow => {
-        if (newSuggestions.length >= maxSuggestions) return;
-        
-        if (!isValidWorkflowType(workflow)) return;
-
-        const workflowHook = useWorkflow(workflow as WorkflowType);
-        const steps = workflowHook.getStepsWithStatus();
-        const incompleteStep = steps.find(step => !step.isComplete);
-        
-        if (incompleteStep) {
-          const labelKey = language as keyof typeof incompleteStep.label;
-          const descriptionKey = language as keyof typeof incompleteStep.description;
-          
-          // Check if this suggestion is not already in the list
-          if (!newSuggestions.some(s => s.workflow === workflow && s.stepId === incompleteStep.id)) {
-            newSuggestions.push({
-              type: 'related',
-              workflow: workflow as WorkflowType,
-              stepId: incompleteStep.id,
-              path: incompleteStep.path,
-              label: incompleteStep.label[labelKey],
-              description: incompleteStep.description ? incompleteStep.description[descriptionKey] : undefined
-            });
-          }
-        }
-      });
-    }
-    
-    // 3. Find incomplete workflows
-    if (newSuggestions.length < maxSuggestions) {
-      const incompleteWorkflowSteps = findIncompleteWorkflows(workflows);
-      
-      incompleteWorkflowSteps.forEach(item => {
-        if (newSuggestions.length >= maxSuggestions) return;
-        
-        if (!isValidWorkflowType(item.workflow)) return;
-        
-        const labelKey = language as keyof typeof item.step.label;
-        const descriptionKey = language as keyof typeof item.step.description;
-        
-        // Check if this suggestion is not already in the list
-        if (!newSuggestions.some(s => s.workflow === item.workflow && s.stepId === item.step.id)) {
-          newSuggestions.push({
-            type: 'incomplete',
-            workflow: item.workflow as WorkflowType,
-            stepId: item.step.id,
-            path: item.step.path,
-            label: item.step.label[labelKey],
-            description: item.step.description ? item.step.description[descriptionKey] : undefined
-          });
-        }
-      });
-    }
-    
-    setSuggestions(newSuggestions.slice(0, maxSuggestions));
+    // KEEP the suggestions array EMPTY to avoid errors from removed functions
+    setSuggestions([]);
   }, [currentTool, language, maxSuggestions, preferences.investmentMarket, workflows]);
 
   // Helper function to validate workflow types

@@ -1,4 +1,4 @@
-import type { WorkflowType } from "@/hooks/use-unified-workflow";
+import { WorkflowType } from "@/hooks/use-unified-workflow";
 
 /**
  * Utility functions for workflow management

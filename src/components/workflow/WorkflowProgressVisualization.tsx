@@ -21,31 +21,27 @@ const WorkflowProgressVisualization: React.FC<WorkflowProgressVisualizationProps
   const { language } = useLanguage();
   const { getOverallStatistics, getDailyProgress, getWorkflowStatistics } = useWorkflowAnalytics(workflowTypes);
 
-  // Fix: Die Statistik-Funktionen müssen mit workflowTypes aufgerufen werden 
-  const [stats, setStats] = useState(getOverallStatistics());
-  const [progressData, setProgressData] = useState(getDailyProgress(14)); // Last 14 days
+  const [stats, setStats] = useState(getOverallStatistics(workflowTypes));
+  const [progressData, setProgressData] = useState(getDailyProgress(workflowTypes, 14)); // Last 14 days
 
-  // Korrigiere workflowStats initialisierung zu einem Array
   const [workflowStats, setWorkflowStats] = useState(
-    Array.isArray(getWorkflowStatistics()) ? getWorkflowStatistics() : []
+    Array.isArray(getWorkflowStatistics(workflowTypes)) ? getWorkflowStatistics(workflowTypes) : []
   );
   const [activeView, setActiveView] = useState<'overview' | 'daily' | 'workflows'>('overview');
   
-  // Update statistics periodically
   useEffect(() => {
     const updateStats = () => {
-      setStats(getOverallStatistics());
-      setProgressData(getDailyProgress(14));
-      setWorkflowStats(getWorkflowStatistics());
+      setStats(getOverallStatistics(workflowTypes));
+      setProgressData(getDailyProgress(workflowTypes, 14));
+      setWorkflowStats(getWorkflowStatistics(workflowTypes));
     };
     
     updateStats();
     const interval = setInterval(updateStats, 10000);
     
     return () => clearInterval(interval);
-  }, [getOverallStatistics, getDailyProgress, getWorkflowStatistics]);
+  }, [getOverallStatistics, getDailyProgress, getWorkflowStatistics, workflowTypes]);
   
-  // Generate chart data for workflow completion
   const workflowChartData = Array.isArray(workflowStats)
     ? workflowStats.map(stat => ({
         name: getWorkflowName(stat.type),
@@ -53,7 +49,6 @@ const WorkflowProgressVisualization: React.FC<WorkflowProgressVisualizationProps
       }))
     : [];
 
-  // Get localized workflow name based on type
   function getWorkflowName(type: WorkflowType): string {
     const workflowNames: Record<string, Record<string, string>> = {
       'de': {
@@ -74,7 +69,6 @@ const WorkflowProgressVisualization: React.FC<WorkflowProgressVisualizationProps
     return workflowNames[langKey][type] || type;
   }
   
-  // Format date for display
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
     return new Intl.DateTimeFormat(language === 'de' ? 'de-DE' : 'en-US', { 
