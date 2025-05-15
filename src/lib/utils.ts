@@ -107,3 +107,38 @@ export function safeJsonParse<T>(json: string, fallback: T): T {
     return fallback;
   }
 }
+
+/**
+ * Detect keyboard users for better focus styles
+ * This function adds a 'keyboard-user' class to the body when a user
+ * starts navigating with a keyboard and removes it when using a mouse
+ */
+export function detectKeyboardUser(): void {
+  // Skip for SSR environments
+  if (typeof document === "undefined") return;
+
+  // Add the keyboard user detection
+  function handleFirstTab(e: KeyboardEvent) {
+    if (e.key === 'Tab') {
+      document.body.classList.add('keyboard-user');
+      
+      // Once we've detected keyboard navigation, we can remove this listener
+      window.removeEventListener('keydown', handleFirstTab);
+      
+      // Add mouse listener to switch back
+      window.addEventListener('mousedown', handleMouseDownOnce);
+    }
+  }
+  
+  // Handle mouse usage to remove keyboard focus styles
+  function handleMouseDownOnce() {
+    document.body.classList.remove('keyboard-user');
+    
+    // Re-add the keyboard listener
+    window.removeEventListener('mousedown', handleMouseDownOnce);
+    window.addEventListener('keydown', handleFirstTab);
+  }
+  
+  // Initialize by listening for tab key
+  window.addEventListener('keydown', handleFirstTab);
+}
