@@ -167,10 +167,8 @@ const CompanyDetailView: React.FC<CompanyDetailViewProps> = ({ company, onBack }
           
           <TabsContent value="activities" className="mt-4">
             <ActivityHistory 
-              companyId={company.id} 
+              companyId={company.id}
               contactId={undefined}
-              companyName={company.name}
-              contactName={undefined}
             />
           </TabsContent>
           
@@ -178,8 +176,6 @@ const CompanyDetailView: React.FC<CompanyDetailViewProps> = ({ company, onBack }
             <TaskManager 
               companyId={company.id}
               contactId={undefined}
-              companyName={company.name}
-              contactName={undefined}
             />
           </TabsContent>
         </Tabs>
