@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
@@ -88,9 +89,9 @@ function WorkflowBars({ workflowStats, getWorkflowName, language }) {
   return (
     <div className="space-y-4">
       {workflowStats.map((workflow) => (
-        <div key={workflow.type} className="space-y-2">
+        <div key={workflow.type || workflow.workflowType} className="space-y-2">
           <div className="flex justify-between text-sm">
-            <span>{getWorkflowName(workflow.type)}</span>
+            <span>{getWorkflowName(workflow.type || workflow.workflowType)}</span>
             <span>{workflow.completedSteps}/{workflow.totalSteps} {language === 'de' ? 'Schritte' : 'steps'}</span>
           </div>
           <Progress value={workflow.progress} className="h-2" />
@@ -117,8 +118,8 @@ const WorkflowProgressVisualization: React.FC<WorkflowProgressVisualizationProps
   className
 }) => {
   const { language } = useLanguage();
-  // --- FIX: useWorkflowAnalytics() expects no arguments, analytics methods do! ---
-  const analytics = useWorkflowAnalytics();
+  // Use the hook with the array of workflowTypes (so all calculations are for these types)
+  const analytics = useWorkflowAnalytics(workflowTypes);
 
   // Set initial state
   const [stats, setStats] = useState<any>(undefined); // State can be undefined initially
@@ -126,15 +127,19 @@ const WorkflowProgressVisualization: React.FC<WorkflowProgressVisualizationProps
   const [workflowStats, setWorkflowStats] = useState<any[]>([]);
   const [activeView, setActiveView] = useState<'overview' | 'daily' | 'workflows'>('overview');
 
-  // --- FIX: call analytics methods with workflowTypes instead of passing workflowTypes to the hook ---
   useEffect(() => {
-    setStats(analytics.getOverallStatistics(workflowTypes));
-    setProgressData(analytics.getDailyProgress(workflowTypes, 14));
-    setWorkflowStats(analytics.getWorkflowStatistics(workflowTypes));
+    setStats(analytics.getOverallStatistics());
+    setProgressData(analytics.getDailyProgress());
+    setWorkflowStats(
+      // getWorkflowStatistics returns an array of all workflows in the workflowTypes array
+      workflowTypes.map((type) => analytics.getWorkflowStatistics(type))
+    );
     const interval = setInterval(() => {
-      setStats(analytics.getOverallStatistics(workflowTypes));
-      setProgressData(analytics.getDailyProgress(workflowTypes, 14));
-      setWorkflowStats(analytics.getWorkflowStatistics(workflowTypes));
+      setStats(analytics.getOverallStatistics());
+      setProgressData(analytics.getDailyProgress());
+      setWorkflowStats(
+        workflowTypes.map((type) => analytics.getWorkflowStatistics(type))
+      );
     }, 10000);
     return () => clearInterval(interval);
   }, [analytics, workflowTypes]);
@@ -236,3 +241,4 @@ const WorkflowProgressVisualization: React.FC<WorkflowProgressVisualizationProps
 export default WorkflowProgressVisualization;
 
 // NOTE: This file is now getting long and should be further refactored into its own folder of subcomponents & hooks!
+
