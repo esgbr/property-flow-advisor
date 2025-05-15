@@ -11,11 +11,10 @@ import { useLanguage } from '@/contexts/LanguageContext';
 export function formatDate(date: Date | string, format: 'short' | 'medium' | 'long' = 'medium'): string {
   const dateObj = typeof date === 'string' ? new Date(date) : date;
   
-  const options: Intl.DateTimeFormatOptions = {
-    short: { month: 'numeric', day: 'numeric', year: '2-digit' },
-    medium: { month: 'short', day: 'numeric', year: 'numeric' },
-    long: { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' }
-  }[format];
+  const options: Intl.DateTimeFormatOptions = 
+    format === 'short' ? { month: 'numeric', day: 'numeric', year: '2-digit' } :
+    format === 'medium' ? { month: 'short', day: 'numeric', year: 'numeric' } :
+    { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' };
   
   return new Intl.DateTimeFormat('en-US', options).format(dateObj);
 }
@@ -26,11 +25,10 @@ export function formatDate(date: Date | string, format: 'short' | 'medium' | 'lo
 export function formatDateTime(date: Date | string, format: 'short' | 'medium' | 'long' = 'medium'): string {
   const dateObj = typeof date === 'string' ? new Date(date) : date;
   
-  const options: Intl.DateTimeFormatOptions = {
-    short: { month: 'numeric', day: 'numeric', year: '2-digit', hour: 'numeric', minute: '2-digit' },
-    medium: { month: 'short', day: 'numeric', year: 'numeric', hour: 'numeric', minute: '2-digit' },
-    long: { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric', hour: 'numeric', minute: '2-digit', second: '2-digit' }
-  }[format];
+  const options: Intl.DateTimeFormatOptions = 
+    format === 'short' ? { month: 'numeric', day: 'numeric', year: '2-digit', hour: 'numeric', minute: '2-digit' } :
+    format === 'medium' ? { month: 'short', day: 'numeric', year: 'numeric', hour: 'numeric', minute: '2-digit' } :
+    { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric', hour: 'numeric', minute: '2-digit', second: '2-digit' };
   
   return new Intl.DateTimeFormat('en-US', options).format(dateObj);
 }
@@ -83,22 +81,20 @@ export function useDateFormatter() {
     formatDate: (date: Date | string, format: 'short' | 'medium' | 'long' = 'medium') => {
       const dateObj = typeof date === 'string' ? new Date(date) : date;
       
-      const options: Intl.DateTimeFormatOptions = {
-        short: { month: 'numeric', day: 'numeric', year: '2-digit' },
-        medium: { month: 'short', day: 'numeric', year: 'numeric' },
-        long: { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' }
-      }[format];
+      const options: Intl.DateTimeFormatOptions = 
+        format === 'short' ? { month: 'numeric', day: 'numeric', year: '2-digit' } :
+        format === 'medium' ? { month: 'short', day: 'numeric', year: 'numeric' } :
+        { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' };
       
       return new Intl.DateTimeFormat(language === 'de' ? 'de-DE' : 'en-US', options).format(dateObj);
     },
     formatDateTime: (date: Date | string, format: 'short' | 'medium' | 'long' = 'medium') => {
       const dateObj = typeof date === 'string' ? new Date(date) : date;
       
-      const options: Intl.DateTimeFormatOptions = {
-        short: { month: 'numeric', day: 'numeric', year: '2-digit', hour: 'numeric', minute: '2-digit' },
-        medium: { month: 'short', day: 'numeric', year: 'numeric', hour: 'numeric', minute: '2-digit' },
-        long: { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric', hour: 'numeric', minute: '2-digit' }
-      }[format];
+      const options: Intl.DateTimeFormatOptions = 
+        format === 'short' ? { month: 'numeric', day: 'numeric', year: '2-digit', hour: 'numeric', minute: '2-digit' } :
+        format === 'medium' ? { month: 'short', day: 'numeric', year: 'numeric', hour: 'numeric', minute: '2-digit' } :
+        { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric', hour: 'numeric', minute: '2-digit' };
       
       return new Intl.DateTimeFormat(language === 'de' ? 'de-DE' : 'en-US', options).format(dateObj);
     },

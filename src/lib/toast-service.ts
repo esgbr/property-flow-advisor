@@ -1,5 +1,6 @@
 
 import { toast } from '@/hooks/use-toast';
+import type { ToastProps } from '@/components/ui/toast';
 
 /**
  * Centralized toast service for consistent toast usage across the app
@@ -65,10 +66,10 @@ export const toastService = {
   /**
    * Update a toast by ID
    */
-  update: (id: string, options: { title?: string, description?: string, variant?: 'default' | 'destructive' }) => {
+  update: (id: string, options: { title?: string, description?: string, variant?: ToastProps['variant'] }) => {
     return toast({
-      id,
       ...options,
+      toastId: id, // Use toastId instead of id
     });
   },
   
@@ -76,7 +77,10 @@ export const toastService = {
    * Dismiss a toast by ID
    */
   dismiss: (id: string) => {
-    toast.dismiss(id);
+    toast({
+      toastId: id,
+      duration: 0,
+    });
   },
 };
 
