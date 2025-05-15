@@ -10,6 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import ContactDetailView from './ContactDetailView';
 import { ImportContactsModal } from './ImportContactsModal';
+import { ImportedContact } from '@/utils/contactImport';
 
 export interface Contact {
   id: string;
@@ -136,7 +137,7 @@ const ContactManager: React.FC = () => {
   };
   
   // Import contacts handler
-  const handleContactsImported = (importedContacts: Contact[]) => {
+  const handleContactsImported = (importedContacts: ImportedContact[]) => {
     // Add IDs to imported contacts if they don't have them
     const contactsWithIds = importedContacts.map(contact => ({
       ...contact,

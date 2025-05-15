@@ -1,15 +1,13 @@
 
 import { toast } from '@/hooks/use-toast';
+import { Contact } from '@/hooks/use-crm-data';
 
-interface BaseContact {
+export interface ImportedContact {
   id?: string;
   name: string;
-  phone?: string;
-  email?: string;
-  notes?: string;
-}
-
-export interface ImportedContact extends BaseContact {
+  phone?: string | null;
+  email?: string | null;
+  notes?: string | null;
   source: 'iphone' | 'google' | 'outlook' | 'csv' | 'manual';
   importDate: string;
 }
@@ -66,7 +64,7 @@ export async function importIPhoneContacts(): Promise<ImportedContact[]> {
 
 export async function filterDuplicateContacts(
   newContacts: ImportedContact[],
-  existingContacts: BaseContact[]
+  existingContacts: Contact[]
 ): Promise<ImportedContact[]> {
   return newContacts.filter(newContact => 
     !existingContacts.some(existingContact => 

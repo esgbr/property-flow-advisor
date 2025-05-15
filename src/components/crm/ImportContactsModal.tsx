@@ -10,15 +10,15 @@ import { Import, AlertCircle, Check, Smartphone, File, FileCheck } from 'lucide-
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Input } from '@/components/ui/input';
 import { importIPhoneContacts, ImportedContact, filterDuplicateContacts } from '@/utils/contactImport';
+import { Contact } from '@/hooks/use-crm-data';
 
 interface ImportContactsModalProps {
   isOpen: boolean;
   onClose: () => void;
   onImport: (contacts: ImportedContact[]) => void;
-  existingContacts?: any[];
+  existingContacts: Contact[];
 }
 
-// Export the component with named export 'ImportContactsModal'
 export const ImportContactsModal: React.FC<ImportContactsModalProps> = ({ 
   isOpen,
   onClose,
@@ -345,5 +345,5 @@ export const ImportContactsModal: React.FC<ImportContactsModalProps> = ({
   );
 };
 
-// Also add a default export for backward compatibility
+// Default export for backward compatibility
 export default ImportContactsModal;
