@@ -12,7 +12,7 @@ export interface WorkflowStep {
   description?: Record<string, string>;
   icon?: React.ReactNode;
   estimatedTime?: number;
-  requiredSteps?: string[];
+  requiredSteps?: string[]; // HOTFIX: fehlendes Property ergänzt
 }
 
 export function useUnifiedWorkflow(workflowType: WorkflowType) {

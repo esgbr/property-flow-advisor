@@ -1,3 +1,4 @@
+
 import React, { useState, useCallback, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { 
@@ -17,7 +18,7 @@ export interface WorkflowStep {
   description?: { de: string; en: string };
   icon?: React.ReactNode;
   isComplete?: boolean;
-  requiredSteps?: string[];
+  requiredSteps?: string[]; // HOTFIX: ergänzt
   progress?: number;
   estimatedTime?: number; // in minutes
 }

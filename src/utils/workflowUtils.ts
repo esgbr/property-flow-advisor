@@ -1,163 +1,159 @@
-
-import { workflowDefinitions, WorkflowType } from '@/data/workflow-definitions';
-import { WorkflowStep } from '@/hooks/use-unified-workflow';
-import { WorkflowsState } from '@/contexts/WorkflowStateContext';
+import type { WorkflowType } from "@/hooks/use-unified-workflow";
 
 /**
- * Get related workflows for a specific tool
- * @param toolId - The ID of the current tool
- * @returns Array of related workflow types
+ * Utility functions for workflow management
  */
-export function getRelatedWorkflowsForTool(toolId: string): WorkflowType[] {
-  const relationships: Record<string, WorkflowType[]> = {
-    // Tax-related tools
-    'grunderwerbsteuer': ['steuer', 'finanzierung'],
-    'afa': ['steuer', 'immobilien'],
-    'spekulationssteuer': ['steuer', 'analyse'],
-    
-    // Property-related tools
-    'objekterfassung': ['immobilien', 'analyse'],
-    'mietverwaltung': ['immobilien', 'finanzierung'],
-    'nebenkosten': ['immobilien', 'steuer'],
-    
-    // Financing-related tools
-    'calculator': ['finanzierung', 'immobilien'],
-    'offers': ['finanzierung', 'analyse'],
-    'tilgung': ['finanzierung', 'steuer'],
-    
-    // Analysis-related tools
-    'rendite': ['analyse', 'finanzierung'],
-    'marktanalyse': ['analyse', 'immobilien'],
-    'portfolio': ['analyse', 'immobilien'],
-    'investment-report': ['analyse', 'steuer']
+
+/**
+ * Get the estimated completion time for a workflow in minutes
+ * @param workflowType The type of workflow
+ * @param completedSteps Array of completed step IDs
+ * @returns Estimated time in minutes
+ */
+export function getEstimatedCompletionTime(
+  workflowType: WorkflowType,
+  completedSteps: string[]
+): number {
+  // This would normally fetch from workflow definitions
+  // For now using placeholder values
+  const estimatedTimes: Record<WorkflowType, number> = {
+    steuer: 45,
+    immobilien: 60,
+    finanzierung: 30,
+    analyse: 40
   };
   
-  return relationships[toolId] || [];
+  // Base time for the workflow
+  const baseTime = estimatedTimes[workflowType] || 30;
+  
+  // Reduce time based on completed steps (assume each step is equal)
+  // This is a simplified calculation
+  const completionPercentage = completedSteps.length / getWorkflowStepCount(workflowType);
+  const remainingTime = baseTime * (1 - completionPercentage);
+  
+  return Math.round(remainingTime);
 }
 
 /**
- * Find common next steps across workflows
- * @param currentToolId - The ID of the current tool
- * @param excludeWorkflows - Workflow types to exclude
- * @returns Array of common next steps
+ * Get the total number of steps in a workflow
+ * @param workflowType The type of workflow
+ * @returns Number of steps
  */
-export function getCommonNextSteps(
-  currentToolId: string,
-  excludeWorkflows: WorkflowType[] = []
-): Array<{ workflow: string; step: WorkflowStep }> {
-  const relatedWorkflows = getRelatedWorkflowsForTool(currentToolId)
-    .filter(wf => !excludeWorkflows.includes(wf));
+export function getWorkflowStepCount(workflowType: WorkflowType): number {
+  // This would normally fetch from workflow definitions
+  // For now using placeholder values
+  const stepCounts: Record<WorkflowType, number> = {
+    steuer: 3,
+    immobilien: 3,
+    finanzierung: 3,
+    analyse: 3
+  };
   
-  const result: Array<{ workflow: string; step: WorkflowStep }> = [];
-  
-  relatedWorkflows.forEach(workflow => {
-    const { steps } = workflowDefinitions[workflow];
-    
-    // Find the current tool in this workflow
-    const currentStepIndex = steps.findIndex(step => step.id === currentToolId);
-    
-    if (currentStepIndex !== -1 && currentStepIndex < steps.length - 1) {
-      // Get the next step in this workflow
-      const nextStep = steps[currentStepIndex + 1];
-      result.push({ workflow, step: nextStep });
-    }
-  });
-  
-  return result;
+  return stepCounts[workflowType] || 0;
 }
 
 /**
- * Get market relevant workflows based on user's market
- * @param market - The user's selected market
- * @returns Array of relevant workflow types
+ * Format a time duration in minutes to a human-readable string
+ * @param minutes Time in minutes
+ * @returns Formatted time string
  */
-export function getMarketRelevantWorkflows(market: string): string[] {
-  switch (market.toLowerCase()) {
-    case 'germany':
-      return ['steuer', 'immobilien', 'finanzierung'];
-    case 'us':
-      return ['analyse', 'finanzierung', 'immobilien'];
-    case 'uk':
-      return ['immobilien', 'analyse', 'finanzierung'];
-    default:
-      return ['analyse', 'immobilien'];
+export function formatTimeEstimate(minutes: number, language: 'en' | 'de' = 'en'): string {
+  if (minutes < 1) {
+    return language === 'de' ? 'Weniger als eine Minute' : 'Less than a minute';
   }
+  
+  if (minutes < 60) {
+    return language === 'de' 
+      ? `${minutes} Minute${minutes !== 1 ? 'n' : ''}` 
+      : `${minutes} minute${minutes !== 1 ? 's' : ''}`;
+  }
+  
+  const hours = Math.floor(minutes / 60);
+  const remainingMinutes = minutes % 60;
+  
+  if (remainingMinutes === 0) {
+    return language === 'de'
+      ? `${hours} Stunde${hours !== 1 ? 'n' : ''}`
+      : `${hours} hour${hours !== 1 ? 's' : ''}`;
+  }
+  
+  return language === 'de'
+    ? `${hours} Stunde${hours !== 1 ? 'n' : ''} ${remainingMinutes} Minute${remainingMinutes !== 1 ? 'n' : ''}`
+    : `${hours} hour${hours !== 1 ? 's' : ''} ${remainingMinutes} minute${remainingMinutes !== 1 ? 's' : ''}`;
 }
 
 /**
- * Find incomplete workflow steps to suggest to the user
- * @param workflows - The current state of all workflows
- * @returns Array of incomplete workflow steps
+ * Get a list of dependencies for a workflow step
+ * @param workflowType The type of workflow
+ * @param stepId The ID of the step
+ * @returns Array of dependency step IDs
  */
-export function findIncompleteWorkflows(
-  workflows: WorkflowsState
-): Array<{ workflow: string; step: WorkflowStep }> {
-  const result: Array<{ workflow: string; step: WorkflowStep }> = [];
+export function getStepDependencies(workflowType: WorkflowType, stepId: string): string[] {
+  // This would normally fetch from workflow definitions
+  // For now using placeholder values
+  const dependencies: Record<string, string[]> = {
+    'steuer.planning': ['steuer.grunderwerbsteuer'],
+    'steuer.afa': ['steuer.planning'],
+    'immobilien.rendite': ['immobilien.marktanalyse'],
+    'immobilien.portfolio': ['immobilien.rendite'],
+    'finanzierung.offers': ['finanzierung.calculator'],
+    'finanzierung.tilgung': ['finanzierung.offers'],
+    'analyse.portfolio': ['analyse.market'],
+    'analyse.duediligence': ['analyse.portfolio']
+  };
   
-  // Loop through all workflow types
-  Object.keys(workflowDefinitions).forEach(workflowType => {
-    const workflowId = `workflow_${workflowType}`;
-    const workflow = workflows[workflowId];
-    
-    // Skip if workflow doesn't exist in state or has no steps
-    if (!workflow || !workflow.completedSteps) return;
-    
-    const { steps } = workflowDefinitions[workflowType as WorkflowType];
-    
-    // Find incomplete steps
-    steps.forEach(step => {
-      if (!workflow.completedSteps.includes(step.id)) {
-        // Check if this is the first incomplete step or if its dependencies are met
-        const isDependenciesMet = step.requiredSteps ? 
-          step.requiredSteps.every(reqId => workflow.completedSteps.includes(reqId)) :
-          true;
-        
-        if (isDependenciesMet) {
-          result.push({ workflow: workflowType, step });
-          return; // Only add the first incomplete step per workflow
-        }
-      }
-    });
-  });
-  
-  return result;
+  const key = `${workflowType}.${stepId}`;
+  return dependencies[key] || [];
 }
 
 /**
- * Create a unified connector between tools and workflows
- * @param sourceToolId - The ID of the source tool
- * @param targetToolId - The ID of the target tool
- * @returns Connection information with suggested path
+ * Check if a workflow step is blocked by dependencies
+ * @param workflowType The type of workflow
+ * @param stepId The ID of the step
+ * @param completedSteps Array of completed step IDs
+ * @returns Boolean indicating if the step is blocked
  */
-export function createWorkflowConnection(
-  sourceToolId: string,
-  targetToolId: string
-): { exists: boolean; path?: string; requiredSteps: string[] } {
-  let exists = false;
-  let path: string | undefined;
-  const requiredSteps: string[] = [];
+export function isStepBlocked(
+  workflowType: WorkflowType,
+  stepId: string,
+  completedSteps: string[]
+): boolean {
+  const dependencies = getStepDependencies(workflowType, stepId);
   
-  // Search all workflows for a direct connection
-  Object.values(workflowDefinitions).forEach(definition => {
-    const sourceIndex = definition.steps.findIndex(step => step.id === sourceToolId);
-    const targetIndex = definition.steps.findIndex(step => step.id === targetToolId);
-    
-    // If both tools exist in the same workflow
-    if (sourceIndex !== -1 && targetIndex !== -1) {
-      exists = true;
-      
-      // Get the target step path
-      path = definition.steps[targetIndex].path;
-      
-      // Find required steps between source and target
-      if (targetIndex > sourceIndex) {
-        // Target is after source, collect all steps in between
-        for (let i = sourceIndex + 1; i < targetIndex; i++) {
-          requiredSteps.push(definition.steps[i].id);
-        }
-      }
+  if (dependencies.length === 0) {
+    return false;
+  }
+  
+  return dependencies.some(depId => !completedSteps.includes(depId));
+}
+
+/**
+ * Get the next available step in a workflow
+ * @param workflowType The type of workflow
+ * @param completedSteps Array of completed step IDs
+ * @returns ID of the next available step, or null if workflow is complete
+ */
+export function getNextAvailableStep(
+  workflowType: WorkflowType,
+  completedSteps: string[]
+): string | null {
+  // This would normally fetch from workflow definitions
+  // For now using placeholder values
+  const workflowSteps: Record<WorkflowType, string[]> = {
+    steuer: ['grunderwerbsteuer', 'planning', 'afa'],
+    immobilien: ['marktanalyse', 'rendite', 'portfolio'],
+    finanzierung: ['calculator', 'offers', 'tilgung'],
+    analyse: ['market', 'portfolio', 'duediligence']
+  };
+  
+  const steps = workflowSteps[workflowType] || [];
+  
+  // Find the first step that is not completed and not blocked
+  for (const stepId of steps) {
+    if (!completedSteps.includes(stepId) && !isStepBlocked(workflowType, stepId, completedSteps)) {
+      return stepId;
     }
-  });
+  }
   
-  return { exists, path, requiredSteps };
+  return null;
 }

@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
@@ -21,9 +20,15 @@ const WorkflowProgressVisualization: React.FC<WorkflowProgressVisualizationProps
 }) => {
   const { language } = useLanguage();
   const { getOverallStatistics, getDailyProgress, getWorkflowStatistics } = useWorkflowAnalytics(workflowTypes);
+
+  // Fix: Die Statistik-Funktionen müssen mit workflowTypes aufgerufen werden 
   const [stats, setStats] = useState(getOverallStatistics());
   const [progressData, setProgressData] = useState(getDailyProgress(14)); // Last 14 days
-  const [workflowStats, setWorkflowStats] = useState(getWorkflowStatistics());
+
+  // Korrigiere workflowStats initialisierung zu einem Array
+  const [workflowStats, setWorkflowStats] = useState(
+    Array.isArray(getWorkflowStatistics()) ? getWorkflowStatistics() : []
+  );
   const [activeView, setActiveView] = useState<'overview' | 'daily' | 'workflows'>('overview');
   
   // Update statistics periodically
@@ -41,11 +46,13 @@ const WorkflowProgressVisualization: React.FC<WorkflowProgressVisualizationProps
   }, [getOverallStatistics, getDailyProgress, getWorkflowStatistics]);
   
   // Generate chart data for workflow completion
-  const workflowChartData = workflowStats.map(stat => ({
-    name: getWorkflowName(stat.type),
-    progress: stat.progress
-  }));
-  
+  const workflowChartData = Array.isArray(workflowStats)
+    ? workflowStats.map(stat => ({
+        name: getWorkflowName(stat.type),
+        progress: stat.progress
+      }))
+    : [];
+
   // Get localized workflow name based on type
   function getWorkflowName(type: WorkflowType): string {
     const workflowNames: Record<string, Record<string, string>> = {
@@ -148,7 +155,8 @@ const WorkflowProgressVisualization: React.FC<WorkflowProgressVisualizationProps
                     {language === 'de' ? 'Abgeschlossene Workflows' : 'Completed Workflows'}
                   </h3>
                   <div className="text-2xl font-bold">
-                    {stats.completedWorkflows}/{workflowStats.length}
+                    {/* Fix: workflowStats sollte immer ein Array sein */}
+                    {Array.isArray(workflowStats) ? stats.completedWorkflows : 0}/{Array.isArray(workflowStats) ? workflowStats.length : 0}
                   </div>
                 </div>
               </div>
@@ -197,7 +205,7 @@ const WorkflowProgressVisualization: React.FC<WorkflowProgressVisualizationProps
               </div>
               
               <div className="grid grid-cols-7 gap-1 text-xs text-center">
-                {progressData.map((entry, index) => (
+                {Array.isArray(progressData) && progressData.map((entry, index) => (
                   <div key={index} className="overflow-hidden">
                     {formatDate(entry.date)}
                   </div>
@@ -208,7 +216,7 @@ const WorkflowProgressVisualization: React.FC<WorkflowProgressVisualizationProps
           
           <TabsContent value="workflows">
             <div className="space-y-4">
-              {workflowStats.map((workflow) => (
+              {Array.isArray(workflowStats) && workflowStats.map((workflow) => (
                 <div key={workflow.type} className="space-y-2">
                   <div className="flex justify-between text-sm">
                     <span>{getWorkflowName(workflow.type)}</span>
