@@ -1,6 +1,13 @@
 
 import { toast } from '@/hooks/use-toast';
-import { Contact } from '@/hooks/use-crm-data';
+
+// Define a simplified Contact type for filtering purposes
+export interface ContactForFiltering {
+  id?: string;
+  name: string;
+  phone?: string | null;
+  email?: string | null;
+}
 
 export interface ImportedContact {
   id?: string;
@@ -64,7 +71,7 @@ export async function importIPhoneContacts(): Promise<ImportedContact[]> {
 
 export async function filterDuplicateContacts(
   newContacts: ImportedContact[],
-  existingContacts: Contact[]
+  existingContacts: ContactForFiltering[]
 ): Promise<ImportedContact[]> {
   return newContacts.filter(newContact => 
     !existingContacts.some(existingContact => 

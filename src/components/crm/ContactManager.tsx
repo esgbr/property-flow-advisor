@@ -136,25 +136,33 @@ const ContactManager: React.FC = () => {
     }
   };
   
-  // Import contacts handler
-  const handleContactsImported = (importedContacts: ImportedContact[]) => {
-    // Add IDs to imported contacts if they don't have them
-    const contactsWithIds = importedContacts.map(contact => ({
-      ...contact,
-      id: contact.id || `new-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
-      favorite: false,
-      type: contact.type || 'prospect'
-    }));
-    
-    setContacts(prevContacts => [...prevContacts, ...contactsWithIds]);
-    
-    toast({
-      title: language === 'de' ? 'Kontakte importiert' : 'Contacts imported',
-      description: language === 'de' 
-        ? `${contactsWithIds.length} Kontakte wurden erfolgreich importiert` 
-        : `${contactsWithIds.length} contacts successfully imported`,
-    });
-  };
+
+// Import statement for imported contacts
+
+
+// Update the handleContactsImported function to correctly handle ImportedContact type
+const handleContactsImported = (importedContacts: ImportedContact[]) => {
+  // Add IDs to imported contacts if they don't have them
+  const contactsWithIds = importedContacts.map(contact => ({
+    id: contact.id || `new-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+    name: contact.name,
+    type: 'prospect',
+    phone: contact.phone || '',
+    email: contact.email,
+    notes: contact.notes,
+    favorite: false,
+    lastContact: new Date().toISOString()
+  }));
+  
+  setContacts(prevContacts => [...prevContacts, ...contactsWithIds]);
+  
+  toast({
+    title: language === 'de' ? 'Kontakte importiert' : 'Contacts imported',
+    description: language === 'de' 
+      ? `${contactsWithIds.length} Kontakte wurden erfolgreich importiert` 
+      : `${contactsWithIds.length} contacts successfully imported`,
+  });
+};
   
   // Get initials for avatar
   const getInitials = (name: string) => {

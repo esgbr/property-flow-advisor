@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
@@ -9,14 +8,18 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import { Import, AlertCircle, Check, Smartphone, File, FileCheck } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Input } from '@/components/ui/input';
-import { importIPhoneContacts, ImportedContact, filterDuplicateContacts } from '@/utils/contactImport';
-import { Contact } from '@/hooks/use-crm-data';
+import { 
+  importIPhoneContacts, 
+  ImportedContact, 
+  filterDuplicateContacts, 
+  ContactForFiltering 
+} from '@/utils/contactImport';
 
 interface ImportContactsModalProps {
   isOpen: boolean;
   onClose: () => void;
   onImport: (contacts: ImportedContact[]) => void;
-  existingContacts: Contact[];
+  existingContacts: ContactForFiltering[];
 }
 
 export const ImportContactsModal: React.FC<ImportContactsModalProps> = ({ 
