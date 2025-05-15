@@ -1,32 +1,31 @@
-
 import React, { useState } from 'react';
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { useLanguage } from '@/contexts/LanguageContext';
+import { useTasks, Task, TaskPriority, TaskStatus } from '@/hooks/use-crm-data';
+import { useToast } from '@/hooks/use-toast';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
-import { useToast } from '@/hooks/use-toast';
-import { useLanguage } from '@/contexts/LanguageContext';
-import { Check, CheckCircle2, Clock, Plus, CalendarClock, User, Building, Loader2 } from 'lucide-react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { format } from 'date-fns';
 import { de } from 'date-fns/locale';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { useTasks, Task, TaskPriority, TaskStatus } from '@/hooks/use-crm-data';
+import { Check, CheckCircle2, Clock, Plus, CalendarClock, User, Building, Loader2 } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 
 interface TaskManagerProps {
-  contactId?: string;
-  contactName?: string;
   companyId?: string;
-  companyName?: string;
+  contactId?: string;
+  companyName?: string; 
+  contactName?: string;
 }
 
 const TaskManager: React.FC<TaskManagerProps> = ({ 
-  contactId, 
-  contactName, 
   companyId, 
-  companyName 
+  contactId, 
+  companyName, 
+  contactName 
 }) => {
   const { language } = useLanguage();
   const { toast } = useToast();

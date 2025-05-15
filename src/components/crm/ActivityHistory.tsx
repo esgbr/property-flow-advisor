@@ -1,6 +1,6 @@
 
-import React, { useState } from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import React, { useState, useEffect } from 'react';
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from '@/components/ui/button';
 import { 
   Phone, Mail, Calendar, FileText, History, Search, Plus, CalendarDays, 
@@ -21,12 +21,15 @@ import { Textarea } from '@/components/ui/textarea';
 import { useActivities, ActivityType, Activity } from '@/hooks/use-crm-data';
 import { Skeleton } from '@/components/ui/skeleton';
 
+// Updated interface to include companyName and contactName
 interface ActivityHistoryProps {
   contactId?: string;
   companyId?: string;
+  companyName?: string;
+  contactName?: string;
 }
 
-const ActivityHistory: React.FC<ActivityHistoryProps> = ({ contactId, companyId }) => {
+const ActivityHistory: React.FC<ActivityHistoryProps> = ({ contactId, companyId, companyName, contactName }) => {
   const { language } = useLanguage();
   const { toast } = useToast();
   const { activities, loading, addActivity } = useActivities();
@@ -169,7 +172,7 @@ const ActivityHistory: React.FC<ActivityHistoryProps> = ({ contactId, companyId 
               <div className="space-y-4 mt-4">
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <label className="text-sm font-medium">
+                    <label className="block text-sm font-medium">
                       {language === 'de' ? 'Aktivitätstyp' : 'Activity Type'}
                     </label>
                     <Select
@@ -191,7 +194,7 @@ const ActivityHistory: React.FC<ActivityHistoryProps> = ({ contactId, companyId 
                   </div>
                   
                   <div className="space-y-2">
-                    <label className="text-sm font-medium">
+                    <label className="block text-sm font-medium">
                       {language === 'de' ? 'Datum' : 'Date'}
                     </label>
                     <Input
@@ -206,7 +209,7 @@ const ActivityHistory: React.FC<ActivityHistoryProps> = ({ contactId, companyId 
                 </div>
                 
                 <div className="space-y-2">
-                  <label className="text-sm font-medium">
+                  <label className="block text-sm font-medium">
                     {language === 'de' ? 'Titel' : 'Title'}
                   </label>
                   <Input
@@ -217,7 +220,7 @@ const ActivityHistory: React.FC<ActivityHistoryProps> = ({ contactId, companyId 
                 </div>
                 
                 <div className="space-y-2">
-                  <label className="text-sm font-medium">
+                  <label className="block text-sm font-medium">
                     {language === 'de' ? 'Beschreibung' : 'Description'}
                   </label>
                   <Textarea
@@ -241,9 +244,19 @@ const ActivityHistory: React.FC<ActivityHistoryProps> = ({ contactId, companyId 
           </Dialog>
         </CardTitle>
         <CardDescription>
-          {contactId || companyId 
-            ? (language === 'de' ? 'Aktivitäten und Interaktionen' : 'Activities and interactions') 
-            : (language === 'de' ? 'Alle Aktivitäten im System' : 'All activities in the system')}
+          {contactId && contactName && (
+            language === 'de' 
+              ? `Aktivitäten für Kontakt: ${contactName}`
+              : `Activities for contact: ${contactName}`
+          )}
+          {companyId && companyName && (
+            language === 'de' 
+              ? `Aktivitäten für Unternehmen: ${companyName}`
+              : `Activities for company: ${companyName}`
+          )}
+          {!contactId && !companyId && (
+            language === 'de' ? 'Alle Aktivitäten im System' : 'All activities in the system'
+          )}
         </CardDescription>
         
         <div className="relative mb-2 mt-2">
