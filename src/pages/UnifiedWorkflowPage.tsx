@@ -23,7 +23,7 @@ const UnifiedWorkflowPage: React.FC = () => {
   const { toast } = useToast();
   const [activeTab, setActiveTab] = useState('steps');
   
-  // Use the updated hook interface
+  // Use the workflow hook
   const {
     steps,
     currentStep,
