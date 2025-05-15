@@ -4,7 +4,7 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Button } from '@/components/ui/button';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Progress } from '@/components/ui/progress';
-import { useToast } from '@/hooks/use-toast';
+import { useToast } from '@/components/ui/use-toast';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { Import, AlertCircle, Check, Smartphone, File, FileCheck } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -12,16 +12,17 @@ import { Input } from '@/components/ui/input';
 import { importIPhoneContacts, ImportedContact, filterDuplicateContacts } from '@/utils/contactImport';
 
 interface ImportContactsModalProps {
-  open: boolean;
-  onOpenChange: (open: boolean) => void;
-  onContactsImported: (contacts: any[]) => void;
+  isOpen: boolean;
+  onClose: () => void;
+  onImport: (contacts: ImportedContact[]) => void;
   existingContacts?: any[];
 }
 
-const ImportContactsModal: React.FC<ImportContactsModalProps> = ({ 
-  open, 
-  onOpenChange,
-  onContactsImported,
+// Export the component with named export 'ImportContactsModal'
+export const ImportContactsModal: React.FC<ImportContactsModalProps> = ({ 
+  isOpen,
+  onClose,
+  onImport,
   existingContacts = []
 }) => {
   const { language } = useLanguage();
@@ -61,7 +62,7 @@ const ImportContactsModal: React.FC<ImportContactsModalProps> = ({
       setImportStage('success');
       
       // Notify parent component about the imported contacts
-      onContactsImported(uniqueContacts);
+      onImport(uniqueContacts);
       
       // Show success toast
       toast({
@@ -73,7 +74,7 @@ const ImportContactsModal: React.FC<ImportContactsModalProps> = ({
 
       // Auto-close after success
       setTimeout(() => {
-        onOpenChange(false);
+        onClose();
         setImportStage('initial');
       }, 2000);
       
@@ -154,7 +155,7 @@ const ImportContactsModal: React.FC<ImportContactsModalProps> = ({
       setImportStage('success');
       
       // Notify parent component about the imported contacts
-      onContactsImported(uniqueContacts);
+      onImport(uniqueContacts);
       
       // Show success toast
       toast({
@@ -166,7 +167,7 @@ const ImportContactsModal: React.FC<ImportContactsModalProps> = ({
 
       // Auto-close after success
       setTimeout(() => {
-        onOpenChange(false);
+        onClose();
         setImportStage('initial');
         setCsvFile(null);
       }, 2000);
@@ -187,7 +188,7 @@ const ImportContactsModal: React.FC<ImportContactsModalProps> = ({
   };
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
+    <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle>
@@ -323,14 +324,14 @@ const ImportContactsModal: React.FC<ImportContactsModalProps> = ({
 
         <DialogFooter className="flex sm:justify-between">
           {importStage === 'initial' && (
-            <Button variant="outline" onClick={() => onOpenChange(false)}>
+            <Button variant="outline" onClick={onClose}>
               {language === 'de' ? 'Abbrechen' : 'Cancel'}
             </Button>
           )}
           
           {importStage === 'error' && (
             <>
-              <Button variant="outline" onClick={() => onOpenChange(false)}>
+              <Button variant="outline" onClick={onClose}>
                 {language === 'de' ? 'Schließen' : 'Close'}
               </Button>
               <Button onClick={() => setImportStage('initial')}>
@@ -344,4 +345,5 @@ const ImportContactsModal: React.FC<ImportContactsModalProps> = ({
   );
 };
 
+// Also add a default export for backward compatibility
 export default ImportContactsModal;

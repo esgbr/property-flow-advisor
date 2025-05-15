@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -10,7 +9,7 @@ import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import ContactDetailView from './ContactDetailView';
-import ImportContactsModal from './ImportContactsModal';
+import { ImportContactsModal } from './ImportContactsModal';
 
 export interface Contact {
   id: string;
@@ -354,9 +353,9 @@ const ContactManager: React.FC = () => {
       </CardFooter>
       
       <ImportContactsModal 
-        open={isImportModalOpen}
-        onOpenChange={setIsImportModalOpen}
-        onContactsImported={handleContactsImported}
+        isOpen={isImportModalOpen}
+        onClose={() => setIsImportModalOpen(false)}
+        onImport={handleContactsImported}
         existingContacts={contacts}
       />
     </Card>

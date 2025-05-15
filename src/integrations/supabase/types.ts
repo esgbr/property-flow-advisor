@@ -9,7 +9,231 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
-      [_ in never]: never
+      activities: {
+        Row: {
+          company_id: string | null
+          contact_id: string | null
+          created_at: string | null
+          date: string
+          description: string | null
+          id: string
+          title: string
+          type: string
+          user_id: string | null
+        }
+        Insert: {
+          company_id?: string | null
+          contact_id?: string | null
+          created_at?: string | null
+          date: string
+          description?: string | null
+          id?: string
+          title: string
+          type: string
+          user_id?: string | null
+        }
+        Update: {
+          company_id?: string | null
+          contact_id?: string | null
+          created_at?: string | null
+          date?: string
+          description?: string | null
+          id?: string
+          title?: string
+          type?: string
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "activities_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "activities_contact_id_fkey"
+            columns: ["contact_id"]
+            isOneToOne: false
+            referencedRelation: "contacts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      companies: {
+        Row: {
+          address: string | null
+          created_at: string | null
+          favorite: boolean | null
+          id: string
+          name: string
+          notes: string | null
+          phone: string | null
+          type: string
+          updated_at: string | null
+          user_id: string | null
+        }
+        Insert: {
+          address?: string | null
+          created_at?: string | null
+          favorite?: boolean | null
+          id?: string
+          name: string
+          notes?: string | null
+          phone?: string | null
+          type: string
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          address?: string | null
+          created_at?: string | null
+          favorite?: boolean | null
+          id?: string
+          name?: string
+          notes?: string | null
+          phone?: string | null
+          type?: string
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
+      contact_company_relations: {
+        Row: {
+          company_id: string
+          contact_id: string
+          created_at: string | null
+          id: string
+          role: string | null
+        }
+        Insert: {
+          company_id: string
+          contact_id: string
+          created_at?: string | null
+          id?: string
+          role?: string | null
+        }
+        Update: {
+          company_id?: string
+          contact_id?: string
+          created_at?: string | null
+          id?: string
+          role?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "contact_company_relations_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "contact_company_relations_contact_id_fkey"
+            columns: ["contact_id"]
+            isOneToOne: false
+            referencedRelation: "contacts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      contacts: {
+        Row: {
+          created_at: string | null
+          email: string | null
+          favorite: boolean | null
+          id: string
+          name: string
+          notes: string | null
+          phone: string | null
+          type: string
+          updated_at: string | null
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          email?: string | null
+          favorite?: boolean | null
+          id?: string
+          name: string
+          notes?: string | null
+          phone?: string | null
+          type: string
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          email?: string | null
+          favorite?: boolean | null
+          id?: string
+          name?: string
+          notes?: string | null
+          phone?: string | null
+          type?: string
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
+      tasks: {
+        Row: {
+          company_id: string | null
+          contact_id: string | null
+          created_at: string | null
+          description: string | null
+          due_date: string | null
+          id: string
+          priority: string
+          status: string
+          title: string
+          updated_at: string | null
+          user_id: string | null
+        }
+        Insert: {
+          company_id?: string | null
+          contact_id?: string | null
+          created_at?: string | null
+          description?: string | null
+          due_date?: string | null
+          id?: string
+          priority: string
+          status: string
+          title: string
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          company_id?: string | null
+          contact_id?: string | null
+          created_at?: string | null
+          description?: string | null
+          due_date?: string | null
+          id?: string
+          priority?: string
+          status?: string
+          title?: string
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tasks_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "tasks_contact_id_fkey"
+            columns: ["contact_id"]
+            isOneToOne: false
+            referencedRelation: "contacts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
