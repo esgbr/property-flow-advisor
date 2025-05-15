@@ -1,52 +1,83 @@
 
-import { toast as toastPrimitive } from "@/hooks/use-toast";
+import { toast } from '@/hooks/use-toast';
 
 /**
- * Unified toast service for consistent notification handling across the application
+ * Centralized toast service for consistent toast usage across the app
  */
 export const toastService = {
   /**
-   * Show a success toast notification
+   * Show a success toast
    */
   success: (title: string, description?: string) => {
-    return toastPrimitive({
+    return toast({
       title,
       description,
-      variant: "default",
+      variant: 'default',
     });
   },
-
+  
   /**
-   * Show an error toast notification
-   */
-  error: (title: string, description?: string) => {
-    return toastPrimitive({
-      title,
-      description,
-      variant: "destructive",
-    });
-  },
-
-  /**
-   * Show an info toast notification
+   * Show an informational toast
    */
   info: (title: string, description?: string) => {
-    return toastPrimitive({
+    return toast({
       title,
       description,
-      variant: "default",
+      variant: 'default',
     });
   },
-
+  
   /**
-   * Show a warning toast notification
+   * Show a warning toast
    */
   warning: (title: string, description?: string) => {
-    return toastPrimitive({
+    return toast({
       title,
       description,
-      variant: "default",
-      className: "bg-yellow-100 border-yellow-400 text-yellow-800",
+      variant: 'default',
+      className: 'bg-yellow-50 border-yellow-300 text-yellow-800',
     });
   },
+  
+  /**
+   * Show an error toast
+   */
+  error: (title: string, description?: string) => {
+    return toast({
+      title,
+      description,
+      variant: 'destructive',
+    });
+  },
+  
+  /**
+   * Show a loading toast that can be updated
+   */
+  loading: (title: string, description?: string) => {
+    return toast({
+      title,
+      description,
+      duration: Infinity,
+      className: 'bg-muted/50',
+    });
+  },
+  
+  /**
+   * Update a toast by ID
+   */
+  update: (id: string, options: { title?: string, description?: string, variant?: 'default' | 'destructive' }) => {
+    return toast({
+      id,
+      ...options,
+    });
+  },
+  
+  /**
+   * Dismiss a toast by ID
+   */
+  dismiss: (id: string) => {
+    toast.dismiss(id);
+  },
 };
+
+export default toastService;

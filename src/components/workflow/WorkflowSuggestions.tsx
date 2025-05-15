@@ -1,213 +1,65 @@
-import React, { useEffect, useState } from 'react';
-import { useLanguage } from '@/contexts/LanguageContext';
-import { WorkflowType, useWorkflow } from '@/hooks/use-workflow';
-import { useWorkflowState } from '@/contexts/WorkflowStateContext';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { ArrowRight, Lightbulb } from 'lucide-react';
-import { cn } from '@/lib/utils';
-import { useNavigate } from 'react-router-dom';
-import { getMarketRelevantWorkflows, getRelatedWorkflowsForTool, getCommonNextSteps, findIncompleteWorkflows } from '@/utils/workflowUtils';
-import { useUserPreferences } from '@/contexts/UserPreferencesContext';
-import { useScreenReader } from '@/hooks/use-screen-reader';
 
-export interface WorkflowSuggestionsProps {
-  workflowType: WorkflowType;
+import React from 'react';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { useLanguage } from '@/contexts/LanguageContext';
+import { useUnifiedWorkflowNavigation } from '@/hooks/use-unified-workflow-navigation';
+import { ArrowRight } from 'lucide-react';
+import { WorkflowType } from '@/hooks/use-workflow';
+
+interface WorkflowSuggestionsProps {
+  currentTool: string;
+  workflowType?: WorkflowType;
   maxSuggestions?: number;
   className?: string;
-  currentTool?: string;
-  variant?: 'default' | 'compact';
 }
 
-/**
- * Suggests related workflows and next steps based on the current context
- * This helps users discover related tools and continue their workflow
- */
 const WorkflowSuggestions: React.FC<WorkflowSuggestionsProps> = ({
-  workflowType,
   currentTool,
+  workflowType,
   maxSuggestions = 3,
-  className,
-  variant = 'default'
+  className = '',
 }) => {
   const { language } = useLanguage();
-  const navigate = useNavigate();
-  const { workflows } = useWorkflowState();
-  const { preferences } = useUserPreferences();
-  const [suggestions, setSuggestions] = useState<Array<{
-    type: 'related' | 'next' | 'incomplete';
-    workflow: WorkflowType;
-    stepId: string;
-    path: string;
-    label: string;
-    description?: string;
-  }>>([]);
-  const { announceNavigation } = useScreenReader();
+  const { getSuggestedWorkflows, navigateToWorkflow } = useUnifiedWorkflowNavigation();
+  
+  const suggestions = getSuggestedWorkflows(currentTool)
+    // Filter by workflow type if provided
+    .filter(suggestion => !workflowType || suggestion.route.workflowType === workflowType)
+    .slice(0, maxSuggestions);
 
-  // Generate suggestions based on current context
-  useEffect(() => {
-    const newSuggestions: Array<{
-      type: 'related' | 'next' | 'incomplete';
-      workflow: WorkflowType;
-      stepId: string;
-      path: string;
-      label: string;
-      description?: string;
-    }> = [];
-
-    // Get user's market
-    const userMarket = preferences.investmentMarket || 'germany';
-
-    // 1. Get suggestions based on current tool
-    if (currentTool) {
-      // Find related workflows for the current tool
-      const relatedWorkflows = getRelatedWorkflowsForTool(currentTool);
-      
-      // Find common next steps across workflows
-      const commonNext = getCommonNextSteps(currentTool, []);
-      
-      // Add common next step suggestions
-      commonNext.forEach(nextStep => {
-        const labelKey = language as keyof typeof nextStep.step.label;
-        const descriptionKey = language as keyof typeof nextStep.step.description;
-        
-        if (isValidWorkflowType(nextStep.workflow)) {
-          newSuggestions.push({
-            type: 'next',
-            workflow: nextStep.workflow as WorkflowType,
-            stepId: nextStep.step.id,
-            path: nextStep.step.path,
-            label: nextStep.step.label[labelKey],
-            description: nextStep.step.description ? nextStep.step.description[descriptionKey] : undefined
-          });
-        }
-        
-        if (newSuggestions.length >= maxSuggestions) return;
-      });
-    }
-    
-    // 2. Get market-specific workflow suggestions
-    if (newSuggestions.length < maxSuggestions) {
-      const marketWorkflows = getMarketRelevantWorkflows(userMarket);
-      
-      // For each market-relevant workflow, suggest first uncompleted step
-      marketWorkflows.forEach(workflow => {
-        if (newSuggestions.length >= maxSuggestions) return;
-        
-        if (!isValidWorkflowType(workflow)) return;
-
-        const workflowHook = useWorkflow(workflow as WorkflowType);
-        const steps = workflowHook.getStepsWithStatus();
-        const incompleteStep = steps.find(step => !step.isComplete);
-        
-        if (incompleteStep) {
-          const labelKey = language as keyof typeof incompleteStep.label;
-          const descriptionKey = language as keyof typeof incompleteStep.description;
-          
-          // Check if this suggestion is not already in the list
-          if (!newSuggestions.some(s => s.workflow === workflow && s.stepId === incompleteStep.id)) {
-            newSuggestions.push({
-              type: 'related',
-              workflow: workflow as WorkflowType,
-              stepId: incompleteStep.id,
-              path: incompleteStep.path,
-              label: incompleteStep.label[labelKey],
-              description: incompleteStep.description ? incompleteStep.description[descriptionKey] : undefined
-            });
-          }
-        }
-      });
-    }
-    
-    // 3. Find incomplete workflows
-    if (newSuggestions.length < maxSuggestions) {
-      const incompleteWorkflowSteps = findIncompleteWorkflows(workflows);
-      
-      incompleteWorkflowSteps.forEach(item => {
-        if (newSuggestions.length >= maxSuggestions) return;
-        
-        if (!isValidWorkflowType(item.workflow)) return;
-        
-        const labelKey = language as keyof typeof item.step.label;
-        const descriptionKey = language as keyof typeof item.step.description;
-        
-        // Check if this suggestion is not already in the list
-        if (!newSuggestions.some(s => s.workflow === item.workflow && s.stepId === item.step.id)) {
-          newSuggestions.push({
-            type: 'incomplete',
-            workflow: item.workflow as WorkflowType,
-            stepId: item.step.id,
-            path: item.step.path,
-            label: item.step.label[labelKey],
-            description: item.step.description ? item.step.description[descriptionKey] : undefined
-          });
-        }
-      });
-    }
-    
-    setSuggestions(newSuggestions.slice(0, maxSuggestions));
-  }, [currentTool, language, maxSuggestions, preferences.investmentMarket, workflows]);
-
-  // Helper function to validate workflow types
-  const isValidWorkflowType = (workflow: string): workflow is WorkflowType => {
-    return ['steuer', 'immobilien', 'finanzierung', 'analyse'].includes(workflow);
-  };
-
-  // If no suggestions, don't render anything
-  if (suggestions.length === 0) {
-    return null;
-  }
-
-  const handleNavigate = (path: string, label: string) => {
-    announceNavigation(label);
-    navigate(path);
-  };
+  if (suggestions.length === 0) return null;
 
   return (
-    <Card className={cn("overflow-hidden", className)}>
-      <CardHeader className={cn(
-        "bg-muted/30",
-        variant === 'compact' ? "py-2 px-3" : "py-4"
-      )}>
-        <CardTitle className={cn(
-          "flex items-center",
-          variant === 'compact' ? "text-base" : "text-lg"
-        )}>
-          <Lightbulb className="mr-2 h-5 w-5 text-primary" aria-hidden="true" />
-          {language === 'de' ? 'Empfehlungen für Sie' : 'Recommendations for you'}
+    <Card className={className}>
+      <CardHeader className="pb-3">
+        <CardTitle className="text-lg">
+          {language === 'de' ? 'Empfohlene nächste Schritte' : 'Recommended Next Steps'}
         </CardTitle>
       </CardHeader>
-      <CardContent className={cn(
-        "grid gap-3", 
-        variant === 'compact' ? "p-3" : "p-4",
-        variant === 'compact' ? "grid-cols-1" : "sm:grid-cols-2 lg:grid-cols-3"
-      )}>
-        {suggestions.map((suggestion, index) => (
-          <div 
-            key={`${suggestion.workflow}-${suggestion.stepId}-${index}`}
-            className="bg-card border rounded-md p-3 flex flex-col h-full"
-          >
-            <div className="flex-1">
-              <h3 className="font-medium mb-1">{suggestion.label}</h3>
-              {suggestion.description && (
-                <p className="text-sm text-muted-foreground line-clamp-2 mb-3">
-                  {suggestion.description}
+      <CardContent className="space-y-2">
+        <div className="flex flex-col gap-2">
+          {suggestions.map(suggestion => (
+            <Button
+              key={suggestion.target}
+              variant="outline"
+              className="justify-between text-left hover:bg-muted/50"
+              onClick={() => navigateToWorkflow(suggestion.target)}
+            >
+              <div>
+                <span className="font-medium">
+                  {suggestion.route.title[language as keyof typeof suggestion.route.title] || 
+                   suggestion.route.title.en}
+                </span>
+                <p className="text-sm text-muted-foreground">
+                  {suggestion.description[language as keyof typeof suggestion.description] || 
+                   suggestion.description.en}
                 </p>
-              )}
-            </div>
-            <div className="flex justify-end mt-auto">
-              <Button 
-                size="sm" 
-                variant="outline" 
-                className="mt-2"
-                onClick={() => handleNavigate(suggestion.path, suggestion.label)}
-              >
-                {language === 'de' ? 'Öffnen' : 'Open'} 
-                <ArrowRight className="ml-1 h-4 w-4" />
-              </Button>
-            </div>
-          </div>
-        ))}
+              </div>
+              <ArrowRight className="h-4 w-4 ml-2 text-muted-foreground" />
+            </Button>
+          ))}
+        </div>
       </CardContent>
     </Card>
   );

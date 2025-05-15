@@ -1,53 +1,67 @@
 
-import { useEffect, useState } from 'react';
-import { useUserPreferences } from '@/contexts/UserPreferencesContext';
-import { announce } from '@/utils/accessibilityUtils';
+import { useState, useEffect } from 'react';
+import { useAccessibility } from '@/components/accessibility/A11yProvider';
+import { announce } from '@/utils/announcer';
 
-export const useScreenReader = () => {
-  const { preferences } = useUserPreferences();
-  const [isActive, setIsActive] = useState(preferences.screenReaderActive || false);
-
+/**
+ * Hook for better screen reader integration
+ */
+export function useScreenReader() {
+  const { screenReader } = useAccessibility();
+  const [isDetected, setIsDetected] = useState<boolean | null>(null);
+  
+  // Try to detect screen reader usage
   useEffect(() => {
-    setIsActive(preferences.screenReaderActive || false);
-  }, [preferences.screenReaderActive]);
-
-  const announceNavigation = (destination: string) => {
-    if (isActive) {
-      // In a real implementation, this would use the Web Speech API
-      console.log(`Screen reader announcement: Navigating to ${destination}`);
-      
-      // Create a live region for screen reader announcement
-      const announcement = document.createElement('div');
-      announcement.setAttribute('aria-live', 'assertive');
-      announcement.setAttribute('role', 'alert');
-      announcement.style.position = 'absolute';
-      announcement.style.width = '1px';
-      announcement.style.height = '1px';
-      announcement.style.overflow = 'hidden';
-      announcement.textContent = `Navigating to ${destination}`;
-      
-      document.body.appendChild(announcement);
-      
-      // Remove after announcement is made
-      setTimeout(() => {
-        document.body.removeChild(announcement);
-      }, 1000);
+    if (typeof window === 'undefined') return;
+    
+    // Look for common indicators of screen reader usage
+    const possibleIndicators = [
+      // VoiceOver on macOS/iOS might add these roles
+      document.querySelectorAll('[role="application"]').length > 0,
+      document.querySelectorAll('[aria-roledescription="web area"]').length > 0,
+      // Check if user has enabled reduce motion (often associated with assistive tech)
+      window.matchMedia('(prefers-reduced-motion: reduce)').matches,
+      // Check user preference
+      screenReader === true
+    ];
+    
+    // If any indicators are true, assume screen reader might be present
+    setIsDetected(possibleIndicators.some(Boolean));
+    
+  }, [screenReader]);
+  
+  const announceNavigation = (pageName: string) => {
+    if (screenReader || isDetected) {
+      announce(`Navigated to ${pageName}`, 'polite');
     }
   };
   
-  // Add the announceKeyEvent function
+  const announceUpdate = (message: string) => {
+    if (screenReader || isDetected) {
+      announce(message, 'polite');
+    }
+  };
+  
+  const announceAlert = (message: string) => {
+    if (screenReader || isDetected) {
+      announce(message, 'assertive');
+    }
+  };
+  
   const announceKeyEvent = (key: string, action: string) => {
-    if (isActive) {
-      // Use the standard announce utility
-      announce(`Shortcut ${key} activated: ${action}`, 'assertive');
+    if (screenReader || isDetected) {
+      announce(`Key ${key} pressed: ${action}`, 'polite');
     }
   };
 
   return {
-    isActive,
+    isScreenReaderLikely: screenReader || isDetected,
+    announce,
     announceNavigation,
-    announceKeyEvent
+    announceUpdate,
+    announceAlert,
+    announceKeyEvent,
   };
-};
+}
 
 export default useScreenReader;
