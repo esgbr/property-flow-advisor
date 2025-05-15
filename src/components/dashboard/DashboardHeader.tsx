@@ -1,12 +1,12 @@
 
 import React from "react";
-import { HelpCircle, RefreshCw, User } from "lucide-react";
+import { RefreshCw, HelpCircle, User } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "@/hooks/use-toast";
 import { useNavigate } from "react-router-dom";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useUserPreferences } from "@/contexts/UserPreferencesContext";
-import { Tooltip } from "@/components/ui/tooltip";
+import { Tooltip, TooltipTrigger, TooltipContent } from "@/components/ui/tooltip";
 
 const DashboardHeader: React.FC = () => {
   const { t } = useLanguage();
@@ -17,10 +17,22 @@ const DashboardHeader: React.FC = () => {
     toast({
       title: t("dashboard"),
       description: t("Dashboard refreshed!"),
-      variant: "success",
+      variant: "default", // Only "default" or "destructive" allowed
       duration: 2500,
     });
     // Future: add actual refresh logic here!
+  };
+
+  // Helper to render user icon or initial letter as avatar fallback
+  const renderProfileIcon = () => {
+    if (preferences.name) {
+      return (
+        <span className="rounded-full w-7 h-7 flex items-center justify-center bg-muted font-bold text-base uppercase border">
+          {preferences.name.charAt(0)}
+        </span>
+      );
+    }
+    return <User className="h-6 w-6" />;
   };
 
   return (
@@ -31,29 +43,29 @@ const DashboardHeader: React.FC = () => {
         </span>
       </div>
       <div className="flex items-center gap-3">
-        <Tooltip content={t('Refresh')}>
-          <Button aria-label={t("Refresh")} size="icon" variant="ghost" onClick={onRefresh}>
-            <RefreshCw className="h-5 w-5" />
-          </Button>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Button aria-label={t("Refresh")} size="icon" variant="ghost" onClick={onRefresh}>
+              <RefreshCw className="h-5 w-5" />
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent>{t('Refresh')}</TooltipContent>
         </Tooltip>
-        <Tooltip content={t('Help')}>
-          <Button aria-label={t("Help")} size="icon" variant="ghost" onClick={() => navigate('/help')}>
-            <HelpCircle className="h-5 w-5" />
-          </Button>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Button aria-label={t("Help")} size="icon" variant="ghost" onClick={() => navigate('/help')}>
+              <HelpCircle className="h-5 w-5" />
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent>{t('Help')}</TooltipContent>
         </Tooltip>
-        <Tooltip content={preferences.name || t('profile')}>
-          <Button aria-label={t("Profile")} size="icon" variant="ghost" onClick={() => navigate('/profile')}>
-            {/* Show avatar if exists else fallback icon */}
-            {preferences.avatarUrl ? (
-              <img
-                src={preferences.avatarUrl}
-                alt={preferences.name || t('profile')}
-                className="rounded-full w-7 h-7 object-cover border"
-              />
-            ) : (
-              <User className="h-6 w-6" />
-            )}
-          </Button>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Button aria-label={t("Profile")} size="icon" variant="ghost" onClick={() => navigate('/profile')}>
+              {renderProfileIcon()}
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent>{preferences.name || t('profile')}</TooltipContent>
         </Tooltip>
       </div>
     </div>
@@ -61,3 +73,4 @@ const DashboardHeader: React.FC = () => {
 };
 
 export default DashboardHeader;
+
