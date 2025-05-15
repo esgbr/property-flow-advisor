@@ -69,7 +69,7 @@ export const toastService = {
   update: (id: string, options: { title?: string, description?: string, variant?: ToastProps['variant'] }) => {
     return toast({
       ...options,
-      toastId: id, // Use toastId instead of id
+      id,
     });
   },
   
@@ -78,7 +78,7 @@ export const toastService = {
    */
   dismiss: (id: string) => {
     toast({
-      toastId: id,
+      id,
       duration: 0,
     });
   },
