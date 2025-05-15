@@ -1,3 +1,4 @@
+
 import React from "react";
 import { PhoneCall } from "lucide-react";
 import { Input } from "@/components/ui/input";
@@ -9,7 +10,7 @@ interface DialPadInputProps {
   onCall: () => void;
   loading?: boolean;
   disabled?: boolean;
-  label?: string;
+  label?: React.ReactNode; // Allow label to be a node for extra info
   className?: string;
   placeholder?: string;
 }
@@ -25,11 +26,16 @@ const DialPadInput: React.FC<DialPadInputProps> = ({
   placeholder = "Enter phone number",
 }) => {
   return (
-    <div className={`rounded-xl bg-background border shadow-sm px-4 py-3 flex flex-col sm:flex-row gap-3 sm:items-end transition-all ${className || ""}`}>
+    <div
+      className={`rounded-xl bg-background border shadow-sm px-4 py-3 flex flex-col sm:flex-row gap-3 sm:items-end transition-all ${className || ""}`}
+    >
       <div className="flex-1 min-w-0">
-        <label htmlFor="manual-dial-input" className="block text-base font-semibold mb-1 text-primary">
+        <label
+          htmlFor="manual-dial-input"
+          className="block text-base font-semibold mb-1 text-primary"
+        >
           <span className="inline-flex items-center">
-            <PhoneCall className="h-5 w-5 mr-1 text-primary" />
+            <PhoneCall className="h-5 w-5 mr-1 text-primary" aria-hidden />
             {label}
           </span>
         </label>
@@ -42,9 +48,14 @@ const DialPadInput: React.FC<DialPadInputProps> = ({
           placeholder={placeholder}
           value={phone}
           onChange={e => setPhone(e.target.value.replace(/[^\d+]/g, ""))}
-          aria-label={label}
+          aria-label={
+            typeof label === "string"
+              ? label
+              : "Phone number input, include full country code"
+          }
           minLength={6}
           maxLength={20}
+          aria-required="true"
         />
       </div>
       <Button
@@ -52,12 +63,13 @@ const DialPadInput: React.FC<DialPadInputProps> = ({
         onClick={onCall}
         disabled={!phone || disabled || loading}
         className="h-12 min-w-[96px] text-lg font-semibold bg-primary text-white shadow active:scale-95 transition"
+        aria-label={loading ? "Calling..." : "Dial number"}
       >
-        <PhoneCall className="h-5 w-5 mr-2" />
-        {loading ? "Calling..." : label}
+        <PhoneCall className="h-5 w-5 mr-2" aria-hidden />
+        {loading ? "Calling..." : (typeof label === "string" ? label : "Call")}
       </Button>
     </div>
-  );
+  )
 };
 
 export default DialPadInput;

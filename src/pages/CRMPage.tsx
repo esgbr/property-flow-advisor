@@ -1,49 +1,60 @@
-import React from 'react';
-import { useLanguage } from '@/contexts/LanguageContext';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { PhoneCall, User, History, Settings, FileText, Briefcase, List, Phone } from 'lucide-react';
-import ContactManager from '@/components/crm/ContactManager';
-import CallTracker from '@/components/crm/CallTracker';
-import CallModal from "@/components/crm/CallModal";
-import CompanyManager from "@/components/crm/CompanyManager";
-import TaskManager from "@/components/crm/TaskManager";
-import { Button } from '@/components/ui/button';
-import DialPadInput from "@/components/crm/DialPadInput";
-import CallHistoryList from '@/components/crm/CallHistoryList';
-import ActiveCallPanel from '@/components/crm/ActiveCallPanel';
-import CallAnalyticsPanel from '@/components/crm/CallAnalyticsPanel';
-import { formatDate, formatDuration, getInitials } from '@/components/crm/callUtils';
-import { toast } from "@/hooks/use-toast";
+
+import React from 'react'
+import { useLanguage } from '@/contexts/LanguageContext'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { PhoneCall, User, History, Settings, FileText, Briefcase, List, Phone, Info } from 'lucide-react'
+import ContactManager from '@/components/crm/ContactManager'
+import CompanyManager from "@/components/crm/CompanyManager"
+import TaskManager from "@/components/crm/TaskManager"
+import { Button } from '@/components/ui/button'
+import DialPadInput from "@/components/crm/DialPadInput"
+import CallHistoryList from '@/components/crm/CallHistoryList'
+import ActiveCallPanel from '@/components/crm/ActiveCallPanel'
+import CallAnalyticsPanel from '@/components/crm/CallAnalyticsPanel'
+import CallModal from '@/components/crm/CallModal'
+import { formatDate } from '@/components/crm/callUtils'
+import { toast } from "@/hooks/use-toast"
 
 const CRMPage: React.FC = () => {
-  const { language } = useLanguage();
-  const [callModalOpen, setCallModalOpen] = React.useState(false);
-  const [selectedContact, setSelectedContact] = React.useState<{ name: string; phone: string } | null>(null);
-  const [callHistory, setCallHistory] = React.useState<{ name: string; phone: string; timestamp: string }[]>([]);
-  const [callInProgress, setCallInProgress] = React.useState(false);
-  const [callError, setCallError] = React.useState<string | undefined>();
-  const [customPhone, setCustomPhone] = React.useState<string>('');
+  const { language } = useLanguage()
+  const [callModalOpen, setCallModalOpen] = React.useState(false)
+  const [selectedContact, setSelectedContact] = React.useState<{ name: string, phone: string } | null>(null)
+  const [callHistory, setCallHistory] = React.useState<{ name: string, phone: string, timestamp: string }[]>([])
+  const [callInProgress, setCallInProgress] = React.useState(false)
+  const [callError, setCallError] = React.useState<string | undefined>()
+  const [customPhone, setCustomPhone] = React.useState<string>('')
+
+  // New: After-call actions
+  const [showAfterCallModal, setShowAfterCallModal] = React.useState(false)
+  const [lastCallContact, setLastCallContact] = React.useState<{ name: string, phone: string } | null>(null)
 
   // Handler: open modal from ContactManager
   const handleInitiateCall = (name: string, phone: string) => {
-    setSelectedContact({ name, phone });
-    setCallError(undefined);
-    setCallModalOpen(true);
-  };
+    setSelectedContact({ name, phone })
+    setCallError(undefined)
+    setCallModalOpen(true)
+  }
 
-  // Handler: manual/custom call
+  // Handler: manual/custom call (with feedback/error)
   const handleInitiateCustomCall = () => {
-    if (!customPhone) return;
-    setSelectedContact({ name: 'Custom', phone: customPhone });
-    setCallError(undefined);
-    setCallModalOpen(true);
-  };
+    if (!customPhone) {
+      toast({
+        variant: "destructive",
+        title: language === "de" ? "Fehler" : "Error",
+        description: language === "de" ? "Bitte Telefonnummer eingeben." : "Please enter a phone number."
+      })
+      return
+    }
+    setSelectedContact({ name: 'Custom', phone: customPhone })
+    setCallError(undefined)
+    setCallModalOpen(true)
+  }
 
   // Handler: actually perform the call
   const handleConfirmCall = async () => {
     if (!selectedContact) return;
-    setCallInProgress(true);
-    setCallError(undefined);
+    setCallInProgress(true)
+    setCallError(undefined)
     try {
       const res = await fetch(
         "https://vibylylkqsdouaeebpye.functions.supabase.co/call-contact",
@@ -52,40 +63,65 @@ const CRMPage: React.FC = () => {
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ toPhone: selectedContact.phone }),
         }
-      );
-      const data = await res.json();
+      )
+      const data = await res.json()
+      // Log for debugging edge function
+      // eslint-disable-next-line no-console
+      console.log("Call function response:", data)
+
       if (!res.ok) {
-        setCallError(data.error || "Unknown error");
+        setCallError(data.error || "Unknown error")
+        toast({
+          variant: "destructive",
+          title: language === "de" ? "Anruffehler" : "Call error",
+          description: data.error || (language === "de" ? "Unbekannter Fehler" : "Unknown error")
+        })
       } else {
-        setCallModalOpen(false);
+        // Show after-call workflow with action options
+        setCallModalOpen(false)
+        setShowAfterCallModal(true)
+        setLastCallContact(selectedContact)
         setCallHistory([
           { name: selectedContact.name, phone: selectedContact.phone, timestamp: new Date().toISOString() },
-          ...callHistory,
-        ]);
+          ...callHistory
+        ])
+        toast({
+          title: language === "de" ? "Anruf gestartet" : "Call started",
+          description: `${selectedContact.name} (${selectedContact.phone})`
+        })
       }
     } catch (err: any) {
-      setCallError("Call failed: " + (err?.message || "Unknown error"));
+      setCallError("Call failed: " + (err?.message || "Unknown error"))
+      toast({
+        variant: "destructive",
+        title: language === "de" ? "Netzwerkfehler" : "Network error",
+        description: err?.message || "Call failed. Please try again."
+      })
     } finally {
-      setCallInProgress(false);
+      setCallInProgress(false)
+      setCustomPhone('') // Clear after attempt for usability
     }
-  };
+  }
 
-  // Handler for after-call workflow
-  const handleAfterCallAction = (action: "task" | "note", call?: any) => {
-    // Basic stub, show toast for now, later open Task or Note dialog pre-filled with contact/call info
+  // After-call workflow: moving to task or note manager
+  const handleAfterCallAction = (action: "task" | "note", contact?: { name: string, phone: string }) => {
     toast({
       title: action === "task"
-        ? language === "de" ? "Neuer Task wird erstellt" : "Creating follow-up task"
-        : language === "de" ? "Neue Notiz wird erstellt" : "Creating note",
-      description: call?.name
-        ? (language === "de" ? `Für ${call.name}` : `For ${call.name}`)
-        : "",
-    });
-    // TODO: navigate to TaskManager, open dialog, or pre-fill note/task
-  };
+        ? language === "de" ? "Task erstellen" : "Create follow-up task"
+        : language === "de" ? "Notiz erstellen" : "Create note",
+      description: contact?.name
+        ? (language === "de"
+          ? `Für ${contact.name}`
+          : `For ${contact.name}`)
+        : ""
+    })
+    // Simple routing simulation: scroll to Tasks tab and prefill is out-of-scope for now
+    setShowAfterCallModal(false)
+    // (Could deep-link or set state to prefill contact info in TaskManager/NoteManager)
+  }
 
   return (
-    <div className="container mx-auto py-6">
+    <div className="container mx-auto py-6 max-w-5xl">
       <div className="mb-6">
         <h1 className="text-3xl font-bold">
           {language === "de" ? "Kontakt Management" : "Contact Management"}
@@ -96,14 +132,29 @@ const CRMPage: React.FC = () => {
             : "Manage your real estate contacts, calls, tasks, and companies"}
         </p>
       </div>
-      {/* NEW DialPadInput */}
+      {/* DialPadInput with contextual help and better accessibility */}
       <div className="mb-6 max-w-xl">
         <DialPadInput
           phone={customPhone}
           setPhone={setCustomPhone}
           onCall={handleInitiateCustomCall}
           disabled={callInProgress}
-          label={language === "de" ? "Manuelle Telefonnummer wählen" : "Manual Dial"}
+          label={
+            <span>
+              {language === "de" ? "Manuelle Telefonnummer wählen" : "Manual Dial"}
+              <span
+                className="ml-2 text-sm text-muted-foreground inline-flex items-center"
+                aria-label={language === "de"
+                  ? "Geben Sie die vollständige Nummer ein und klicken Sie zum Wählen"
+                  : "Enter full phone number and click to dial"}
+              >
+                <Info className="h-4 w-4 mr-1" aria-hidden />
+                {language === "de"
+                  ? "Nummer mit Landesvorwahl eingeben (z.B. +49...)"
+                  : "Include country code (e.g. +1, +49...)"}
+              </span>
+            </span>
+          }
           placeholder={language === "de" ? "Telefonnummer eingeben" : "Enter phone number"}
         />
       </div>
@@ -147,14 +198,17 @@ const CRMPage: React.FC = () => {
           <TaskManager />
         </TabsContent>
         <TabsContent value="calls">
-          {/* Enhanced call tracker: use CallHistoryList */}
+          {/* Improved call list with margin/padding */}
           <div className="mb-3">
-            <h4 className="font-medium mb-1">Recent Calls (Realtime)</h4>
+            <h4 className="font-medium mb-1 flex items-center gap-2">
+              <Phone className="h-4 w-4 text-primary" />
+              {language === "de" ? "Letzte Anrufe (Echtzeit)" : "Recent Calls (Realtime)"}
+            </h4>
             {callHistory.length > 0 ? (
               <ul className="pl-2 space-y-1">
                 {callHistory.map((entry, idx) => (
                   <li key={idx} className="flex items-center space-x-2 text-sm">
-                    <Phone className="h-3 w-3 text-primary" />
+                    <Phone className="h-3 w-3 text-primary" aria-label="Recent call" />
                     <span>{entry.name} ({entry.phone})</span>
                     <span className="ml-2 text-muted-foreground text-xs">
                       {formatDate(entry.timestamp, language)}
@@ -163,7 +217,9 @@ const CRMPage: React.FC = () => {
                 ))}
               </ul>
             ) : (
-              <span className="text-muted-foreground text-xs">No recent calls</span>
+              <span className="text-muted-foreground text-xs">
+                {language === "de" ? "Keine letzten Anrufe" : "No recent calls"}
+              </span>
             )}
           </div>
           <CallHistoryList
@@ -186,8 +242,8 @@ const CRMPage: React.FC = () => {
               {language === 'de' ? 'Anrufverlauf & Berichte' : 'Call History & Reports'}
             </h2>
             <p className="text-sm text-muted-foreground mt-2">
-              {language === 'de' 
-                ? 'Diese Funktion wird in Kürze verfügbar sein' 
+              {language === 'de'
+                ? 'Diese Funktion wird in Kürze verfügbar sein'
                 : 'This feature will be available soon'}
             </p>
           </div>
@@ -199,14 +255,14 @@ const CRMPage: React.FC = () => {
               {language === 'de' ? 'CRM-Einstellungen' : 'CRM Settings'}
             </h2>
             <p className="text-sm text-muted-foreground mt-2">
-              {language === 'de' 
-                ? 'Konfigurationsoptionen werden in Kürze verfügbar sein' 
+              {language === 'de'
+                ? 'Konfigurationsoptionen werden in Kürze verfügbar sein'
                 : 'Configuration options will be available soon'}
             </p>
           </div>
         </TabsContent>
       </Tabs>
-      {/* Call pop-up/modal (global) */}
+      {/* Call pop-up/modal */}
       <CallModal
         open={callModalOpen}
         onOpenChange={setCallModalOpen}
@@ -216,8 +272,50 @@ const CRMPage: React.FC = () => {
         loading={callInProgress}
         error={callError}
       />
+      {/* After call workflow modal */}
+      {/* Could be refactored to a separate component for maintainability */}
+      {showAfterCallModal && lastCallContact && (
+        <div
+          className="fixed inset-0 z-40 flex items-center justify-center bg-black/40"
+          role="dialog"
+          aria-modal="true"
+        >
+          <div className="bg-background p-6 rounded-lg shadow-lg max-w-xs w-full flex flex-col gap-4">
+            <div className="flex flex-col gap-1">
+              <div className="text-xl font-bold">
+                {language === "de" ? "Nächste Schritte" : "Next Steps"}
+              </div>
+              <div className="text-muted-foreground text-sm">
+                {language === "de"
+                  ? "Was möchten Sie als nächstes tun?"
+                  : "What would you like to do next?"}
+              </div>
+              <div className="font-semibold mt-1">{lastCallContact.name}</div>
+            </div>
+            <Button
+              variant="outline"
+              onClick={() => handleAfterCallAction("task", lastCallContact)}
+            >
+              + {language === "de" ? "Task erstellen" : "Add Follow-up Task"}
+            </Button>
+            <Button
+              variant="outline"
+              onClick={() => handleAfterCallAction("note", lastCallContact)}
+            >
+              + {language === "de" ? "Notiz erstellen" : "Add Note"}
+            </Button>
+            <Button
+              variant="secondary"
+              onClick={() => setShowAfterCallModal(false)}
+            >
+              {language === "de" ? "Schließen" : "Close"}
+            </Button>
+          </div>
+        </div>
+      )}
     </div>
-  );
-};
+  )
+}
 
-export default CRMPage;
+export default CRMPage
+
