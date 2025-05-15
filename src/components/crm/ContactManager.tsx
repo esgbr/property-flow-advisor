@@ -9,12 +9,20 @@ import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
-// Demo contact data - would be from database in production
-const demoContacts = [
-  { id: '1', name: 'Anna Weber', type: 'realtor', phone: '+49 151 1234567', favorite: true, lastContact: '2023-05-10', notes: 'Specializes in Berlin apartments' },
-  { id: '2', name: 'Michael Becker', type: 'handyman', phone: '+49 170 9876543', favorite: false, lastContact: '2023-04-22', notes: 'Plumbing and electrical work' },
-  { id: '3', name: 'Christina Müller', type: 'property_manager', phone: '+49 176 4567890', favorite: true, lastContact: '2023-05-01', notes: 'Manages buildings in Frankfurt' },
-  { id: '4', name: 'Thomas Schmidt', type: 'inspector', phone: '+49 152 3334444', favorite: false, lastContact: '2023-03-15', notes: 'Building inspector for Munich area' },
+// Use ContactType type for demoContacts type
+const demoContacts: Contact[] = [
+  {
+    id: "1",
+    name: "Anna Weber",
+    type: "realtor",
+    phone: "+49 151 1234567",
+    favorite: true,
+    lastContact: "2023-05-10",
+    notes: "Specializes in Berlin apartments",
+  },
+  { id: "2", name: "Michael Becker", type: "handyman", phone: "+49 170 9876543", favorite: false, lastContact: "2023-04-22", notes: "Plumbing and electrical work" },
+  { id: "3", name: "Christina Müller", type: "property_manager", phone: "+49 176 4567890", favorite: true, lastContact: "2023-05-01", notes: "Manages buildings in Frankfurt" },
+  { id: "4", name: "Thomas Schmidt", type: "inspector", phone: "+49 152 3334444", favorite: false, lastContact: "2023-03-15", notes: "Building inspector for Munich area" },
 ];
 
 type ContactType = 'realtor' | 'handyman' | 'property_manager' | 'inspector' | 'tenant' | 'other';
@@ -29,7 +37,11 @@ interface Contact {
   notes?: string;
 }
 
-const ContactManager: React.FC = () => {
+interface ContactManagerProps {
+  onInitiateCall: (name: string, phone: string) => void;
+}
+
+const ContactManager: React.FC<ContactManagerProps> = ({ onInitiateCall }) => {
   const { language } = useLanguage();
   const { toast } = useToast();
   const [contacts, setContacts] = useState<Contact[]>(demoContacts);
@@ -61,14 +73,6 @@ const ContactManager: React.FC = () => {
         description: contact.name,
       });
     }
-  };
-
-  const initiateCall = (contact: Contact) => {
-    toast({
-      title: language === 'de' ? 'Anruf wird gestartet' : 'Initiating call',
-      description: `${contact.name}: ${contact.phone}`,
-    });
-    // In a real implementation, this would integrate with Twilio or another call API
   };
 
   const getInitials = (name: string) => {
@@ -112,43 +116,6 @@ const ContactManager: React.FC = () => {
       case 'inspector': return 'bg-purple-500';
       case 'tenant': return 'bg-teal-500';
       default: return 'bg-gray-500';
-    }
-  };
-
-  // Helper for calling the contact using Edge Function
-  const callContactViaTwilio = async (contact: Contact) => {
-    toast({
-      title: language === "de" ? "Anruf wird gestartet..." : "Initiating call...",
-      description: `${contact.name}: ${contact.phone}`,
-    });
-    try {
-      const res = await fetch(
-        `https://vibylylkqsdouaeebpye.functions.supabase.co/call-contact`,
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ toPhone: contact.phone }),
-        }
-      );
-      const data = await res.json();
-      if (res.ok) {
-        toast({
-          title: language === "de" ? "Anruf erfolgreich gestartet" : "Call started successfully",
-          description: `${contact.name} (${contact.phone})`,
-        });
-      } else {
-        toast({
-          title: language === "de" ? "Fehler beim Anruf" : "Call failed",
-          description: data.error || "Unknown error",
-          variant: "destructive",
-        });
-      }
-    } catch (err: any) {
-      toast({
-        title: language === "de" ? "Fehler beim Anruf" : "Call failed",
-        description: err?.message || "Unknown error",
-        variant: "destructive",
-      });
     }
   };
 
@@ -243,7 +210,7 @@ const ContactManager: React.FC = () => {
                       <Button 
                         variant="ghost" 
                         size="icon" 
-                        onClick={() => callContactViaTwilio(contact)}
+                        onClick={() => onInitiateCall(contact.name, contact.phone)}
                         title={language === 'de' ? 'Anrufen' : 'Call'}
                       >
                         <Phone className="h-4 w-4 text-primary" />

@@ -1,24 +1,71 @@
-
 import React from 'react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { PhoneCall, User, History, Settings, FileText } from 'lucide-react';
 import ContactManager from '@/components/crm/ContactManager';
 import CallTracker from '@/components/crm/CallTracker';
+import CallModal from "@/components/crm/CallModal";
 
 const CRMPage: React.FC = () => {
   const { language } = useLanguage();
   
+  // State for popup/modal + selected contact
+  const [callModalOpen, setCallModalOpen] = React.useState(false);
+  const [selectedContact, setSelectedContact] = React.useState<{ name: string; phone: string } | null>(null);
+
+  // Shared state for call log/history
+  const [callHistory, setCallHistory] = React.useState<{ name: string; phone: string; timestamp: string }[]>([]);
+  const [callInProgress, setCallInProgress] = React.useState(false);
+  const [callError, setCallError] = React.useState<string | undefined>();
+
+  // Handler: open modal from ContactManager
+  const handleInitiateCall = (name: string, phone: string) => {
+    setSelectedContact({ name, phone });
+    setCallError(undefined);
+    setCallModalOpen(true);
+  };
+
+  // Handler: actually perform the call
+  const handleConfirmCall = async () => {
+    if (!selectedContact) return;
+    setCallInProgress(true);
+    setCallError(undefined);
+    try {
+      const res = await fetch(
+        "https://vibylylkqsdouaeebpye.functions.supabase.co/call-contact",
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ toPhone: selectedContact.phone }),
+        }
+      );
+      const data = await res.json();
+      if (!res.ok) {
+        setCallError(data.error || "Unknown error");
+      } else {
+        setCallModalOpen(false);
+        setCallHistory([
+          { name: selectedContact.name, phone: selectedContact.phone, timestamp: new Date().toISOString() },
+          ...callHistory,
+        ]);
+      }
+    } catch (err: any) {
+      setCallError("Call failed: " + (err?.message || "Unknown error"));
+    } finally {
+      setCallInProgress(false);
+    }
+  };
+
   return (
     <div className="container mx-auto py-6">
       <div className="mb-6">
         <h1 className="text-3xl font-bold">
-          {language === 'de' ? 'Kontakt Management' : 'Contact Management'}
+          {language === "de" ? "Kontakt Management" : "Contact Management"}
         </h1>
         <p className="text-muted-foreground">
-          {language === 'de' 
-            ? 'Verwalten Sie Ihre Immobilienkontakte und verfolgen Sie Anrufe' 
-            : 'Manage your real estate contacts and track calls'}
+          {language === "de"
+            ? "Verwalten Sie Ihre Immobilienkontakte und verfolgen Sie Anrufe"
+            : "Manage your real estate contacts and track calls"}
         </p>
       </div>
       
@@ -43,11 +90,13 @@ const CRMPage: React.FC = () => {
         </TabsList>
         
         <TabsContent value="contacts">
-          <ContactManager />
+          <ContactManager
+            onInitiateCall={handleInitiateCall}
+          />
         </TabsContent>
         
         <TabsContent value="calls">
-          <CallTracker />
+          <CallTracker callHistory={callHistory} />
         </TabsContent>
         
         <TabsContent value="history">
@@ -78,6 +127,16 @@ const CRMPage: React.FC = () => {
           </div>
         </TabsContent>
       </Tabs>
+      {/* Call pop-up/modal (global) */}
+      <CallModal
+        open={callModalOpen}
+        onOpenChange={setCallModalOpen}
+        contactName={selectedContact?.name || ""}
+        contactPhone={selectedContact?.phone || ""}
+        onConfirm={handleConfirmCall}
+        loading={callInProgress}
+        error={callError}
+      />
     </div>
   );
 };

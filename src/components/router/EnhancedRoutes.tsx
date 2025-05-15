@@ -1,4 +1,3 @@
-
 import React, { Suspense, lazy } from 'react';
 import { Route, Routes, Navigate, useLocation } from 'react-router-dom';
 import PageLoader from '@/components/ui/page-loader';
@@ -70,16 +69,25 @@ const EnhancedRoutes: React.FC = () => {
   return (
     <RouteTracker>
       <Routes>
-        {/* Make Dashboard the home page and redirect legacy index route to it */}
-        <Route path="/" element={
-          needsOnboarding ? (
-            <PageSuspense message="Setting up your experience...">
-              <OnboardingWizard />
-            </PageSuspense>
-          ) : (
-            <Navigate to="/dashboard" replace />
-          )
-        } />
+        {/* Use CRMPage as home page after onboarding */}
+        <Route
+          path="/"
+          element={
+            needsOnboarding ? (
+              <PageSuspense message="Setting up your experience...">
+                <OnboardingWizard />
+              </PageSuspense>
+            ) : (
+              <PageSuspense message="Loading CRM...">
+                {/*
+                  Directly load the CRMPage as the home page after onboarding.
+                  You can still access dashboard at /dashboard.
+                */}
+                {React.createElement(lazy(() => import('@/pages/CRMPage')))}
+              </PageSuspense>
+            )
+          }
+        />
         
         {/* Legacy index page now redirects to dashboard */}
         <Route path="/index" element={<Navigate to="/dashboard" replace />} />

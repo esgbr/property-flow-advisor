@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -102,7 +101,15 @@ interface CallRecord {
   aiSentiment?: AiSentiment;
 }
 
-const CallTracker: React.FC = () => {
+interface CallHistoryEntry {
+  name: string;
+  phone: string;
+  timestamp: string;
+}
+interface CallTrackerProps {
+  callHistory: CallHistoryEntry[];
+}
+const CallTracker: React.FC<CallTrackerProps> = ({ callHistory }) => {
   const { language } = useLanguage();
   const { toast } = useToast();
   const [calls, setCalls] = useState<CallRecord[]>(demoCallHistory);
@@ -289,6 +296,22 @@ const CallTracker: React.FC = () => {
           </TabsList>
           
           <TabsContent value="history" className="flex-grow overflow-hidden flex flex-col">
+            <div className="mb-3">
+              <h4 className="font-medium mb-1">Recent Calls (Realtime)</h4>
+              {callHistory.length > 0 ? (
+                <ul className="pl-2 space-y-1">
+                  {callHistory.map((entry, idx) => (
+                    <li key={idx} className="flex items-center space-x-2 text-sm">
+                      <Phone className="h-3 w-3 text-primary" />
+                      <span>{entry.name} ({entry.phone})</span>
+                      <span className="ml-2 text-muted-foreground text-xs">{new Date(entry.timestamp).toLocaleTimeString()}</span>
+                    </li>
+                  ))}
+                </ul>
+              ) : (
+                <span className="text-muted-foreground text-xs">No recent calls</span>
+              )}
+            </div>
             <ScrollArea className="flex-grow">
               <div className="divide-y">
                 {calls.map((call) => (
