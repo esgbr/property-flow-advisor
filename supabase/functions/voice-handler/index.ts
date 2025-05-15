@@ -10,28 +10,42 @@ const corsHeaders = {
 serve(async (req: Request) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
-  // Parse incoming Twilio webhook parameters
-  const url = new URL(req.url);
-  const fromTwilio = req.method === "POST"
-    ? await req.formData().then(fd => ({
-        CallSid: fd.get("CallSid"),
-        From: fd.get("From"),
-        To: fd.get("To"),
-        // Add more as needed
-      }))
-    : {};
+  const MY_PHONE = Deno.env.get("MY_PHONE");   // your phone must stay a secret
 
-  // Set your own (YOUR) and goal (TARGET) phone numbers
-  // Use E.164 format: e.g. +491729256845
-  const MY_PHONE = Deno.env.get("MY_PHONE");   // e.g., your personal phone number
-  const GOAL_PHONE = Deno.env.get("GOAL_PHONE"); // e.g., the final call recipient
+  let goalPhone: string | null = null;
 
-  if (!MY_PHONE || !GOAL_PHONE) {
-    return new Response("Missing phone configuration", { status: 500, headers: corsHeaders });
+  if (req.method === "POST") {
+    // Try as form field (from Twilio or CRM)
+    try {
+      const formData = await req.formData();
+      goalPhone = formData.get("goal_phone") as string | null;
+    } catch (e) {
+      // fallback to nothing
+    }
+    // If not present, try JSON body (if CRM sends it this way)
+    if (!goalPhone) {
+      try {
+        const body = await req.json();
+        goalPhone = body.goal_phone ?? null;
+      } catch (e) {
+        // fallback to nothing
+      }
+    }
+  } else {
+    // Allow ?goal_phone=... on GET requests (not typical for Twilio, but for custom clients)
+    const url = new URL(req.url);
+    goalPhone = url.searchParams.get("goal_phone");
   }
 
-  // Respond with TwiML to dial YOUR phone first, then the goal number, recording the call
-  // This will cause Twilio to dial your phone; after you answer, it bridges to the target and records
+  // Fallback to secret if no variable provided
+  const GOAL_PHONE_FALLBACK = Deno.env.get("GOAL_PHONE");
+  const GOAL_PHONE = goalPhone || GOAL_PHONE_FALLBACK;
+
+  if (!MY_PHONE || !GOAL_PHONE) {
+    return new Response("Missing phone configuration", { status: 400, headers: corsHeaders });
+  }
+
+  // Respond with TwiML to dial your phone, then the target number, recording the call
   const twiml = `
 <Response>
   <Dial record="record-from-answer-dual" answerOnBridge="true">
