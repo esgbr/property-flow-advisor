@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -31,6 +30,7 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/comp
 import { useAccessibility } from '../accessibility/A11yProvider';
 import { useUserPreferences } from '@/contexts/UserPreferencesContext';
 import { useMarketFilter } from '@/hooks/use-market-filter';
+import CRMMenuButton from '@/components/navigation/CRMMenuButton';
 
 interface NavigationItem {
   label: string;
@@ -79,6 +79,12 @@ const UnifiedNavigation: React.FC<{
 
   // Simplified navigation structure with merged items
   const navigationGroups: NavigationGroup[] = [
+    {
+      label: t('crm') || "CRM",
+      icon: <CRMMenuButton className="w-full justify-start" isSidebar={collapsed} />,
+      items: [], // Will render custom CRMMenuButton
+      expanded: true
+    },
     {
       label: t('main'),
       icon: <LayoutDashboard className="h-5 w-5" />,
@@ -197,83 +203,82 @@ const UnifiedNavigation: React.FC<{
       </div>
 
       <div className="flex-1 overflow-y-auto py-2">
-        {filteredNavigationGroups.map((group) => (
-          collapsed ? (
-            <TooltipProvider key={group.label} delayDuration={300}>
-              <Tooltip>
-                <TooltipTrigger asChild>
+        {/* Render CRM at the top */}
+        <div className="px-3 pb-2">
+          <CRMMenuButton isSidebar={collapsed} className={collapsed ? "mb-2" : "mb-4 w-full"} />
+        </div>
+        {/* Render existing navigation groups but skip the extra CRM group (already handled) */}
+        {filteredNavigationGroups
+          .filter(group => group.label !== (t('crm') || "CRM"))
+          .map((group) => (
+            collapsed ? (
+              <TooltipProvider key={group.label} delayDuration={300}>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className={cn("w-full rounded-none h-12 my-1", largeText ? "h-14" : "")}
+                      onClick={() => navigate(group.items[0].path)}
+                      aria-label={group.label}
+                    >
+                      {group.icon}
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent side="right">
+                    {group.label}
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+            ) : (
+              <Collapsible
+                key={group.label}
+                open={openGroups[group.label.toLowerCase()]}
+                onOpenChange={() => toggleGroup(group.label.toLowerCase())}
+              >
+                <CollapsibleTrigger asChild>
                   <Button
                     variant="ghost"
-                    size="icon"
-                    className={cn(
-                      "w-full rounded-none h-12 my-1",
-                      largeText ? "h-14" : ""
-                    )}
-                    onClick={() => navigate(group.items[0].path)}
-                    aria-label={group.label}
+                    className={cn("w-full justify-between rounded-none", largeText ? "h-12 text-lg" : "h-10")}
                   >
-                    {group.icon}
+                    <div className="flex items-center">
+                      {group.icon}
+                      <span className="ml-2">{group.label}</span>
+                    </div>
+                    {openGroups[group.label.toLowerCase()] ?
+                      <ChevronDown className="h-4 w-4" /> :
+                      <ChevronRight className="h-4 w-4" />
+                    }
                   </Button>
-                </TooltipTrigger>
-                <TooltipContent side="right">
-                  {group.label}
-                </TooltipContent>
-              </Tooltip>
-            </TooltipProvider>
-          ) : (
-            <Collapsible 
-              key={group.label} 
-              open={openGroups[group.label.toLowerCase()]} 
-              onOpenChange={() => toggleGroup(group.label.toLowerCase())}
-            >
-              <CollapsibleTrigger asChild>
-                <Button 
-                  variant="ghost" 
-                  className={cn(
-                    "w-full justify-between rounded-none",
-                    largeText ? "h-12 text-lg" : "h-10"
-                  )}
-                >
-                  <div className="flex items-center">
-                    {group.icon}
-                    <span className="ml-2">{group.label}</span>
-                  </div>
-                  {openGroups[group.label.toLowerCase()] ? 
-                    <ChevronDown className="h-4 w-4" /> : 
-                    <ChevronRight className="h-4 w-4" />
-                  }
-                </Button>
-              </CollapsibleTrigger>
-              <CollapsibleContent>
-                {group.items.map((item) => {
-                  const isActive = location.pathname === item.path.split('?')[0] || 
-                                  (location.pathname.includes(item.path.split('?')[0]) && item.path.includes('?'));
-                  return (
-                    <Button
-                      key={item.label}
-                      variant="ghost"
-                      className={cn(
-                        "w-full justify-start pl-8 rounded-none",
-                        isActive && "bg-accent text-accent-foreground",
-                        item.highlight && "text-primary font-medium",
-                        largeText ? "h-11 text-base" : "h-9 text-sm"
-                      )}
-                      onClick={() => navigate(item.path)}
-                    >
-                      {item.icon}
-                      <span className="ml-2 truncate">{item.label}</span>
-                      {item.badge && (
-                        <span className="ml-auto bg-primary/10 text-primary text-xs px-1.5 py-0.5 rounded-full">
-                          {item.badge}
-                        </span>
-                      )}
-                    </Button>
-                  );
-                })}
-              </CollapsibleContent>
-            </Collapsible>
-          )
-        ))}
+                </CollapsibleTrigger>
+                <CollapsibleContent>
+                  {group.items.map((item) => {
+                    const isActive = location.pathname === item.path.split('?')[0] ||
+                      (location.pathname.includes(item.path.split('?')[0]) && item.path.includes('?'));
+                    return (
+                      <Button
+                        key={item.label}
+                        variant="ghost"
+                        className={cn(
+                          "w-full justify-start pl-8 rounded-none",
+                          isActive && "bg-accent text-accent-foreground",
+                          item.highlight && "text-primary font-medium",
+                          largeText ? "h-11 text-base" : "h-9 text-sm"
+                        )}
+                        onClick={() => navigate(item.path)}
+                      >
+                        {item.icon}
+                        <span className="ml-2 truncate">{item.label}</span>
+                        {item.badge && (
+                          <span className="ml-auto bg-primary/10 text-primary text-xs px-1.5 py-0.5 rounded-full">{item.badge}</span>
+                        )}
+                      </Button>
+                    );
+                  })}
+                </CollapsibleContent>
+              </Collapsible>
+            )
+          ))}
       </div>
       
       {collapsed && (

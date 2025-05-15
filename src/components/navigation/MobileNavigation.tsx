@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useLanguage } from '@/contexts/LanguageContext';
@@ -30,6 +29,7 @@ import {
 import { motion, AnimatePresence } from 'framer-motion';
 import { useMarketFilter } from '@/hooks/use-market-filter';
 import { Badge } from '@/components/ui/badge';
+import CRMMenuButton from "@/components/navigation/CRMMenuButton";
 
 // Define correct type for navigation items with optional badge
 interface NavItem {
@@ -52,30 +52,24 @@ export const MobileNavigation: React.FC = () => {
   // Market-aware navigation items
   const getNavItems = () => {
     const baseItems: NavItem[] = [
+      { icon: <CRMMenuButton className="w-full" />, label: t('crm'), path: '/crm' },
       { icon: <Home className="h-5 w-5" />, label: t('dashboard'), path: '/dashboard' },
       { icon: <Building className="h-5 w-5" />, label: t('properties'), path: '/properties' },
-      { icon: <BarChart3 className="h-5 w-5" />, label: t('investorDashboard'), path: '/investor-dashboard' }
+      { icon: <BarChart3 className="h-5 w-5" />, label: t('investorDashboard'), path: '/investor-dashboard' },
+      { icon: <Calculator className="h-5 w-5" />, label: t('tools'), path: '/tools' },
     ];
     
-    // Add market-specific tools
-    baseItems.push({ 
-      icon: <Calculator className="h-5 w-5" />, 
-      label: t('tools'), 
-      path: '/tools'
-    });
-    
-    // Add profile or notifications item
     if (isAuthenticated) {
-      baseItems.push({ 
-        icon: <Bell className="h-5 w-5" />, 
-        label: t('notifications'), 
+      baseItems.push({
+        icon: <Bell className="h-5 w-5" />,
+        label: t('notifications'),
         path: '/notifications',
         badge: unreadNotifications > 0 ? unreadNotifications : undefined
       });
     } else {
-      baseItems.push({ 
-        icon: <User className="h-5 w-5" />, 
-        label: t('profile'), 
+      baseItems.push({
+        icon: <User className="h-5 w-5" />,
+        label: t('profile'),
         path: '/profile'
       });
     }
@@ -94,6 +88,13 @@ export const MobileNavigation: React.FC = () => {
         <div className={cn("grid grid-cols-5", largeText ? "h-20" : "h-16")}>
           {navItems.map((item) => {
             const isActive = location.pathname === item.path || location.pathname.startsWith(item.path + '/');
+            if(item.label === t('crm')) {
+              return (
+                <div key="crm-mobile-btn" className="flex items-center justify-center">
+                  <CRMMenuButton className="mx-auto" />
+                </div>
+              );
+            }
             return (
               <button
                 key={item.path}

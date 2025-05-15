@@ -24,6 +24,8 @@ import {
   TrendingUp
 } from 'lucide-react';
 
+import CRMMenuButton from '@/components/navigation/CRMMenuButton';
+
 interface NavItem {
   id: string;
   label: string;
@@ -42,6 +44,13 @@ interface EnhancedNavigationProps {
 }
 
 const navigationItems: NavItem[] = [
+  {
+    id: 'crm',
+    label: 'CRM',
+    path: '/crm',
+    icon: <CRMMenuButton className="w-full justify-start" />,
+    description: 'Manage your real estate contacts and calls'
+  },
   {
     id: 'home',
     label: 'Home',
@@ -222,6 +231,15 @@ const EnhancedNavigation: React.FC<EnhancedNavigationProps> = ({
       const hasSubItems = item.subItems && item.subItems.length > 0;
       const isExpanded = expandedItems.includes(item.id);
       
+      if(item.id === 'crm') {
+        // Use central CRMMenuButton with active highlight and spacing
+        return (
+          <div key="crm" className="relative my-1">
+            <CRMMenuButton className="w-full !px-3" />
+          </div>
+        );
+      }
+
       // Base classes for nav items
       let navItemClasses = cn(
         "flex items-center gap-2 rounded-lg px-3 py-2",

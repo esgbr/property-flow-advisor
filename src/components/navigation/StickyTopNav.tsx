@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from 'react';
 import { cn } from '@/lib/utils';
 import { useLanguage } from '@/contexts/LanguageContext';
@@ -16,6 +15,7 @@ import {
 } from "@/components/ui/navigation-menu"
 import { useIsMobile } from '@/hooks/use-mobile';
 import { useAccessibility } from '@/components/accessibility/A11yProvider';
+import CRMMenuButton from '@/components/navigation/CRMMenuButton';
 
 interface StickyTopNavProps {
   onToggleSidebar?: () => void;
@@ -44,6 +44,7 @@ const StickyTopNav: React.FC<StickyTopNavProps> = ({ onToggleSidebar }) => {
   
   const mainMenuItems = [
     { label: t('dashboard'), path: '/dashboard' },
+    { label: t('crm'), path: '/crm' }, // Add CRM as second tab
     { label: t('properties'), path: '/properties' },
     { label: t('analytics'), path: '/market-explorer' },
     { label: t('settings'), path: '/settings' }, // Added settings tab
@@ -92,14 +93,21 @@ const StickyTopNav: React.FC<StickyTopNavProps> = ({ onToggleSidebar }) => {
           <NavigationMenu className="hidden md:flex">
             <NavigationMenuList>
               {mainMenuItems.map((item) => (
-                <NavigationMenuItem key={item.path}>
-                  <Link 
-                    to={item.path}
-                    className={navigationMenuTriggerStyle()}
-                  >
-                    {item.label}
-                  </Link>
-                </NavigationMenuItem>
+                item.path === "/crm" ? (
+                  <NavigationMenuItem key="crm-top-btn">
+                    {/* Use central CRMMenuButton for CRM tab */}
+                    <CRMMenuButton />
+                  </NavigationMenuItem>
+                ) : (
+                  <NavigationMenuItem key={item.path}>
+                    <Link 
+                      to={item.path}
+                      className={navigationMenuTriggerStyle()}
+                    >
+                      {item.label}
+                    </Link>
+                  </NavigationMenuItem>
+                )
               ))}
               
               <NavigationMenuItem>
