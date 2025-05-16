@@ -17,12 +17,17 @@ const config: CapacitorConfig = {
       keystoreAliasPassword: undefined,
     }
   },
-  // iOS specific configuration
+  // Enhanced iOS specific configuration
   ios: {
     contentInset: 'always',
     scheme: 'app.lovable.propertyflow',
     limitsNavigationsToAppBoundDomains: true,
     backgroundColor: "#ffffff",
+    preferredContentMode: 'mobile',
+    preferredStatusBarStyle: 'default',
+    allowsLinkPreview: true,
+    handleApplicationNotifications: true,
+    reloadForURLChanges: true,
   },
   // General app settings
   plugins: {
@@ -33,6 +38,9 @@ const config: CapacitorConfig = {
       androidScaleType: "CENTER_CROP",
       showSpinner: true,
       spinnerColor: "#9b87f5",
+      iosSpinnerStyle: "small",
+      splashFullScreen: true,
+      splashImmersive: false
     },
     PushNotifications: {
       presentationOptions: ["badge", "sound", "alert"]
@@ -40,11 +48,26 @@ const config: CapacitorConfig = {
     Keyboard: {
       resize: "body",
       style: "dark",
-      resizeOnFullScreen: true
+      resizeOnFullScreen: true,
+      hideOnScroll: true
     },
     LocalNotifications: {
       smallIcon: "ic_stat_icon_config_sample",
       iconColor: "#9b87f5"
+    },
+    CapacitorHttp: {
+      enabled: true
+    },
+    CapacitorCookies: {
+      enabled: true
+    },
+    Device: {
+      overrideUserAgent: false
+    },
+    StatusBar: {
+      style: "dark",
+      backgroundColor: "#ffffff",
+      overlaysWebView: false
     }
   }
 };
