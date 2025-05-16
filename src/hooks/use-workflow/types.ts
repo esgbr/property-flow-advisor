@@ -44,6 +44,6 @@ export interface WorkflowDefinition {
 }
 
 // Define the full workflow definitions interface
-export interface WorkflowDefinitions {
+export type WorkflowDefinitions = {
   [key in WorkflowType]: WorkflowDefinition;
 }

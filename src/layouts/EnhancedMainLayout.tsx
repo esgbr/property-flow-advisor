@@ -5,7 +5,6 @@ import { useUserPreferences } from '@/contexts/UserPreferencesContext';
 import { useAccessibility } from '@/components/accessibility/A11yProvider';
 import SkipToContent from '@/components/accessibility/SkipToContent';
 import StickyTopNav from '@/components/navigation/StickyTopNav';
-import { isIOS, initializeIOSOptimizations } from '@/utils/iosUtils';
 import '../styles/ios-specific.css';
 
 interface EnhancedMainLayoutProps {
@@ -43,7 +42,8 @@ const EnhancedMainLayout: React.FC<EnhancedMainLayoutProps> = ({
       isIOSDevice && "ios-device",
       className
     )}>
-      <StickyTopNav className={isIOSDevice ? "ios-safe-padding-top" : ""} />
+      {/* Removed className prop from StickyTopNav since it doesn't accept it */}
+      <StickyTopNav />
       <SkipToContent contentId={contentId} />
       
       <main 
