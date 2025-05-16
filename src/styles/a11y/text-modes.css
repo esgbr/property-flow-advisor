@@ -1,0 +1,69 @@
+
+/* For larger text option */
+.large-text {
+  font-size: 1.15em;
+  line-height: 1.6;
+}
+
+.large-text h1 {
+  font-size: 2.2em;
+}
+
+.large-text h2 {
+  font-size: 1.8em;
+}
+
+.large-text button,
+.large-text input,
+.large-text select {
+  font-size: 1.05em;
+}
+
+/* Large text mode */
+.large-text {
+  font-size: 125% !important;
+  line-height: 1.5 !important;
+}
+
+.large-text h1 {
+  font-size: 2.5em !important;
+}
+
+.large-text h2 {
+  font-size: 2em !important;
+}
+
+.large-text h3 {
+  font-size: 1.75em !important;
+}
+
+.large-text button, 
+.large-text input, 
+.large-text select, 
+.large-text textarea {
+  font-size: 1.2em !important;
+  padding: 0.75em !important;
+}
+
+/* Increased target size for touch interfaces */
+.large-text button,
+.large-text .clickable,
+.large-text [role="button"],
+.large-text a {
+  min-height: 44px !important;
+  min-width: 44px !important;
+  margin: 2px !important;
+  padding: 10px !important;
+}
+
+/* Dyslexia friendly font */
+.dyslexia-friendly {
+  --font-sans: 'Open Sans', 'Segoe UI', sans-serif;
+  letter-spacing: 0.05em;
+  word-spacing: 0.1em;
+  line-height: 1.6;
+}
+
+.dyslexia-friendly p {
+  max-width: 80ch;
+}

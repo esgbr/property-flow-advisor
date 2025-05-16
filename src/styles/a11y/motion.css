@@ -1,0 +1,38 @@
+
+/* For animated elements - respects reduced motion preference */
+@media (prefers-reduced-motion: no-preference) {
+  .animate-fade {
+    @apply transition-opacity duration-300;
+  }
+  
+  .animate-slide {
+    @apply transition-transform duration-300;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-fade, 
+  .animate-slide {
+    @apply transition-none !important;
+  }
+}
+
+/* Reduce motion */
+.reduce-motion * {
+  animation-duration: 0.001ms !important;
+  animation-iteration-count: 1 !important;
+  transition-duration: 0.001ms !important;
+  scroll-behavior: auto !important;
+}
+
+/* Remove animations based on user preference */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001s !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001s !important;
+    scroll-behavior: auto !important;
+  }
+}

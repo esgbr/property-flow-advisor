@@ -10,14 +10,17 @@ import DashboardContactNetwork from '@/components/dashboard/DashboardContactNetw
 import DashboardUpcomingEvents from '@/components/dashboard/DashboardUpcomingEvents';
 import { useUserPreferences } from '@/contexts/UserPreferencesContext';
 import DashboardHeader from "@/components/dashboard/DashboardHeader";
-import SectionTitle from "@/components/dashboard/SectionTitle"; // NEW
+import SectionTitle from "@/components/dashboard/SectionTitle";
+import { isIOS } from '@/utils/iosUtils';
+import WorkflowConnector from '@/components/navigation/WorkflowConnector';
 
 const Dashboard: React.FC = () => {
   const { t } = useLanguage();
   const { preferences } = useUserPreferences();
+  const isIOSDevice = isIOS();
 
   return (
-    <div className="flex flex-col h-full overflow-hidden">
+    <div className={`flex flex-col h-full overflow-hidden ${isIOSDevice ? 'ios-device' : ''}`}>
       <ScrollArea className="flex-1">
         <div className="container mx-auto p-4 md:p-6 space-y-8 pb-20 animate-fade-in">
           {/* Header with Welcome and Quick Actions */}
@@ -49,6 +52,12 @@ const Dashboard: React.FC = () => {
             <SectionTitle id="market-summary">{t('marketSummary') || "Market Summary"}</SectionTitle>
             <DashboardMarketSummary />
           </section>
+          
+          {/* Workflow Connection - helps users navigate between related features */}
+          <WorkflowConnector 
+            currentFeature="dashboard" 
+            relatedWorkflows={['immobilien', 'finanzierung']} 
+          />
         </div>
       </ScrollArea>
     </div>

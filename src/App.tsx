@@ -2,8 +2,9 @@
 import React, { useEffect, lazy, Suspense } from 'react';
 import './App.css';
 import './styles/ScrollStyles.css';
+import './styles/ios-specific.css'; // Import iOS-specific styles
 import { createBrowserRouter, RouterProvider } from 'react-router-dom';
-import MainLayout from '@/layouts/MainLayout';
+import EnhancedMainLayout from '@/layouts/EnhancedMainLayout';
 import ErrorBoundary from '@/components/ErrorBoundary';
 import PageLoader from '@/components/ui/page-loader';
 import AuthPage from '@/pages/AuthPage';
@@ -39,11 +40,11 @@ import WorkflowsPage from '@/pages/WorkflowsPage';
 // Lazy load heavy components for better initial loading performance
 const AdvancedAnalytics = lazy(() => import('@/pages/AdvancedAnalyticsPage'));
 
-// Create routes outside of the component to avoid recreation on each render
+// Create routes with EnhancedMainLayout instead of MainLayout
 const routes = [
   {
     path: '/',
-    element: <MainLayout><Index /></MainLayout>,
+    element: <EnhancedMainLayout><Index /></EnhancedMainLayout>,
   },
   {
     path: '/onboarding',
@@ -51,91 +52,91 @@ const routes = [
   },
   {
     path: '/dashboard',
-    element: <MainLayout><SimplifiedDashboard /></MainLayout>
+    element: <EnhancedMainLayout><SimplifiedDashboard /></EnhancedMainLayout>
   },
   {
     path: '/auth',
-    element: <MainLayout><AuthPage /></MainLayout>
+    element: <EnhancedMainLayout><AuthPage /></EnhancedMainLayout>
   },
   {
     path: '/settings',
-    element: <MainLayout><SettingsPage /></MainLayout>
+    element: <EnhancedMainLayout><SettingsPage /></EnhancedMainLayout>
   },
   {
     path: '/accessibility',
-    element: <MainLayout><AccessibilitySettings /></MainLayout>
+    element: <EnhancedMainLayout><AccessibilitySettings /></EnhancedMainLayout>
   },
   {
     path: '/market-explorer',
-    element: <MainLayout><MarketExplorer /></MainLayout>
+    element: <EnhancedMainLayout><MarketExplorer /></EnhancedMainLayout>
   },
   {
     path: '/market-comparison',
-    element: <MainLayout><MarketComparisonTool /></MainLayout>
+    element: <EnhancedMainLayout><MarketComparisonTool /></EnhancedMainLayout>
   },
   {
     path: '/calculators',
-    element: <MainLayout><CalculatorsPage /></MainLayout>
+    element: <EnhancedMainLayout><CalculatorsPage /></EnhancedMainLayout>
   },
   {
     path: '/documents',
-    element: <MainLayout><DocumentsPage /></MainLayout>
+    element: <EnhancedMainLayout><DocumentsPage /></EnhancedMainLayout>
   },
   {
     path: '/investor-dashboard',
-    element: <MainLayout><InvestorDashboard /></MainLayout>
+    element: <EnhancedMainLayout><InvestorDashboard /></EnhancedMainLayout>
   },
   {
     path: '/deutsche-immobilien-tools',
-    element: <MainLayout><GermanRealEstateInvestor /></MainLayout>
+    element: <EnhancedMainLayout><GermanRealEstateInvestor /></EnhancedMainLayout>
   },
   {
     path: '/rewards',
-    element: <MainLayout><Rewards /></MainLayout>
+    element: <EnhancedMainLayout><Rewards /></EnhancedMainLayout>
   },
   {
     path: '/properties',
-    element: <MainLayout><Properties /></MainLayout>
+    element: <EnhancedMainLayout><Properties /></EnhancedMainLayout>
   },
   {
     path: '/property-list',
-    element: <MainLayout><PropertyList /></MainLayout>
+    element: <EnhancedMainLayout><PropertyList /></EnhancedMainLayout>
   },
   {
     path: '/property/:id',
-    element: <MainLayout><PropertyDetail /></MainLayout>
+    element: <EnhancedMainLayout><PropertyDetail /></EnhancedMainLayout>
   },
   {
     path: '/education',
-    element: <MainLayout><Education /></MainLayout>
+    element: <EnhancedMainLayout><Education /></EnhancedMainLayout>
   },
   {
     path: '/profile',
-    element: <MainLayout><UserProfile /></MainLayout>
+    element: <EnhancedMainLayout><UserProfile /></EnhancedMainLayout>
   },
   {
     path: '/tools',
-    element: <MainLayout><ToolsPage /></MainLayout>
+    element: <EnhancedMainLayout><ToolsPage /></EnhancedMainLayout>
   },
   {
     path: '/decision-tools',
-    element: <MainLayout><ToolsPage /></MainLayout>
+    element: <EnhancedMainLayout><ToolsPage /></EnhancedMainLayout>
   },
   {
     path: '/immobilien-tools',
-    element: <MainLayout><GermanRealEstateInvestor /></MainLayout>
+    element: <EnhancedMainLayout><GermanRealEstateInvestor /></EnhancedMainLayout>
   },
   {
     path: '/regional-analysis',
-    element: <MainLayout><RegionalAnalysis /></MainLayout>
+    element: <EnhancedMainLayout><RegionalAnalysis /></EnhancedMainLayout>
   },
   {
     path: '/tax-planning',
-    element: <MainLayout><TaxPlanning /></MainLayout>
+    element: <EnhancedMainLayout><TaxPlanning /></EnhancedMainLayout>
   },
   {
     path: '/crm',
-    element: <MainLayout><CRMPage /></MainLayout>
+    element: <EnhancedMainLayout><CRMPage /></EnhancedMainLayout>
   },
   {
     path: '/locked',
@@ -143,18 +144,18 @@ const routes = [
   },
   {
     path: '/workflows',
-    element: <MainLayout><WorkflowsPage /></MainLayout>
+    element: <EnhancedMainLayout><WorkflowsPage /></EnhancedMainLayout>
   },
   {
     path: '/advanced-analytics',
     element: (
-      <MainLayout>
+      <EnhancedMainLayout>
         <ErrorBoundary>
           <Suspense fallback={<PageLoader size="lg" />}>
             <AdvancedAnalytics />
           </Suspense>
         </ErrorBoundary>
-      </MainLayout>
+      </EnhancedMainLayout>
     )
   },
   // Catch-all route for 404

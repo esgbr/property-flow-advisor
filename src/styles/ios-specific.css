@@ -1,0 +1,98 @@
+
+/**
+ * iOS-specific styles for improved user experience
+ */
+
+/* Apply momentum scrolling to all scrollable areas */
+.ios-device .scroll-area,
+.ios-device [data-scroll-container] {
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Enhance buttons and interactive elements for iOS touch */
+.ios-device button,
+.ios-device a,
+.ios-device [role="button"],
+.ios-device .interactive {
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Fix for iOS input fields */
+.ios-device input,
+.ios-device textarea {
+  -webkit-appearance: none;
+  border-radius: 0;
+}
+
+/* Fix for iOS fixed position elements */
+.ios-device .fixed-ios {
+  position: fixed;
+  width: 100%;
+  transform: translateZ(0);
+  -webkit-transform: translateZ(0);
+}
+
+/* Improve iOS form styling */
+.ios-device select {
+  background-color: transparent;
+  -webkit-appearance: none;
+  appearance: none;
+  padding-right: 25px;
+}
+
+/* iOS status bar height consideration */
+.ios-device .top-safe-area {
+  padding-top: var(--sat, 0);
+}
+
+/* iOS home indicator area consideration */
+.ios-device .bottom-safe-area {
+  padding-bottom: var(--sab, 0);
+}
+
+/* Prevent unwanted text selection on iOS */
+.ios-device .no-select {
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+/* iOS navigation elements - larger touch targets */
+.ios-device .nav-item {
+  padding: 12px;
+  margin: 4px 0;
+}
+
+/* iOS-specific card styling */
+.ios-device .card {
+  border-radius: 10px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.12);
+}
+
+/* iOS animations - optimized for iOS */
+@supports (-webkit-touch-callout: none) {
+  .animate-fade-in {
+    animation-duration: 0.3s;
+    animation-timing-function: cubic-bezier(0.23, 1, 0.32, 1);
+  }
+}
+
+/* Fix iOS momentum scroll rubber-banding background effect */
+html.ios-device {
+  background-color: var(--background);
+  overflow: hidden;
+  height: 100%;
+}
+
+body.ios-device {
+  overflow: auto;
+  -webkit-overflow-scrolling: touch;
+  height: 100%;
+}
+
+/* Fix for iOS keyboard appearance causing layout shifts */
+.ios-device .keyboard-aware-padding {
+  padding-bottom: 40vh;
+  transition: padding 0.3s;
+}
+

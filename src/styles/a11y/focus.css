@@ -1,0 +1,57 @@
+
+/* Focus visible utility */
+.js-focus-visible :focus:not(.focus-visible) {
+  outline: none;
+}
+
+.js-focus-visible .focus-visible {
+  @apply outline-2 outline-primary outline-offset-2;
+}
+
+/* Focus indicator styles */
+.focus-default *:focus {
+  @apply outline-primary outline-2 outline-offset-2;
+}
+
+.focus-enhanced *:focus {
+  @apply outline-primary outline-3 outline-offset-4;
+  box-shadow: 0 0 0 5px rgba(37, 99, 235, 0.25);
+}
+
+.focus-high *:focus {
+  outline: 4px solid black !important;
+  outline-offset: 4px !important;
+  box-shadow: 0 0 0 8px rgba(255, 255, 0, 0.5) !important;
+}
+
+/* For focus groups - improves keyboard navigation of complex components */
+.focus-group:focus-within .focus-item {
+  @apply transition-colors;
+}
+
+.focus-group:focus-within .focus-item:focus {
+  @apply bg-accent text-accent-foreground;
+}
+
+/* Enhanced visibility for current focused element */
+[data-focus-visible-added] {
+  outline: 3px solid var(--ring) !important;
+  outline-offset: 2px !important;
+  z-index: 1 !important;
+}
+
+/* Focus indicators should always be visible */
+:focus-visible {
+  outline: 2px solid var(--ring) !important;
+  outline-offset: 2px !important;
+}
+
+/* Focus ring for links */
+a:focus-visible {
+  outline-color: var(--primary) !important;
+}
+
+/* Keyboard navigation indicators */
+.keyboard-focus-visible *:focus {
+  box-shadow: 0 0 0 3px rgba(66, 153, 225, 0.6) !important;
+}

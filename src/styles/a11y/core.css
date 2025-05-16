@@ -1,0 +1,38 @@
+
+/* 
+ * Core accessibility styles
+ * Base accessibility classes and utilities
+ */
+
+/* Screen reader only - hide visually but available to screen readers */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border-width: 0;
+}
+
+/* Focus indicator with high contrast */
+.focus-ring {
+  @apply focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-offset-background focus-visible:ring-primary;
+}
+
+/* For elements that should have better focus visibility */
+.enhanced-focus {
+  @apply focus:outline-2 focus:outline-primary focus:outline-offset-4 focus:outline-dotted;
+}
+
+/* For skiplinks */
+.skip-link {
+  @apply sr-only focus:not-sr-only focus:fixed focus:top-4 focus:left-4 focus:z-50 focus:p-4 focus:bg-background focus:text-foreground focus:shadow-md focus:rounded;
+}
+
+/* For better link underlines (more accessible) */
+.accessible-link {
+  @apply underline underline-offset-4 decoration-1 hover:decoration-2;
+}
