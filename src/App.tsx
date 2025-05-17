@@ -3,10 +3,14 @@ import React, { useEffect, lazy, Suspense } from 'react';
 import './App.css';
 import './styles/ScrollStyles.css';
 import './styles/ios-specific.css'; // Import iOS-specific styles
+import './styles/accessibility.css'; // Import accessibility styles
+import './styles/dark-mode.css'; // Import dark mode styles
 import { createBrowserRouter, RouterProvider } from 'react-router-dom';
 import EnhancedMainLayout from '@/layouts/EnhancedMainLayout';
 import ErrorBoundary from '@/components/ErrorBoundary';
 import PageLoader from '@/components/ui/page-loader';
+import { useUserPreferences } from '@/contexts/UserPreferencesContext';
+import { Toaster } from '@/components/ui/sonner';
 import AuthPage from '@/pages/AuthPage';
 import SettingsPage from '@/pages/SettingsPage';
 import AccessibilitySettings from '@/components/accessibility/AccessibilitySettings';
@@ -15,9 +19,9 @@ import CalculatorsPage from '@/pages/Calculators';
 import DocumentsPage from '@/pages/DocumentsPage';
 import InvestorDashboard from '@/pages/InvestorDashboard';
 import GermanRealEstateInvestor from '@/pages/GermanRealEstateInvestor';
-import { useUserPreferences } from '@/contexts/UserPreferencesContext';
 import OnboardingPage from '@/pages/OnboardingPage';
 import Index from '@/pages/Index';
+import HomePage from '@/pages/HomePage';
 import SimplifiedDashboard from '@/pages/SimplifiedDashboard';
 import Dashboard from '@/pages/Dashboard';
 import MarketComparisonTool from '@/pages/MarketComparisonTool';
@@ -40,10 +44,14 @@ import WorkflowsPage from '@/pages/WorkflowsPage';
 // Lazy load heavy components for better initial loading performance
 const AdvancedAnalytics = lazy(() => import('@/pages/AdvancedAnalyticsPage'));
 
-// Create routes with EnhancedMainLayout instead of MainLayout
+// Create routes with EnhancedMainLayout 
 const routes = [
   {
     path: '/',
+    element: <EnhancedMainLayout><HomePage /></EnhancedMainLayout>,
+  },
+  {
+    path: '/old',
     element: <EnhancedMainLayout><Index /></EnhancedMainLayout>,
   },
   {
@@ -184,6 +192,7 @@ const App: React.FC = () => {
     <ErrorBoundary>
       <RewardsProvider>
         <RouterProvider router={router} />
+        <Toaster />
       </RewardsProvider>
     </ErrorBoundary>
   );

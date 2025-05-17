@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -7,6 +8,9 @@ import { useUserPreferences } from '@/contexts/UserPreferencesContext';
 import SkipToContent from '@/components/accessibility/SkipToContent';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { useIsMobile } from '@/hooks/use-mobile';
+import DarkModeToggle from '@/components/theme/DarkModeToggle';
+import CustomizableDashboard from '@/components/dashboard/CustomizableDashboard';
+import PropertyComparison from '@/components/property/PropertyComparison';
 
 const HomePage: React.FC = () => {
   const navigate = useNavigate();
@@ -35,7 +39,6 @@ const HomePage: React.FC = () => {
     }
   ];
   
-  // Workflow paths für bessere Navigation
   const workflowPaths = {
     immobilienAnalyse: [
       { path: '/deutsche-immobilien', label: language === 'de' ? 'Marktübersicht' : 'Market Overview' },
@@ -52,6 +55,11 @@ const HomePage: React.FC = () => {
   return (
     <div className="container mx-auto px-4 py-8">
       <SkipToContent contentId="main-content" />
+      
+      <div className="flex justify-between items-center mb-6">
+        <h1 className="text-3xl font-bold">{t('propertyFlow')}</h1>
+        <DarkModeToggle />
+      </div>
       
       <div id="main-content" className="text-center mb-12">
         <Building className="h-16 w-16 mx-auto text-primary mb-4" />
@@ -76,6 +84,16 @@ const HomePage: React.FC = () => {
             </Button>
           )}
         </div>
+      </div>
+      
+      {/* New Dashboard Section */}
+      <div className="mb-16">
+        <CustomizableDashboard />
+      </div>
+      
+      {/* Property Comparison Tool */}
+      <div className="mb-16">
+        <PropertyComparison />
       </div>
       
       {/* Featured German Tools - Prominent Display */}

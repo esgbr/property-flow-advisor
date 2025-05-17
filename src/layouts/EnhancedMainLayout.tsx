@@ -7,6 +7,7 @@ import SkipToContent from '@/components/accessibility/SkipToContent';
 import StickyTopNav from '@/components/navigation/StickyTopNav';
 import { isIOS, initializeIOSOptimizations } from '@/utils/iosUtils';
 import '../styles/ios-specific.css';
+import '../styles/accessibility.css';
 
 interface EnhancedMainLayoutProps {
   children: React.ReactNode;
@@ -17,7 +18,7 @@ interface EnhancedMainLayoutProps {
 }
 
 /**
- * Enhanced layout component with iOS optimizations and improved accessibility
+ * Enhanced layout component with iOS optimizations, improved accessibility, and dark mode support
  */
 const EnhancedMainLayout: React.FC<EnhancedMainLayoutProps> = ({
   children,
@@ -41,9 +42,9 @@ const EnhancedMainLayout: React.FC<EnhancedMainLayoutProps> = ({
     <div className={cn(
       "flex flex-col min-h-screen w-full",
       isIOSDevice && "ios-device",
+      preferences.darkMode && "dark",
       className
     )}>
-      {/* Removed className prop from StickyTopNav since it doesn't accept it */}
       <StickyTopNav />
       <SkipToContent contentId={contentId} />
       
@@ -53,7 +54,8 @@ const EnhancedMainLayout: React.FC<EnhancedMainLayoutProps> = ({
           "flex-1 overflow-y-auto",
           withPadding && "py-6 mt-16", // Ensure content isn't hidden under navbar
           largeText && "text-lg",
-          isIOSDevice && "ios-scroll"
+          isIOSDevice && "ios-scroll",
+          preferences.darkMode ? "bg-gray-900 text-white" : "bg-white text-gray-900"
         )}
       >
         {withContainer ? (

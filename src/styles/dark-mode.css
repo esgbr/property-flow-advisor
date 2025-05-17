@@ -1,0 +1,89 @@
+
+/* Dark mode specific styles */
+.dark {
+  --background: #121212;
+  --foreground: #f8f8f8;
+  --card: #1e1e1e;
+  --card-foreground: #f8f8f8;
+  --primary: #6e59a5;
+  --primary-foreground: #ffffff;
+  --secondary: #2d2b3a;
+  --secondary-foreground: #f8f8f8;
+  --muted: #2d2b3a;
+  --muted-foreground: #a1a1aa;
+  --accent: #2d2b3a;
+  --accent-foreground: #f8f8f8;
+  --destructive: #ff5757;
+  --destructive-foreground: #f8f8f8;
+  --border: #2d2b3a;
+  --input: #2d2b3a;
+  --ring: #6e59a5;
+  
+  color-scheme: dark;
+  background-color: var(--background);
+  color: var(--foreground);
+}
+
+.dark button {
+  --tw-ring-color: var(--ring);
+}
+
+.dark .card {
+  background-color: var(--card);
+  border-color: var(--border);
+  color: var(--card-foreground);
+}
+
+.dark .bg-card {
+  background-color: var(--card);
+}
+
+.dark .text-card-foreground {
+  color: var(--card-foreground);
+}
+
+.dark .border {
+  border-color: var(--border);
+}
+
+/* Dark mode specific interactive states */
+.dark .hover\:bg-accent:hover {
+  background-color: var(--accent);
+}
+
+.dark .hover\:text-accent-foreground:hover {
+  color: var(--accent-foreground);
+}
+
+/* Enhanced visual hierarchy for dark mode */
+.dark h1, .dark h2, .dark h3, .dark h4, .dark h5, .dark h6 {
+  color: #fff;
+}
+
+.dark .text-muted-foreground {
+  color: #a1a1aa;
+}
+
+/* Improve contrast for disabled elements */
+.dark .disabled, .dark [disabled], .dark :disabled {
+  opacity: 0.5;
+}
+
+/* Dark mode scrollbars */
+.dark ::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+.dark ::-webkit-scrollbar-track {
+  background: #1e1e1e;
+}
+
+.dark ::-webkit-scrollbar-thumb {
+  background: #4b4b4b;
+  border-radius: 5px;
+}
+
+.dark ::-webkit-scrollbar-thumb:hover {
+  background: #555;
+}

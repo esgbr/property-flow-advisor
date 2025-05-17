@@ -11,6 +11,16 @@ export interface InvestmentMarketOption {
   description?: string;
 }
 
+// Widget configuration for customizable dashboard
+export interface WidgetConfig {
+  id: string;
+  type: string;
+  title: Record<string, string>;
+  visible: boolean;
+  position: number;
+  size: 'small' | 'medium' | 'large';
+}
+
 export interface UserPreferences {
   name?: string;
   email?: string;
@@ -78,6 +88,15 @@ export interface UserPreferences {
     highContrastOverride?: boolean;
   };
   recentMarkets?: InvestmentMarket[];
+  // New properties for dashboard customization
+  dashboardWidgets?: WidgetConfig[];
+  favoriteProperties?: string[];
+  comparisonHistory?: {
+    id: string;
+    properties: string[];
+    date: string;
+    name?: string;
+  }[];
 }
 
 export interface OnboardingData {
@@ -131,7 +150,11 @@ const defaultPreferences: UserPreferences = {
   onboardingCompleted: false,
   interests: [],
   investmentGoals: [],
-  preferredPropertyTypes: []
+  preferredPropertyTypes: [],
+  // New defaults for dashboard customization
+  dashboardWidgets: [],
+  favoriteProperties: [],
+  comparisonHistory: []
 };
 
 // Export the context directly for use with useContext in other files
