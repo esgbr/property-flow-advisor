@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useContext, createContext } from 'react';
 
 export type ExperienceLevel = 'beginner' | 'intermediate' | 'advanced' | 'expert';
@@ -11,10 +12,13 @@ export interface InvestmentMarketOption {
   description?: string;
 }
 
+// Define the WidgetType to match what's in CustomizableDashboard
+export type WidgetType = 'portfolio' | 'market' | 'calculator' | 'alerts' | 'news' | 'taxes';
+
 // Widget configuration for customizable dashboard
 export interface WidgetConfig {
   id: string;
-  type: string;
+  type: WidgetType; // Using the WidgetType union type instead of string
   title: Record<string, string>;
   visible: boolean;
   position: number;

@@ -1,24 +1,12 @@
-
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { useUserPreferences } from '@/contexts/UserPreferencesContext';
+import { useUserPreferences, WidgetType, WidgetConfig } from '@/contexts/UserPreferencesContext';
 import { Settings, Save, LayoutGrid, X } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useToast } from '@/components/ui/use-toast';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { cn } from '@/lib/utils';
-
-type WidgetType = 'portfolio' | 'market' | 'calculator' | 'alerts' | 'news' | 'taxes';
-
-interface WidgetConfig {
-  id: string;
-  type: WidgetType;
-  title: Record<string, string>;
-  visible: boolean;
-  position: number;
-  size: 'small' | 'medium' | 'large';
-}
 
 const DEFAULT_WIDGETS: WidgetConfig[] = [
   {
@@ -78,7 +66,9 @@ const CustomizableDashboard: React.FC = () => {
   
   // Load saved widget configuration or use defaults
   const [widgets, setWidgets] = useState<WidgetConfig[]>(
-    preferences.dashboardWidgets || DEFAULT_WIDGETS
+    preferences.dashboardWidgets && preferences.dashboardWidgets.length > 0
+      ? preferences.dashboardWidgets
+      : DEFAULT_WIDGETS
   );
   
   // Track customization mode
