@@ -12,9 +12,10 @@ const FocusStyleSelector: React.FC = () => {
   const { preferences, updatePreferences } = useUserPreferences();
   const { t } = useLanguage();
   
-  const focusStyle = preferences.accessibility?.focusStyle || 'default';
+  // Ensure proper typing by asserting the type if necessary
+  const focusStyle = (preferences.accessibility?.focusStyle || 'default') as 'default' | 'enhanced' | 'high';
 
-  const handleFocusStyleChange = (value: string) => {
+  const handleFocusStyleChange = (value: 'default' | 'enhanced' | 'high') => {
     updatePreferences({
       accessibility: {
         ...preferences.accessibility,
