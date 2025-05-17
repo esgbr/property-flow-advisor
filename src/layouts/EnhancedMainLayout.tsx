@@ -5,6 +5,7 @@ import { useUserPreferences } from '@/contexts/UserPreferencesContext';
 import { useAccessibility } from '@/components/accessibility/A11yProvider';
 import SkipToContent from '@/components/accessibility/SkipToContent';
 import StickyTopNav from '@/components/navigation/StickyTopNav';
+import { isIOS, initializeIOSOptimizations } from '@/utils/iosUtils';
 import '../styles/ios-specific.css';
 
 interface EnhancedMainLayoutProps {
