@@ -40,13 +40,13 @@
   z-index: 1 !important;
 }
 
-/* Focus indicators should always be visible */
+/* Focus indicators should always be visible when using keyboard */
 :focus-visible {
   outline: 2px solid var(--ring) !important;
   outline-offset: 2px !important;
 }
 
-/* Focus ring for links */
+/* Focused link styling */
 a:focus-visible {
   outline-color: var(--primary) !important;
 }
@@ -54,4 +54,28 @@ a:focus-visible {
 /* Keyboard navigation indicators */
 .keyboard-focus-visible *:focus {
   box-shadow: 0 0 0 3px rgba(66, 153, 225, 0.6) !important;
+}
+
+/* Improve button focus appearance */
+button:focus-visible,
+[role="button"]:focus-visible {
+  @apply ring-2 ring-primary ring-offset-2;
+}
+
+/* Ensure form elements have consistent focus indicators */
+input:focus-visible, 
+textarea:focus-visible, 
+select:focus-visible {
+  @apply ring-2 ring-primary ring-offset-1 outline-none;
+}
+
+/* Keyboard user specific styles */
+.keyboard-user *:focus {
+  @apply outline-2 outline-offset-2 outline-primary;
+}
+
+/* When user is using mouse, don't show focus indicators unless explicitly focused */
+body:not(.keyboard-user) *:focus:not(:focus-visible) {
+  outline: none;
+  box-shadow: none;
 }

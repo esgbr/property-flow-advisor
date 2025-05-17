@@ -46,7 +46,9 @@ const EnhancedMainLayout: React.FC<EnhancedMainLayoutProps> = ({
       preferences.darkMode && "dark",
       className
     )}>
+      {/* Apply global focus and accessibility styles */}
       <GlobalFocusStyles />
+      
       <StickyTopNav />
       <SkipToContent contentId={contentId} />
       
@@ -59,6 +61,7 @@ const EnhancedMainLayout: React.FC<EnhancedMainLayoutProps> = ({
           isIOSDevice && "ios-scroll",
           preferences.darkMode ? "bg-gray-900 text-white" : "bg-white text-gray-900"
         )}
+        tabIndex={-1} // Makes the main content area focusable for skip links
       >
         {withContainer ? (
           <div className={cn(

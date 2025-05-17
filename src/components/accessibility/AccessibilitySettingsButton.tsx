@@ -36,14 +36,14 @@ const AccessibilitySettingsButton: React.FC<AccessibilitySettingsButtonProps> = 
     if (e.key === 'Enter' || e.key === ' ') {
       e.preventDefault();
       navigate('/accessibility');
-      announce('Navigating to accessibility settings', true);
+      announce(t('navigatingToAccessibilitySettings') || 'Navigating to accessibility settings', true);
     }
   };
   
   // Handle button activation
   const handleClick = () => {
     navigate('/accessibility');
-    announce('Navigating to accessibility settings', true);
+    announce(t('navigatingToAccessibilitySettings') || 'Navigating to accessibility settings', true);
   };
 
   // Get descriptive text for active settings
@@ -51,10 +51,10 @@ const AccessibilitySettingsButton: React.FC<AccessibilitySettingsButtonProps> = 
     if (activeSettings === 0) return t('accessibilitySettings') || 'Accessibility Settings';
     
     const activeFeatures = [];
-    if (reduceMotion) activeFeatures.push('reduced motion');
-    if (highContrast) activeFeatures.push('high contrast');
-    if (largeText) activeFeatures.push('large text');
-    if (screenReader) activeFeatures.push('screen reader optimizations');
+    if (reduceMotion) activeFeatures.push(t('reducedMotion') || 'reduced motion');
+    if (highContrast) activeFeatures.push(t('highContrast') || 'high contrast');
+    if (largeText) activeFeatures.push(t('largeText') || 'large text');
+    if (screenReader) activeFeatures.push(t('screenReaderOptimizations') || 'screen reader optimizations');
     
     return `${t('accessibilitySettings') || 'Accessibility Settings'}: ${activeFeatures.join(', ')}`;
   };
@@ -100,6 +100,7 @@ const AccessibilitySettingsButton: React.FC<AccessibilitySettingsButtonProps> = 
         <TooltipContent 
           side="bottom" 
           className={`${highContrast ? 'border-2' : ''} max-w-[250px] ${largeText ? 'text-base p-3' : ''}`}
+          role="tooltip"
         >
           <p>{t('accessibilitySettings') || 'Accessibility Settings'}</p>
           {activeSettings > 0 && (
