@@ -5,6 +5,7 @@ import { useUserPreferences } from '@/contexts/UserPreferencesContext';
 import { useAccessibility } from '@/components/accessibility/A11yProvider';
 import SkipToContent from '@/components/accessibility/SkipToContent';
 import StickyTopNav from '@/components/navigation/StickyTopNav';
+import GlobalFocusStyles from '@/components/accessibility/GlobalFocusStyles';
 import { isIOS, initializeIOSOptimizations } from '@/utils/iosUtils';
 import '../styles/ios-specific.css';
 import '../styles/accessibility.css';
@@ -45,6 +46,7 @@ const EnhancedMainLayout: React.FC<EnhancedMainLayoutProps> = ({
       preferences.darkMode && "dark",
       className
     )}>
+      <GlobalFocusStyles />
       <StickyTopNav />
       <SkipToContent contentId={contentId} />
       

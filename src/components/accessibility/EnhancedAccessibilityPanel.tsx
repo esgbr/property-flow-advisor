@@ -1,124 +1,179 @@
 
 import React from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { useUserPreferences } from '@/contexts/UserPreferencesContext';
+import { useLanguage } from '@/contexts/LanguageContext';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
+import { Separator } from '@/components/ui/separator';
 import { Button } from '@/components/ui/button';
-import { Eye, Type, Zap, Cpu } from 'lucide-react';
-import { useAccessibility } from '@/hooks/use-accessibility';
-import { useLanguage } from '@/contexts/LanguageContext';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { useToast } from '@/components/ui/use-toast';
+import FocusStyleSelector from './FocusStyleSelector';
 
-export interface EnhancedAccessibilityPanelProps {
-  className?: string;
-}
+const EnhancedAccessibilityPanel: React.FC = () => {
+  const { preferences, updatePreferences } = useUserPreferences();
+  const { t, language } = useLanguage();
+  const { toast } = useToast();
 
-const EnhancedAccessibilityPanel: React.FC<EnhancedAccessibilityPanelProps> = ({ className = '' }) => {
-  const { language } = useLanguage();
-  const { 
-    highContrast, 
-    largeText, 
-    reduceMotion,
-    dyslexiaFriendly,
-    toggleHighContrast, 
-    toggleLargeText, 
-    toggleReduceMotion,
-    toggleDyslexiaFriendly,
-    announce 
-  } = useAccessibility();
+  const {
+    highContrast = false,
+    largeText = false,
+    reduceMotion = false,
+    screenReader = false,
+    dyslexiaFriendly = false,
+    keyboardMode = false
+  } = preferences.accessibility || {};
 
-  const handleResetSettings = () => {
-    if (highContrast) toggleHighContrast();
-    if (largeText) toggleLargeText();
-    if (reduceMotion) toggleReduceMotion();
-    if (dyslexiaFriendly) toggleDyslexiaFriendly();
+  // Function to toggle settings
+  const toggleSetting = (setting: string, value: boolean) => {
+    updatePreferences({
+      accessibility: {
+        ...preferences.accessibility,
+        [setting]: value
+      }
+    });
     
-    announce(
-      language === 'de' 
-        ? 'Barrierefreiheitseinstellungen zurückgesetzt' 
-        : 'Accessibility settings reset', 
-      'polite'
-    );
+    toast({
+      title: t('settingUpdated'),
+      description: value ? t(`${setting}Enabled`) : t(`${setting}Disabled`),
+      duration: 2000,
+    });
+  };
+
+  // Reset all accessibility settings
+  const resetSettings = () => {
+    updatePreferences({
+      accessibility: {
+        highContrast: false,
+        largeText: false,
+        reduceMotion: false,
+        screenReader: false,
+        dyslexiaFriendly: false,
+        keyboardMode: false,
+        focusStyle: 'default'
+      }
+    });
+    
+    toast({
+      title: t('settingsReset'),
+      description: t('accessibilitySettingsReset'),
+      duration: 3000,
+    });
   };
 
   return (
-    <Card className={className}>
-      <CardHeader>
-        <CardTitle className="flex items-center">
-          <Eye className="mr-2 h-5 w-5" />
-          {language === 'de' ? 'Barrierefreiheit' : 'Accessibility'}
-        </CardTitle>
-      </CardHeader>
-      <CardContent className="space-y-4">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <Zap className="h-4 w-4 text-primary" />
-            <Label htmlFor="high-contrast" className="cursor-pointer">
-              {language === 'de' ? 'Hoher Kontrast' : 'High Contrast'}
-            </Label>
-          </div>
-          <Switch 
-            id="high-contrast" 
-            checked={highContrast} 
-            onCheckedChange={toggleHighContrast}
-            aria-label={language === 'de' ? 'Hoher Kontrast' : 'High Contrast'}
-          />
-        </div>
+    <div className="space-y-6">
+      <div>
+        <h2 className="text-xl font-semibold mb-2">{t('accessibilitySettings')}</h2>
+        <p className="text-sm text-muted-foreground">{t('accessibilityDescription')}</p>
+      </div>
+      
+      <Tabs defaultValue="visual">
+        <TabsList className="mb-4">
+          <TabsTrigger value="visual">{t('visual')}</TabsTrigger>
+          <TabsTrigger value="interaction">{t('interaction')}</TabsTrigger>
+          <TabsTrigger value="content">{t('content')}</TabsTrigger>
+        </TabsList>
         
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <Type className="h-4 w-4 text-primary" />
-            <Label htmlFor="large-text" className="cursor-pointer">
-              {language === 'de' ? 'Große Schrift' : 'Large Text'}
-            </Label>
+        <TabsContent value="visual" className="space-y-4">
+          <div className="grid gap-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <Label htmlFor="high-contrast">{t('highContrast')}</Label>
+                <p className="text-sm text-muted-foreground">{t('highContrastDescription')}</p>
+              </div>
+              <Switch
+                id="high-contrast"
+                checked={highContrast}
+                onCheckedChange={(checked) => toggleSetting('highContrast', checked)}
+              />
+            </div>
+            
+            <div className="flex items-center justify-between">
+              <div>
+                <Label htmlFor="large-text">{t('largeText')}</Label>
+                <p className="text-sm text-muted-foreground">{t('largeTextDescription')}</p>
+              </div>
+              <Switch
+                id="large-text"
+                checked={largeText}
+                onCheckedChange={(checked) => toggleSetting('largeText', checked)}
+              />
+            </div>
+            
+            <FocusStyleSelector />
           </div>
-          <Switch 
-            id="large-text" 
-            checked={largeText} 
-            onCheckedChange={toggleLargeText}
-            aria-label={language === 'de' ? 'Große Schrift' : 'Large Text'}
-          />
-        </div>
+        </TabsContent>
         
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <Cpu className="h-4 w-4 text-primary" />
-            <Label htmlFor="reduced-motion" className="cursor-pointer">
-              {language === 'de' ? 'Reduzierte Bewegung' : 'Reduced Motion'}
-            </Label>
+        <TabsContent value="interaction" className="space-y-4">
+          <div className="grid gap-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <Label htmlFor="reduce-motion">{t('reduceMotion')}</Label>
+                <p className="text-sm text-muted-foreground">{t('reduceMotionDescription')}</p>
+              </div>
+              <Switch
+                id="reduce-motion"
+                checked={reduceMotion}
+                onCheckedChange={(checked) => toggleSetting('reduceMotion', checked)}
+              />
+            </div>
+            
+            <div className="flex items-center justify-between">
+              <div>
+                <Label htmlFor="keyboard-mode">{t('keyboardMode')}</Label>
+                <p className="text-sm text-muted-foreground">{t('keyboardModeDescription')}</p>
+              </div>
+              <Switch
+                id="keyboard-mode"
+                checked={keyboardMode}
+                onCheckedChange={(checked) => toggleSetting('keyboardMode', checked)}
+              />
+            </div>
           </div>
-          <Switch 
-            id="reduced-motion" 
-            checked={reduceMotion} 
-            onCheckedChange={toggleReduceMotion}
-            aria-label={language === 'de' ? 'Reduzierte Bewegung' : 'Reduced Motion'}
-          />
-        </div>
+        </TabsContent>
         
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <Type className="h-4 w-4 text-primary" />
-            <Label htmlFor="dyslexia-friendly" className="cursor-pointer">
-              {language === 'de' ? 'Legasthenie-freundlich' : 'Dyslexia Friendly'}
-            </Label>
+        <TabsContent value="content" className="space-y-4">
+          <div className="grid gap-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <Label htmlFor="screen-reader">{t('screenReader')}</Label>
+                <p className="text-sm text-muted-foreground">{t('screenReaderDescription')}</p>
+              </div>
+              <Switch
+                id="screen-reader"
+                checked={screenReader}
+                onCheckedChange={(checked) => toggleSetting('screenReader', checked)}
+              />
+            </div>
+            
+            <div className="flex items-center justify-between">
+              <div>
+                <Label htmlFor="dyslexia-friendly">{t('dyslexiaFriendly')}</Label>
+                <p className="text-sm text-muted-foreground">{t('dyslexiaFriendlyDescription')}</p>
+              </div>
+              <Switch
+                id="dyslexia-friendly"
+                checked={dyslexiaFriendly}
+                onCheckedChange={(checked) => toggleSetting('dyslexiaFriendly', checked)}
+              />
+            </div>
           </div>
-          <Switch 
-            id="dyslexia-friendly" 
-            checked={dyslexiaFriendly} 
-            onCheckedChange={toggleDyslexiaFriendly}
-            aria-label={language === 'de' ? 'Legasthenie-freundlich' : 'Dyslexia Friendly'}
-          />
-        </div>
-        
-        <Button 
-          variant="outline" 
-          className="w-full mt-4" 
-          onClick={handleResetSettings}
-          aria-label={language === 'de' ? 'Einstellungen zurücksetzen' : 'Reset settings'}
-        >
-          {language === 'de' ? 'Zurücksetzen' : 'Reset to Defaults'}
+        </TabsContent>
+      </Tabs>
+      
+      <Separator />
+      
+      <div className="flex justify-between items-center">
+        <Button variant="outline" onClick={resetSettings}>
+          {t('resetToDefaults')}
         </Button>
-      </CardContent>
-    </Card>
+        
+        <Button variant="secondary">
+          {t('done')}
+        </Button>
+      </div>
+    </div>
   );
 };
 

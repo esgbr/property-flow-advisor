@@ -18,7 +18,7 @@ export type WidgetType = 'portfolio' | 'market' | 'calculator' | 'alerts' | 'new
 // Widget configuration for customizable dashboard
 export interface WidgetConfig {
   id: string;
-  type: WidgetType; // Using the WidgetType union type instead of string
+  type: WidgetType;
   title: Record<string, string>;
   visible: boolean;
   position: number;
@@ -90,6 +90,8 @@ export interface UserPreferences {
     dyslexiaFriendly?: boolean;
     reducedMotionOverride?: boolean;
     highContrastOverride?: boolean;
+    focusStyle?: 'default' | 'enhanced' | 'high'; // Added focus style preference
+    keyboardMode?: boolean; // Added keyboard navigation mode preference
   };
   recentMarkets?: InvestmentMarket[];
   // New properties for dashboard customization
