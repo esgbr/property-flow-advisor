@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useLanguage } from '@/contexts/LanguageContext';
@@ -8,6 +7,7 @@ import CustomizableDashboardLayout, { WidgetConfig } from './CustomizableDashboa
 import PortfolioDashboard from '@/components/portfolio/PortfolioDashboard';
 import MarketTrendsChart from '@/components/market/MarketTrendsChart';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { MarketDataProvider } from '@/contexts/MarketDataContext';
 
 const CustomizableDashboard: React.FC = () => {
   const { t, language } = useLanguage();
@@ -150,7 +150,9 @@ const CustomizableDashboard: React.FC = () => {
               <CardDescription>{t('compareYourInvestments')}</CardDescription>
             </CardHeader>
             <CardContent className="h-[calc(100%-4rem)]">
-              <MarketTrendsChart />
+              <MarketDataProvider>
+                <MarketTrendsChart />
+              </MarketDataProvider>
             </CardContent>
           </Card>
         );

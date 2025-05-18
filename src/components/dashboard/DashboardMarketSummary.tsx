@@ -4,6 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { useLanguage } from '@/contexts/LanguageContext';
 import PortfolioAllocationChart from '@/components/charts/PortfolioAllocationChart';
 import MarketTrendsChart from '@/components/charts/MarketTrendsChart';
+import { MarketDataProvider } from '@/contexts/MarketDataContext';
 
 /**
  * Market summary — Unified design, visual polish, responsive layout.
@@ -18,7 +19,9 @@ const DashboardMarketSummary: React.FC = () => {
           <CardDescription>{t('marketTrendsDescription')}</CardDescription>
         </CardHeader>
         <CardContent className="h-80">
-          <MarketTrendsChart />
+          <MarketDataProvider>
+            <MarketTrendsChart />
+          </MarketDataProvider>
         </CardContent>
       </Card>
       <Card>

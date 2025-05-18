@@ -1,109 +1,71 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { 
+import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { Languages } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
-import { cn } from '@/lib/utils';
-import { useToast } from './ui/use-toast';
 import { LanguageCode } from '@/types/language';
 
 interface LanguageSwitcherProps {
-  variant?: 'default' | 'outline' | 'small';
-  className?: string;
+  variant?: 'default' | 'outline' | 'ghost';
+  showFlags?: boolean;
+  showLabels?: boolean;
+  size?: 'default' | 'sm' | 'lg';
+  align?: 'start' | 'center' | 'end';
 }
 
-const LanguageSwitcher: React.FC<LanguageSwitcherProps> = ({ 
-  variant = 'default', 
-  className 
+const LanguageSwitcher: React.FC<LanguageSwitcherProps> = ({
+  variant = 'outline',
+  showFlags = true,
+  showLabels = true,
+  size = 'default',
+  align = 'end'
 }) => {
-  const { language, setLanguage, availableLanguages, languageDetails, t } = useLanguage();
-  const { toast } = useToast();
-  
-  const handleLanguageChange = (newLanguage: LanguageCode) => {
-    if (newLanguage !== language) {
-      setLanguage(newLanguage);
-      toast({
-        title: t('languageChanged'),
-        description: t('displayLanguageChanged'),
-        duration: 3000,
-      });
-    }
+  const { language, setLanguage, availableLanguages } = useLanguage();
+  const [isOpen, setIsOpen] = useState(false);
+
+  const handleLanguageChange = (lang: LanguageCode) => {
+    setLanguage(lang);
+    setIsOpen(false);
   };
-  
-  // Filter only enabled languages
-  const enabledLanguages = availableLanguages.filter(lang => lang.enabled);
-  
-  // Find currently selected language
-  const currentLanguage = languageDetails[language];
-  
-  if (variant === 'small') {
-    return (
-      <DropdownMenu>
-        <DropdownMenuTrigger asChild>
-          <Button 
-            variant="ghost" 
-            size="icon" 
-            className={cn("h-8 w-8 px-0", className)}
-            aria-label={t('changeLanguage')}
-          >
-            <span className="sr-only">{t('changeLanguage')}</span>
-            {currentLanguage?.flag || '🌐'}
-          </Button>
-        </DropdownMenuTrigger>
-        <DropdownMenuContent align="end">
-          {enabledLanguages.map((lang) => (
-            <DropdownMenuItem
-              key={lang.code}
-              className={cn(
-                "flex items-center gap-2 cursor-pointer",
-                language === lang.code && "bg-accent text-accent-foreground"
-              )}
-              onClick={() => handleLanguageChange(lang.code)}
-            >
-              <span>{lang.flag}</span>
-              <span className="capitalize">{lang.nativeName}</span>
-            </DropdownMenuItem>
-          ))}
-        </DropdownMenuContent>
-      </DropdownMenu>
-    );
-  }
-  
+
+  // Get current language details
+  const currentLanguage = availableLanguages.find(lang => lang.code === language) || availableLanguages[0];
+
   return (
-    <DropdownMenu>
+    <DropdownMenu open={isOpen} onOpenChange={setIsOpen}>
       <DropdownMenuTrigger asChild>
         <Button 
-          variant={variant === 'outline' ? 'outline' : 'ghost'} 
-          className={cn("flex items-center gap-2", className)}
-          aria-label={t('changeLanguage')}
+          variant={variant} 
+          size={size}
+          className="gap-2"
+          aria-label="Select language"
         >
-          <Languages className="h-4 w-4" aria-hidden="true" />
-          <span className="hidden sm:inline-block">
-            {currentLanguage?.flag} {currentLanguage?.nativeName || t('language')}
-          </span>
-          <span className="sm:hidden">{currentLanguage?.flag}</span>
+          {showFlags && <span aria-hidden="true">{currentLanguage.flag}</span>}
+          {showLabels && (
+            <span className="text-sm font-medium">
+              {currentLanguage.nativeName}
+            </span>
+          )}
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="end">
-        {enabledLanguages.map((lang) => (
-          <DropdownMenuItem
-            key={lang.code}
-            className={cn(
-              "flex items-center gap-2 cursor-pointer",
-              language === lang.code && "bg-accent text-accent-foreground"
-            )}
-            onClick={() => handleLanguageChange(lang.code)}
-          >
-            <span>{lang.flag}</span>
-            <span className="capitalize">{lang.nativeName}</span>
-          </DropdownMenuItem>
-        ))}
+      <DropdownMenuContent align={align} className="w-48">
+        {availableLanguages
+          .filter(lang => lang.enabled)
+          .map(lang => (
+            <DropdownMenuItem
+              key={lang.code}
+              className={`flex items-center gap-2 cursor-pointer ${lang.code === language ? 'bg-accent' : ''}`}
+              onClick={() => handleLanguageChange(lang.code as LanguageCode)}
+            >
+              <span aria-hidden="true">{lang.flag}</span>
+              <span>{lang.nativeName}</span>
+            </DropdownMenuItem>
+          ))}
       </DropdownMenuContent>
     </DropdownMenu>
   );
