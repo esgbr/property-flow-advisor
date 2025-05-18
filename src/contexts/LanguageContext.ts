@@ -6,17 +6,18 @@ import {
   LanguageProvider,
   useLanguage,
   availableLanguages,
-  languageDetails,
-  SupportedLanguage
+  languageDetails
 } from './FixedLanguageContext';
+
+// Re-export types from the language.d.ts file
+export type { SupportedLanguage, LanguageCode } from '@/types/language';
 
 // Re-export the value exports
 export {
   LanguageProvider,
   useLanguage,
   availableLanguages,
-  languageDetails,
-  SupportedLanguage
+  languageDetails
 } from './FixedLanguageContext';
 
 // Re-export the default export

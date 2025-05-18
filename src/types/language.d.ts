@@ -7,7 +7,7 @@ export interface SupportedLanguage {
   enabled: boolean;
 }
 
-export type LanguageCode = "de" | "en";
+export type LanguageCode = "de" | "en" | "es" | "fr";
 
 export interface LanguageContextProps {
   language: LanguageCode;
@@ -15,6 +15,7 @@ export interface LanguageContextProps {
   t: (key: string, params?: Record<string, string>) => string;
   translations: Record<string, Record<string, string>>;
   availableLanguages: SupportedLanguage[];
+  languageDetails: Record<LanguageCode, SupportedLanguage>;
 }
 
 export interface LanguageInfo {

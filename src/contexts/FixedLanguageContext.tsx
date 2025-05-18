@@ -5,16 +5,7 @@ import enTranslations from '@/locales/en.json';
 import deTranslations from '@/locales/de.json';
 import esTranslations from '@/locales/es.json';
 import frTranslations from '@/locales/fr.json';
-import { LanguageCode } from '@/types/language';
-
-// Define the allowed languages
-export interface SupportedLanguage {
-  code: LanguageCode;
-  name: string;
-  nativeName: string;
-  flag: string;
-  enabled: boolean;
-}
+import { LanguageCode, SupportedLanguage } from '@/types/language';
 
 // Define language details
 export const languageDetails: Record<LanguageCode, SupportedLanguage> = {
