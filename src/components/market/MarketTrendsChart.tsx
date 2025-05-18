@@ -25,6 +25,9 @@ const createChartDataKey = (name: string, currentYear: number, color: string, is
   };
 };
 
+/**
+ * Chart component for displaying market trends with comparison options
+ */
 const MarketTrendsChart: React.FC<MarketTrendsChartProps> = ({ className = '' }) => {
   useComponentPerformance('MarketTrendsChart');
   const { getMarketDisplayName } = useMarketFilter();

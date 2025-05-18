@@ -1,26 +1,49 @@
 
 import React from 'react';
-import { Loader2 } from 'lucide-react';
+import { cn } from '@/lib/utils';
 
 interface PageLoaderProps {
-  message?: string;
   size?: 'sm' | 'md' | 'lg';
+  label?: string;
+  className?: string;
+  fullPage?: boolean;
 }
 
-const PageLoader: React.FC<PageLoaderProps> = ({ 
-  message = 'Loading...', 
-  size = 'md' 
+/**
+ * Page loader component for showing loading state
+ */
+export const PageLoader: React.FC<PageLoaderProps> = ({
+  size = 'md',
+  label = 'Loading...',
+  className = '',
+  fullPage = false
 }) => {
   const sizeClasses = {
-    sm: 'h-4 w-4',
-    md: 'h-8 w-8',
-    lg: 'h-12 w-12'
+    sm: 'h-6 w-6 border-2',
+    md: 'h-10 w-10 border-3',
+    lg: 'h-16 w-16 border-4'
   };
 
   return (
-    <div className="flex flex-col items-center justify-center h-full min-h-[200px] w-full">
-      <Loader2 className={`animate-spin text-primary mb-4 ${sizeClasses[size]}`} />
-      <p className="text-muted-foreground text-sm">{message}</p>
+    <div
+      className={cn(
+        'flex flex-col items-center justify-center',
+        fullPage && 'fixed inset-0 bg-background/80 backdrop-blur-sm z-50',
+        className
+      )}
+      role="status"
+      aria-live="polite"
+    >
+      <div
+        className={cn(
+          'animate-spin rounded-full border-solid border-primary border-r-transparent',
+          sizeClasses[size]
+        )}
+      />
+      {label && (
+        <span className="mt-4 text-muted-foreground">{label}</span>
+      )}
+      <span className="sr-only">{label || 'Loading'}</span>
     </div>
   );
 };

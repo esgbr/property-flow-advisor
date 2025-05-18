@@ -2,7 +2,7 @@
 import React from 'react';
 import { MarketDataProvider } from '@/contexts/MarketDataContext';
 
-interface MarketProviderWrapperProps {
+export interface MarketProviderWrapperProps {
   children: React.ReactNode;
   initialMarketData?: Record<string, any>;
 }

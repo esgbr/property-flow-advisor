@@ -1,99 +1,125 @@
 
-import { useEffect, useRef } from 'react';
+import { useRef, useEffect } from 'react';
 
 /**
- * Hook to measure and log component performance
- * @param componentName Name of the component to measure
+ * Tracks component performance with console logging
+ * @param componentName Name of the component being measured
  */
 export const useComponentPerformance = (componentName: string) => {
-  const renderStart = useRef<number>(0);
-  const mountedRef = useRef<boolean>(false);
+  const renderCount = useRef(0);
+  const startTime = useRef(performance.now());
   
   useEffect(() => {
-    // First render - component is mounting
-    if (!mountedRef.current) {
-      const mountTime = performance.now() - renderStart.current;
-      
-      if (process.env.NODE_ENV === 'development') {
-        console.log(`[Performance] ${componentName} mounted in ${mountTime.toFixed(2)}ms`);
-      }
-      
-      mountedRef.current = true;
-    }
+    renderCount.current += 1;
+    const renderTime = performance.now() - startTime.current;
     
-    // Return cleanup function
+    console.log(
+      `%c${componentName} rendered %c(${renderCount.current})%c in %c${renderTime.toFixed(2)}ms`,
+      'color: #4caf50; font-weight: bold',
+      'color: #ff9800',
+      'color: #2196f3',
+      'color: #f44336; font-weight: bold'
+    );
+    
     return () => {
-      if (process.env.NODE_ENV === 'development') {
-        console.log(`[Performance] ${componentName} unmounted`);
-      }
-      mountedRef.current = false;
+      startTime.current = performance.now();
     };
-  }, [componentName]);
-  
-  // Set render start time before any effects run
-  if (!mountedRef.current) {
-    renderStart.current = performance.now();
-  }
+  });
 };
 
 /**
- * Measures the execution time of a function
- * @param fn Function to measure
- * @param fnName Name of the function (for logging)
- * @returns The same function, but with timing measurements
+ * Creates a debounced version of a function
+ * @param func The function to debounce
+ * @param wait Wait time in milliseconds
+ * @returns Debounced function
  */
-export function measurePerformance<T extends (...args: any[]) => any>(
-  fn: T,
-  fnName: string
-): (...args: Parameters<T>) => ReturnType<T> {
-  return (...args: Parameters<T>): ReturnType<T> => {
-    if (process.env.NODE_ENV !== 'development') {
-      return fn(...args);
-    }
+export function debounce<T extends (...args: any[]) => void>(
+  func: T,
+  wait: number
+): (...args: Parameters<T>) => void {
+  let timeout: ReturnType<typeof setTimeout> | null = null;
+  
+  return function(...args: Parameters<T>) {
+    const later = () => {
+      timeout = null;
+      func(...args);
+    };
     
+    if (timeout !== null) {
+      clearTimeout(timeout);
+    }
+    timeout = setTimeout(later, wait);
+  };
+}
+
+/**
+ * Creates a throttled version of a function
+ * @param func The function to throttle
+ * @param limit Limit time in milliseconds
+ * @returns Throttled function
+ */
+export function throttle<T extends (...args: any[]) => void>(
+  func: T,
+  limit: number
+): (...args: Parameters<T>) => void {
+  let inThrottle = false;
+  let lastArgs: Parameters<T> | null = null;
+  
+  return function(...args: Parameters<T>) {
+    if (!inThrottle) {
+      func(...args);
+      inThrottle = true;
+      
+      setTimeout(() => {
+        inThrottle = false;
+        if (lastArgs) {
+          const currentArgs = lastArgs;
+          lastArgs = null;
+          func(...currentArgs);
+        }
+      }, limit);
+    } else {
+      lastArgs = args;
+    }
+  };
+}
+
+/**
+ * Measures execution time of a function
+ * @param fn Function to measure
+ * @param label Label for the measurement
+ * @returns The original function wrapped with timing logic
+ */
+export function measureTime<T extends (...args: any[]) => any>(
+  fn: T,
+  label: string
+): (...args: Parameters<T>) => ReturnType<T> {
+  return function(...args: Parameters<T>): ReturnType<T> {
     const start = performance.now();
     const result = fn(...args);
     const end = performance.now();
     
-    console.log(`[Performance] ${fnName} executed in ${(end - start).toFixed(2)}ms`);
+    console.log(`${label} took ${(end - start).toFixed(2)}ms`);
     
     return result;
   };
 }
 
 /**
- * Checks if an element is visible in the viewport
- * @param element The element to check
- * @returns Boolean indicating if the element is visible
+ * HOC that measures component render time
+ * @param Component React component to measure
+ * @param componentName Name for logging
+ * @returns Wrapped component with performance measuring
  */
-export const isElementInViewport = (element: HTMLElement): boolean => {
-  const rect = element.getBoundingClientRect();
+export function withPerformanceTracking<P extends object>(
+  Component: React.ComponentType<P>,
+  componentName: string
+): React.FC<P> {
+  const WrappedComponent: React.FC<P> = (props) => {
+    useComponentPerformance(componentName);
+    return <Component {...props} />;
+  };
   
-  return (
-    rect.top >= 0 &&
-    rect.left >= 0 &&
-    rect.bottom <= (window.innerHeight || document.documentElement.clientHeight) &&
-    rect.right <= (window.innerWidth || document.documentElement.clientWidth)
-  );
-};
-
-/**
- * Optimizes expensive calculations by caching the results
- * @param calculation Function to memoize
- * @returns Memoized function
- */
-export function memoize<T extends (...args: any[]) => any>(calculation: T): T {
-  const cache = new Map<string, ReturnType<T>>();
-  
-  return ((...args: Parameters<T>): ReturnType<T> => {
-    const key = JSON.stringify(args);
-    
-    if (cache.has(key)) {
-      return cache.get(key) as ReturnType<T>;
-    }
-    
-    const result = calculation(...args);
-    cache.set(key, result);
-    return result;
-  }) as T;
+  WrappedComponent.displayName = `WithPerformance(${componentName})`;
+  return WrappedComponent;
 }

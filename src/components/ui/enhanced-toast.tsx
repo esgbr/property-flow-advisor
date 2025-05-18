@@ -10,21 +10,26 @@ import {
   ToastViewport,
 } from "@/components/ui/toast";
 import { cn } from '@/lib/utils';
+import { useAccessibility } from '@/hooks/use-accessibility';
 
 interface EnhancedToastProps {
   highContrast?: boolean;
   largeText?: boolean;
 }
 
+/**
+ * Enhanced toast component with accessibility features
+ */
 export const EnhancedToast: React.FC<EnhancedToastProps> = ({
   highContrast = false,
   largeText = false,
 }) => {
   const { toasts } = useToast();
+  const { screenReader } = useAccessibility();
   
-  // Announce new toasts for screen reader users using aria-live
+  // Announce new toasts for screen reader users
   useEffect(() => {
-    if (toasts.length > 0) {
+    if (screenReader && toasts.length > 0) {
       // Get the most recent toast
       const latestToast = toasts[0];
       
@@ -34,9 +39,13 @@ export const EnhancedToast: React.FC<EnhancedToastProps> = ({
       announcementNode.setAttribute('class', 'sr-only');
       
       // Construct the announcement text
-      const message = latestToast.title 
-        ? `${latestToast.title}: ${latestToast.description || ''}`
-        : latestToast.description || '';
+      let message = '';
+      if (latestToast.title) {
+        message += String(latestToast.title) + ': ';
+      }
+      if (latestToast.description) {
+        message += String(latestToast.description);
+      }
       
       announcementNode.textContent = message;
       
@@ -48,7 +57,7 @@ export const EnhancedToast: React.FC<EnhancedToastProps> = ({
         document.body.removeChild(announcementNode);
       }, 3000);
     }
-  }, [toasts]);
+  }, [toasts, screenReader]);
 
   return (
     <ToastProvider>
@@ -63,11 +72,14 @@ export const EnhancedToast: React.FC<EnhancedToastProps> = ({
               props.className
             )}
             role={props.variant === 'destructive' ? 'alert' : 'status'}
+            aria-live={props.variant === 'destructive' ? 'assertive' : 'polite'}
           >
             <div className="grid gap-1">
               {title && <ToastTitle className={largeText ? 'text-lg' : ''}>{title}</ToastTitle>}
               {description && (
-                <ToastDescription className={largeText ? 'text-base' : ''}>{description}</ToastDescription>
+                <ToastDescription className={largeText ? 'text-base' : ''}>
+                  {typeof description === 'string' ? description : String(description)}
+                </ToastDescription>
               )}
             </div>
             {action}

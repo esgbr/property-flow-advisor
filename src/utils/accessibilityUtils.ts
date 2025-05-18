@@ -1,72 +1,137 @@
 
-/**
- * Enhanced screen reader announcement utility
- * Provides a more robust way to make announcements to screen readers
- */
+import { useCallback, useEffect } from 'react';
 
-// Maintain a singleton instance of the announcer element
-let announcer: HTMLElement | null = null;
-
-// Create a singleton announcer element
-const getAnnouncer = (assertive = false): HTMLElement => {
-  if (!announcer) {
-    announcer = document.createElement('div');
-    announcer.id = 'screen-reader-announcer';
-    announcer.setAttribute('aria-live', assertive ? 'assertive' : 'polite');
-    announcer.setAttribute('aria-atomic', 'true');
-    announcer.className = 'sr-only';
-    announcer.style.position = 'absolute';
-    announcer.style.width = '1px';
-    announcer.style.height = '1px';
-    announcer.style.padding = '0';
-    announcer.style.margin = '-1px';
-    announcer.style.overflow = 'hidden';
-    announcer.style.clip = 'rect(0, 0, 0, 0)';
-    announcer.style.whiteSpace = 'nowrap';
-    announcer.style.border = '0';
-    document.body.appendChild(announcer);
+// Helper to create screen reader announcement element
+const createAnnouncementElement = (id: string): HTMLElement => {
+  let element = document.getElementById(id);
+  
+  if (!element) {
+    element = document.createElement('div');
+    element.id = id;
+    element.setAttribute('aria-live', 'polite');
+    element.setAttribute('aria-atomic', 'true');
+    element.setAttribute('role', 'status');
+    element.className = 'sr-only';
+    document.body.appendChild(element);
   }
   
-  // Update the politeness setting if needed
-  announcer.setAttribute('aria-live', assertive ? 'assertive' : 'polite');
-  
-  return announcer;
-};
-
-// Clear the announcer after a delay to prevent multiple rapid announcements
-const clearAnnouncer = (delay = 3000): void => {
-  if (!announcer) return;
-  
-  setTimeout(() => {
-    if (announcer) {
-      announcer.textContent = '';
-    }
-  }, delay);
+  return element;
 };
 
 /**
- * Announce a message to screen readers
- * @param message - The message to be announced
- * @param assertive - Whether to use assertive (true) or polite (false) priority
- * @param delay - How long to wait before clearing the announcement
+ * Hook for screen reader announcements
+ * @returns Object with announcement functions
  */
-export const announce = (
-  message: string,
-  assertive: boolean = false,
-  delay = 3000
-): void => {
-  if (!message) return;
+export const useAnnouncement = () => {
+  const announce = useCallback((message: string, assertive = false) => {
+    if (!message) return;
+    
+    const id = assertive ? 'a11y-assertive-announcement' : 'a11y-polite-announcement';
+    const element = createAnnouncementElement(id);
+    
+    if (assertive) {
+      element.setAttribute('aria-live', 'assertive');
+    } else {
+      element.setAttribute('aria-live', 'polite');
+    }
+    
+    // Clear previous announcement
+    element.textContent = '';
+    
+    // Force browser to acknowledge the change
+    setTimeout(() => {
+      element.textContent = message;
+    }, 50);
+  }, []);
   
-  // Get or create the announcer element
-  const element = getAnnouncer(assertive);
+  // Assertive announcement - interrupts current speech
+  const announceAssertive = useCallback((message: string) => {
+    announce(message, true);
+  }, [announce]);
   
-  // Set message text
-  element.textContent = message;
+  // Ensure announcement elements are created on mount
+  useEffect(() => {
+    createAnnouncementElement('a11y-polite-announcement');
+    createAnnouncementElement('a11y-assertive-announcement');
+  }, []);
   
-  // Clear after delay
-  clearAnnouncer(delay);
+  return {
+    announce,
+    announceAssertive
+  };
 };
 
-export const useAnnouncement = () => {
-  return { announce };
+/**
+ * Creates accessible name from children text content
+ * @param node The React node to generate name from
+ * @returns Text string for accessibility name
+ */
+export const getAccessibleName = (node: React.ReactNode): string => {
+  // Handle string or number directly
+  if (typeof node === 'string' || typeof node === 'number') {
+    return String(node);
+  }
+  
+  // Handle arrays recursively
+  if (Array.isArray(node)) {
+    return node.map(getAccessibleName).filter(Boolean).join(' ');
+  }
+  
+  // Handle React elements
+  if (node && typeof node === 'object' && 'props' in node) {
+    // For elements with children, extract text from children
+    if (node.props.children) {
+      return getAccessibleName(node.props.children);
+    }
+    
+    // For elements with aria-label, use that
+    if (node.props['aria-label']) {
+      return node.props['aria-label'];
+    }
+  }
+  
+  return '';
 };
+
+/**
+ * Formats number as currency for screen readers
+ * @param value Numeric value
+ * @param currency Currency code
+ * @returns Formatted string for screen readers
+ */
+export const formatCurrencyForScreenReader = (
+  value: number,
+  currency = 'USD'
+): string => {
+  const formatter = new Intl.NumberFormat('en-US', {
+    style: 'currency',
+    currency,
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 2,
+  });
+  
+  const formatted = formatter.format(value);
+  // Convert $1,234.56 to "1234 dollars and 56 cents"
+  const parts = formatted.replace(/[^\d.]/g, ' ').trim().split('.');
+  
+  let result = '';
+  
+  if (currency === 'USD') {
+    result = `${parts[0].replace(/\s/g, '')} dollars`;
+    if (parts[1] && parseInt(parts[1]) > 0) {
+      result += ` and ${parts[1]} cents`;
+    }
+  } else if (currency === 'EUR') {
+    result = `${parts[0].replace(/\s/g, '')} euros`;
+    if (parts[1] && parseInt(parts[1]) > 0) {
+      result += ` and ${parts[1]} cents`;
+    }
+  } else {
+    // Generic format for other currencies
+    result = formatted.replace('$', 'dollars');
+  }
+  
+  return result;
+};
+
+export default useAnnouncement;

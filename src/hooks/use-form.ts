@@ -1,106 +1,165 @@
 
 import { useState, ChangeEvent, FormEvent } from 'react';
 
+export type ValidationRules<T> = {
+  [K in keyof T]?: {
+    required?: boolean;
+    minLength?: number;
+    maxLength?: number;
+    pattern?: RegExp;
+    custom?: (value: any) => boolean | string;
+  };
+};
+
+export type ValidationErrors<T> = {
+  [K in keyof T]?: string;
+};
+
 interface UseFormOptions<T> {
   initialValues: T;
+  validationRules?: ValidationRules<T>;
   onSubmit: (values: T) => void | Promise<void>;
-  validate?: (values: T) => Partial<Record<keyof T, string>>;
 }
 
 export function useForm<T extends Record<string, any>>({
   initialValues,
-  onSubmit,
-  validate
+  validationRules = {},
+  onSubmit
 }: UseFormOptions<T>) {
   const [values, setValues] = useState<T>(initialValues);
-  const [errors, setErrors] = useState<Partial<Record<keyof T, string>>>({});
-  const [touched, setTouched] = useState<Partial<Record<keyof T, boolean>>>({});
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  
-  const handleChange = (e: ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
+  const [errors, setErrors] = useState<ValidationErrors<T>>({});
+  const [touched, setTouched] = useState<Record<keyof T, boolean>>({} as Record<keyof T, boolean>);
+  const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
+  const [submitted, setSubmitted] = useState<boolean>(false);
+
+  // Handle input change
+  const handleChange = (e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value, type } = e.target;
-    const fieldName = name as keyof T;
     
-    setValues(prev => ({
+    setValues((prev) => ({
       ...prev,
-      [fieldName]: type === 'number' ? Number(value) : value
+      [name]: type === 'checkbox' 
+        ? (e.target as HTMLInputElement).checked 
+        : value
     }));
-    
-    // Clear error when field is changed
-    if (errors[fieldName]) {
-      setErrors(prev => ({
-        ...prev,
-        [fieldName]: undefined
-      }));
+
+    if (touched[name as keyof T]) {
+      validateField(name as keyof T, value);
     }
   };
-  
-  const handleBlur = (e: ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
-    const { name } = e.target;
-    const fieldName = name as keyof T;
+
+  // Mark field as touched on blur
+  const handleBlur = (e: React.FocusEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
+    const { name, value } = e.target;
     
-    setTouched(prev => ({
+    setTouched((prev) => ({
       ...prev,
-      [fieldName]: true
+      [name]: true
     }));
-    
-    // Validate field on blur if validation function is provided
-    if (validate) {
-      const validationErrors = validate(values);
-      if (validationErrors[fieldName]) {
-        setErrors(prev => ({
-          ...prev,
-          [fieldName]: validationErrors[fieldName]
-        }));
+
+    validateField(name as keyof T, value);
+  };
+
+  // Validate a single field
+  const validateField = (name: keyof T, value: any): boolean => {
+    const rules = validationRules[name];
+    let error = '';
+
+    if (!rules) return true;
+
+    if (rules.required && !value) {
+      error = 'This field is required';
+    } else if (rules.minLength && typeof value === 'string' && value.length < rules.minLength) {
+      error = `Must be at least ${rules.minLength} characters`;
+    } else if (rules.maxLength && typeof value === 'string' && value.length > rules.maxLength) {
+      error = `Cannot exceed ${rules.maxLength} characters`;
+    } else if (rules.pattern && !rules.pattern.test(value)) {
+      error = 'Value does not match the required pattern';
+    } else if (rules.custom) {
+      const customResult = rules.custom(value);
+      if (typeof customResult === 'string') {
+        error = customResult;
+      } else if (!customResult) {
+        error = 'Invalid value';
       }
     }
+
+    setErrors((prev) => ({
+      ...prev,
+      [name]: error || undefined
+    }));
+
+    return !error;
   };
-  
-  const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
+
+  // Validate all fields
+  const validateForm = (): boolean => {
+    let isValid = true;
+    const newErrors: ValidationErrors<T> = {};
+    const newTouched: Record<keyof T, boolean> = {} as Record<keyof T, boolean>;
+
+    // Mark all fields as touched
+    for (const key in values) {
+      newTouched[key as keyof T] = true;
+      const isFieldValid = validateField(key as keyof T, values[key]);
+      if (!isFieldValid) {
+        isValid = false;
+        newErrors[key as keyof T] = errors[key as keyof T];
+      }
+    }
+
+    setTouched(newTouched);
+    setErrors(newErrors);
+    
+    return isValid;
+  };
+
+  // Handle form submission
+  const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
-    
-    // Validate all fields before submission if validation function is provided
-    if (validate) {
-      const validationErrors = validate(values);
-      const hasErrors = Object.keys(validationErrors).length > 0;
-      
-      if (hasErrors) {
-        setErrors(validationErrors);
-        // Mark all fields as touched to show errors
-        const allTouched = Object.keys(values).reduce((acc, key) => {
-          acc[key as keyof T] = true;
-          return acc;
-        }, {} as Record<keyof T, boolean>);
-        
-        setTouched(allTouched);
-        return;
-      }
-    }
-    
+    setSubmitted(true);
+
+    const isValid = validateForm();
+    if (!isValid) return;
+
     setIsSubmitting(true);
-    
     try {
       await onSubmit(values);
     } finally {
       setIsSubmitting(false);
     }
   };
-  
-  const reset = () => {
+
+  // Reset form to initial state
+  const resetForm = () => {
     setValues(initialValues);
     setErrors({});
-    setTouched({});
+    setTouched({} as Record<keyof T, boolean>);
+    setSubmitted(false);
   };
-  
+
+  // Set form values programmatically
+  const setFormValues = (newValues: Partial<T>) => {
+    setValues(prev => ({
+      ...prev,
+      ...newValues
+    }));
+  };
+
   return {
     values,
     errors,
     touched,
     isSubmitting,
+    submitted,
     handleChange,
     handleBlur,
     handleSubmit,
-    reset,
-    setValues
+    resetForm,
+    setFormValues,
+    validateForm,
+    validateField
   };
 }
+
+export default useForm;

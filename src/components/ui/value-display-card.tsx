@@ -1,117 +1,111 @@
 
-import React from 'react';
+import React, { ReactNode } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { cn } from '@/lib/utils';
-import { ArrowDown, ArrowUp, Minus } from 'lucide-react';
+import { cva, type VariantProps } from 'class-variance-authority';
 
-interface ValueDisplayCardProps {
+const valueDisplayVariants = cva(
+  "font-semibold",
+  {
+    variants: {
+      size: {
+        default: "text-2xl",
+        sm: "text-xl",
+        lg: "text-3xl",
+        xl: "text-4xl",
+      },
+      trend: {
+        none: "",
+        positive: "text-emerald-500 dark:text-emerald-400",
+        negative: "text-red-500 dark:text-red-400",
+        neutral: "text-amber-500 dark:text-amber-400",
+      },
+    },
+    defaultVariants: {
+      size: "default",
+      trend: "none",
+    },
+  }
+);
+
+export interface ValueDisplayCardProps extends VariantProps<typeof valueDisplayVariants> {
   title: string;
-  value: number | string;
-  previousValue?: number | string;
+  value: string | number;
   description?: string;
-  format?: 'currency' | 'percentage' | 'number' | 'custom';
-  currency?: string;
-  showTrend?: boolean;
-  trendPeriod?: string;
+  icon?: ReactNode;
+  change?: {
+    value: string | number;
+    trend: "positive" | "negative" | "neutral";
+  };
+  footer?: ReactNode;
   className?: string;
-  customFormatter?: (value: number | string) => string;
-  colorCode?: boolean;
-  compact?: boolean;
+  onClick?: () => void;
 }
 
-export const ValueDisplayCard: React.FC<ValueDisplayCardProps> = ({
+/**
+ * A versatile card component for displaying values with optional trends
+ */
+const ValueDisplayCard = ({
   title,
   value,
-  previousValue,
   description,
-  format = 'number',
-  currency = '€',
-  showTrend = true,
-  trendPeriod = 'vs. previous period',
+  icon,
+  change,
+  footer,
   className,
-  customFormatter,
-  colorCode = true,
-  compact = false,
-}) => {
-  // Format the value based on the specified format
-  const formatValue = (val: number | string): string => {
-    if (customFormatter) {
-      return customFormatter(val);
-    }
-    
-    if (typeof val === 'string') {
-      return val;
-    }
-    
-    switch (format) {
-      case 'currency':
-        return `${currency}${val.toLocaleString('de-DE', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
-      case 'percentage':
-        return `${val.toLocaleString('de-DE', { minimumFractionDigits: 1, maximumFractionDigits: 1 })}%`;
-      default:
-        return val.toLocaleString('de-DE');
-    }
-  };
-
-  // Calculate trend and format it
-  const calculateTrend = (): { value: number; formatted: string; direction: 'up' | 'down' | 'neutral' } => {
-    if (previousValue === undefined || previousValue === null || value === previousValue) {
-      return { value: 0, formatted: '0%', direction: 'neutral' };
-    }
-    
-    const numValue = typeof value === 'string' ? parseFloat(value) : value;
-    const numPrevValue = typeof previousValue === 'string' ? parseFloat(previousValue) : previousValue;
-    
-    if (isNaN(numValue) || isNaN(numPrevValue) || numPrevValue === 0) {
-      return { value: 0, formatted: '0%', direction: 'neutral' };
-    }
-    
-    const trendValue = ((numValue - numPrevValue) / numPrevValue) * 100;
-    const direction = trendValue > 0 ? 'up' : trendValue < 0 ? 'down' : 'neutral';
-    
-    return {
-      value: trendValue,
-      formatted: `${Math.abs(trendValue).toFixed(1)}%`,
-      direction
-    };
-  };
-  
-  const trend = calculateTrend();
-  
-  const getTrendColor = (): string => {
-    if (!colorCode) return '';
-    
-    switch (trend.direction) {
-      case 'up':
-        return 'text-green-500';
-      case 'down':
-        return 'text-red-500';
-      default:
-        return 'text-gray-500';
-    }
-  };
-
+  size,
+  trend,
+  onClick,
+}: ValueDisplayCardProps) => {
   return (
-    <Card className={cn("overflow-hidden", className)}>
-      <CardHeader className={cn("pb-2", compact && "p-4")}>
-        <CardTitle className={cn("text-sm font-medium", compact && "text-xs")}>{title}</CardTitle>
-        {description && <CardDescription>{description}</CardDescription>}
+    <Card 
+      className={cn(
+        "overflow-hidden transition-all duration-200",
+        onClick && "cursor-pointer hover:border-primary/50",
+        className
+      )}
+      onClick={onClick}
+    >
+      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+        <div>
+          <CardTitle className="text-sm font-medium">{title}</CardTitle>
+          {description && (
+            <CardDescription>{description}</CardDescription>
+          )}
+        </div>
+        {icon && (
+          <div className="h-8 w-8 flex items-center justify-center rounded-full bg-muted">
+            {icon}
+          </div>
+        )}
       </CardHeader>
-      <CardContent className={cn(compact && "p-4 pt-0")}>
-        <div className="text-2xl font-bold">{formatValue(value)}</div>
-        
-        {showTrend && previousValue !== undefined && (
-          <div className="flex items-center mt-2 text-sm">
-            <span className={cn("flex items-center", getTrendColor())}>
-              {trend.direction === 'up' && <ArrowUp size={16} className="mr-1" />}
-              {trend.direction === 'down' && <ArrowDown size={16} className="mr-1" />}
-              {trend.direction === 'neutral' && <Minus size={16} className="mr-1" />}
-              {trend.formatted}
+      <CardContent>
+        <div className="flex items-baseline space-x-2">
+          <div className={cn(valueDisplayVariants({ size, trend: trend || (change?.trend || "none") }))}>
+            {value}
+          </div>
+          
+          {change && (
+            <span className={cn(
+              "text-xs font-medium",
+              change.trend === "positive" && "text-emerald-500 dark:text-emerald-400",
+              change.trend === "negative" && "text-red-500 dark:text-red-400",
+              change.trend === "neutral" && "text-amber-500 dark:text-amber-400",
+            )}>
+              {change.trend === "positive" && "+"}
+              {change.value}
             </span>
-            <span className="text-muted-foreground ml-1">{trendPeriod}</span>
+          )}
+        </div>
+        
+        {footer && (
+          <div className="mt-2 pt-2 border-t border-border text-xs text-muted-foreground">
+            {footer}
           </div>
         )}
       </CardContent>
     </Card>
   );
 };
+
+export { ValueDisplayCard, valueDisplayVariants };

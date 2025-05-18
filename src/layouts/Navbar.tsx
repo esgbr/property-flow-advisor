@@ -1,10 +1,11 @@
+
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { Menu, Building, PhoneCall } from 'lucide-react';
 import { ThemeToggle } from '@/components/ui/theme-toggle';
-import { EnhancedLanguageSwitcher } from '@/components/language/EnhancedLanguageSwitcher';
+import EnhancedLanguageSwitcher from '@/components/language/EnhancedLanguageSwitcher';
 import { useLanguage } from '@/contexts/LanguageContext';
 import UserMenu from '@/components/auth/UserMenu';
 import { useUserPreferences } from '@/contexts/UserPreferencesContext';
