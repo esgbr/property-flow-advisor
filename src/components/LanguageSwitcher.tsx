@@ -8,9 +8,10 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Languages } from 'lucide-react';
-import { useLanguage, SupportedLanguage } from '@/contexts/LanguageContext';
+import { useLanguage } from '@/contexts/LanguageContext';
 import { cn } from '@/lib/utils';
 import { useToast } from './ui/use-toast';
+import { LanguageCode } from '@/types/language';
 
 interface LanguageSwitcherProps {
   variant?: 'default' | 'outline' | 'small';
@@ -21,10 +22,10 @@ const LanguageSwitcher: React.FC<LanguageSwitcherProps> = ({
   variant = 'default', 
   className 
 }) => {
-  const { language, setLanguage, availableLanguages, t } = useLanguage();
+  const { language, setLanguage, availableLanguages, languageDetails, t } = useLanguage();
   const { toast } = useToast();
   
-  const handleLanguageChange = (newLanguage: SupportedLanguage) => {
+  const handleLanguageChange = (newLanguage: LanguageCode) => {
     if (newLanguage !== language) {
       setLanguage(newLanguage);
       toast({
@@ -35,11 +36,11 @@ const LanguageSwitcher: React.FC<LanguageSwitcherProps> = ({
     }
   };
   
-  // Filtere nur aktivierte Sprachen
+  // Filter only enabled languages
   const enabledLanguages = availableLanguages.filter(lang => lang.enabled);
   
-  // Aktuell ausgewählte Sprache finden
-  const currentLanguage = availableLanguages.find(lang => lang.code === language);
+  // Find currently selected language
+  const currentLanguage = languageDetails[language];
   
   if (variant === 'small') {
     return (

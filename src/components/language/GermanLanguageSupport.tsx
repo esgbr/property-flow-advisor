@@ -4,9 +4,10 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/components/ui/use-toast';
 import { GlobeIcon, Languages, Check } from 'lucide-react';
+import { LanguageCode } from '@/types/language';
 
 interface GermanLanguageSupportProps {
-  onLanguageSwitch?: (language: string) => void;
+  onLanguageSwitch?: (language: LanguageCode) => void;
 }
 
 const GermanLanguageSupport: React.FC<GermanLanguageSupportProps> = ({

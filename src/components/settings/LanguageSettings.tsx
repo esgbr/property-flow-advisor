@@ -4,14 +4,15 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Label } from '@/components/ui/label';
 import { useUserPreferences } from '@/contexts/UserPreferencesContext';
-import { useLanguage, SupportedLanguage } from '@/contexts/LanguageContext';
+import { useLanguage } from '@/contexts/LanguageContext';
+import { LanguageCode } from '@/types/language';
 
 const LanguageSettings = () => {
   const { preferences, updatePreferences } = useUserPreferences();
-  const { language, setLanguage, t } = useLanguage();
+  const { language, setLanguage, t, availableLanguages } = useLanguage();
   
   const handleLanguageChange = (value: string) => {
-    const selectedLanguage = value as SupportedLanguage;
+    const selectedLanguage = value as LanguageCode;
     setLanguage(selectedLanguage);
     updatePreferences({ language: selectedLanguage });
   };
@@ -28,25 +29,17 @@ const LanguageSettings = () => {
           onValueChange={handleLanguageChange}
           className="space-y-4"
         >
-          <div className="flex items-center space-x-2 rounded-md border p-3 cursor-pointer hover:bg-accent">
-            <RadioGroupItem value="en" id="language-en" />
-            <Label htmlFor="language-en" className="cursor-pointer w-full">
-              <div>
-                <div className="font-medium">English</div>
-                <div className="text-sm text-muted-foreground">English (United States)</div>
-              </div>
-            </Label>
-          </div>
-          
-          <div className="flex items-center space-x-2 rounded-md border p-3 cursor-pointer hover:bg-accent">
-            <RadioGroupItem value="de" id="language-de" />
-            <Label htmlFor="language-de" className="cursor-pointer w-full">
-              <div>
-                <div className="font-medium">Deutsch</div>
-                <div className="text-sm text-muted-foreground">German (Germany)</div>
-              </div>
-            </Label>
-          </div>
+          {availableLanguages.filter(lang => lang.enabled).map(lang => (
+            <div key={lang.code} className="flex items-center space-x-2 rounded-md border p-3 cursor-pointer hover:bg-accent">
+              <RadioGroupItem value={lang.code} id={`language-${lang.code}`} />
+              <Label htmlFor={`language-${lang.code}`} className="cursor-pointer w-full">
+                <div>
+                  <div className="font-medium">{lang.nativeName} {lang.flag}</div>
+                  <div className="text-sm text-muted-foreground">{lang.name}</div>
+                </div>
+              </Label>
+            </div>
+          ))}
         </RadioGroup>
       </CardContent>
     </Card>

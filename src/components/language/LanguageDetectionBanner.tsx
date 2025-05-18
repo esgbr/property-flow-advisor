@@ -1,19 +1,20 @@
 
 import React, { useEffect, useState } from 'react';
-import { useLanguage, SupportedLanguage } from '@/contexts/LanguageContext';
+import { useLanguage } from '@/contexts/LanguageContext';
 import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import { Globe, Check, X } from 'lucide-react';
 import { detectBrowserLanguage, isLanguageSupported } from '@/utils/languageDetector';
 import { useToast } from '@/components/ui/use-toast';
+import { LanguageCode } from '@/types/language';
 
 interface LanguageDetectionBannerProps {
   onDismiss?: () => void;
 }
 
 const LanguageDetectionBanner: React.FC<LanguageDetectionBannerProps> = ({ onDismiss }) => {
-  const { language, setLanguage, t, availableLanguages } = useLanguage();
-  const [detectedLanguage, setDetectedLanguage] = useState<SupportedLanguage | null>(null);
+  const { language, setLanguage, t, availableLanguages, languageDetails } = useLanguage();
+  const [detectedLanguage, setDetectedLanguage] = useState<LanguageCode | null>(null);
   const [shouldShowBanner, setShouldShowBanner] = useState(false);
   const { toast } = useToast();
   
@@ -36,10 +37,10 @@ const LanguageDetectionBanner: React.FC<LanguageDetectionBannerProps> = ({ onDis
       isLanguageSupported(browserLanguage, supportedLanguageCodes) && 
       browserLanguage !== language
     ) {
-      // Ensure browserLanguage is a valid SupportedLanguage type
-      if (browserLanguage === 'en' || browserLanguage === 'de' || browserLanguage === 'fr' || 
-          browserLanguage === 'es' || browserLanguage === 'it') {
-        const typedLanguage = browserLanguage as SupportedLanguage;
+      // Ensure browserLanguage is a valid LanguageCode type
+      if (browserLanguage === 'en' || browserLanguage === 'de' || browserLanguage === 'es' || 
+          browserLanguage === 'fr') {
+        const typedLanguage = browserLanguage as LanguageCode;
         setDetectedLanguage(typedLanguage);
         setShouldShowBanner(true);
       }
@@ -76,7 +77,7 @@ const LanguageDetectionBanner: React.FC<LanguageDetectionBannerProps> = ({ onDis
   }
   
   // Find display name for detected language
-  const detectedLanguageInfo = availableLanguages.find(lang => lang.code === detectedLanguage);
+  const detectedLanguageInfo = languageDetails[detectedLanguage];
   
   return (
     <Alert 

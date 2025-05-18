@@ -5,25 +5,15 @@ import enTranslations from '@/locales/en.json';
 import deTranslations from '@/locales/de.json';
 import esTranslations from '@/locales/es.json';
 import frTranslations from '@/locales/fr.json';
+import { LanguageCode } from '@/types/language';
 
 // Define the allowed languages
-export type SupportedLanguage = {
-  code: "de" | "en" | "es" | "fr";
+export interface SupportedLanguage {
+  code: LanguageCode;
   name: string;
   nativeName: string;
   flag: string;
   enabled: boolean;
-};
-
-export type LanguageCode = "de" | "en" | "es" | "fr";
-
-interface LanguageContextProps {
-  language: LanguageCode;
-  setLanguage: (language: LanguageCode) => void;
-  t: (key: string, params?: Record<string, string>) => string;
-  translations: Record<string, Record<string, string>>;
-  availableLanguages: SupportedLanguage[];
-  languageDetails: Record<LanguageCode, SupportedLanguage>;
 }
 
 // Define language details
@@ -69,6 +59,15 @@ const translations: Record<string, Record<string, string>> = {
   fr: frTranslations
 };
 
+interface LanguageContextProps {
+  language: LanguageCode;
+  setLanguage: (language: LanguageCode) => void;
+  t: (key: string, params?: Record<string, string>) => string;
+  translations: Record<string, Record<string, string>>;
+  availableLanguages: SupportedLanguage[];
+  languageDetails: Record<LanguageCode, SupportedLanguage>;
+}
+
 // Create the context
 const LanguageContext = createContext<LanguageContextProps>({
   language: 'en',
@@ -87,7 +86,7 @@ export const LanguageProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   // Initialize language from user preferences
   useEffect(() => {
     const browserLanguage = navigator.language.split('-')[0].toLowerCase() as LanguageCode;
-    const preferredLanguage = preferences.language as LanguageCode || browserLanguage;
+    const preferredLanguage = (preferences.language as LanguageCode) || browserLanguage;
     
     // Check if preferred language is supported, default to English if not
     const supportedLanguage = availableLanguages.find(lang => lang.code === preferredLanguage && lang.enabled) ? 
