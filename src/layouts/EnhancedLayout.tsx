@@ -1,37 +1,39 @@
-import React, { useState } from 'react';
+
+import React, { useState, useEffect } from 'react';
 import { useUserPreferences } from '@/contexts/UserPreferencesContext';
 
 const EnhancedLayout: React.FC = () => {
   const { preferences, updatePreferences } = useUserPreferences();
   const [sidebarPrefs, setSidebarPrefs] = useState({
-    collapsed: preferences.sidebarPreferences?.collapsed || false,
-    favorites: preferences.sidebarPreferences?.favorites || []
+    collapsed: preferences?.sidebarPreferences?.collapsed || false,
+    favorites: preferences?.sidebarPreferences?.favorites || []
   });
+
+  useEffect(() => {
+    // Sync state with preferences when they change
+    if (preferences?.sidebarPreferences) {
+      setSidebarPrefs({
+        collapsed: preferences.sidebarPreferences.collapsed || false,
+        favorites: preferences.sidebarPreferences.favorites || []
+      });
+    }
+  }, [preferences]);
 
   const updateSidebarPreference = (collapsed: boolean) => {
     const updatedPrefs = {
-      ...preferences,
-      sidebarPreferences: {
-        collapsed,
-        favorites: preferences.sidebarPreferences?.favorites || []
-      }
+      collapsed,
+      favorites: sidebarPrefs.favorites
     };
     
     updatePreferences({
-      sidebarPreferences: {
-        collapsed,
-        favorites: preferences.sidebarPreferences?.favorites || []
-      }
+      sidebarPreferences: updatedPrefs
     });
     
-    setSidebarPrefs({
-      collapsed,
-      favorites: preferences.sidebarPreferences?.favorites || []
-    });
+    setSidebarPrefs(updatedPrefs);
   };
 
   return (
-    <div>
+    <div className="enhanced-layout">
       {/* Layout content */}
     </div>
   );

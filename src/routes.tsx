@@ -14,31 +14,50 @@ import AuthPage from './pages/AuthPage';
 const AppRoutes: React.FC = () => {
   return (
     <Routes>
-      <Route path="/" element={
-        <EnhancedMainLayout>
-          <DashboardPage />
-        </EnhancedMainLayout>
-      } />
-      <Route path="/settings" element={
-        <EnhancedMainLayout>
-          <SettingsPage />
-        </EnhancedMainLayout>
-      } />
-      <Route path="/market-analysis" element={
-        <EnhancedMainLayout>
-          <MarketAnalysisPage />
-        </EnhancedMainLayout>
-      } />
-      <Route path="/investor-tools" element={
-        <EnhancedMainLayout>
-          <InvestorToolsPage />
-        </EnhancedMainLayout>
-      } />
-      <Route path="/auth" element={
-        <EnhancedMainLayout>
-          <AuthPage />
-        </EnhancedMainLayout>
-      } />
+      <Route 
+        path="/" 
+        element={
+          <EnhancedMainLayout>
+            <DashboardPage />
+          </EnhancedMainLayout>
+        } 
+      />
+      
+      <Route 
+        path="/settings" 
+        element={
+          <EnhancedMainLayout>
+            <SettingsPage />
+          </EnhancedMainLayout>
+        } 
+      />
+      
+      <Route 
+        path="/market-analysis" 
+        element={
+          <EnhancedMainLayout>
+            <MarketAnalysisPage />
+          </EnhancedMainLayout>
+        } 
+      />
+      
+      <Route 
+        path="/investor-tools" 
+        element={
+          <EnhancedMainLayout>
+            <InvestorToolsPage />
+          </EnhancedMainLayout>
+        } 
+      />
+      
+      <Route 
+        path="/auth" 
+        element={
+          <EnhancedMainLayout>
+            <AuthPage />
+          </EnhancedMainLayout>
+        } 
+      />
     </Routes>
   );
 };

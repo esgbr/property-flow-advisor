@@ -4,7 +4,7 @@ import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { Menu, Building, PhoneCall } from 'lucide-react';
 import { ThemeToggle } from '@/components/ui/theme-toggle';
-import LanguageSwitcher from '@/components/LanguageSwitcher';
+import { EnhancedLanguageSwitcher } from '@/components/language/EnhancedLanguageSwitcher';
 import { useLanguage } from '@/contexts/LanguageContext';
 import UserMenu from '@/components/auth/UserMenu';
 import { useUserPreferences } from '@/contexts/UserPreferencesContext';
@@ -35,20 +35,23 @@ const Navbar: React.FC<NavbarProps> = ({ className, showMobileMenu = true }) => 
   const { t } = useLanguage();
   const { isAuthenticated } = useUserPreferences();
   const location = useLocation();
+  const isCrmActive = location.pathname.startsWith('/crm');
+
+  const handleToggleSidebar = () => {
+    const sidebar = document.querySelector('[data-sidebar]');
+    if (sidebar) sidebar.classList.toggle('sidebar-open');
+  };
 
   return (
-    <header className={cn('border-b flex items-center justify-between px-4 h-14', className)} role="banner">
+    <header className={cn('border-b flex items-center justify-between px-4 h-14 sticky top-0 z-50 bg-background', className)} role="banner">
       <div className="flex items-center">
         {showMobileMenu && (
           <Button 
             variant="ghost" 
             size="icon" 
-            onClick={() => {
-              const sidebar = document.querySelector('[data-sidebar]');
-              if (sidebar) sidebar.classList.toggle('sidebar-open');
-            }}
+            onClick={handleToggleSidebar}
             className="md:hidden"
-            aria-label={t('toggleMenu')}
+            aria-label={t ? t('toggleMenu') : 'Toggle Menu'}
           >
             <Menu className="h-5 w-5" />
           </Button>
@@ -56,17 +59,17 @@ const Navbar: React.FC<NavbarProps> = ({ className, showMobileMenu = true }) => 
         <Link 
           to={isAuthenticated ? "/dashboard" : "/"} 
           className="flex items-center mr-4 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 rounded-md"
-          aria-label={t('home')}
+          aria-label={t ? t('home') : 'Home'}
         >
           <Building className="h-6 w-6 text-primary mr-2" />
           <span className="font-bold hidden md:block">PropertyFlow</span>
         </Link>
         {/* Always show CRM menu button and keep styling consistent */}
-        <CRMMenuButton />
+        <CRMNavButton active={isCrmActive} label={t ? t('crm') : 'CRM'} />
       </div>
 
       <div className="flex items-center space-x-2">
-        <LanguageSwitcher />
+        <EnhancedLanguageSwitcher />
         <ThemeToggle />
         <UserMenu />
       </div>

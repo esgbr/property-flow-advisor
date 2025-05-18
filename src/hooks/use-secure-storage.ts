@@ -1,115 +1,62 @@
 
-import { useCallback, useState, useEffect } from 'react';
-import { secureStorage } from '@/utils/secureStorage';
+import { useState, useCallback, useEffect } from 'react';
+import secureStorage from '@/utils/secureStorage';
 
-type StoredValue<T> = T | null;
-
-interface SecureStorageHook<T> {
-  value: StoredValue<T>;
-  setValue: (value: T) => void;
-  removeValue: () => void;
-  getLatestValue: () => StoredValue<T>;
-  isLoading: boolean;
-  error: Error | null;
-  reload: () => void;
-}
-
-/**
- * Hook for securely storing and retrieving values from secure storage
- * 
- * @param key Storage key
- * @param initialValue Default value if not found in storage
- * @returns Object with storage operations and state
- */
-export function useSecureStorage<T>(key: string, initialValue: T | null = null): SecureStorageHook<T> {
-  const [value, setValue] = useState<StoredValue<T>>(initialValue);
-  const [isLoading, setIsLoading] = useState<boolean>(true);
-  const [error, setError] = useState<Error | null>(null);
-  
-  // Load value on hook initialization
-  useEffect(() => {
-    loadValue();
-  }, [key]);
-  
-  // Get value from secure storage with improved error handling
-  const getStoredValue = useCallback((): StoredValue<T> => {
+export function useSecureStorage<T>(key: string, initialValue: T) {
+  // State to store our value
+  const [storedValue, setStoredValue] = useState<T>(() => {
     try {
-      const storedValue = secureStorage.getItem(key, initialValue);
+      // Get from secure storage by key
+      const item = secureStorage.getItem(key);
       
-      // Ensure the stored value is of the correct type
-      if (storedValue !== null && 
-          typeof initialValue === 'object' && 
-          typeof storedValue === 'object') {
-        // For objects, verify we have expected properties
-        // This is a simple validation which could be expanded based on needs
-        return storedValue as T;
-      }
-      
-      return storedValue as T;
-    } catch (err) {
-      console.error('Error retrieving secure storage value:', err);
-      setError(err instanceof Error ? err : new Error('Failed to get secure storage item'));
+      // Parse stored json or return initialValue
+      return item !== null ? item : initialValue;
+    } catch (error) {
+      // If error, return initialValue
+      console.error('Error reading from secure storage:', error);
       return initialValue;
     }
-  }, [key, initialValue]);
+  });
   
-  // Load value from storage with debouncing
-  const loadValue = useCallback(() => {
-    setIsLoading(true);
-    
-    // Use setTimeout to avoid blocking the main thread
-    setTimeout(() => {
-      try {
-        const storedValue = getStoredValue();
-        setValue(storedValue);
-        setError(null);
-      } catch (err) {
-        console.error('Error in secure storage:', err);
-        setError(err instanceof Error ? err : new Error('Failed to load secure storage'));
-      } finally {
-        setIsLoading(false);
-      }
-    }, 0);
-  }, [getStoredValue]);
-  
-  // Set value to secure storage with improved validation
-  const setStoredValue = useCallback((newValue: T): void => {
+  // Return a wrapped version of useState's setter function that
+  // persists the new value to secure storage
+  const setValue = useCallback((value: T | ((val: T) => T)) => {
     try {
-      // Basic validation of the value
-      if (newValue === undefined) {
-        throw new Error('Cannot store undefined value in secure storage');
-      }
+      // Allow value to be a function so we have the same API as useState
+      const valueToStore =
+        value instanceof Function ? value(storedValue) : value;
+        
+      // Save state
+      setStoredValue(valueToStore);
       
-      secureStorage.setItem(key, newValue);
-      setValue(newValue);
-      setError(null);
-    } catch (err) {
-      console.error('Error setting secure storage value:', err);
-      setError(err instanceof Error ? err : new Error('Failed to set secure storage item'));
+      // Save to secure storage
+      secureStorage.setItem(key, valueToStore);
+    } catch (error) {
+      // A more advanced implementation would handle the error case
+      console.error('Error writing to secure storage:', error);
     }
-  }, [key]);
-  
-  // Remove value from secure storage
-  const removeStoredValue = useCallback((): void => {
-    try {
-      secureStorage.removeItem(key);
-      setValue(initialValue);
-      setError(null);
-    } catch (err) {
-      console.error('Error removing secure storage value:', err);
-      setError(err instanceof Error ? err : new Error('Failed to remove secure storage item'));
-    }
-  }, [key, initialValue]);
-  
-  return {
-    value,
-    setValue: setStoredValue,
-    removeValue: removeStoredValue,
-    getLatestValue: getStoredValue,
-    isLoading,
-    error,
-    reload: loadValue
-  };
-}
+  }, [key, storedValue]);
 
-export default useSecureStorage;
+  // Listen for changes to this storage value from other tabs/windows
+  useEffect(() => {
+    const handleStorageChange = (e: StorageEvent) => {
+      if (e.key === `secure_${key}`) {
+        try {
+          const newValue = secureStorage.getItem(key);
+          if (newValue !== null) {
+            setStoredValue(newValue as T);
+          }
+        } catch (error) {
+          console.error('Error reading updated value from secure storage:', error);
+        }
+      }
+    };
+    
+    window.addEventListener('storage', handleStorageChange);
+    return () => {
+      window.removeEventListener('storage', handleStorageChange);
+    };
+  }, [key]);
+
+  return [storedValue, setValue] as const;
+}

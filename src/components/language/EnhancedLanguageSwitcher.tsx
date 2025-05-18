@@ -10,7 +10,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { useToast } from '@/components/ui/use-toast';
-import { LanguageCode } from '@/types/language';
+import type { LanguageCode } from '@/types/language';
 
 interface EnhancedLanguageSwitcherProps {
   variant?: 'default' | 'outline' | 'ghost';
@@ -25,13 +25,15 @@ const EnhancedLanguageSwitcher: React.FC<EnhancedLanguageSwitcherProps> = ({
   const { toast } = useToast();
 
   const handleLanguageChange = (newLanguage: LanguageCode) => {
-    setLanguage(newLanguage);
-    
-    toast({
-      title: t('languageSettings'),
-      description: `${languageDetails[newLanguage].name} ${t('selected')}`,
-      duration: 2000,
-    });
+    if (setLanguage) {
+      setLanguage(newLanguage);
+      
+      toast({
+        title: t ? t('languageSettings') : 'Language Settings',
+        description: `${languageDetails[newLanguage]?.name || newLanguage} ${t ? t('selected') : 'selected'}`,
+        duration: 2000,
+      });
+    }
   };
 
   return (
@@ -41,14 +43,16 @@ const EnhancedLanguageSwitcher: React.FC<EnhancedLanguageSwitcherProps> = ({
           variant={variant} 
           size={size} 
           className="w-9 h-9 p-0 rounded-full"
-          aria-label={t('changeLanguage')}
+          aria-label={t ? t('changeLanguage') : 'Change Language'}
         >
           <Globe className="h-4 w-4" />
-          <span className="sr-only">{t('changeLanguage')}</span>
+          <span className="sr-only">{t ? t('changeLanguage') : 'Change Language'}</span>
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end">
-        {availableLanguages.map((lang) => {
+        {availableLanguages && availableLanguages.map((lang) => {
+          if (!lang?.code) return null;
+          
           return (
             <DropdownMenuItem
               key={lang.code}
