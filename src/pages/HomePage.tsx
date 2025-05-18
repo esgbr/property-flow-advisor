@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -83,6 +82,26 @@ const HomePage: React.FC = () => {
               {t('createAccount')}
             </Button>
           )}
+        </div>
+        
+        {/* New Investment Tools Navigation */}
+        <div className="flex flex-wrap justify-center gap-4 mt-4">
+          <Button 
+            variant="outline" 
+            size="lg" 
+            onClick={() => navigate('/market-analysis')}
+          >
+            <BarChart3 className="mr-2 h-4 w-4" />
+            {language === 'de' ? 'Marktanalyse' : 'Market Analysis'}
+          </Button>
+          <Button 
+            variant="outline" 
+            size="lg" 
+            onClick={() => navigate('/investor-tools')}
+          >
+            <Calculator className="mr-2 h-4 w-4" />
+            {language === 'de' ? 'Anlegertools' : 'Investor Tools'}
+          </Button>
         </div>
       </div>
       

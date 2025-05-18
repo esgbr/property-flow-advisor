@@ -10,6 +10,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { useToast } from '@/components/ui/use-toast';
+import { LanguageCode } from '@/types/language';
 
 interface EnhancedLanguageSwitcherProps {
   variant?: 'default' | 'outline' | 'ghost';
@@ -23,12 +24,12 @@ const EnhancedLanguageSwitcher: React.FC<EnhancedLanguageSwitcherProps> = ({
   const { language, setLanguage, availableLanguages, languageDetails, t } = useLanguage();
   const { toast } = useToast();
 
-  const handleLanguageChange = (newLanguage: string) => {
-    setLanguage(newLanguage as any);
+  const handleLanguageChange = (newLanguage: LanguageCode) => {
+    setLanguage(newLanguage);
     
     toast({
       title: t('languageSettings'),
-      description: `${languageDetails[newLanguage as keyof typeof languageDetails].name} ${t('selected')}`,
+      description: `${languageDetails[newLanguage].name} ${t('selected')}`,
       duration: 2000,
     });
   };
@@ -47,19 +48,18 @@ const EnhancedLanguageSwitcher: React.FC<EnhancedLanguageSwitcherProps> = ({
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end">
-        {availableLanguages.map((langCode) => {
-          const langInfo = languageDetails[langCode];
+        {availableLanguages.map((lang) => {
           return (
             <DropdownMenuItem
-              key={langCode}
-              onClick={() => handleLanguageChange(langCode)}
-              className={`flex items-center justify-between ${language === langCode ? 'bg-muted' : ''}`}
+              key={lang.code}
+              onClick={() => handleLanguageChange(lang.code as LanguageCode)}
+              className={`flex items-center justify-between ${language === lang.code ? 'bg-muted' : ''}`}
             >
               <span className="flex items-center">
-                <span className="mr-2" aria-hidden="true">{langInfo.flag}</span>
-                <span>{langInfo.nativeName}</span>
+                <span className="mr-2" aria-hidden="true">{lang.flag}</span>
+                <span>{lang.nativeName}</span>
               </span>
-              {language === langCode && <Check className="h-4 w-4 ml-2" />}
+              {language === lang.code && <Check className="h-4 w-4 ml-2" />}
             </DropdownMenuItem>
           );
         })}
