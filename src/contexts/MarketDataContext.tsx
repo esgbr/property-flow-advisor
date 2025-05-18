@@ -11,6 +11,10 @@ interface PriceData {
   comparison?: number;
 }
 
+interface MarketData {
+  trends?: any[];
+}
+
 interface MarketDataContextProps {
   priceData: PriceData[];
   rentData: PriceData[];
@@ -22,6 +26,7 @@ interface MarketDataContextProps {
   selectedTimeRange: '1y' | '3y' | '5y' | 'max';
   selectedMetric: 'price' | 'rent' | 'yield';
   comparisonMarket: string | null;
+  marketData: MarketData;
   setSelectedTimeRange: (range: '1y' | '3y' | '5y' | 'max') => void;
   setSelectedMetric: (metric: 'price' | 'rent' | 'yield') => void;
   setComparisonMarket: (market: string | null) => void;
@@ -34,7 +39,12 @@ interface MarketDataContextProps {
 
 const MarketDataContext = createContext<MarketDataContextProps | undefined>(undefined);
 
-export const MarketDataProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
+interface MarketDataProviderProps {
+  children: ReactNode;
+  initialData?: MarketData;
+}
+
+export const MarketDataProvider: React.FC<MarketDataProviderProps> = ({ children, initialData }) => {
   useComponentPerformance('MarketDataProvider');
   const { t } = useLanguage();
   const [selectedTimeRange, setSelectedTimeRange] = useState<'1y' | '3y' | '5y' | 'max'>('1y');
@@ -93,6 +103,26 @@ export const MarketDataProvider: React.FC<{ children: ReactNode }> = ({ children
     { id: 'france', name: 'France' },
     { id: 'spain', name: 'Spain' },
   ], []);
+
+  // Add market data with defaults and any initial data provided
+  const marketData = useMemo(() => {
+    const defaultMarketData: MarketData = {
+      trends: [
+        { name: '2018', german: 100, european: 100, global: 100 },
+        { name: '2019', german: 106, european: 104, global: 105 },
+        { name: '2020', german: 110, european: 105, global: 104 },
+        { name: '2021', german: 118, european: 112, global: 110 },
+        { name: '2022', german: 124, european: 115, global: 112 },
+        { name: '2023', german: 128, european: 119, global: 116 },
+        { name: '2024', german: 132, european: 122, global: 119 }
+      ]
+    };
+
+    return {
+      ...defaultMarketData,
+      ...initialData
+    };
+  }, [initialData]);
 
   const getActiveData = () => {
     switch(selectedMetric) {
@@ -164,6 +194,7 @@ export const MarketDataProvider: React.FC<{ children: ReactNode }> = ({ children
     selectedTimeRange,
     selectedMetric,
     comparisonMarket,
+    marketData,
     setSelectedTimeRange,
     setSelectedMetric,
     setComparisonMarket,

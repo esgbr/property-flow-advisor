@@ -8,7 +8,7 @@ const MarketTrendsChart: React.FC = () => {
   const { language } = useLanguage();
   const { marketData } = useMarketData();
 
-  // Sample market data (would ideally come from the MarketDataContext)
+  // Use market data from context
   const data = marketData?.trends || [
     { name: '2018', german: 100, european: 100, global: 100 },
     { name: '2019', german: 106, european: 104, global: 105 },
