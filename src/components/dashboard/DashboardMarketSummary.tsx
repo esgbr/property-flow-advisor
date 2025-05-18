@@ -4,13 +4,14 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { useLanguage } from '@/contexts/LanguageContext';
 import PortfolioAllocationChart from '@/components/charts/PortfolioAllocationChart';
 import MarketTrendsChart from '@/components/charts/MarketTrendsChart';
-import { MarketDataProvider } from '@/contexts/MarketDataContext';
+import MarketProviderWrapper from '@/components/market/MarketProviderWrapper';
 
 /**
  * Market summary — Unified design, visual polish, responsive layout.
  */
 const DashboardMarketSummary: React.FC = () => {
   const { t } = useLanguage();
+  
   return (
     <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 animate-fade-in">
       <Card className="col-span-1 lg:col-span-2">
@@ -19,9 +20,9 @@ const DashboardMarketSummary: React.FC = () => {
           <CardDescription>{t('marketTrendsDescription')}</CardDescription>
         </CardHeader>
         <CardContent className="h-80">
-          <MarketDataProvider>
+          <MarketProviderWrapper>
             <MarketTrendsChart />
-          </MarketDataProvider>
+          </MarketProviderWrapper>
         </CardContent>
       </Card>
       <Card>
@@ -35,4 +36,5 @@ const DashboardMarketSummary: React.FC = () => {
     </div>
   );
 };
+
 export default DashboardMarketSummary;

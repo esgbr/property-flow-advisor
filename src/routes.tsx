@@ -6,7 +6,11 @@ import SettingsPage from './pages/SettingsPage';
 import EnhancedMainLayout from './layouts/EnhancedMainLayout';
 import MarketAnalysisPage from './pages/MarketAnalysisPage';
 import InvestorToolsPage from './pages/InvestorToolsPage';
+import AuthPage from './pages/AuthPage';
 
+/**
+ * Main application routes
+ */
 const AppRoutes: React.FC = () => {
   return (
     <Routes>
@@ -28,6 +32,11 @@ const AppRoutes: React.FC = () => {
       <Route path="/investor-tools" element={
         <EnhancedMainLayout>
           <InvestorToolsPage />
+        </EnhancedMainLayout>
+      } />
+      <Route path="/auth" element={
+        <EnhancedMainLayout>
+          <AuthPage />
         </EnhancedMainLayout>
       } />
     </Routes>

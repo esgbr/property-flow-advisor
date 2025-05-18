@@ -2,13 +2,14 @@
 import React from 'react';
 import { ResponsiveContainer, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend } from 'recharts';
 import { useLanguage } from '@/contexts/LanguageContext';
-import { MarketDataProvider } from '@/contexts/MarketDataContext';
+import { useMarketData } from '@/contexts/MarketDataContext';
 
-const MarketTrendsChartContent: React.FC = () => {
+const MarketTrendsChart: React.FC = () => {
   const { language } = useLanguage();
+  const { marketData } = useMarketData();
 
-  // Sample market data
-  const data = [
+  // Sample market data (would ideally come from the MarketDataContext)
+  const data = marketData?.trends || [
     { name: '2018', german: 100, european: 100, global: 100 },
     { name: '2019', german: 106, european: 104, global: 105 },
     { name: '2020', german: 110, european: 105, global: 104 },
@@ -58,15 +59,6 @@ const MarketTrendsChartContent: React.FC = () => {
         </LineChart>
       </ResponsiveContainer>
     </div>
-  );
-};
-
-// Create a wrapper component that provides the MarketDataProvider
-const MarketTrendsChart: React.FC = () => {
-  return (
-    <MarketDataProvider>
-      <MarketTrendsChartContent />
-    </MarketDataProvider>
   );
 };
 

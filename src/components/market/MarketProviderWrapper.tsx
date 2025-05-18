@@ -4,11 +4,19 @@ import { MarketDataProvider } from '@/contexts/MarketDataContext';
 
 interface MarketProviderWrapperProps {
   children: React.ReactNode;
+  initialMarketData?: Record<string, any>;
 }
 
-const MarketProviderWrapper: React.FC<MarketProviderWrapperProps> = ({ children }) => {
+/**
+ * Wrapper component for MarketDataProvider
+ * Makes it easy to provide market data context to components
+ */
+const MarketProviderWrapper: React.FC<MarketProviderWrapperProps> = ({ 
+  children,
+  initialMarketData
+}) => {
   return (
-    <MarketDataProvider>
+    <MarketDataProvider initialData={initialMarketData}>
       {children}
     </MarketDataProvider>
   );
