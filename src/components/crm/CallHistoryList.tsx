@@ -35,12 +35,12 @@ const getCallIcon = (call: CallRecordSimple) => {
   }
 };
 
-const getSentimentColor = (sentiment?: string): string => {
+const getSentimentVariant = (sentiment?: string): "success" | "destructive" | "info" => {
   switch (sentiment) {
-    case 'positive': return 'bg-green-500 text-white';
-    case 'negative': return 'bg-red-500 text-white';
+    case 'positive': return 'success';
+    case 'negative': return 'destructive';
     case 'neutral': 
-    default: return 'bg-blue-500 text-white';
+    default: return 'info';
   }
 };
 
@@ -80,7 +80,7 @@ const CallHistoryList: React.FC<CallHistoryListProps> = ({ calls, language, onAn
                 </Button>
               )}
               {call.aiSummary && (
-                <Badge variant="outline" className={getSentimentColor(call.aiSentiment)}>
+                <Badge variant={getSentimentVariant(call.aiSentiment)}>
                   {language === 'de' ? 'Analysiert' : 'Analyzed'}
                 </Badge>
               )}

@@ -100,14 +100,14 @@ const ContactManager: React.FC<ContactManagerProps> = ({ onInitiateCall }) => {
     }
   };
 
-  const getBadgeColor = (type: ContactType): string => {
+  const getBadgeVariant = (type: ContactType): string => {
     switch (type) {
-      case 'realtor': return 'bg-blue-500';
-      case 'handyman': return 'bg-amber-500';
-      case 'property_manager': return 'bg-green-500';
-      case 'inspector': return 'bg-purple-500';
-      case 'tenant': return 'bg-teal-500';
-      default: return 'bg-gray-500';
+      case 'realtor': return 'badge-primary';
+      case 'handyman': return 'badge-secondary';
+      case 'property_manager': return 'badge-accent';
+      case 'inspector': return 'status-info';
+      case 'tenant': return 'status-success';
+      default: return 'bg-muted text-muted-foreground';
     }
   };
 
@@ -210,7 +210,7 @@ const ContactManager: React.FC<ContactManagerProps> = ({ onInitiateCall }) => {
                     <div className="flex items-center space-x-2">
                       <Badge 
                         variant="outline" 
-                        className={`${getBadgeColor(contact.type)} text-white`}
+                        className={getBadgeVariant(contact.type)}
                       >
                         {getTypeLabel(contact.type)}
                       </Badge>

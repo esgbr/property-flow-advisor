@@ -136,8 +136,9 @@
 }
 
 @layer components {
+  /* Design System: Enhanced UI Components */
   .hero-gradient {
-    @apply bg-gradient-to-r from-estate-primary to-estate-secondary;
+    @apply bg-gradient-to-r from-primary to-primary/80;
   }
   
   .card-hover {
@@ -146,12 +147,12 @@
   
   /* Glassmorphism effect for cards */
   .glass-card {
-    @apply bg-white/10 dark:bg-black/20 backdrop-blur-lg border border-white/20 dark:border-white/10 shadow-lg;
+    @apply bg-card/50 backdrop-blur-lg border border-border shadow-lg;
   }
   
-  /* Better nav links */
+  /* Enhanced nav links */
   .nav-link {
-    @apply relative px-2 py-1 transition-colors;
+    @apply relative px-3 py-2 transition-all duration-200;
   }
   
   .nav-link::after {
@@ -163,35 +164,78 @@
     @apply scale-x-100 origin-bottom-left;
   }
   
-  /* Form inputs with consistent styling */
+  /* Consistent form styling */
   .form-input {
-    @apply w-full px-3 py-2 border border-input rounded-md focus:outline-none focus:ring-2 focus:ring-primary;
+    @apply w-full px-3 py-2 border border-input bg-background rounded-md focus:outline-none focus:ring-2 focus:ring-ring focus:border-primary transition-all;
   }
   
-  /* Button variants */
+  /* Enhanced button variants using semantic tokens */
   .btn-primary {
-    @apply bg-primary text-primary-foreground hover:bg-primary/90 px-4 py-2 rounded-md transition-colors;
+    @apply bg-primary text-primary-foreground hover:bg-primary/90 px-4 py-2 rounded-md transition-all shadow-sm hover:shadow;
   }
   
   .btn-secondary {
-    @apply bg-secondary text-secondary-foreground hover:bg-secondary/90 px-4 py-2 rounded-md transition-colors;
+    @apply bg-secondary text-secondary-foreground hover:bg-secondary/80 px-4 py-2 rounded-md transition-all;
   }
   
   .btn-ghost {
-    @apply text-foreground hover:bg-muted px-4 py-2 rounded-md transition-colors;
+    @apply text-foreground hover:bg-accent hover:text-accent-foreground px-4 py-2 rounded-md transition-all;
   }
   
   .btn-outline {
-    @apply border border-input bg-background hover:bg-accent hover:text-accent-foreground px-4 py-2 rounded-md transition-colors;
+    @apply border border-input bg-background hover:bg-accent hover:text-accent-foreground px-4 py-2 rounded-md transition-all;
   }
   
-  /* Card variants */
+  .btn-destructive {
+    @apply bg-destructive text-destructive-foreground hover:bg-destructive/90 px-4 py-2 rounded-md transition-all;
+  }
+  
+  /* Enhanced card variants */
   .card-primary {
-    @apply bg-primary/5 border-primary/20;
+    @apply bg-primary/5 border-primary/20 shadow-sm;
   }
   
   .card-secondary {
-    @apply bg-secondary/5 border-secondary/20;
+    @apply bg-secondary/5 border-secondary/20 shadow-sm;
+  }
+  
+  .card-accent {
+    @apply bg-accent/10 border-accent/30 shadow-sm;
+  }
+  
+  /* Status indicators using semantic colors */
+  .status-success {
+    @apply bg-green-500/10 text-green-700 dark:text-green-400 border-green-500/20;
+  }
+  
+  .status-warning {
+    @apply bg-yellow-500/10 text-yellow-700 dark:text-yellow-400 border-yellow-500/20;
+  }
+  
+  .status-error {
+    @apply bg-destructive/10 text-destructive border-destructive/20;
+  }
+  
+  .status-info {
+    @apply bg-primary/10 text-primary border-primary/20;
+  }
+  
+  /* Interactive elements */
+  .interactive-hover {
+    @apply hover:bg-muted/50 transition-colors cursor-pointer;
+  }
+  
+  /* Badge variants using semantic tokens */
+  .badge-primary {
+    @apply bg-primary text-primary-foreground;
+  }
+  
+  .badge-secondary {
+    @apply bg-secondary text-secondary-foreground;
+  }
+  
+  .badge-accent {
+    @apply bg-accent text-accent-foreground;
   }
 }
 

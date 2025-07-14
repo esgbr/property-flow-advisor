@@ -55,11 +55,10 @@ const EnhancedMainLayout: React.FC<EnhancedMainLayoutProps> = ({
       <main 
         id={contentId}
         className={cn(
-          "flex-1 overflow-y-auto",
+          "flex-1 overflow-y-auto bg-background text-foreground",
           withPadding && "py-6 mt-16", // Ensure content isn't hidden under navbar
           largeText && "text-lg",
-          isIOSDevice && "ios-scroll",
-          preferences.darkMode ? "bg-gray-900 text-white" : "bg-white text-gray-900"
+          isIOSDevice && "ios-scroll"
         )}
         tabIndex={-1} // Makes the main content area focusable for skip links
       >

@@ -97,7 +97,7 @@ const PortfolioDiversification: React.FC = () => {
             </div>
             <div className="mt-4 flex flex-wrap justify-center gap-2">
               {portfolioByPropertyType.map((item) => (
-                <Badge key={item.name} style={{backgroundColor: item.color}} className="text-white">
+                <Badge key={item.name} variant="default" style={{backgroundColor: item.color, color: 'white'}}>
                   {item.name}: {item.value}%
                 </Badge>
               ))}
@@ -137,7 +137,7 @@ const PortfolioDiversification: React.FC = () => {
             </div>
             <div className="mt-4 flex flex-wrap justify-center gap-2">
               {portfolioByLocation.map((item) => (
-                <Badge key={item.name} style={{backgroundColor: item.color}} className="text-white">
+                <Badge key={item.name} variant="default" style={{backgroundColor: item.color, color: 'white'}}>
                   {item.name}: {item.value}%
                 </Badge>
               ))}
@@ -226,7 +226,7 @@ const PortfolioDiversification: React.FC = () => {
               </p>
             </div>
             <button 
-              className="bg-primary text-white px-4 py-2 rounded-md hover:bg-primary/90 transition-colors"
+              className="bg-primary text-primary-foreground px-4 py-2 rounded-md hover:bg-primary/90 transition-colors"
               onClick={handleRebalanceClick}
             >
               Optimize Portfolio
