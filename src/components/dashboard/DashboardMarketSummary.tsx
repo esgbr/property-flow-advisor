@@ -16,8 +16,8 @@ const DashboardMarketSummary: React.FC = () => {
     <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 animate-fade-in">
       <Card className="col-span-1 lg:col-span-2">
         <CardHeader>
-          <CardTitle>{t('marketTrends')}</CardTitle>
-          <CardDescription>{t('marketTrendsDescription')}</CardDescription>
+          <CardTitle>Market Trends</CardTitle>
+          <CardDescription>Track real estate market performance</CardDescription>
         </CardHeader>
         <CardContent className="h-80">
           <MarketProviderWrapper>
@@ -27,7 +27,7 @@ const DashboardMarketSummary: React.FC = () => {
       </Card>
       <Card>
         <CardHeader>
-          <CardTitle>{t('portfolioAllocation')}</CardTitle>
+          <CardTitle>Portfolio Allocation</CardTitle>
         </CardHeader>
         <CardContent>
           <PortfolioAllocationChart />

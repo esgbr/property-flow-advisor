@@ -58,15 +58,16 @@ export const AppLockProvider: React.FC<{ children: React.ReactNode }> = ({ child
   
   // Load PIN from secure storage
   useEffect(() => {
-    const savedPin = secureStorage.getItem('appLockPin');
+    const savedPin = secureStorage.getItem('appLockPin', '');
     if (savedPin) {
-      setPin(savedPin);
+      setPin(savedPin as string);
       updatePreferences({ appLockEnabled: true });
     } else {
       updatePreferences({ appLockEnabled: false });
     }
     
-    const bioEnabled = secureStorage.getItem('biometricEnabled') === 'true';
+    const bioEnabledValue = secureStorage.getItem('biometricEnabled', 'false') as string;
+    const bioEnabled = bioEnabledValue === 'true';
     setBiometricEnabled(bioEnabled);
     if (bioEnabled) {
       updatePreferences({ appLockMethod: 'biometric' });

@@ -66,15 +66,15 @@ export const Chart: React.FC<ChartProps> = ({
   const getLegendProps = () => {
     switch (legendPosition) {
       case 'top':
-        return { verticalAlign: 'top', height: 36 };
+        return { verticalAlign: 'top' as const, height: 36 };
       case 'bottom':
-        return { verticalAlign: 'bottom', height: 36 };
+        return { verticalAlign: 'bottom' as const, height: 36 };
       case 'left':
-        return { layout: 'vertical', verticalAlign: 'middle', align: 'left' };
+        return { layout: 'vertical' as const, verticalAlign: 'middle' as const, align: 'left' as const };
       case 'right':
-        return { layout: 'vertical', verticalAlign: 'middle', align: 'right' };
+        return { layout: 'vertical' as const, verticalAlign: 'middle' as const, align: 'right' as const };
       default:
-        return { verticalAlign: 'bottom', height: 36 };
+        return { verticalAlign: 'bottom' as const, height: 36 };
     }
   };
   

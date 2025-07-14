@@ -1,5 +1,5 @@
 
-import { useRef, useEffect } from 'react';
+import React, { useRef, useEffect } from 'react';
 
 /**
  * Tracks component performance with console logging
@@ -117,7 +117,7 @@ export function withPerformanceTracking<P extends object>(
 ): React.FC<P> {
   const WrappedComponent: React.FC<P> = (props) => {
     useComponentPerformance(componentName);
-    return <Component {...props} />;
+    return React.createElement(Component, props);
   };
   
   WrappedComponent.displayName = `WithPerformance(${componentName})`;

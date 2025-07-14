@@ -2,7 +2,7 @@
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { FileText } from 'lucide-react';
-import { useLanguage } from '@/contexts/FixedLanguageContext';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 const DocumentsPage: React.FC = () => {
   const { t } = useLanguage();

@@ -80,12 +80,12 @@ export class SecureStorage {
   }
   
   // Retrieve data
-  getItem<T>(key: string, defaultValue: T): T {
+  getItem<T>(key: string, defaultValue?: T): T | null {
     try {
       const fullKey = `${this.storagePrefix}_${key}`;
       const encryptedValue = localStorage.getItem(fullKey);
       
-      if (!encryptedValue) return defaultValue;
+      if (!encryptedValue) return defaultValue || null;
       
       const decryptedValue = decryptData(encryptedValue, this.encryptionKey);
       

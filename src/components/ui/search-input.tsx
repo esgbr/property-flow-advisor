@@ -7,6 +7,7 @@ import { cn } from '@/lib/utils';
 import { debounce } from '@/utils/performanceUtils';
 
 interface SearchInputProps {
+  id?: string;
   placeholder?: string;
   value?: string;
   onChange?: (value: string) => void;
@@ -17,6 +18,9 @@ interface SearchInputProps {
   debounceTime?: number;
   size?: 'sm' | 'default' | 'lg';
   variant?: 'default' | 'minimal';
+  usePlacesAutocomplete?: boolean;
+  onLocationSelect?: (place: any) => void;
+  required?: boolean;
 }
 
 /**

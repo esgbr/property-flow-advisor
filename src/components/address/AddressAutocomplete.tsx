@@ -93,8 +93,8 @@ const AddressAutocomplete: React.FC<AddressAutocompleteProps> = ({
     });
   };
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setValue(e.target.value);
+  const handleChange = (value: string) => {
+    setValue(value);
   };
 
   return (

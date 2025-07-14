@@ -13,6 +13,10 @@ interface StatCardProps {
   className?: string;
   onClick?: () => void;
   loading?: boolean;
+  prefix?: string;
+  suffix?: string;
+  change?: number;
+  description?: string;
 }
 
 /**
@@ -27,7 +31,11 @@ export const StatCard: React.FC<StatCardProps> = ({
   footer,
   className,
   onClick,
-  loading = false
+  loading = false,
+  prefix,
+  suffix,
+  change,
+  description
 }) => {
   // Determine trend color
   const getTrendColor = () => {
@@ -73,21 +81,21 @@ export const StatCard: React.FC<StatCardProps> = ({
         ) : (
           <div className="flex items-baseline justify-between">
             <div className="text-2xl font-bold">
-              {value}
+              {prefix}{value}{suffix}
             </div>
             
-            {trend && trendValue && (
+            {(trend && trendValue) || change !== undefined && (
               <div className={cn('text-xs font-medium', getTrendColor())}>
                 {getTrendPrefix()}
-                {trendValue}
+                {trendValue || change}
               </div>
             )}
           </div>
         )}
         
-        {footer && (
+        {(footer || description) && (
           <div className="mt-4 text-xs text-muted-foreground">
-            {footer}
+            {footer || description}
           </div>
         )}
       </CardContent>

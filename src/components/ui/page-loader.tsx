@@ -5,6 +5,7 @@ import { cn } from '@/lib/utils';
 interface PageLoaderProps {
   size?: 'sm' | 'md' | 'lg';
   label?: string;
+  message?: string;
   className?: string;
   fullPage?: boolean;
 }
@@ -15,6 +16,7 @@ interface PageLoaderProps {
 export const PageLoader: React.FC<PageLoaderProps> = ({
   size = 'md',
   label = 'Loading...',
+  message,
   className = '',
   fullPage = false
 }) => {
@@ -40,10 +42,10 @@ export const PageLoader: React.FC<PageLoaderProps> = ({
           sizeClasses[size]
         )}
       />
-      {label && (
-        <span className="mt-4 text-muted-foreground">{label}</span>
+      {(label || message) && (
+        <span className="mt-4 text-muted-foreground">{message || label}</span>
       )}
-      <span className="sr-only">{label || 'Loading'}</span>
+      <span className="sr-only">{message || label || 'Loading'}</span>
     </div>
   );
 };

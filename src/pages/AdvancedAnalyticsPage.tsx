@@ -2,7 +2,7 @@
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { BarChart3 } from 'lucide-react';
-import { useLanguage } from '@/contexts/FixedLanguageContext';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 const AdvancedAnalyticsPage: React.FC = () => {
   const { t } = useLanguage();
